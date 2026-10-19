@@ -1,0 +1,1171 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_DEFAULT_COVERAGE",
+      "task_name": "Manage Default Coverage",
+      "start_node": "DEFCOV.VALIDATE",
+      "nodes": [
+        {
+          "id": "DEFCOV.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "create": "DEFCOV.DEPENDENCIES",
+            "update": "DEFCOV.DEPENDENCIES",
+            "delete": "DEFCOV.DEPENDENCIES",
+            "list": "DEFCOV.LIST",
+            "resolve_default": "DEFCOV.RESOLVE_DEFAULTS",
+            "invalid": "DEFCOV.INPUT_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Default Coverage Data Loader lifecycle, collection-listing, or default-resolution request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "DEFCOV.DESIGN_GATE",
+            "blocked": "DEFCOV.DEPENDENCY_ISSUES"
+          },
+          "prerequisites": [
+            "DEFCOV.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After Default Coverage setup inputs are valid",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.DESIGN_GATE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "DEFCOV.READY_FOR_DATA_LOADER",
+            "blocked": "DEFCOV.DESIGN_ISSUES"
+          },
+          "prerequisites": [
+            "DEFCOV.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Required Default Coverage values are ready for Data Loader preflight and approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.LIST",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "DEFCOV.LIST_RESULTS",
+            "empty": "DEFCOV.LIST_EMPTY",
+            "issues": "DEFCOV.LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "DEFCOV.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Listing Default Coverages using the developer-provided collection endpoint",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.RESOLVE_DEFAULTS",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "DEFCOV.APPLY_DEFAULT",
+            "empty": "DEFCOV.NO_DEFAULT",
+            "issues": "DEFCOV.LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "DEFCOV.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving Default Coverages before applying the documented Global or Customer precedence rule",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.APPLY_DEFAULT",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "customer_default": "DEFCOV.CUSTOMER_DEFAULT_APPLIED",
+            "global_default": "DEFCOV.GLOBAL_DEFAULT_APPLIED",
+            "no_applicable_default": "DEFCOV.NO_APPLICABLE_DEFAULT"
+          },
+          "prerequisites": [
+            "DEFCOV.RESOLVE_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Applying the configured Default Coverage after the read-only collection lookup returns data",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.READY_FOR_DATA_LOADER",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEFCOV.DESIGN_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The Default Coverage is ready for the governed Data Loader preflight and approval workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.INPUT_ISSUES",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Default Coverage input validation did not pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.DEPENDENCY_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A required Standard Coverage or customer selection is not ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.DESIGN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEFCOV.DESIGN_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A required Default Coverage design requirement is not satisfied",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.LIST_RESULTS",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEFCOV.LIST"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The Default Coverage collection lookup returned one or more rows",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.LIST_EMPTY",
+          "node_type": "terminal",
+          "sequence": 120,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEFCOV.LIST"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The Default Coverage collection lookup returned an empty result set",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.LOOKUP_ISSUES",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "The Default Coverage collection lookup was unauthorized, failed, or did not return a usable result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.NO_DEFAULT",
+          "node_type": "terminal",
+          "sequence": 140,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEFCOV.RESOLVE_DEFAULTS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "No applicable Default Coverage was returned from the collection lookup",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.CUSTOMER_DEFAULT_APPLIED",
+          "node_type": "terminal",
+          "sequence": 150,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEFCOV.APPLY_DEFAULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A customer-level Default Coverage overrides the global default for the customer",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.GLOBAL_DEFAULT_APPLIED",
+          "node_type": "terminal",
+          "sequence": 160,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEFCOV.APPLY_DEFAULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A global Default Coverage applies because no customer-level default applies",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEFCOV.NO_APPLICABLE_DEFAULT",
+          "node_type": "terminal",
+          "sequence": 170,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEFCOV.APPLY_DEFAULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Returned Default Coverage data did not contain an applicable Global or Customer default",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "CUSTOM_MANAGE_AVAILABILITY",
+      "task_name": "Manage Availability",
+      "start_node": "AVAIL.VALIDATE",
+      "nodes": [
+        {
+          "id": "AVAIL.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "schedule_list": "AVAIL.SCHEDULE_LIST",
+            "schedule_item": "AVAIL.SCHEDULE_LOOKUP",
+            "exception_list": "AVAIL.EXCEPTION_LIST",
+            "exception_item": "AVAIL.EXCEPTION_LOOKUP",
+            "issues": "AVAIL.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Manage Availability read-only schedule or exception request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AVAIL.SCHEDULE_LIST",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "AVAIL.SCHEDULE_LIST_RESULTS",
+            "empty": "AVAIL.SCHEDULE_LIST_EMPTY",
+            "issues": "AVAIL.ISSUES"
+          },
+          "prerequisites": [
+            "AVAIL.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving the current availability-schedule response page when no SchedulePuid is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AVAIL.SCHEDULE_LOOKUP",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "AVAIL.SCHEDULE_SUCCESS",
+            "missing": "AVAIL.ISSUES",
+            "issues": "AVAIL.ISSUES"
+          },
+          "prerequisites": [
+            "AVAIL.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving one availability schedule by SchedulePuid",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AVAIL.EXCEPTION_LIST",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "AVAIL.EXCEPTION_LIST_RESULTS",
+            "empty": "AVAIL.EXCEPTION_LIST_EMPTY",
+            "issues": "AVAIL.ISSUES"
+          },
+          "prerequisites": [
+            "AVAIL.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving the current availability-exception response page when no ExceptionPuid is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AVAIL.EXCEPTION_LOOKUP",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "AVAIL.EXCEPTION_SUCCESS",
+            "missing": "AVAIL.ISSUES",
+            "issues": "AVAIL.ISSUES"
+          },
+          "prerequisites": [
+            "AVAIL.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving one availability exception by ExceptionPuid",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AVAIL.SCHEDULE_LIST_RESULTS",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AVAIL.SCHEDULE_LIST"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The availability-schedule collection lookup returned one or more rows",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AVAIL.SCHEDULE_LIST_EMPTY",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AVAIL.SCHEDULE_LIST"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The availability-schedule collection lookup returned an empty result set",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AVAIL.SCHEDULE_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AVAIL.SCHEDULE_LOOKUP"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The item lookup returned one availability schedule",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AVAIL.EXCEPTION_LIST_RESULTS",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AVAIL.EXCEPTION_LIST"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The availability-exception collection lookup returned one or more rows",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AVAIL.EXCEPTION_LIST_EMPTY",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AVAIL.EXCEPTION_LIST"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The availability-exception collection lookup returned an empty result set",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AVAIL.EXCEPTION_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AVAIL.EXCEPTION_LOOKUP"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The item lookup returned one availability exception",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AVAIL.ISSUES",
+          "node_type": "terminal",
+          "sequence": 120,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Availability inputs are missing or a read-only schedule or exception lookup did not return a usable result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "CUSTOM_MANAGE_STANDARD_COVERAGE",
+      "task_name": "Manage Standard Coverage",
+      "start_node": "STDCOV.VALIDATE",
+      "nodes": [
+        {
+          "id": "STDCOV.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "list": "STDCOV.LIST",
+            "details": "STDCOV.DETAIL_FIND",
+            "valid": "STDCOV.DEPENDENCIES",
+            "invalid": "STDCOV.INPUT_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Standard Coverage planning, validation, documented-create readiness, collection-listing, or related-detail request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.LIST",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "STDCOV.LIST_RESULTS",
+            "empty": "STDCOV.LIST_EMPTY",
+            "issues": "STDCOV.LIST_ISSUES"
+          },
+          "prerequisites": [
+            "STDCOV.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Listing Standard Coverages using StandardCoverageYn=Y",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.DETAIL_FIND",
+          "node_type": "step",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "STDCOV.DETAIL_HEADER",
+            "missing": "STDCOV.DETAIL_ISSUES",
+            "issues": "STDCOV.DETAIL_ISSUES"
+          },
+          "prerequisites": [
+            "STDCOV.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolving a Standard Coverage by exact name before retrieving related details",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.DETAIL_HEADER",
+          "node_type": "step",
+          "sequence": 17,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matrix": "STDCOV.ENTITLEMENT_RULE",
+            "complete": "STDCOV.DETAIL_WITHOUT_ENTITLEMENT_RULE",
+            "issues": "STDCOV.DETAIL_ISSUES"
+          },
+          "prerequisites": [
+            "STDCOV.DETAIL_FIND"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving the matching coverage header, adjustments, and preventive-maintenance work requirements",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.ENTITLEMENT_RULE",
+          "node_type": "step",
+          "sequence": 18,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "STDCOV.DETAIL_RESULTS",
+            "missing": "STDCOV.DETAIL_ISSUES",
+            "issues": "STDCOV.DETAIL_ISSUES"
+          },
+          "prerequisites": [
+            "STDCOV.DETAIL_HEADER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving one entitlement rule from the coverage MatrixId and supplied RuleId",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "STDCOV.LOOKUP",
+            "blocked": "STDCOV.DEPENDENCY_ISSUES"
+          },
+          "prerequisites": [
+            "STDCOV.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After required Standard Coverage inputs are valid",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.LOOKUP",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "absent": "STDCOV.DESIGN_GATE",
+            "existing": "STDCOV.DUPLICATE_REVIEW",
+            "issues": "STDCOV.LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "STDCOV.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A CoverageName is supplied for standard-coverage readiness",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.DESIGN_GATE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "STDCOV.READY_FOR_DOCUMENTED_CREATE",
+            "blocked": "STDCOV.DESIGN_ISSUES"
+          },
+          "prerequisites": [
+            "STDCOV.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact-name lookup found no existing standard coverage",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.READY_FOR_DOCUMENTED_CREATE",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "STDCOV.DESIGN_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The request is complete for the separate documented create workflow; this resource set performs no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.INPUT_ISSUES",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Input validation did not pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.DEPENDENCY_ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A required dependency is not ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.LOOKUP_ISSUES",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "The exact-name lookup failed, was ambiguous, or could not be authorized",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.DUPLICATE_REVIEW",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "STDCOV.LOOKUP"
+          ],
+          "on_failure": "continue",
+          "applies_when": "An exact-name standard coverage exists and must be reviewed before any update workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.DESIGN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "STDCOV.DESIGN_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A documented design requirement is not satisfied",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.LIST_RESULTS",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "STDCOV.LIST"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The StandardCoverageYn=Y collection lookup returned one or more Standard Coverages",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.LIST_EMPTY",
+          "node_type": "terminal",
+          "sequence": 120,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "STDCOV.LIST"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The StandardCoverageYn=Y collection lookup returned an empty result set",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.LIST_ISSUES",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "The StandardCoverageYn=Y collection lookup was unauthorized, failed, or did not return a usable result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.DETAIL_WITHOUT_ENTITLEMENT_RULE",
+          "node_type": "terminal",
+          "sequence": 140,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "STDCOV.DETAIL_HEADER"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The coverage details returned but no MatrixId was available for an entitlement-rule lookup",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.DETAIL_RESULTS",
+          "node_type": "terminal",
+          "sequence": 150,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "STDCOV.ENTITLEMENT_RULE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The coverage details and requested entitlement rule returned",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDCOV.DETAIL_ISSUES",
+          "node_type": "terminal",
+          "sequence": 160,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A required detail input is missing or a detailed coverage or entitlement-rule lookup did not return a usable result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

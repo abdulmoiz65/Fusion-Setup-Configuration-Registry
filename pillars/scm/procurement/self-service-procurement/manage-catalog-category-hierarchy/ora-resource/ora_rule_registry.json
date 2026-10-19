@@ -1,0 +1,182 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "POR_MANAGE_CATALOG_CATEGORY_HIERARCHY",
+      "task_name": "Manage Catalog Category Hierarchy",
+      "start_node": "CCH.INPUT",
+      "nodes": [
+        {
+          "id": "CCH.INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CCH.EVIDENCE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Preparing the task\u2019s FSM CSV import",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCH.EVIDENCE",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "assessed": "CCH.DEPENDENCIES",
+            "error": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCH.INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Assessing supplied target evidence, including an explicit unverified outcome",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCH.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "assessed": "CCH.DESIGN",
+            "conflict": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCH.EVIDENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classifying reference evidence before preview",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCH.DESIGN",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CCH.HANDOFF",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCH.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Reviewing the intended FSM delta",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCH.HANDOFF",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RETURN_SUCCESS",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCH.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Preparing disclosures and handing the artifact to the existing core workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCH.HANDOFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Local preparation is complete; Fusion execution and verification remain with the routed workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A reached preparation check blocks handoff; return actionable issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

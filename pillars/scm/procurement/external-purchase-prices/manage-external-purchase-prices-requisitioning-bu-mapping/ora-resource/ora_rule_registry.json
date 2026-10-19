@@ -1,0 +1,228 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_MANAGE_EXTERNAL_PURCHASE_PRICES_REQBU_MAPPING",
+      "task_name": "Manage External Purchase Prices Requisitioning BU Mapping",
+      "start_node": "EPPBU.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "EPPBU.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "EPPBU.RESOLVE_REFERENCES",
+            "invalid": "EPPBU.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before any lookup or Data Loader preparation; input contract only, not business policy",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EPPBU.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "read_complete": "EPPBU.RETURN_READ_RESULT",
+            "resolved": "EPPBU.CHECK_DEPENDENCIES",
+            "blocked": "EPPBU.HANDLE_ERROR",
+            "failure": "EPPBU.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "EPPBU.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Direct GET after preflight; pure complete reads select read_complete, mutation-validation evidence selects resolved; record not-applicable reasons explicitly",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 159
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EPPBU.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "EPPBU.APPLY_DEFAULTS",
+            "blocked": "EPPBU.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "EPPBU.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Mutation validation only, after reference resolution selects resolved; never for pure record GET",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EPPBU.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "EPPBU.ENFORCE_DESIGN",
+            "blocked": "EPPBU.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "EPPBU.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After dependencies are ready",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EPPBU.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "EPPBU.READY_FOR_DATA_LOADER_REST",
+            "blocked": "EPPBU.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "EPPBU.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate only applicable business policy from lookup evidence before core.data-loader handoff; record not-applicable reasons",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EPPBU.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "EPPBU.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, dependency, defaulting, or design failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EPPBU.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EPPBU.READY_FOR_DATA_LOADER_REST",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EPPBU.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Requested mutation validation is satisfied and core.data-loader is the next workflow owner; never for pure record GET",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EPPBU.RETURN_READ_RESULT",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EPPBU.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Pure record GET selected read_complete with complete authorized parent/child evidence or confirmed not-found; return details without Data Loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PON_MANAGE_COST_FACTOR_LISTS",
+      "task_name": "Manage Cost Factor Lists",
+      "start_node": "COST_FACTOR_LIST.CLASSIFY_REQUEST",
+      "nodes": [
+        {
+          "id": "COST_FACTOR_LIST.CLASSIFY_REQUEST",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "list_setup": "COST_FACTOR_LIST.VALIDATE_LIST_CONTEXT",
+            "unsupported": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Manage Cost Factor Lists request is received.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COST_FACTOR_LIST.VALIDATE_LIST_CONTEXT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COST_FACTOR_LIST.RETURN_VALIDATED_CREATE_SOURCE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "COST_FACTOR_LIST.CLASSIFY_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A source either creates a Cost Factor List with parent and child rows and no generated ListId, adds child POST rows to an existing ListId without a parent row, updates child rows using existing ListId, ListCostFactorId, and RestAction PATCH without a parent row, updates one existing Cost Factor List parent using RestAction PATCH and ListName, Description, ListStatus, or ListStatusCode without child rows, deletes child rows using existing ListId and ListCostFactorId values without a parent row, or deletes a list with its parent DELETE row and every current child DELETE row.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COST_FACTOR_LIST.RETURN_VALIDATED_CREATE_SOURCE",
+          "node_type": "terminal",
+          "sequence": 25,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COST_FACTOR_LIST.VALIDATE_LIST_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Cost Factor List Data Loader source is valid for the core Data Loader preview and approval workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation, dependency, or lookup reports a blocking issue.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

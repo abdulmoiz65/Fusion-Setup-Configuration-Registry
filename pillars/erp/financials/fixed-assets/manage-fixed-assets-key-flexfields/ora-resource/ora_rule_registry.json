@@ -1,0 +1,375 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "FA_MANAGE_FIXED_ASSETS_KEY_FLEXFIELDS",
+      "task_name": "Manage Fixed Assets Key Flexfields",
+      "start_node": "KFF.DERIVE_NAMES",
+      "nodes": [
+        {
+          "id": "KFF.DERIVE_NAMES",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "KFF.VALIDATE_INPUT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request; prepare missing new-object names and the applicable single-segment value-set proposal, preserving explicit inputs and unresolved issues for validation.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 127
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFF.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "KFF.RESOLVE_DEPENDENCIES",
+            "invalid": "KFF.HANDLE_INPUT"
+          },
+          "prerequisites": [
+            "KFF.DERIVE_NAMES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every request.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFF.RESOLVE_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "KFF.LOOKUP_EXISTING",
+            "blocked": "KFF.HANDLE_DEPENDENCY"
+          },
+          "prerequisites": [
+            "KFF.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Valid input.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFF.LOOKUP_EXISTING",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "match": "KFF.DONE_MATCH",
+            "absent": "KFF.APPLY_DEFAULTS",
+            "approved_change": "KFF.APPLY_DEFAULTS",
+            "different_or_ambiguous": "KFF.HANDLE_LOOKUP",
+            "failure": "KFF.HANDLE_LOOKUP"
+          },
+          "prerequisites": [
+            "KFF.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependencies are ready.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFF.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "KFF.ENFORCE_DESIGN"
+          },
+          "prerequisites": [
+            "KFF.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Lookup resolved",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 128
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFF.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "KFF.IMPORT_GATE",
+            "blocked": "KFF.HANDLE_DESIGN"
+          },
+          "prerequisites": [
+            "KFF.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Defaults applied.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFF.IMPORT_GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "KFF.HANDED_OFF_TO_PARENT",
+            "approval_missing": "KFF.HANDLE_APPROVAL"
+          },
+          "prerequisites": [
+            "KFF.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated package is proposed for live import.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFF.HANDLE_INPUT",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "KFF.ISSUES"
+          },
+          "prerequisites": [
+            "KFF.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input is invalid.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFF.HANDLE_DEPENDENCY",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "KFF.ISSUES"
+          },
+          "prerequisites": [
+            "KFF.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependency is blocked.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFF.HANDLE_LOOKUP",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "KFF.ISSUES"
+          },
+          "prerequisites": [
+            "KFF.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Lookup fails, identity is ambiguous, or a material difference is unapproved.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFF.HANDLE_DESIGN",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "KFF.ISSUES"
+          },
+          "prerequisites": [
+            "KFF.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Design rule blocks the package.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFF.HANDLE_APPROVAL",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "KFF.ISSUES"
+          },
+          "prerequisites": [
+            "KFF.IMPORT_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approval is absent or stale.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFF.HANDED_OFF_TO_PARENT",
+          "node_type": "terminal",
+          "sequence": 120,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "KFF.IMPORT_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Key Flexfields import is accepted — pending parent verification. The Fixed Assets parent owns status, process-log review, and fresh target read-back. A dependent task may reuse only parent-verified KFF context.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFF.DONE_MATCH",
+          "node_type": "terminal",
+          "sequence": 125,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "KFF.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing target state already matches the requested material scope; no package or import is needed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFF.ISSUES",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocker is handled and disclosed with the safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

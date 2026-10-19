@@ -1,0 +1,448 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "FA_MANAGE_FIXED_ASSETS_FLEXFIELD_VALUE_SETS",
+      "task_name": "Manage Fixed Assets Flexfield Value Sets",
+      "start_node": "VSET.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "VSET.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "VSET.RESOLVE_DEPENDENCIES",
+            "invalid": "VSET.HANDLE_INPUT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 120
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.RESOLVE_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "VSET.LOOKUP_EXISTING",
+            "blocked": "VSET.HANDLE_DEPENDENCY"
+          },
+          "prerequisites": [
+            "VSET.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Valid input",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.LOOKUP_EXISTING",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "match": "VSET.CHECK_VALUE_SCOPE",
+            "absent": "VSET.APPLY_DEFAULTS",
+            "different_or_ambiguous": "VSET.HANDLE_LOOKUP"
+          },
+          "prerequisites": [
+            "VSET.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "REST definition batch retrieved and pagination, filters and visibility verified",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 165
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.CHECK_VALUE_SCOPE",
+          "node_type": "decision",
+          "sequence": 35,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "definition_only": "VSET.DONE_MATCH",
+            "values_present": "VSET.DONE_VALUES",
+            "values_missing": "VSET.APPLY_DEFAULTS",
+            "blocked": "VSET.HANDLE_VALUES"
+          },
+          "prerequisites": [
+            "VSET.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing definition matches; compare requested values against complete grouped REST responses",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 166
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "VSET.SELECT_PACKAGE_SOURCE"
+          },
+          "prerequisites": [
+            "VSET.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Definition is absent, or CHECK_VALUE_SCOPE confirmed values_missing; preserve existing definitions in the latter branch",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 130
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.SELECT_PACKAGE_SOURCE",
+          "node_type": "decision",
+          "sequence": 45,
+          "action_type": "select_package_source",
+          "execution_route": "local",
+          "transitions": {
+            "export_contract": "VSET.ENFORCE_DESIGN",
+            "reference_parent_bootstrap": "VSET.ENFORCE_DESIGN",
+            "blocked": "VSET.HANDLE_DEPENDENCY"
+          },
+          "prerequisites": [
+            "VSET.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A package is required; use the current export contract, including valid header-only evidence, for a first-time definition. Select bootstrap only for values added to an existing resolved definition when its populated export is unusable and every bootstrap precondition is met",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "VSET.IMPORT_GATE",
+            "blocked": "VSET.HANDLE_DESIGN"
+          },
+          "prerequisites": [
+            "VSET.SELECT_PACKAGE_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Package source selected",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.IMPORT_GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "VSET.HANDED_OFF_TO_PARENT",
+            "approval_missing": "VSET.HANDLE_APPROVAL"
+          },
+          "prerequisites": [
+            "VSET.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated package is proposed for live import; reaching the approved transition confirms only the approved submission gate, not target-state creation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.HANDLE_INPUT",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "VSET.ISSUES"
+          },
+          "prerequisites": [
+            "VSET.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input is invalid",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.HANDLE_DEPENDENCY",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "VSET.ISSUES"
+          },
+          "prerequisites": [
+            "VSET.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependency is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.HANDLE_LOOKUP",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "VSET.ISSUES"
+          },
+          "prerequisites": [
+            "VSET.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Lookup is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.HANDLE_VALUES",
+          "node_type": "step",
+          "sequence": 95,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "VSET.ISSUES"
+          },
+          "prerequisites": [
+            "VSET.CHECK_VALUE_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Requested value scope cannot be verified or safely added to the existing definition",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.HANDLE_DESIGN",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "VSET.ISSUES"
+          },
+          "prerequisites": [
+            "VSET.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Design rule blocks the package",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.HANDLE_APPROVAL",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "VSET.ISSUES"
+          },
+          "prerequisites": [
+            "VSET.IMPORT_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approval is absent",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.HANDED_OFF_TO_PARENT",
+          "node_type": "terminal",
+          "sequence": 120,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "VSET.IMPORT_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Value Sets import is accepted — pending parent verification. core.data-loader owns terminal polling, process-log review, and fresh target read-back. A dependent task may reuse only the parent-verified ValueSetCode and approved value scope; it must not create or infer context from this accepted request.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.DONE_MATCH",
+          "node_type": "terminal",
+          "sequence": 125,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "VSET.CHECK_VALUE_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing definition matches and the request is definition-only; no import is needed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.DONE_VALUES",
+          "node_type": "terminal",
+          "sequence": 126,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "VSET.CHECK_VALUE_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing definition and every requested value/parent/material field already match current verified state; no import is needed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VSET.ISSUES",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocker is handled",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

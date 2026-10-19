@@ -1,0 +1,136 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_SHIPPING_EXCEPTIONS",
+      "task_name": "Shipping Exceptions",
+      "start_node": "SE.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "SE.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "SE.RESOLVE_TYPE",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Shipping Exceptions input is prepared for validation or Data Loader handoff",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SE.RESOLVE_TYPE",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SE.RESOLVE_SEVERITY",
+            "not-applicable": "SE.RESOLVE_SEVERITY",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SE.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied Type input to ExceptionTypeCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SE.RESOLVE_SEVERITY",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SE.DONE",
+            "not-applicable": "SE.DONE",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SE.RESOLVE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied Severity input to ExceptionSeverityCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SE.DONE",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SE.RESOLVE_SEVERITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input and approved lookup validation passed; central Data Loader checks govern handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input or lookup validation failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

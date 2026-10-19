@@ -1,0 +1,625 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_COSTING_OF_LOCATIONS",
+      "task_name": "Costing of Locations",
+      "start_node": "LCP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "LCP.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LCP.SELECT_OPERATION",
+            "invalid": "LCP.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate supplied values without invoking Fusion or building an import artifact.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.SELECT_OPERATION",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "query": "LCP.SEARCH_LDG",
+            "create": "LCP.SEARCH_LDG",
+            "update": "LCP.SEARCH_LDG",
+            "correct": "LCP.SEARCH_LDG",
+            "end_date": "LCP.SEARCH_LDG",
+            "zap": "LCP.SEARCH_LDG",
+            "invalid": "LCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LCP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select one canonical operation before any network call so later Task Nodes can follow only its branch.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.SEARCH_LDG",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "selected": "LCP.CONFIRM_LDG",
+            "selection_required": "LCP.NEEDS_LDG_SELECTION",
+            "not_found": "LCP.HANDLE_ERROR",
+            "failed": "LCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LCP.SELECT_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Discover the LDG candidate before any Location request.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.CONFIRM_LDG",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LCP.RESOLVE_LOCATION_SOURCE",
+            "blocked": "LCP.HANDLE_ERROR",
+            "failed": "LCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LCP.SEARCH_LDG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm the selected LDG and its costing context.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.RESOLVE_LOCATION_SOURCE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "query_resolved": "LCP.RESOLVE_CURRENT_ALLOCATION",
+            "create_absent": "LCP.RESOLVE_LOCATION_SET_CODE",
+            "create_existing": "LCP.NEEDS_OPERATION_SELECTION",
+            "update_resolved": "LCP.RESOLVE_LOCATION_SET_CODE",
+            "correct_resolved": "LCP.RESOLVE_LOCATION_SET_CODE",
+            "end_date_resolved": "LCP.RESOLVE_LOCATION_SET_CODE",
+            "zap_resolved": "LCP.RESOLVE_LOCATION_SET_CODE",
+            "blocked": "LCP.HANDLE_ERROR",
+            "failed": "LCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LCP.CONFIRM_LDG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the common Location identity, then enter only the selected operation branch.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.RESOLVE_LOCATION_SET_CODE",
+          "node_type": "decision",
+          "sequence": 100,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "create_resolved": "LCP.RESOLVE_RUNTIME_KFF",
+            "update_resolved": "LCP.RESOLVE_CURRENT_ALLOCATION",
+            "correct_resolved": "LCP.RESOLVE_CURRENT_ALLOCATION",
+            "end_date_resolved": "LCP.RESOLVE_EFFECTIVE_HISTORY",
+            "zap_resolved": "LCP.RESOLVE_EFFECTIVE_HISTORY",
+            "blocked": "LCP.HANDLE_ERROR",
+            "failed": "LCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LCP.RESOLVE_LOCATION_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve SetCode once for the selected mutation; Query never reaches this node.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.RESOLVE_CURRENT_ALLOCATION",
+          "node_type": "decision",
+          "sequence": 200,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "query_found": "LCP.DONE_QUERY",
+            "query_empty": "LCP.DONE_QUERY",
+            "update_found": "LCP.RESOLVE_RUNTIME_KFF",
+            "correct_found": "LCP.RESOLVE_RUNTIME_KFF",
+            "blocked": "LCP.HANDLE_ERROR",
+            "failed": "LCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LCP.RESOLVE_LOCATION_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read current state once for Query, Update, or Correct only.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.RESOLVE_RUNTIME_KFF",
+          "node_type": "decision",
+          "sequence": 300,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "create_resolved": "LCP.CHECK_DEPENDENCIES",
+            "update_resolved": "LCP.CHECK_DEPENDENCIES",
+            "correct_resolved": "LCP.CHECK_DEPENDENCIES",
+            "correct_skipped": "LCP.CHECK_DEPENDENCIES",
+            "blocked": "LCP.HANDLE_ERROR",
+            "failed": "LCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LCP.RESOLVE_LOCATION_SET_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve KFF for Create, Update, or a Correct account MERGE with Segment input; skip a Correct child DELETE.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.RESOLVE_EFFECTIVE_HISTORY",
+          "node_type": "decision",
+          "sequence": 400,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "end_date_resolved": "LCP.CHECK_DEPENDENCIES",
+            "zap_resolved": "LCP.RESOLVE_HISTORY_ACCOUNTS",
+            "blocked": "LCP.HANDLE_ERROR",
+            "failed": "LCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LCP.RESOLVE_LOCATION_SET_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read complete history for End Date or Zap only.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.RESOLVE_HISTORY_ACCOUNTS",
+          "node_type": "decision",
+          "sequence": 410,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LCP.CHECK_DEPENDENCIES",
+            "blocked": "LCP.HANDLE_ERROR",
+            "failed": "LCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LCP.RESOLVE_EFFECTIVE_HISTORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For Zap, read and bind every historical parent detail without current-state or KFF.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 700,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LCP.APPLY_DEFAULTS",
+            "blocked": "LCP.HANDLE_ERROR",
+            "unsupported": "LCP.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Recheck only the dependencies applicable to the already selected mutation branch before defaults or design enforcement.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 710,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "LCP.ENFORCE_DESIGN",
+            "skipped": "LCP.ENFORCE_DESIGN",
+            "invalid": "LCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LCP.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply only the defaults valid for the selected mutation; never default LocationSetCode, Correct sequence, or Zap child data.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 720,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready_create": "LCP.GOVERNED_DATALOADER_HANDOFF",
+            "ready_update": "LCP.GOVERNED_DATALOADER_HANDOFF",
+            "ready_correct": "LCP.GOVERNED_DATALOADER_HANDOFF",
+            "ready_end_date": "LCP.GOVERNED_DATALOADER_HANDOFF",
+            "ready_zap": "LCP.GOVERNED_DATALOADER_HANDOFF",
+            "blocked": "LCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LCP.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce only the selected mutation policy and preserve its outcome for a distinct handoff terminal.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.GOVERNED_DATALOADER_HANDOFF",
+          "node_type": "decision",
+          "sequence": 730,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready_create": "LCP.READY_CREATE",
+            "ready_update": "LCP.READY_UPDATE",
+            "ready_correct": "LCP.READY_CORRECT",
+            "ready_end_date": "LCP.READY_END_DATE",
+            "ready_zap": "LCP.READY_ZAP",
+            "blocked": "LCP.HANDLE_ERROR",
+            "failed": "LCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm an independently authorized governed import workflow can receive the selected operation, exact lookup evidence, template validation, immutable artifact, and fresh approval. No mutation occurs in this node.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.READY_CREATE",
+          "node_type": "terminal",
+          "sequence": 740,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LCP.GOVERNED_DATALOADER_HANDOFF"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Create preflight is ready for the active governed import workflow; Fusion has not been changed by this resource.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.READY_UPDATE",
+          "node_type": "terminal",
+          "sequence": 741,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LCP.GOVERNED_DATALOADER_HANDOFF"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Update preflight is ready for the active governed import workflow; Fusion has not been changed by this resource.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.READY_CORRECT",
+          "node_type": "terminal",
+          "sequence": 742,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LCP.GOVERNED_DATALOADER_HANDOFF"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Correct preflight is ready for the active governed import workflow; Fusion has not been changed by this resource.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.READY_END_DATE",
+          "node_type": "terminal",
+          "sequence": 743,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LCP.GOVERNED_DATALOADER_HANDOFF"
+          ],
+          "on_failure": "continue",
+          "applies_when": "End Date preflight is ready for the active governed import workflow; Fusion has not been changed by this resource.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.READY_ZAP",
+          "node_type": "terminal",
+          "sequence": 744,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LCP.GOVERNED_DATALOADER_HANDOFF"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Zap preflight is ready for the active governed import workflow; Fusion has not been changed by this resource.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.NEEDS_OPERATION_SELECTION",
+          "node_type": "terminal",
+          "sequence": 745,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LCP.RESOLVE_LOCATION_SOURCE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Create found an existing active allocation and requires a new explicit Update or Correct request.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.DONE_QUERY",
+          "node_type": "terminal",
+          "sequence": 746,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LCP.RESOLVE_CURRENT_ALLOCATION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Query returned one normalized read-only state or an explicit empty result with no duplicate GET.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.NEEDS_LDG_SELECTION",
+          "node_type": "terminal",
+          "sequence": 747,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LCP.SEARCH_LDG"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Multiple LDG candidates require one explicit returned Name before any later lookup.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 900,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "LCP.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, lookup, contract, authorization, transport, metadata, approval, or persistence failure must be classified and disclosed without exposing sensitive data.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.FAILED",
+          "node_type": "terminal",
+          "sequence": 910,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LCP.HANDLE_ERROR"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The task stopped with a classified sanitized diagnostic and one safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

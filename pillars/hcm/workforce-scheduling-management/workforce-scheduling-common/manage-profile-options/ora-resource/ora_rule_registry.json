@@ -1,0 +1,155 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "FND_MANAGE_PROFILE_OPTIONS",
+      "task_name": "Manage Profile Options",
+      "start_node": "MPO.VALIDATE_PROVIDER_INPUT",
+      "nodes": [
+        {
+          "id": "MPO.VALIDATE_PROVIDER_INPUT",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MPO.QUERY_PROFILE_OPTION_PROVIDER",
+            "blocked": "MPO.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before a profile-option provider lookup or recommendation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPO.QUERY_PROFILE_OPTION_PROVIDER",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MPO.ENFORCE_PROVIDER_OWNERSHIP",
+            "blocked": "MPO.HANDLE_ISSUES",
+            "failure": "MPO.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "MPO.VALIDATE_PROVIDER_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before proposing a profile-option configuration change with the exact runtime identifier supplied by the consuming task",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPO.ENFORCE_PROVIDER_OWNERSHIP",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "MPO.READY",
+            "blocked": "MPO.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "MPO.QUERY_PROFILE_OPTION_PROVIDER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a profile-option recommendation or provider-owned change using the exact runtime identifier",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPO.HANDLE_ISSUES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MPO.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A provider dependency, identifier, validation, or approval gate is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPO.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocked provider dependency has been disclosed with a safe next action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPO.READY",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MPO.ENFORCE_PROVIDER_OWNERSHIP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Provider evidence supports a recommendation; any provider-owned mutation still needs user confirmation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

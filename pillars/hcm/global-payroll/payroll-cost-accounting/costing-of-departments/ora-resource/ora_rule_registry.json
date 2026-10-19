@@ -1,0 +1,684 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_DEPARTMENT_COSTING",
+      "task_name": "Costing of Departments",
+      "start_node": "DCP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "DCP.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DCP.RESOLVE_REFERENCES",
+            "invalid": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before any read-only lookup, HDL package preview, or durable artifact write. Apply the operation-specific required groups; End Date and Zap do not require account input.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "DCP.CHECK_DEPENDENCIES",
+            "blocked": "DCP.HANDLE_ERROR",
+            "failed": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Department, LDG, KFF when accounts are rendered, and current state through read-only GETs. For End Date, resolve complete history first, then the selected parent's state. For Zap, resolve complete history and query_department_costing_history_accounts for every selected history key. End Date and Zap skip runtime KFF and segment LOV validation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "DCP.APPLY_DEFAULTS",
+            "blocked": "DCP.HANDLE_ERROR",
+            "unsupported": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After required read-only identities and state are resolved.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "DCP.ENFORCE_DESIGN",
+            "skipped": "DCP.ENFORCE_DESIGN",
+            "invalid": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply documented HDL defaults before package preview.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "query_only": "DCP.VERIFY_QUERY",
+            "ready_create": "DCP.HDL_GATE_CREATE",
+            "ready_update": "DCP.HDL_GATE_UPDATE",
+            "ready_end_date": "DCP.HDL_GATE_END_DATE",
+            "ready_zap": "DCP.HDL_GATE_ZAP",
+            "blocked": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select exactly one query, Create, Update, End Date, or Zap branch before package handoff. An End Date whose requested end already matches takes query_only and returns the verified current state without a load.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.VERIFY_QUERY",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "DCP.DONE_QUERY",
+            "failed": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return a read-only discovery or verification result without a mutation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.DONE_QUERY",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCP.VERIFY_QUERY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The read-only query result is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.HDL_GATE_CREATE",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "DCP.RESULT_CREATE",
+            "blocked": "DCP.HANDLE_ERROR",
+            "failed": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable Create archive passed source/schema and Task Hook validation, has fresh approval, and is handed once to core.data-loader.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.RESULT_CREATE",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "terminal_succeeded": "DCP.VERIFY_CREATE",
+            "terminal_failed": "DCP.HANDLE_ERROR",
+            "timed_out": "DCP.HANDLE_ERROR",
+            "unknown": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.HDL_GATE_CREATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate the exact Create core.data-loader Content ID, Request ID, and terminal loader status before GET verification.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.VERIFY_CREATE",
+          "node_type": "decision",
+          "sequence": 100,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "DCP.DONE_CREATE",
+            "failed": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.RESULT_CREATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify the exact Create effect only after a terminal successful Data Loader result.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.DONE_CREATE",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCP.VERIFY_CREATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The verified Create effect is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.HDL_GATE_UPDATE",
+          "node_type": "decision",
+          "sequence": 120,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "DCP.RESULT_UPDATE",
+            "blocked": "DCP.HANDLE_ERROR",
+            "failed": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable Update archive passed source/schema and Task Hook validation, has fresh approval, and is handed once to core.data-loader.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.RESULT_UPDATE",
+          "node_type": "decision",
+          "sequence": 130,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "terminal_succeeded": "DCP.VERIFY_UPDATE",
+            "terminal_failed": "DCP.HANDLE_ERROR",
+            "timed_out": "DCP.HANDLE_ERROR",
+            "unknown": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.HDL_GATE_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate the exact Update core.data-loader Content ID, Request ID, and terminal loader status before GET verification.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.VERIFY_UPDATE",
+          "node_type": "decision",
+          "sequence": 140,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "DCP.DONE_UPDATE",
+            "failed": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.RESULT_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify the exact Update effect only after a terminal successful Data Loader result.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.DONE_UPDATE",
+          "node_type": "terminal",
+          "sequence": 150,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCP.VERIFY_UPDATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The verified Update effect is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.HDL_GATE_END_DATE",
+          "node_type": "decision",
+          "sequence": 151,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "DCP.RESULT_END_DATE",
+            "blocked": "DCP.HANDLE_ERROR",
+            "failed": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable parent-only End Date archive passed source/schema and Task Hook validation, has current approval and unchanged target state, and is handed once to core.data-loader. A wrapper rejection takes the blocked path before upload.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.RESULT_END_DATE",
+          "node_type": "decision",
+          "sequence": 152,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "initiated_or_pending": "DCP.PENDING_END_DATE",
+            "terminal_succeeded": "DCP.VERIFY_END_DATE",
+            "terminal_failed": "DCP.HANDLE_ERROR",
+            "timed_out": "DCP.HANDLE_ERROR",
+            "unknown": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.HDL_GATE_END_DATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return pending immediately after accepted End Date initiation. On a later explicit status/verification request, resume the same accepted handoff and evaluate its result without resubmission.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.PENDING_END_DATE",
+          "node_type": "terminal",
+          "sequence": 153,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCP.RESULT_END_DATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return accepted initiation or pending status with the core.data-loader resume reference. Do not poll automatically; a later explicit status/verification request resumes DCP.RESULT_END_DATE for the same handoff.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.VERIFY_END_DATE",
+          "node_type": "decision",
+          "sequence": 154,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "DCP.DONE_END_DATE",
+            "failed": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.RESULT_END_DATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "On an explicit verification request after terminal loader success, apply End Date verification through complete history and the end-date/next-day GETs.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.DONE_END_DATE",
+          "node_type": "terminal",
+          "sequence": 155,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCP.VERIFY_END_DATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "End Date is verified: the selected parent ends on the requested date, is absent the next day, and prior history/accounts remain unchanged.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.HDL_GATE_ZAP",
+          "node_type": "decision",
+          "sequence": 156,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "DCP.RESULT_ZAP",
+            "blocked": "DCP.HANDLE_ERROR",
+            "failed": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact Zap archive passed source/schema and Task Hook validation, has current destructive approval and unchanged complete history/detail evidence, and is handed once to core.data-loader.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.RESULT_ZAP",
+          "node_type": "decision",
+          "sequence": 157,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "initiated_or_pending": "DCP.PENDING_ZAP",
+            "terminal_succeeded": "DCP.VERIFY_ZAP",
+            "terminal_failed": "DCP.HANDLE_ERROR",
+            "timed_out": "DCP.HANDLE_ERROR",
+            "unknown": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.HDL_GATE_ZAP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return pending immediately after accepted Zap initiation. On a later explicit status/verification request, resume the same handoff; require success for both the parent and any account member, not a partial load.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.PENDING_ZAP",
+          "node_type": "terminal",
+          "sequence": 158,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCP.RESULT_ZAP"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return accepted initiation or pending status with the core.data-loader resume reference and saved pre-load scope. Do not poll automatically; a later explicit status/verification request resumes DCP.RESULT_ZAP for the same handoff, without re-entering creation or re-resolving the deleted record.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.VERIFY_ZAP",
+          "node_type": "decision",
+          "sequence": 159,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "DCP.DONE_ZAP",
+            "failed": "DCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DCP.RESULT_ZAP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Zap verification to the saved complete logical-history scope only after terminal loader success.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 160,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "DCP.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, package, loader, verification, or persistence failure.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.DONE_ZAP",
+          "node_type": "terminal",
+          "sequence": 165,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCP.VERIFY_ZAP"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The selected logical allocation is absent from complete history and from every captured historical effective date after a successful complete load.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCP.FAILED",
+          "node_type": "terminal",
+          "sequence": 170,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCP.HANDLE_ERROR"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The request stopped with a classified diagnostic and safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

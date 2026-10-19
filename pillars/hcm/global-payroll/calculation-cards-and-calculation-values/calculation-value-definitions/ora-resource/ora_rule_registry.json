@@ -1,0 +1,254 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_DEDUCTION_RANGES",
+      "task_name": "Calculation Value Definitions",
+      "start_node": "CVD.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "CVD.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CVD.RESOLVE_DEPENDENCIES",
+            "invalid": "CVD.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 405
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CVD.RESOLVE_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CVD.RESOLVE_REFERENCES",
+            "blocked": "CVD.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CVD.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation succeeds",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 177
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CVD.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CVD.APPLY_DEFAULTS",
+            "not_required": "CVD.APPLY_DEFAULTS",
+            "blocked": "CVD.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CVD.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependencies are classified and one or more exact references are required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 191
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CVD.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CVD.ENFORCE_DESIGN",
+            "not_required": "CVD.ENFORCE_DESIGN",
+            "invalid": "CVD.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CVD.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input, dependencies, and required references are ready",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CVD.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CVD.EXECUTION_GATE",
+            "noncompliant": "CVD.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CVD.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependencies, references, and defaults are ready for review",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 296
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CVD.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read_only_ready": "CVD.DONE_READ_ONLY",
+            "mutation_plan_ready": "CVD.READY_FOR_CONFIRMATION",
+            "blocked": "CVD.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CVD.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation, dependency, reference, default, and enforcement checks completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 168
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CVD.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A prior node reports invalid, blocked, unsupported, unauthorized, failed, stale, or uncertain",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 169
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CVD.READY_FOR_CONFIRMATION",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CVD.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "An immutable mutation plan is ready for a separately governed confirmation and execution workflow; no Fusion write occurred here",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 170
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CVD.DONE_READ_ONLY",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CVD.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The requested search/read result is complete and safely disclosed; no Fusion write occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 171
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Blocking, unsupported, stale, or failure details are safely classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 172
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

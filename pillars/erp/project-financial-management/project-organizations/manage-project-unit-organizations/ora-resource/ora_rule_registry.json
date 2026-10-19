@@ -1,0 +1,450 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PJF_MANAGE_PROJECT_UNIT_ORGANIZATIONS",
+      "task_name": "Manage Project Unit Organizations",
+      "start_node": "PUORG.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "PUORG.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PUORG.FIND_ORGANIZATION",
+            "status_requested": "PUORG.STATUS_REQUEST_GATE",
+            "invalid": "PUORG.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "For preparation validate every row and the whole batch; for a later explicit status request validate the retained same-target task/request and approved archive binding, then resume without discovery, generation or submission",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.FIND_ORGANIZATION",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PUORG.ROUTE_OPERATION",
+            "failure": "PUORG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUORG.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search exact name, resolve optional filters, fetch unfiltered classifications as needed, and return routing evidence",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.ROUTE_OPERATION",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "create_new": "PUORG.APPLY_DEFAULTS",
+            "use_existing_organization": "PUORG.RESOLVE_EXISTING_CLASSIFICATION",
+            "already_project_unit": "PUORG.RETURN_ALREADY_PROJECT_UNIT",
+            "selection_required": "PUORG.RETURN_ISSUES",
+            "failure": "PUORG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUORG.FIND_ORGANIZATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Derive exactly one action from complete organization-search evidence; never use a user-selected action",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.RESOLVE_EXISTING_CLASSIFICATION",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PUORG.APPLY_DEFAULTS",
+            "failure": "PUORG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUORG.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "USE_EXISTING_ORGANIZATION only: resolve the exact selected returned ClassificationCode to one organizationClassificationsLOV display label before defaults or HDL generation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "PUORG.RESOLVE_DEPENDENCIES",
+            "failure": "PUORG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUORG.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After DerivedAction, exact existing selection, and required existing-classification LOV resolution are complete",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PUORG.ENFORCE_DESIGN",
+            "missing": "PUORG.RETURN_ISSUES",
+            "conflict": "PUORG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUORG.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before generation and immutable HDL preview",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "PUORG.EXECUTION_GATE",
+            "blocked": "PUORG.RETURN_REFUSAL",
+            "failure": "PUORG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUORG.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Check eligibility before generation; for bulk, hold execution until every row passes and each action archive validates before preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "PUORG.RETURN_PREPARED",
+            "initiated": "PUORG.RETURN_IN_PROGRESS",
+            "persistence_failed": "PUORG.RETURN_ISSUES",
+            "not_initiated": "PUORG.RETURN_ISSUES",
+            "declined": "PUORG.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "PUORG.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only pre-upload Task Hook: complete preparation and verified preflight return prepared without approval or submission. Outer submission: require immutable preview, core.data-loader approval, one accepted initiation with a nonblank request ID, and persisted/registered acceptance binding plus run/token records; persistence failure preserves the known ID and stops without resubmission. No status reads; never entered on status resume",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.STATUS_REQUEST_GATE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "status_requested": "PUORG.LOAD_COMPLETION_GATE",
+            "invalid": "PUORG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUORG.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require a later explicit status request and registered durable acceptance binding matching project, target, task, request ID, approved archive hash and approval reference; missing, unregistered or mismatched evidence blocks, and this route never prepares or submits a load",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.LOAD_COMPLETION_GATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "terminal_success": "PUORG.VERIFY_POST_LOAD",
+            "terminal_failure": "PUORG.RETURN_ISSUES",
+            "nonterminal": "PUORG.RETURN_IN_PROGRESS",
+            "polling_timeout": "PUORG.RETURN_IN_PROGRESS",
+            "indeterminate": "PUORG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUORG.STATUS_REQUEST_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only on a later explicit status request obtain authoritative status/count/diagnostic evidence through core.data-loader for the retained same-target request ID; nonterminal status or timeout returns In Progress and waits for another explicit request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.VERIFY_POST_LOAD",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "created_verified": "PUORG.RETURN_CREATED",
+            "existing_verified": "PUORG.RETURN_EXISTING_DEFINED",
+            "mismatch": "PUORG.RETURN_ISSUES",
+            "failure": "PUORG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUORG.LOAD_COMPLETION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After terminal Data Loader success, confirm active classification and sequence-1 Project Unit attributes for every archive row before task success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.RETURN_CREATED",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PUORG.VERIFY_POST_LOAD"
+          ],
+          "on_failure": "continue",
+          "applies_when": "CREATE_NEW completed only after terminal load success and both post-load checks passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.RETURN_EXISTING_DEFINED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PUORG.VERIFY_POST_LOAD"
+          ],
+          "on_failure": "continue",
+          "applies_when": "USE_EXISTING_ORGANIZATION completed only after terminal load success and both post-load checks passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.RETURN_ALREADY_PROJECT_UNIT",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Matching active organization is already a Project Unit; report it and generate no HDL",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Correctable blocker, terminal load failure, indeterminate tracking, or failed post-load verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.RETURN_IN_PROGRESS",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Accepted initiation with registered local acceptance/run/token evidence ends the submission request without status reads; a requested nonterminal status or timeout also returns here after local status evidence recording. Task is not complete; resume the same request ID only on a later explicit status request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.RETURN_REFUSAL",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Unsupported operation or declined approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUORG.RETURN_PREPARED",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PUORG.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Read-only Task Hook preparation complete before loader approval; no submission, acceptance or post-load success is implied",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

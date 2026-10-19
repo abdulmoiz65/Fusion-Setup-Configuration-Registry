@@ -1,0 +1,71 @@
+{
+  "template": {
+    "comment": "Template for element create using HDL V6.3.0",
+    "metadata": {
+      "PayrollElementDetails": [
+        "LegislationCode",
+        "PrimaryClassificationName",
+        "SecondaryClassificationName",
+        "Category"
+      ],
+      "PayrollElementQuestionnaire": [
+        "RuleCode",
+        "Rule",
+        "Response"
+      ]
+    }
+  },
+  "payrollElementDetails": {
+   "legislationCode": "US",
+    "primaryClassificationName": "Information",
+    "secondaryClassificationName": "",
+    "category": "Standard"
+  },
+  "payrollElementQuestionnaire": [
+    {
+      "ruleCode": "SpecCurrency",
+      "rule": "Input Currency",
+      "response": "US Dollar"
+    },
+    {
+      "ruleCode": "Availability Rule",
+      "rule": "Should every person eligible for the element automatically receive it?",
+      "response": "No"
+    },
+    {
+      "ruleCode": "Hire Process",
+      "rule": "What is the earliest entry date for this element?",
+      "response": "First Standard Earning Date"
+    },
+    {
+      "ruleCode": "Terminate Process",
+      "rule": "What is the latest entry date for this element?",
+      "response": "Final Close"
+    },
+    {
+      "ruleCode": "Processing Level",
+      "rule": "At which employment level should this element be attached?",
+      "response": "Assignment level"
+    },
+    {
+      "ruleCode": "Processing Asg Level",
+      "rule": "Do you want the element to be processed at Payroll Assignment level?",
+      "response": "Yes"
+    },
+    {
+      "ruleCode": "Recurring Or NonRecurring",
+      "rule": "Does this element recur each payroll period, or does it require explicit entry?",
+      "response": "Recurring"
+    },
+    {
+      "ruleCode": "Multiple Entries",
+      "rule": "Can a person have more than one entry of this element in a payroll period?",
+      "response": "No"
+    },
+    {
+      "ruleCode": "CalculationRuleBasic",
+      "rule": "What is the calculation rule?",
+      "response": "Flat amount"
+    }
+  ]
+}

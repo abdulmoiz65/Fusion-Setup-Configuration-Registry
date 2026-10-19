@@ -1,0 +1,970 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_JOB_COSTING",
+      "task_name": "Costing of Jobs",
+      "start_node": "JCP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "JCP.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "JCP.RESOLVE_REFERENCES",
+            "invalid": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before any read-only lookup, HDL package preview, or durable artifact write.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "JCP.CHECK_DEPENDENCIES",
+            "blocked": "JCP.HANDLE_ERROR",
+            "failed": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For Create, use the date normalized in input preflight, resolve Job, jobsLov SetCode, and bounded LDG; call check_active_job_costing_record, stop on JSON boolean true, otherwise call check_future_job_costing_record, stop on a future date, and only after exact {\"result\":null} resolve KFF, Job qualifiers, and Value Sets before passing resolved to JCP.CHECK_DEPENDENCIES. An empty future body fails. Other operations retain their existing lookup and history routes.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 168
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "JCP.APPLY_DEFAULTS",
+            "blocked": "JCP.HANDLE_ERROR",
+            "unsupported": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After required read-only identities and state are resolved.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "JCP.ENFORCE_DESIGN",
+            "skipped": "JCP.ENFORCE_DESIGN",
+            "invalid": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply official HDL defaults before package preview.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "query_only": "JCP.VERIFY_QUERY",
+            "check_create_status": "JCP.RESULT_CREATE",
+            "check_update_status": "JCP.RESULT_UPDATE",
+            "check_correct_status": "JCP.RESULT_CORRECT",
+            "check_end_date_status": "JCP.RESULT_END_DATE",
+            "check_zap_status": "JCP.RESULT_ZAP",
+            "ready_create": "JCP.HDL_GATE_CREATE",
+            "ready_update": "JCP.HDL_GATE_UPDATE",
+            "ready_correct_merge": "JCP.HDL_GATE_CORRECT",
+            "ready_correct_child_delete": "JCP.HDL_GATE_CORRECT",
+            "ready_end_date": "JCP.HDL_GATE_END_DATE",
+            "ready_zap": "JCP.HDL_GATE_ZAP",
+            "blocked": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select exactly one discovery, explicit prior-handoff status/verification, Create, Update, one-action Correct MERGE or sealed child DELETE, End Date, or Zap branch. Missing Correct MERGE sequence input takes the blocked path and requests the value from the user.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.VERIFY_QUERY",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "JCP.DONE_QUERY",
+            "failed": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return a read-only discovery or verification result without a mutation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 169
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.DONE_QUERY",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.VERIFY_QUERY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The read-only query result is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.HDL_GATE_CREATE",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "JCP.SUBMITTED_CREATE",
+            "blocked": "JCP.HANDLE_ERROR",
+            "failed": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable Create archive passed source/schema and Task Hook validation, has fresh approval, and is handed once to core.data-loader.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.SUBMITTED_CREATE",
+          "node_type": "terminal",
+          "sequence": 85,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.HDL_GATE_CREATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The Create handoff was accepted. Report initiated or pending, explain that it can take several minutes, and offer a later status check.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.RESULT_CREATE",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "pending": "JCP.PENDING_CREATE",
+            "terminal_succeeded": "JCP.VERIFY_CREATE",
+            "terminal_failed": "JCP.HANDLE_ERROR",
+            "timed_out": "JCP.PENDING_CREATE",
+            "unknown": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only on an explicit user status or verification request, evaluate the exact Create handoff status.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.PENDING_CREATE",
+          "node_type": "terminal",
+          "sequence": 95,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.RESULT_CREATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The explicitly checked Create handoff is still pending or its observation window ended. Report a safe next-check path without polling.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.VERIFY_CREATE",
+          "node_type": "decision",
+          "sequence": 100,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "JCP.DONE_CREATE",
+            "failed": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.RESULT_CREATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "On an explicit user verification request, verify the exact Create effect only after the status check reports terminal success.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 170
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.DONE_CREATE",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.VERIFY_CREATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The verified Create effect is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.HDL_GATE_UPDATE",
+          "node_type": "decision",
+          "sequence": 120,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "JCP.SUBMITTED_UPDATE",
+            "blocked": "JCP.HANDLE_ERROR",
+            "failed": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable Update archive passed source/schema and Task Hook validation, has fresh approval, and is handed once to core.data-loader.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.SUBMITTED_UPDATE",
+          "node_type": "terminal",
+          "sequence": 125,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.HDL_GATE_UPDATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The Update handoff was accepted. Report initiated or pending, explain that it can take several minutes, and offer a later status check.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.RESULT_UPDATE",
+          "node_type": "decision",
+          "sequence": 130,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "pending": "JCP.PENDING_UPDATE",
+            "terminal_succeeded": "JCP.VERIFY_UPDATE",
+            "terminal_failed": "JCP.HANDLE_ERROR",
+            "timed_out": "JCP.PENDING_UPDATE",
+            "unknown": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only on an explicit user status or verification request, evaluate the exact Update handoff status.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.PENDING_UPDATE",
+          "node_type": "terminal",
+          "sequence": 135,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.RESULT_UPDATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The explicitly checked Update handoff is still pending or its observation window ended. Report a safe next-check path without polling.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.VERIFY_UPDATE",
+          "node_type": "decision",
+          "sequence": 140,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "JCP.DONE_UPDATE",
+            "failed": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.RESULT_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "On an explicit user verification request, verify the exact Update effect only after the status check reports terminal success.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 171
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.DONE_UPDATE",
+          "node_type": "terminal",
+          "sequence": 150,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.VERIFY_UPDATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The verified Update effect is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.HDL_GATE_CORRECT",
+          "node_type": "decision",
+          "sequence": 160,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "JCP.SUBMITTED_CORRECT",
+            "blocked": "JCP.HANDLE_ERROR",
+            "failed": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable one-action Correct MERGE or child DELETE archive passed source/schema and Task Hook validation, has fresh approval, and is handed once to core.data-loader. A MERGE has an explicit positive SubTypeSequence; a DELETE remains sealed to current state.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.SUBMITTED_CORRECT",
+          "node_type": "terminal",
+          "sequence": 165,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.HDL_GATE_CORRECT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The Correct handoff was accepted. Report initiated or pending, explain that it can take several minutes, and offer a later status check.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.RESULT_CORRECT",
+          "node_type": "decision",
+          "sequence": 170,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "pending": "JCP.PENDING_CORRECT",
+            "terminal_succeeded": "JCP.VERIFY_CORRECT",
+            "terminal_failed": "JCP.HANDLE_ERROR",
+            "timed_out": "JCP.PENDING_CORRECT",
+            "unknown": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only on an explicit user status or verification request, evaluate the exact Correct handoff status.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.PENDING_CORRECT",
+          "node_type": "terminal",
+          "sequence": 175,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.RESULT_CORRECT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The explicitly checked Correct handoff is still pending or its observation window ended. Report a safe next-check path without polling.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.VERIFY_CORRECT",
+          "node_type": "decision",
+          "sequence": 180,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "JCP.DONE_CORRECT",
+            "failed": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.RESULT_CORRECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "On an explicit user verification request, verify the exact Correct account effect only after the status check reports terminal success.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 172
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.DONE_CORRECT",
+          "node_type": "terminal",
+          "sequence": 190,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.VERIFY_CORRECT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The verified Correct account effect is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.HDL_GATE_END_DATE",
+          "node_type": "decision",
+          "sequence": 200,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "JCP.SUBMITTED_END_DATE",
+            "blocked": "JCP.HANDLE_ERROR",
+            "failed": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable End Date archive passed source/schema and Task Hook validation, has fresh approval, and is handed once to core.data-loader.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.SUBMITTED_END_DATE",
+          "node_type": "terminal",
+          "sequence": 205,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.HDL_GATE_END_DATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The End Date handoff was accepted. Report initiated or pending, explain that it can take several minutes, and offer a later status check.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.RESULT_END_DATE",
+          "node_type": "decision",
+          "sequence": 210,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "pending": "JCP.PENDING_END_DATE",
+            "terminal_succeeded": "JCP.VERIFY_END_DATE",
+            "terminal_failed": "JCP.HANDLE_ERROR",
+            "timed_out": "JCP.PENDING_END_DATE",
+            "unknown": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only on an explicit user status or verification request, evaluate the exact End Date handoff status.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.PENDING_END_DATE",
+          "node_type": "terminal",
+          "sequence": 215,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.RESULT_END_DATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The explicitly checked End Date handoff is still pending or its observation window ended. Report a safe next-check path without polling.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.VERIFY_END_DATE",
+          "node_type": "decision",
+          "sequence": 220,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "JCP.DONE_END_DATE",
+            "failed": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.RESULT_END_DATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "On an explicit user verification request, verify the exact End Date effect only after the status check reports terminal success.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 173
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.DONE_END_DATE",
+          "node_type": "terminal",
+          "sequence": 230,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.VERIFY_END_DATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The verified End Date effect is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.HDL_GATE_ZAP",
+          "node_type": "decision",
+          "sequence": 240,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "JCP.SUBMITTED_ZAP",
+            "blocked": "JCP.HANDLE_ERROR",
+            "failed": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable Zap archive contains every resolved child DELETE and the logical parent DELETE, passed source/schema and Task Hook validation, has fresh destructive approval, and is handed once to core.data-loader.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.SUBMITTED_ZAP",
+          "node_type": "terminal",
+          "sequence": 245,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.HDL_GATE_ZAP"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The Zap handoff was accepted. Report initiated or pending, explain that it can take several minutes, and offer a later status check.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.RESULT_ZAP",
+          "node_type": "decision",
+          "sequence": 250,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "pending": "JCP.PENDING_ZAP",
+            "terminal_succeeded": "JCP.VERIFY_ZAP",
+            "terminal_failed": "JCP.HANDLE_ERROR",
+            "timed_out": "JCP.PENDING_ZAP",
+            "unknown": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only on an explicit user status or verification request, evaluate the exact Zap handoff status.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.PENDING_ZAP",
+          "node_type": "terminal",
+          "sequence": 255,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.RESULT_ZAP"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The explicitly checked Zap handoff is still pending or its observation window ended. Report a safe next-check path without polling.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.VERIFY_ZAP",
+          "node_type": "decision",
+          "sequence": 260,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "JCP.DONE_ZAP",
+            "failed": "JCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JCP.RESULT_ZAP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "On an explicit user verification request, verify the complete logical-history Zap effect only after the status check reports terminal success.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 174
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.DONE_ZAP",
+          "node_type": "terminal",
+          "sequence": 270,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.VERIFY_ZAP"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The verified complete logical-history Zap effect is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 280,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "JCP.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, package, loader, verification, or persistence failure.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JCP.FAILED",
+          "node_type": "terminal",
+          "sequence": 290,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JCP.HANDLE_ERROR"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The request stopped with a classified diagnostic and safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

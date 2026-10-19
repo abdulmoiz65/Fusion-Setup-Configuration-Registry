@@ -1,0 +1,157 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_CONFIGURE_PAYROLL_LEGISLATION",
+      "task_name": "Configure Payroll Legislations",
+      "start_node": "CPL.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "CPL.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CPL.RESOLVE_FSM_READINESS",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPL.RESOLVE_FSM_READINESS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPL.APPLY_DEFAULTS",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CPL.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPL.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "not_applicable": "CPL.ENFORCE_FSM_CONTRACT",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CPL.RESOLVE_FSM_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An explicitly requested Add omits a documented default value or mapping set",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 634
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPL.ENFORCE_FSM_CONTRACT",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CPL.COMPLETE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CPL.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPL.COMPLETE",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPL.ENFORCE_FSM_CONTRACT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The selected FSM operation has passed every applicable validation, readiness, defaulting, and FSM design gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any validation, readiness, contract, design, or approval issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

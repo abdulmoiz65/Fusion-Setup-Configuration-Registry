@@ -1,0 +1,86 @@
+{
+  "description": "Curated solution and field-path guidance. Setup-specific values are dependencies and are intentionally not copied as reusable constants.",
+  "sourceSummary": {
+    "totalUseCases": 21,
+    "directBusinessRulesSolutions": 8,
+    "fieldPathGuidance": 7,
+    "candidateSolutions": 3,
+    "runtimeShapeGuidance": 1,
+    "setupGuidance": 1,
+    "verifiedReply": 1
+  },
+  "curatedIndexSummary": {
+    "totalUseCases": 5
+  },
+  "useCases": [
+    {
+      "id": "position-dff-pipe-validation",
+      "pages": [
+        "RequestPositionChange"
+      ],
+      "confidence": "Candidate with product limitation",
+      "requirement": "Reject a pipe character in selected Position DFF segments.",
+      "guidance": [
+        "Validate only DFF segments exposed under the verified positionsV2.positionsDFF branch.",
+        "Use the exact target-environment segment codes.",
+        "Do not add unavailable When and Why values to a Position Details rule without product support."
+      ]
+    },
+    {
+      "id": "position-valid-grades-range-default",
+      "pages": [
+        "ChangeLegalEmployer",
+        "Promote"
+      ],
+      "confidence": "Field path guidance",
+      "requirement": "Default an hourly or salaried value from a selected Position Grade range.",
+      "guidance": [
+        "Resolve the selected Position LOV under the page's owning object.",
+        "Normalize the selected position object before reading validGrades.",
+        "Map the final default to a target-environment code rather than a display label."
+      ]
+    },
+    {
+      "id": "salary-basis-grade-runtime-shape",
+      "pages": [
+        "ChangeAssignment",
+        "Promote",
+        "Transfer"
+      ],
+      "confidence": "Page-scoped verification required",
+      "requirement": "Default Salary Basis from Grade across flows with different LOV shapes.",
+      "guidance": [
+        "Read GradesLov through .$value() only when the exact page contract confirms that accessor.",
+        "Use the exact page's declared object shape; normalize an array only when a focused observation proves it.",
+        "Confirm that Proposed Salary Basis exposes a Business Rules value operation before requesting mapping values.",
+        "Treat salary-basis identifiers and grade groups as customer setup dependencies."
+      ]
+    },
+    {
+      "id": "swedish-national-identifier-format",
+      "pages": [
+        "AddPendingWorker"
+      ],
+      "confidence": "Candidate",
+      "requirement": "Validate a Swedish National Identifier as ten or twelve digits.",
+      "guidance": [
+        "Verify the exact national-identifier object and collection shape.",
+        "Normalize spaces and hyphens before format validation.",
+        "Return true only when a non-empty value fails the allowed format."
+      ]
+    },
+    {
+      "id": "hidden-flexfield-remediation",
+      "pages": [
+        "Multiple"
+      ],
+      "confidence": "Setup guidance",
+      "requirement": "Use a Flexfield segment that is hidden or disabled in page metadata.",
+      "guidance": [
+        "Prefer an Extension metadata overlay that shows or enables the valid segment.",
+        "Use Extra Referenced Fields only for a confirmed designer resolution problem.",
+        "Refresh DFF or EFF metadata before authoring the final expression."
+      ]
+    }
+  ]
+}

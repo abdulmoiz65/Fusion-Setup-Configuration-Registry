@@ -1,0 +1,106 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "EGO_MANAGE_ITEM_RULE_SETS",
+      "task_name": "Manage Item Rule Sets",
+      "start_node": "MIRS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "MIRS.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MIRS.READY",
+            "invalid": "MIRS.HANDLE_INPUT_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Manage Item Rule Sets input or generated archive is prepared or validated",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIRS.HANDLE_INPUT_ERROR",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MIRS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MIRS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Any documented input or generated archive validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIRS.READY",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MIRS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All documented input and generated archive validations pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIRS.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation issues are returned for correction",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

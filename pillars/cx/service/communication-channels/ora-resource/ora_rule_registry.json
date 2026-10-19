@@ -1,0 +1,1565 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "ORA_MANAGE_EMAIL_PROFILE_OPTIONS",
+      "task_name": "Manage Email Profile Options",
+      "start_node": "EMAILPROFILE.VALIDATE",
+      "nodes": [
+        {
+          "id": "EMAILPROFILE.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "EMAILPROFILE.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every email profile option request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EMAILPROFILE.LOOKUP",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "EMAILPROFILE.DESIGN",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EMAILPROFILE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Email profile definition and current value must be checked",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EMAILPROFILE.DESIGN",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "EMAILPROFILE.APPROVAL_GATE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EMAILPROFILE.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Email profile option design gates must be checked",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EMAILPROFILE.APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "EMAILPROFILE.READY",
+            "denied": "EMAILPROFILE.REFUSED"
+          },
+          "prerequisites": [
+            "EMAILPROFILE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact email profile-value FSM import artifact is ready for approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EMAILPROFILE.READY",
+          "node_type": "terminal",
+          "sequence": 41,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EMAILPROFILE.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit approval permits one validated email profile-value FSM package import through core.data-loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EMAILPROFILE.REFUSED",
+          "node_type": "terminal",
+          "sequence": 42,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EMAILPROFILE.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The email profile-value FSM import artifact was denied or approval was not granted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any email profile option gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_MANAGE_MCA_PROFILE_OPTIONS",
+      "task_name": "Manage MCA Profile Options",
+      "start_node": "MCA.VALIDATE",
+      "nodes": [
+        {
+          "id": "MCA.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MCA.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every MCA profile option request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCA.LOOKUP",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "MCA.DESIGN",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MCA.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "MCA profile definition and current value must be checked",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCA.DESIGN",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "MCA.APPROVAL_GATE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MCA.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "MCA profile option design gates must be checked",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCA.APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "MCA.READY",
+            "denied": "MCA.REFUSED"
+          },
+          "prerequisites": [
+            "MCA.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact MCA profile-value FSM import artifact is ready for approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCA.READY",
+          "node_type": "terminal",
+          "sequence": 41,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MCA.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit approval permits one validated MCA profile-value FSM package import through core.data-loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCA.REFUSED",
+          "node_type": "terminal",
+          "sequence": 42,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MCA.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The MCA profile-value FSM import artifact was denied or approval was not granted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any MCA profile option gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_INTERACTION_PROFILE_OPTIONS",
+      "task_name": "Manage Interaction Profile Options",
+      "start_node": "INTERACT.VALIDATE",
+      "nodes": [
+        {
+          "id": "INTERACT.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "INTERACT.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Interaction profile option request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INTERACT.LOOKUP",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "INTERACT.DESIGN",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "INTERACT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Interaction profile definition and current value must be checked",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INTERACT.DESIGN",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "INTERACT.APPROVAL_GATE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "INTERACT.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Interaction profile option design gates must be checked",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INTERACT.APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "INTERACT.READY",
+            "denied": "INTERACT.REFUSED"
+          },
+          "prerequisites": [
+            "INTERACT.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact Interaction profile-value FSM import artifact is ready for approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INTERACT.READY",
+          "node_type": "terminal",
+          "sequence": 41,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "INTERACT.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit approval permits one validated Interaction profile-value FSM package import through core.data-loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INTERACT.REFUSED",
+          "node_type": "terminal",
+          "sequence": 42,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "INTERACT.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Interaction profile-value FSM import artifact was denied or approval was not granted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Interaction profile option gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_COMM_CHANNELS",
+      "task_name": "Manage Communication Channels",
+      "start_node": "COMM.VALIDATE",
+      "nodes": [
+        {
+          "id": "COMM.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COMM.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Communication Channels request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COMM.LOOKUP",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "COMM.DESIGN",
+            "not_found": "COMM.DESIGN",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "COMM.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Email channel uniqueness must be checked",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COMM.DESIGN",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "read_ready": "COMM.DONE",
+            "mutation_ready": "COMM.APPROVAL_GATE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "COMM.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Email channel design gates must be checked",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COMM.APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "COMM.READY",
+            "denied": "COMM.REFUSED"
+          },
+          "prerequisites": [
+            "COMM.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact Communication Channels FSM import artifact is ready for approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COMM.READY",
+          "node_type": "terminal",
+          "sequence": 41,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COMM.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit approval permits one validated communication-channel FSM package import through core.data-loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COMM.REFUSED",
+          "node_type": "terminal",
+          "sequence": 42,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COMM.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The communication-channel FSM import artifact was denied or approval was not granted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COMM.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COMM.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only Communication Channels guidance is ready for handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Communication Channels gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_EMAIL_FILTERS",
+      "task_name": "Manage E-Mail Filters",
+      "start_node": "FILTER.VALIDATE",
+      "nodes": [
+        {
+          "id": "FILTER.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "list_valid": "FILTER.LIST",
+            "write_valid": "FILTER.PREFLIGHT",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every inbound message filter request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FILTER.LIST",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "FILTER.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FILTER.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A read-only inbound message filter collection request is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FILTER.PREFLIGHT",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "create_clear": "FILTER.DESIGN",
+            "update_clear": "FILTER.DESIGN",
+            "duplicate": "FILTER.DUPLICATE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FILTER.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create or update request needs lookup-code and alternate-key preflight",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FILTER.DESIGN",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "FILTER.APPROVAL_GATE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FILTER.PREFLIGHT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Inbound message filter design gates must be checked",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FILTER.APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "FILTER.READY",
+            "denied": "FILTER.REFUSED"
+          },
+          "prerequisites": [
+            "FILTER.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact inbound message filter payload is ready for approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FILTER.READY",
+          "node_type": "terminal",
+          "sequence": 51,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FILTER.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit approval permits one validated FSM package import through core.data-loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FILTER.DUPLICATE",
+          "node_type": "terminal",
+          "sequence": 52,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FILTER.PREFLIGHT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A duplicate inbound message filter blocks creation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FILTER.REFUSED",
+          "node_type": "terminal",
+          "sequence": 53,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FILTER.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The inbound message filter preview was denied or approval was not granted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FILTER.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FILTER.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Inbound message filter collection guidance is ready for preview handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any inbound message filter gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_INBOUND_EMAIL_PROFILE_OPTS",
+      "task_name": "Manage Inbound E-Mail Profile Options",
+      "start_node": "INBOUNDPROFILE.VALIDATE",
+      "nodes": [
+        {
+          "id": "INBOUNDPROFILE.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "INBOUNDPROFILE.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every inbound email profile option request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INBOUNDPROFILE.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "INBOUNDPROFILE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Inbound email profile option guidance is routed to Manage Email Profile Options",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any inbound email profile option gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_OMNI_CHANNEL_PROFILE_OPTS",
+      "task_name": "Manage Omnichannel Profile Options",
+      "start_node": "OMNI.VALIDATE",
+      "nodes": [
+        {
+          "id": "OMNI.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "OMNI.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Omnichannel profile option request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMNI.LOOKUP",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "OMNI.DESIGN",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "OMNI.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Omnichannel profile definition and current value must be checked",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMNI.DESIGN",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "OMNI.APPROVAL_GATE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "OMNI.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Omnichannel profile option design gates must be checked",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMNI.APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "OMNI.READY",
+            "denied": "OMNI.REFUSED"
+          },
+          "prerequisites": [
+            "OMNI.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact Omnichannel profile-value FSM import artifact is ready for approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMNI.READY",
+          "node_type": "terminal",
+          "sequence": 41,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OMNI.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit approval permits one validated Omnichannel profile-value FSM package import through core.data-loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMNI.REFUSED",
+          "node_type": "terminal",
+          "sequence": 42,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OMNI.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Omnichannel profile-value FSM import artifact was denied or approval was not granted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Omnichannel profile option gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_OUTBOUND_EMAIL_PROFILE_OPTS",
+      "task_name": "Manage Outbound E-Mail Profile Options",
+      "start_node": "OUTBOUNDPROFILE.VALIDATE",
+      "nodes": [
+        {
+          "id": "OUTBOUNDPROFILE.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "OUTBOUNDPROFILE.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every outbound email profile option request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OUTBOUNDPROFILE.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OUTBOUNDPROFILE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Outbound email profile option guidance is routed to Manage Email Profile Options",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any outbound email profile option gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_SERVICE_REQUEST_ASSIGNMENT_OBJECTS",
+      "task_name": "Manage Service Assignment Objects",
+      "start_node": "ASSIGNOBJ.VALIDATE",
+      "nodes": [
+        {
+          "id": "ASSIGNOBJ.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ASSIGNOBJ.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Service Assignment Objects request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_input_validation.md",
+                "line": 16,
+                "column": "Accepted Fields",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ASSIGNOBJ.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ASSIGNOBJ.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Assignment object guidance remains blocked until source contract is provided",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any assignment object gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "incomplete",
+        "blocking_reasons": [
+          {
+            "node_id": "ASSIGNOBJ.VALIDATE",
+            "file": "ora_input_validation.md",
+            "line": 16,
+            "column": "Accepted Fields",
+            "message": "Value is TBD"
+          }
+        ]
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_SERVICE_REQUEST_ASSIGNMENT_RULES",
+      "task_name": "Manage Service Assignment Rules",
+      "start_node": "ASSIGNRULE.VALIDATE",
+      "nodes": [
+        {
+          "id": "ASSIGNRULE.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ASSIGNRULE.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Service Assignment Rules request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_input_validation.md",
+                "line": 18,
+                "column": "Accepted Fields",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ASSIGNRULE.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ASSIGNRULE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Assignment rule guidance remains blocked until source contract is provided",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any assignment rule gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "incomplete",
+        "blocking_reasons": [
+          {
+            "node_id": "ASSIGNRULE.VALIDATE",
+            "file": "ora_input_validation.md",
+            "line": 18,
+            "column": "Accepted Fields",
+            "message": "Value is TBD"
+          }
+        ]
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_SERVICE_ZONES",
+      "task_name": "Manage Service Regions",
+      "start_node": "ZONE.VALIDATE",
+      "nodes": [
+        {
+          "id": "ZONE.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ZONE.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Service Regions request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_input_validation.md",
+                "line": 17,
+                "column": "Accepted Fields",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ZONE.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ZONE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Service region guidance remains blocked until source contract is provided",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any service region gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "incomplete",
+        "blocking_reasons": [
+          {
+            "node_id": "ZONE.VALIDATE",
+            "file": "ora_input_validation.md",
+            "line": 17,
+            "column": "Accepted Fields",
+            "message": "Value is TBD"
+          }
+        ]
+      }
+    }
+  ]
+}

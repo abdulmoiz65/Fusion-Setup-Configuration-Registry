@@ -1,0 +1,253 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HRA_MANAGE_SECTIONS",
+      "task_name": "Performance Template Sections",
+      "start_node": "HRA_SECTIONS.VALIDATE_CONFIG",
+      "nodes": [
+        {
+          "id": "HRA_SECTIONS.VALIDATE_CONFIG",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "HRA_SECTIONS.REFERENCE_LOOKUPS",
+            "invalid": "HRA_SECTIONS.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A Performance Template Sections configuration is being designed or reviewed",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HRA_SECTIONS.REFERENCE_LOOKUPS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "HRA_SECTIONS.CHECK_DEPENDENCIES",
+            "unresolved": "HRA_SECTIONS.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "HRA_SECTIONS.VALIDATE_CONFIG"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A direct REST request requires describe metadata or an existing section target",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HRA_SECTIONS.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "HRA_SECTIONS.APPLY_DEFAULTS",
+            "missing": "HRA_SECTIONS.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "HRA_SECTIONS.REFERENCE_LOOKUPS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Reference lookups completed",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HRA_SECTIONS.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "HRA_SECTIONS.ENFORCE_DEPENDENT_FIELD_INVARIANTS"
+          },
+          "prerequisites": [
+            "HRA_SECTIONS.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Dependencies are ready and documented defaults apply",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HRA_SECTIONS.ENFORCE_DEPENDENT_FIELD_INVARIANTS",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "conforming": "HRA_SECTIONS.ENFORCE_DESIGN",
+            "blocked": "HRA_SECTIONS.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "HRA_SECTIONS.APPLY_DEFAULTS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Every applicable dependent-field rule is normalized and compliant",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HRA_SECTIONS.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "conforming": "HRA_SECTIONS.READINESS_GATE",
+            "blocked": "HRA_SECTIONS.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "HRA_SECTIONS.ENFORCE_DEPENDENT_FIELD_INVARIANTS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A section design or direct REST request is ready for final review",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HRA_SECTIONS.READINESS_GATE",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "HRA_SECTIONS.DONE",
+            "not_ready": "HRA_SECTIONS.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "HRA_SECTIONS.ENFORCE_DESIGN"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Design enforcement passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HRA_SECTIONS.HANDLE_ISSUES",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "reported": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, dependency, invariant, design, readiness, or REST safeguard issue is found",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HRA_SECTIONS.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "HRA_SECTIONS.READINESS_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The documentation-backed design review is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Issues have been disclosed for correction",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

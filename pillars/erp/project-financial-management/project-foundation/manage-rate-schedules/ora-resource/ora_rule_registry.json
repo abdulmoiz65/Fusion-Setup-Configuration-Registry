@@ -1,0 +1,315 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PJF_MANAGE_LABOR_RATE_SCHEDULES",
+      "task_name": "Manage Rate Schedules",
+      "start_node": "RATE.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "RATE.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RATE.APPLY_DEFAULTS",
+            "warning": "RATE.APPLY_DEFAULTS",
+            "invalid": "RATE.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Raw phase only per Validation Phase Contract; never demand defaultable or reference-derived values before their nodes",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 193
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RATE.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "RATE.FIND_SCHEDULE",
+            "warning": "RATE.FIND_SCHEDULE",
+            "failure": "RATE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RATE.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply only already-proven defaults; defer reference-dependent defaults to supported resolution",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RATE.FIND_SCHEDULE",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RATE.RESOLVE_LINES",
+            "warning": "RATE.RESOLVE_LINES",
+            "failure": "RATE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RATE.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve applicable contracts; complete all supported checks and retain warnings",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 204
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RATE.RESOLVE_LINES",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RATE.VALIDATE_LINES",
+            "warning": "RATE.VALIDATE_LINES",
+            "failure": "RATE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RATE.FIND_SCHEDULE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve lines with separate membership, eligibility and representation results; defer input/policy judgments to their owners",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 205
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RATE.VALIDATE_LINES",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RATE.ROUTE_OPERATION",
+            "warning": "RATE.ROUTE_OPERATION",
+            "invalid": "RATE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RATE.RESOLVE_LINES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate resolved header/subtype/amount/date values; defaults and references precede this gate",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 194
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RATE.ROUTE_OPERATION",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "supported": "RATE.RESOLVE_DEPENDENCIES",
+            "warning": "RATE.RESOLVE_DEPENDENCIES",
+            "unsupported": "RATE.RETURN_REFUSAL",
+            "invalid": "RATE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RATE.VALIDATE_LINES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After supported checks; missing LOV authority alone is warning, not unsupported operation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 195
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RATE.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RATE.ENFORCE_DESIGN",
+            "warning": "RATE.ENFORCE_DESIGN",
+            "missing": "RATE.RETURN_ISSUES",
+            "conflict": "RATE.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "RATE.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preview/validation completes; unresolved LOV warning is not missing mutation artifact",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RATE.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "RATE.EXECUTION_GATE",
+            "warning": "RATE.EXECUTION_GATE",
+            "blocked": "RATE.RETURN_REFUSAL",
+            "failure": "RATE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RATE.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After every supported check, with unresolved warnings preserved",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RATE.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RATE.RETURN_SUCCESS",
+            "warning": "RATE.RETURN_SUCCESS",
+            "not_ready": "RATE.RETURN_ISSUES",
+            "declined": "RATE.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "RATE.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return supported validation with warnings; writes still require route-specific approval and other mutation gates",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RATE.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RATE.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Supported validation complete, with explicit warnings if any; do not claim skipped checks passed or a Fusion write occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RATE.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Correctable issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RATE.RETURN_REFUSAL",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Unsupported/unsafe/declined action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

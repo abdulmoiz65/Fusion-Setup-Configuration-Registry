@@ -1,0 +1,296 @@
+{
+  "schema_version": "2.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HZ_RUN_GEOCODE_LOADER",
+      "task_name": "Run Geocode Generation",
+      "start_node": "GEOCODE.COLLECT",
+      "nodes": [
+        {
+          "id": "GEOCODE.COLLECT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "collect_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "GEOCODE.VALIDATE",
+            "failure": "GEOCODE.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Run Geocode Generation request",
+          "source": {
+            "file": "ora_input_intake.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEOCODE.VALIDATE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "GEOCODE.DEFAULTS",
+            "failure": "GEOCODE.FAILED"
+          },
+          "prerequisites": [
+            "GEOCODE.COLLECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate environment, mode, optional parameters, polling options, and project path",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEOCODE.DEFAULTS",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "GEOCODE.READINESS",
+            "failure": "GEOCODE.FAILED"
+          },
+          "prerequisites": [
+            "GEOCODE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Normalize parameter values, effective defaults, polling options, and the fixed ESS job contract",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEOCODE.READINESS",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "GEOCODE.PREVIEW",
+            "blocked": "GEOCODE.BLOCKED",
+            "failure": "GEOCODE.FAILED"
+          },
+          "prerequisites": [
+            "GEOCODE.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve environment and core capability; disclose country and address selection behavior plus runtime access behavior without asking for setup confirmation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEOCODE.PREVIEW",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "preview_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "GEOCODE.AUTHORIZED",
+            "failure": "GEOCODE.FAILED"
+          },
+          "prerequisites": [
+            "GEOCODE.READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Emit an informational summary and continue without pausing; a direct run request plus resolved scope and monitoring must not trigger another prompt",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEOCODE.AUTHORIZED",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "approval_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "GEOCODE.EXECUTE",
+            "declined": "GEOCODE.REFUSED"
+          },
+          "prerequisites": [
+            "GEOCODE.PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Internally resolve the original direct imperative as authorization for one POST; never emit an Approve or Confirm prompt; tracking is read-only",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEOCODE.EXECUTE",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "success": "GEOCODE.DONE",
+            "timeout": "GEOCODE.TIMEOUT",
+            "failure": "GEOCODE.FAILED"
+          },
+          "prerequisites": [
+            "GEOCODE.AUTHORIZED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Submit once or track the selected existing request through core.fusion-api.ess-job-submitter",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEOCODE.DONE",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GEOCODE.EXECUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The ESS request reaches a terminal successful or warning status",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEOCODE.TIMEOUT",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GEOCODE.EXECUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The polling window ends while the request remains nonterminal",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEOCODE.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A prerequisite, environment, or approval-independent readiness gate blocks execution",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEOCODE.REFUSED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "The request is advisory, hypothetical, or does not authorize live execution",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEOCODE.FAILED",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Input, authentication, transport, Fusion API, ESS process, or persistence handling fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

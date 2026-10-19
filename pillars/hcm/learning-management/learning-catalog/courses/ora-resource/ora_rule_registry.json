@@ -1,0 +1,259 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_COURSES",
+      "task_name": "Manage Courses",
+      "start_node": "CRS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "CRS.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CRS.CHECK_DEPENDENCIES",
+            "invalid": "CRS.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "One or more Courses rows are normalized",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CRS.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CRS.RESOLVE_REFERENCE",
+            "not_required": "CRS.RESOLVE_REFERENCE",
+            "blocked": "CRS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CRS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Applicable dependencies are evaluated per selected Course row",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CRS.RESOLVE_REFERENCE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CRS.APPLY_DEFAULTS",
+            "not_required": "CRS.APPLY_DEFAULTS",
+            "blocked": "CRS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CRS.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An applicable documented course, person, default-resource, membership, or lifecycle lookup is required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CRS.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CRS.ENFORCE_DESIGN",
+            "preserved": "CRS.ENFORCE_DESIGN",
+            "blocked": "CRS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CRS.RESOLVE_REFERENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated Course rows omit only a documented safe default",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CRS.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CRS.EXECUTION_GATE",
+            "blocked": "CRS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CRS.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated rows have completed applicable dependencies, lookups, and defaults",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CRS.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "evidence_available": "CRS.EVALUATE_RESULT",
+            "blocked": "CRS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CRS.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validation-only result or exact approved row set is ready for evaluation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CRS.EVALUATE_RESULT",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "CRS.RETURN_SUCCESS",
+            "issues": "CRS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CRS.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation or mutation evidence is reconciled with the approved row previews",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CRS.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "CRS.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Course row is blocked by validation, dependency, lookup, design, approval, execution, timeout, or verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CRS.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CRS.EVALUATE_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every selected valid row is verified and row-specific results are available",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CRS.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CRS.HANDLE_ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more Course rows cannot safely complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

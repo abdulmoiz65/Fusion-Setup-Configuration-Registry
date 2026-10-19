@@ -1,0 +1,343 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HWM_MANAGE_TIME_DEVICE_EXPORT_DATA",
+      "task_name": "Time Device Export Data",
+      "start_node": "TDEDEXPORT_VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "TDEDEXPORT_VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TDEDEXPORT_SEARCH_EXPORT_DATA",
+            "invalid": "TDEDEXPORT_INPUT_BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEDEXPORT_SEARCH_EXPORT_DATA",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "selected": "TDEDEXPORT_APPLY_DEFAULTS",
+            "ready_for_create": "TDEDEXPORT_APPLY_DEFAULTS",
+            "multiple_matches": "TDEDEXPORT_SEARCH_MULTIPLE_MATCHES",
+            "no_matches": "TDEDEXPORT_SEARCH_NO_MATCHES",
+            "awaiting_create_choice": "TDEDEXPORT_AWAIT_DUPLICATE_CHOICE",
+            "blocked": "TDEDEXPORT_SEARCH_BLOCKED"
+          },
+          "prerequisites": [
+            "TDEDEXPORT_VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A criteria search, update, or create duplicate check is prepared",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEDEXPORT_APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "TDEDEXPORT_ENFORCE_SUMMARY",
+            "not_applicable": "TDEDEXPORT_ENFORCE_SUMMARY",
+            "blocked": "TDEDEXPORT_DEFAULTS_BLOCKED"
+          },
+          "prerequisites": [
+            "TDEDEXPORT_SEARCH_EXPORT_DATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A request passed input validation and the required criteria search",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEDEXPORT_ENFORCE_SUMMARY",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "TDEDEXPORT_PROVIDER_APPROVAL",
+            "blocked": "TDEDEXPORT_SUMMARY_BLOCKED"
+          },
+          "prerequisites": [
+            "TDEDEXPORT_APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation, criteria search, lookup resolution, defaulting or preservation, and Complete Summary generation have completed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEDEXPORT_PROVIDER_APPROVAL",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TDEDEXPORT_READY",
+            "blocked": "TDEDEXPORT_APPROVAL_BLOCKED"
+          },
+          "prerequisites": [
+            "TDEDEXPORT_ENFORCE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid business-only Complete Summary and Defaults Applied are displayed; provider execution and approval ownership remain unchanged",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEDEXPORT_READY",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEDEXPORT_PROVIDER_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input, criteria search, defaulting, and Complete Summary passed for handoff to the provider-owned approval process",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEDEXPORT_INPUT_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEDEXPORT_VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation failed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEDEXPORT_SEARCH_MULTIPLE_MATCHES",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEDEXPORT_SEARCH_EXPORT_DATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Multiple matching Time Device Export Data definitions were shown for user selection.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEDEXPORT_SEARCH_NO_MATCHES",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEDEXPORT_SEARCH_EXPORT_DATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "No Time Device Export Data definition met every supplied search criterion.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEDEXPORT_AWAIT_DUPLICATE_CHOICE",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEDEXPORT_SEARCH_EXPORT_DATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create request has a matching Time Device Export Data definition and awaits the user's use-existing or create-new choice.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEDEXPORT_SEARCH_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEDEXPORT_SEARCH_EXPORT_DATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Criteria search is incomplete, unavailable, or ambiguous.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEDEXPORT_DEFAULTS_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEDEXPORT_APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Defaulting could not complete safely.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEDEXPORT_SUMMARY_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEDEXPORT_ENFORCE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Business-only Complete Summary requirements were not met.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEDEXPORT_APPROVAL_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEDEXPORT_PROVIDER_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Provider approval gate is not ready.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

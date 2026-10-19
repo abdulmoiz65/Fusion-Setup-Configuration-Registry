@@ -1,0 +1,180 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_LOT_AND_SERIAL_ATTRIBUTE_MAPPINGS",
+      "task_name": "Lot and Serial Attribute Mappings",
+      "start_node": "LSAM.APPLY_ORGANIZATION_DEFAULT",
+      "nodes": [
+        {
+          "id": "LSAM.APPLY_ORGANIZATION_DEFAULT",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "LSAM.NORMALIZE_RADIO_VALUES",
+            "not_applicable": "LSAM.NORMALIZE_RADIO_VALUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before Attribute and Level normalization and Data Loader dependency checks.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LSAM.NORMALIZE_RADIO_VALUES",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LSAM.CHECK_DEPENDENCIES",
+            "invalid": "LSAM.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LSAM.APPLY_ORGANIZATION_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before Data Loader task validation or import preparation.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LSAM.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LSAM.DATA_LOADER_HANDOFF",
+            "blocked": "LSAM.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LSAM.NORMALIZE_RADIO_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After approved defaults and normalization and before Data Loader handoff for Lot and Serial Attribute Mappings.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LSAM.DATA_LOADER_HANDOFF",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LSAM.DONE",
+            "blocked": "LSAM.HANDLE_ERROR",
+            "failure": "LSAM.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LSAM.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before handing prepared data to core.data-loader for Inventory Descriptive Flexfield Context Mappings.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LSAM.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "LSAM.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any normalization, readiness, Data Loader, or authoring-evidence issue.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LSAM.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was classified and disclosed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LSAM.DONE",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LSAM.DATA_LOADER_HANDOFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "BO readiness passed and core.data-loader owns subsequent validation and execution.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

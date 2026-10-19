@@ -1,0 +1,349 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_MANAGE_PROFILE_ITEM_CATALOG",
+      "task_name": "Item Catalogs",
+      "start_node": "IC.CAPTURE_CONFIGURATION",
+      "nodes": [
+        {
+          "id": "IC.CAPTURE_CONFIGURATION",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "owned_or_expert": "IC.CHECK_DEPENDENCIES",
+            "ambiguous": "IC.RETURN_QUESTION",
+            "another_owner": "IC.RETURN_UNSUPPORTED",
+            "invalid": "IC.RETURN_BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Item Catalogs request, including direct values, blank-template rows, and existing-file intake",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IC.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "IC.CHECK_EXACT_EXISTING",
+            "proposal_only": "IC.ENFORCE_DESIGN",
+            "import_ready": "IC.VALIDATE_FSM_IMPORT",
+            "rating_model_unresolved": "IC.RETURN_BLOCKED",
+            "unsupported_child_rows": "IC.RETURN_UNSUPPORTED",
+            "unsupported_mutation": "IC.RETURN_UNSUPPORTED",
+            "blocked": "IC.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "IC.CAPTURE_CONFIGURATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported Item Catalogs proposal, catalog-only create request, phase-one anchored Content Item request, or explicit controlled new-set request has been normalized",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IC.CHECK_EXACT_EXISTING",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "exact": "IC.RETURN_EXACT_DUPLICATE",
+            "not_found": "IC.ENFORCE_DESIGN",
+            "multiple_exact": "IC.RETURN_BLOCKED",
+            "evidence_unavailable": "IC.ENFORCE_DESIGN"
+          },
+          "prerequisites": [
+            "IC.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Proposed catalog-create identities are evaluated, not unchanged parent anchors in child-create routes; those route through verify_item_catalog_fsm_import_contract. Unavailable optional export continues only where the selected capability permits it.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IC.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "IC.BUILD_REVIEW_PROPOSAL",
+            "blocked": "IC.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "IC.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A preliminary scope proposal or a not-found configuration proposal is ready for design enforcement",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IC.BUILD_REVIEW_PROPOSAL",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "IC.RETURN_PROPOSAL",
+            "confirmation_or_execution_requested": "IC.RETURN_UNSUPPORTED",
+            "blocked": "IC.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "IC.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A compliant review-only Item Catalogs proposal is ready to fingerprint",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IC.RETURN_PROPOSAL",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IC.BUILD_REVIEW_PROPOSAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A fingerprinted review-only proposal is returned with no package or execution authorization",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IC.RETURN_EXACT_DUPLICATE",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IC.CHECK_EXACT_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An exact existing catalog identifier is displayed; creation is blocked even when supplied values are equal",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IC.RETURN_QUESTION",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IC.CAPTURE_CONFIGURATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One concise supplied-object mapping question is required",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IC.RETURN_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input, evidence, exactness, dependency, design, package, or persistence is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IC.RETURN_UNSUPPORTED",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request is out of scope, uses unsupported rating-description or advanced child rows or mutation, or tries to bypass approval separation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IC.VALIDATE_FSM_IMPORT",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "IC.ENFORCE_FSM_IMPORT",
+            "invalid": "IC.RETURN_IMPORT_BLOCKED",
+            "changed": "IC.RETURN_IMPORT_BLOCKED"
+          },
+          "prerequisites": [
+            "IC.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A catalog-only, phase-one anchored Content Item, or explicit controlled new-set FSM package is presented to Task Hook for `core.data-loader` preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IC.ENFORCE_FSM_IMPORT",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "IC.RETURN_IMPORT_READY",
+            "blocked": "IC.RETURN_IMPORT_BLOCKED"
+          },
+          "prerequisites": [
+            "IC.VALIDATE_FSM_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact catalog-only, phase-one anchored Content Item, or explicit controlled new-set FSM package is being validated immediately before the Core Data Loader preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IC.RETURN_IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IC.ENFORCE_FSM_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Task validation returns exact catalog-only, phase-one anchored Content Item, or explicit controlled new-set package evidence to `core.data-loader` for immutable preview; no upload is authorized",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IC.RETURN_IMPORT_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The Item Catalog package or Data Loader handoff contract is invalid, stale, changed, or incomplete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

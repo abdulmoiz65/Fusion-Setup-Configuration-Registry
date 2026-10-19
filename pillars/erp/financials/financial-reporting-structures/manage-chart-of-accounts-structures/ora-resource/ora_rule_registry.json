@@ -1,0 +1,228 @@
+{
+  "schema_version": "2.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "GL_MANAGE_CHARTS_OF_ACCOUNTS",
+      "task_name": "Manage Chart of Accounts Structures",
+      "start_node": "COASTR.COLLECT",
+      "nodes": [
+        {
+          "id": "COASTR.COLLECT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "collect_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COASTR.VALIDATE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_intake.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COASTR.VALIDATE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COASTR.READY"
+          },
+          "prerequisites": [
+            "COASTR.COLLECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COASTR.READY",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "COASTR.LOOKUP"
+          },
+          "prerequisites": [
+            "COASTR.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COASTR.LOOKUP",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "absent": "COASTR.DEFAULT",
+            "match": "COASTR.DONE_MATCH"
+          },
+          "prerequisites": [
+            "COASTR.READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COASTR.DEFAULT",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "COASTR.BULK"
+          },
+          "prerequisites": [
+            "COASTR.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Object absent",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COASTR.BULK",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "process_bulk",
+          "execution_route": "fsm-task-csv-import",
+          "transitions": {
+            "ready": "COASTR.GATE"
+          },
+          "prerequisites": [
+            "COASTR.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Object absent",
+          "source": {
+            "file": "ora_bulk_intake.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COASTR.GATE",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "COASTR.READY_IMPORT"
+          },
+          "prerequisites": [
+            "COASTR.BULK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Object absent",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COASTR.READY_IMPORT",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COASTR.GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Readiness record passes",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COASTR.DONE_MATCH",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COASTR.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing definition matches",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,559 @@
+{
+  "schema_version": "2.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "FUN_ASSIGN_BUSINESS_UNIT_BUSINESS_FUNCTION",
+      "task_name": "Assign Business Unit Business Function",
+      "start_node": "BUF.INTAKE",
+      "nodes": [
+        {
+          "id": "BUF.INTAKE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "collect_input",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "BUF.VALIDATE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Business Unit function assignment is requested",
+          "source": {
+            "file": "ora_input_intake.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUF.VALIDATE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "BUF.DEPENDENCY",
+            "invalid": "BUF.BLOCKED"
+          },
+          "prerequisites": [
+            "BUF.INTAKE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Business Unit function request has been collected; validate BUF_FSM_ADD_FUNCTION_V1 eligibility or the selected maintenance contract before treating unexposed parent keys, dates or status as blockers.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUF.DEPENDENCY",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "BUF.READY",
+            "missing": "BUF.BLOCKED"
+          },
+          "prerequisites": [
+            "BUF.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation passes; select BUF_FSM_ADD_FUNCTION_V1 before maintenance-only evidence gates. Eligible additive technical omissions and unexposed ConfigurationStatus are not missing dependencies; enforce verified BU/foundation, permitted current reads and actual function dependencies.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUF.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BUF.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Required group or hard field validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUF.READY",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BUF.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Applicable validation, dependencies and the current task contract are verified; return readiness to the caller; this terminal does not authorize a write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "FUN_MANAGE_BUSINESS_UNIT",
+      "task_name": "Manage Business Unit",
+      "start_node": "BU.INTAKE",
+      "nodes": [
+        {
+          "id": "BU.INTAKE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "collect_input",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "BU.VALIDATE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Business Unit create or update is requested",
+          "source": {
+            "file": "ora_input_intake.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BU.VALIDATE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "BU.DEFAULT",
+            "invalid": "BU.BLOCKED"
+          },
+          "prerequisites": [
+            "BU.INTAKE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Business Unit request has been collected",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BU.DEFAULT",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "BU.IDEMPOTENCY",
+            "invalid": "BU.BLOCKED"
+          },
+          "prerequisites": [
+            "BU.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation passes; apply only an exactly resolved existing Default Set and documented Business Unit defaults when the user did not supply a value. A Create New request remains blocked until it is created through its separate approved route and re-resolved.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BU.IDEMPOTENCY",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "new": "BU.READY",
+            "existing-identical": "BU.NOOP",
+            "existing-different": "BU.BLOCKED",
+            "ambiguous": "BU.BLOCKED"
+          },
+          "prerequisites": [
+            "BU.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate the exact complete-page Business Unit lookup after set resolution; zero matches require no saved-parent comparison. For an existing candidate compare requested effective attributes using permitted current evidence; enforce the parent no-full-data-export policy.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BU.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Required group, set-resolution, or idempotency validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BU.NOOP",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BU.IDEMPOTENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An existing BU is identical; record no-op and do not import a duplicate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BU.READY",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BU.IDEMPOTENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All mandatory validation passes and the request is classified New",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "FUN_MANAGE_BUSINESS_UNIT_SET_ASSIGNMENT",
+      "task_name": "Manage Business Unit Set Assignment",
+      "start_node": "BUSA.INTAKE",
+      "nodes": [
+        {
+          "id": "BUSA.INTAKE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "collect_input",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "BUSA.VALIDATE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Business Unit set assignment is requested",
+          "source": {
+            "file": "ora_input_intake.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUSA.VALIDATE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "BUSA.READY",
+            "invalid": "BUSA.BLOCKED"
+          },
+          "prerequisites": [
+            "BUSA.INTAKE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A set-assignment request has been collected; select BUSA_FSM_ADD_OVERRIDE_V1 before maintenance-only key/date gates, verify current group/set/assignment state and preserve requested scope; otherwise validate BUSA_FSM_PARENT_KEY_V1 with its exact current values.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUSA.READY",
+          "node_type": "terminal",
+          "sequence": 3,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BUSA.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Applicable validation, dependencies and the current task contract are verified; return readiness to the caller; this terminal does not authorize a write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUSA.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BUSA.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Assignment values are missing or reference resolution is ambiguous",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "FUN_MANAGE_SERVICE_PROVIDER_RELATIONSHIPS",
+      "task_name": "Manage Service Provider Relationships",
+      "start_node": "SPR.INTAKE",
+      "nodes": [
+        {
+          "id": "SPR.INTAKE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "collect_input",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "SPR.VALIDATE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A service-provider relationship is requested",
+          "source": {
+            "file": "ora_input_intake.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPR.VALIDATE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SPR.DEFAULT",
+            "invalid": "SPR.BLOCKED"
+          },
+          "prerequisites": [
+            "SPR.INTAKE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A service-provider request has been collected; select SPR_FSM_ADD_RELATIONSHIP_V1 before technical-key/date and complete relationship-read gates; classify first-submission assurance separately from globally read absence; otherwise require supported maintenance evidence.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPR.DEFAULT",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "SPR.DEPENDENCY",
+            "invalid": "SPR.BLOCKED"
+          },
+          "prerequisites": [
+            "SPR.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation passes; select SPR_FSM_ADD_RELATIONSHIP_V1 and omit unprovided party keys/dates under its tested contract, or preserve supported maintenance keys. Never guess a suffix. Default omitted AnyProvidersFlag to N only in its matching contract; qualified active first link uses Y.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPR.DEPENDENCY",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "SPR.READY",
+            "missing": "SPR.BLOCKED"
+          },
+          "prerequisites": [
+            "SPR.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation/defaults pass; apply SPR_FSM_ADD_RELATIONSHIP_V1 current-workflow party/role/first-submission evidence and controlled pair, or the selected maintenance contract. Eligible technical omissions and unexposed saved-row reads are not missing dependencies.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPR.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Identity, role assignment, pair compatibility, defaulting, or duplicate validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPR.READY",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SPR.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Applicable validation, dependencies and the current task contract are verified; return readiness to the caller; this terminal does not authorize a write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

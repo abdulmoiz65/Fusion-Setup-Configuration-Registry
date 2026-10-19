@@ -1,0 +1,4 @@
+interface:
+  display_name: "Manual Fusion Tasks"
+  short_description: "Guide human-only Fusion setup tasks"
+  default_prompt: "Use $manual-tasks to guide me through Manage Trading Community Messages."

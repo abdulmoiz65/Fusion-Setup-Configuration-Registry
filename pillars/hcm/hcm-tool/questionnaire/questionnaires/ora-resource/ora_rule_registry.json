@@ -1,0 +1,182 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HRT_MANAGE_QUESTIONNAIRES",
+      "task_name": "Questionnaires",
+      "start_node": "QNR.VALIDATE-INPUT",
+      "nodes": [
+        {
+          "id": "QNR.VALIDATE-INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "QNR.CHECK-DEPENDENCIES",
+            "invalid": "QNR.HANDLE-ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QNR.CHECK-DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "QNR.APPLY-DEFAULTS",
+            "approval_required": "QNR.HANDLE-ISSUE",
+            "blocked": "QNR.HANDLE-ISSUE"
+          },
+          "prerequisites": [
+            "QNR.VALIDATE-INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve required dependencies and stop for explicit approval when an eligible reference has only suggested exact catalog candidates",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QNR.APPLY-DEFAULTS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied_or_not_needed": "QNR.ENFORCE-DESIGN",
+            "invalid_default_request": "QNR.HANDLE-ISSUE"
+          },
+          "prerequisites": [
+            "QNR.CHECK-DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependencies are ready",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QNR.ENFORCE-DESIGN",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "QNR.READY",
+            "blocked": "QNR.HANDLE-ISSUE"
+          },
+          "prerequisites": [
+            "QNR.APPLY-DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QNR.HANDLE-ISSUE",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "QNR.RETURN-ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, dependency, defaulting, or design check fails or requires explicit reference-value approval before continuation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QNR.READY",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QNR.ENFORCE-DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Questionnaires request is ready for immutable HDL preview, not authorized import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QNR.RETURN-ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QNR.HANDLE-ISSUE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An issue has been classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,237 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_CLASSROOMS",
+      "task_name": "Manage Classrooms",
+      "start_node": "CL.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "CL.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CL.RESOLVE_REFERENCES",
+            "invalid": "CL.BLOCKED",
+            "failure": "CL.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "After count-or-bulk intent and any required Excel-or-DAT choice are known, and after required and applicable optional fields have a value or explicit Skip",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CL.CHECK_DEPENDENCIES",
+            "selection_required": "CL.BLOCKED",
+            "blocked": "CL.BLOCKED",
+            "failure": "CL.FAILED"
+          },
+          "prerequisites": [
+            "CL.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the selected REST or Data Loader contract, each location, retained owner, retained contact, applicable Set, retained supplier, any explicitly supplied stable classroom number through findByClassroomNumber, and informational same-title candidates through findByKeyword",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "CL.APPLY_DEFAULTS",
+            "selection_required": "CL.BLOCKED",
+            "blocked": "CL.BLOCKED",
+            "failure": "CL.FAILED"
+          },
+          "prerequisites": [
+            "CL.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After route selection and all applicable route-contract, location, duplicate, and optional-reference lookups complete",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CL.ENFORCE_DESIGN",
+            "not_applicable": "CL.ENFORCE_DESIGN",
+            "blocked": "CL.BLOCKED",
+            "failure": "CL.FAILED"
+          },
+          "prerequisites": [
+            "CL.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply only the explicitly accepted Description default; preserve all other values and Skip decisions",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CL.APPROVAL_GATE",
+            "blocked": "CL.BLOCKED",
+            "failure": "CL.FAILED"
+          },
+          "prerequisites": [
+            "CL.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before displaying the route-specific REST payload or Data Loader artifact proposal",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "CL.READY",
+            "missing": "CL.BLOCKED",
+            "changed": "CL.BLOCKED",
+            "failure": "CL.FAILED"
+          },
+          "prerequisites": [
+            "CL.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Immediately before one direct REST POST or before handing the exact bulk source to core.data-loader's authoritative approval workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.READY",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CL.APPROVAL_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The selected route's current proposal or immutable artifact is approved and every selected classroom passes validation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Input, dependency, lookup, default, design, or approval blocks creation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.FAILED",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Validation or readiness evaluation fails unexpectedly",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,233 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "GL_MANAGE_LEDGER_SETS",
+      "task_name": "Manage Ledger Sets",
+      "start_node": "MLS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "MLS.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MLS.RESOLVE_REFERENCES",
+            "invalid": "MLS.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "All requested operations; reject UI execution and existing-set deletion intent locally before action preparation. Data Loader Task Hook validates the exact prepared candidate before upload.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MLS.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MLS.CHECK_DEPENDENCIES",
+            "blocked": "MLS.HANDLE_ERROR",
+            "failure": "MLS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MLS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run only applicable declared FSCR resolver contracts; never access Fusion UI. Inspect designated framework-acquired local evidence without an external call; perform declared GETs only at the selected external-validation step. Missing required framework evidence blocks.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 115
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MLS.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MLS.APPLY_DEFAULTS",
+            "blocked": "MLS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MLS.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate operation-specific dependencies using declared FSCR endpoint/export evidence; missing framework facts block without UI fallback, invented endpoints or implicit dependent-object creation.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MLS.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "MLS.ENFORCE_DESIGN",
+            "blocked": "MLS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MLS.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For create apply packaged explicit initialization, checked new identities, allowlisted scoped structural values and named omission rules; preserve omitted update values and never overwrite supplied business choices.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MLS.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "MLS.EXECUTION_GATE",
+            "blocked": "MLS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MLS.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate all applicable design rules, including framework-only execution, prohibition of existing-set deletion and parent-preserving candidate semantics, before core presents approval. No Fusion mutation occurs here.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MLS.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MLS.DONE",
+            "blocked": "MLS.HANDLE_ERROR",
+            "failure": "MLS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MLS.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate handoff readiness, artifact identity and passed framework-only/existing-set preservation gates only. UI execution, deletion or missing required framework evidence blocks handoff; never use another executor as a bypass. Pre-upload Task Hook must pass before core.data-loader renders approval; it does not require approval or import completion to validate. Review requires complete requested evidence.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MLS.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "MLS.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any applicable validation, lookup, dependency, default or design gate blocks.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MLS.DONE",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MLS.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return task validation passed or verified read-only review. A write request is ready for the core loader's approval/execution step; no write success is asserted.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MLS.FAILED",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MLS.HANDLE_ERROR"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return a classified blocker, sanitized evidence and safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

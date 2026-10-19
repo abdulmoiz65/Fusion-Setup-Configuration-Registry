@@ -1,0 +1,854 @@
+{
+  "schema_version": "ar-customers-contract-v1",
+  "classification": "Oracle Highly Restricted",
+  "task_code": "ORA_AR_MANAGE_CUSTOMER_UPLOADS",
+  "business_object": "customers",
+  "member": "ArUpdCustomers.csv",
+  "business_columns": 87,
+  "serialized_columns": 88,
+  "header": false,
+  "encoding": "utf-8",
+  "line_ending": "CRLF",
+  "trailer": "END",
+  "input_operations": [
+    "create",
+    "update",
+    "mixed"
+  ],
+  "operation_note": "These record requested intent for offline preview; field update coverage and existing-target behavior are not certified.",
+  "columns": [
+    {
+      "name": "ORIG_SOURCE_SYSTEM_NAME",
+      "position": 1,
+      "label": "*Source System",
+      "group": "Organization",
+      "required": true,
+      "max_characters": 80,
+      "length_basis": "26D AR_UPD_CUSTOMERS.ORIG_SOURCE_SYSTEM_NAME and HZ_ORIG_SYSTEMS_TL.ORIG_SYSTEM_NAME are VARCHAR2(80 CHAR); the distinct source code is 30 characters.",
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "PARTY_NUMBER",
+      "position": 2,
+      "label": "*Customer Number",
+      "group": "Organization",
+      "required": true,
+      "max_characters": 30,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "PARTY_ORIG_SYSTEM_REFERENCE",
+      "position": 3,
+      "label": "Customer Source Reference",
+      "group": "Organization",
+      "required": false,
+      "max_characters": 240,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "PARTY_NAME",
+      "position": 4,
+      "label": "*Customer Name",
+      "group": "Organization",
+      "required": true,
+      "max_characters": 360,
+      "max_utf8_bytes": 360
+    },
+    {
+      "name": "DUNS_NUMBER",
+      "position": 5,
+      "label": "D-U-N-S Number",
+      "group": "Organization",
+      "required": false,
+      "max_characters": 30,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "TAXPAYER_ID_NUM",
+      "position": 6,
+      "label": "Taxpayer ID",
+      "group": "Organization",
+      "required": false,
+      "max_characters": 20,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "TAXPAYER_REGISTRATION_NUM",
+      "position": 7,
+      "label": "Taxpayer Registration Number",
+      "group": "Organization",
+      "required": false,
+      "max_characters": 50,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "GSA_INDICATOR_FLAG",
+      "position": 8,
+      "label": "Customer GSA Indicator",
+      "group": "Organization",
+      "required": false,
+      "max_characters": 1,
+      "allowed_values": [
+        "Y",
+        "N"
+      ],
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ACCOUNT_NUMBER",
+      "position": 9,
+      "label": "*Account Number",
+      "group": "Customer Account",
+      "required": true,
+      "max_characters": 30,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "CUST_ORIG_SYSTEM_REFERENCE",
+      "position": 10,
+      "label": "Account Source Reference",
+      "group": "Customer Account",
+      "required": false,
+      "max_characters": 240,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ACCOUNT_DESCRIPTION",
+      "position": 11,
+      "label": "Account Description",
+      "group": "Customer Account",
+      "required": false,
+      "max_characters": 240,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ACCOUNT_TYPE",
+      "position": 12,
+      "label": "Account Type",
+      "group": "Customer Account",
+      "required": false,
+      "max_characters": 30,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ACCOUNT_ESTABLISHED_DATE",
+      "position": 13,
+      "label": "Account Established Date",
+      "group": "Customer Account",
+      "required": false,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "CUSTOMER_CLASS",
+      "position": 14,
+      "label": "Customer Class",
+      "group": "Customer Account",
+      "required": false,
+      "max_characters": 30,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "CUSTOMER_PROFILE_CLASS",
+      "position": 15,
+      "label": "Customer Profile Class",
+      "group": "Customer Account",
+      "required": false,
+      "max_characters": 30,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "PARTY_SITE_NUMBER",
+      "position": 16,
+      "label": "*Site Number",
+      "group": "Account Address",
+      "required": true,
+      "max_characters": 30,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "CUST_SITE_ORIG_SYS_REF",
+      "position": 17,
+      "label": "Site Source Reference",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 240,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "PARTY_SITE_NAME",
+      "position": 18,
+      "label": "Site Name",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 240,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ACCT_ADDRESS_SET_CODE",
+      "position": 19,
+      "label": "*Account Address Set",
+      "group": "Account Address",
+      "required": true,
+      "max_characters": 30,
+      "requiredness_basis": "Direct 26D Customers CSV loading: template required marker corroborated by AR_UPD_CUSTOMERS ACCT_ADDRESS_SET_CODE NOT NULL and controlled blank-set interface rejection ORA-01400. No local Common default; revalidate release changes.",
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "LOCATION_ORIG_SYSTEM_REFERENCE",
+      "position": 20,
+      "label": "*Location Source Reference",
+      "group": "Account Address",
+      "required": true,
+      "max_characters": 240,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ADDRESS_LINE_1",
+      "position": 21,
+      "label": "*Address Line 1",
+      "group": "Account Address",
+      "required": true,
+      "max_characters": 240,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ADDRESS_LINE_2",
+      "position": 22,
+      "label": "Address Line 2",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 240,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "MAIL_STOP",
+      "position": 23,
+      "label": "Mail Stop",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 60,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ADDRESS_LINE_3",
+      "position": 24,
+      "label": "Address Line 3",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 240,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ADDRESS_LINE_4",
+      "position": 25,
+      "label": "Address Line 4",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 240,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "BUILDING",
+      "position": 26,
+      "label": "Building",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 240,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "FLOOR_NUMBER",
+      "position": 27,
+      "label": "Floor Number",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 40,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "HOUSE_TYPE",
+      "position": 28,
+      "label": "Type of House",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 30,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ADDR_ELEMENT_ATTRIBUTE1",
+      "position": 29,
+      "label": "Additional Address Attribute 1",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ADDR_ELEMENT_ATTRIBUTE2",
+      "position": 30,
+      "label": "Additional Address Attribute 2",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ADDR_ELEMENT_ATTRIBUTE3",
+      "position": 31,
+      "label": "Additional Address Attribute 3",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ADDR_ELEMENT_ATTRIBUTE4",
+      "position": 32,
+      "label": "Additional Address Attribute 4",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ADDR_ELEMENT_ATTRIBUTE5",
+      "position": 33,
+      "label": "Additional Address Attribute 5",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "CITY",
+      "position": 34,
+      "label": "City",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 60,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "STATE",
+      "position": 35,
+      "label": "State",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 60,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "PROVINCE",
+      "position": 36,
+      "label": "Province",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 60,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "POSTAL_CODE",
+      "position": 37,
+      "label": "Postal Code",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 60,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "POSTAL_PLUS4_CODE",
+      "position": 38,
+      "label": "Postal Code Extension",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 10,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "COUNTY",
+      "position": 39,
+      "label": "County",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 60,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "COUNTRY",
+      "position": 40,
+      "label": "*Country",
+      "group": "Account Address",
+      "required": true,
+      "max_characters": 2,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ADDRESS_LINES_PHONETIC",
+      "position": 41,
+      "label": "Phonetic Address Line",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 560,
+      "max_utf8_bytes": 560
+    },
+    {
+      "name": "ADDRESS_DESCRIPTION",
+      "position": 42,
+      "label": "Address Description",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 1000,
+      "max_utf8_bytes": 1000
+    },
+    {
+      "name": "ADDR_SHORT_DESCRIPTION",
+      "position": 43,
+      "label": "Short Description",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 240,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "TIMEZONE_CODE",
+      "position": 44,
+      "label": "Time Zone Code",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 50,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "SALES_TAX_GEOCODE",
+      "position": 45,
+      "label": "Sales Tax Geocode",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 30,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "SALES_TAX_INSIDE_CITY_LIMITS",
+      "position": 46,
+      "label": "Sales Tax Inside City Limits",
+      "group": "Account Address",
+      "required": false,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "IDENTIFYING_ADDRESS_FLAG",
+      "position": 47,
+      "label": "*Identifying Address",
+      "group": "Account Address",
+      "required": true,
+      "max_characters": 1,
+      "allowed_values": [
+        "Y",
+        "N"
+      ],
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ACCT_SITE_LANGUAGE",
+      "position": 48,
+      "label": "Site Language",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 4,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "TRANSLATED_CUSTOMER_NAME",
+      "position": 49,
+      "label": "Translated Customer Name",
+      "group": "Account Address",
+      "required": false,
+      "max_characters": 360,
+      "max_utf8_bytes": 360
+    },
+    {
+      "name": "CUST_SITEUSE_ORIG_SYS_REF",
+      "position": 50,
+      "label": "*Site Purpose Source Reference",
+      "group": "Account Address Purposes",
+      "required": true,
+      "max_characters": 240,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "SITE_USE_CODE",
+      "position": 51,
+      "label": "*Purpose",
+      "group": "Account Address Purposes",
+      "required": true,
+      "max_characters": 30,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "SITE_USE_PRIMARY_FLAG",
+      "position": 52,
+      "label": "*Site Purpose Primary Indicator",
+      "group": "Account Address Purposes",
+      "required": true,
+      "max_characters": 1,
+      "allowed_values": [
+        "Y",
+        "N"
+      ],
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "SITE_LOCATION",
+      "position": 53,
+      "label": "Site",
+      "group": "Account Address Purposes",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "BILL_TO_CUST_SITE_REF",
+      "position": 54,
+      "label": "Bill-to Site",
+      "group": "Account Address Purposes",
+      "required": false,
+      "max_characters": 240,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "PAYMENT_METHOD_NAME",
+      "position": 55,
+      "label": "Payment Method",
+      "group": "Preferred Payment Method",
+      "required": false,
+      "max_characters": 30,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "PAYMENT_METHOD_PRIMARY_FLAG",
+      "position": 56,
+      "label": "Primary Payment Method Indicator",
+      "group": "Preferred Payment Method",
+      "required": false,
+      "max_characters": 1,
+      "allowed_values": [
+        "Y",
+        "N"
+      ],
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE_CATEGORY",
+      "position": 57,
+      "label": "Customer Account Descriptive Flexfield Context Prompt",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 30,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE1",
+      "position": 58,
+      "label": "Customer Account Descriptive Flexfield Segment 1",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE2",
+      "position": 59,
+      "label": "Customer Account Descriptive Flexfield Segment 2",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE3",
+      "position": 60,
+      "label": "Customer Account Descriptive Flexfield Segment 3",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE4",
+      "position": 61,
+      "label": "Customer Account Descriptive Flexfield Segment 4",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE5",
+      "position": 62,
+      "label": "Customer Account Descriptive Flexfield Segment 5",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE6",
+      "position": 63,
+      "label": "Customer Account Descriptive Flexfield Segment 6",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE7",
+      "position": 64,
+      "label": "Customer Account Descriptive Flexfield Segment 7",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE8",
+      "position": 65,
+      "label": "Customer Account Descriptive Flexfield Segment 8",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE9",
+      "position": 66,
+      "label": "Customer Account Descriptive Flexfield Segment 9",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE10",
+      "position": 67,
+      "label": "Customer Account Descriptive Flexfield Segment 10",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE11",
+      "position": 68,
+      "label": "Customer Account Descriptive Flexfield Segment 11",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE12",
+      "position": 69,
+      "label": "Customer Account Descriptive Flexfield Segment 12",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE13",
+      "position": 70,
+      "label": "Customer Account Descriptive Flexfield Segment 13",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE14",
+      "position": 71,
+      "label": "Customer Account Descriptive Flexfield Segment 14",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE15",
+      "position": 72,
+      "label": "Customer Account Descriptive Flexfield Segment 15",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE16",
+      "position": 73,
+      "label": "Customer Account Descriptive Flexfield Segment 16",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE17",
+      "position": 74,
+      "label": "Customer Account Descriptive Flexfield Segment 17",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE18",
+      "position": 75,
+      "label": "Customer Account Descriptive Flexfield Segment 18",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE19",
+      "position": 76,
+      "label": "Customer Account Descriptive Flexfield Segment 19",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE20",
+      "position": 77,
+      "label": "Customer Account Descriptive Flexfield Segment 20",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE21",
+      "position": 78,
+      "label": "Customer Account Descriptive Flexfield Segment 21",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE22",
+      "position": 79,
+      "label": "Customer Account Descriptive Flexfield Segment 22",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE23",
+      "position": 80,
+      "label": "Customer Account Descriptive Flexfield Segment 23",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE24",
+      "position": 81,
+      "label": "Customer Account Descriptive Flexfield Segment 24",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE25",
+      "position": 82,
+      "label": "Customer Account Descriptive Flexfield Segment 25",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE26",
+      "position": 83,
+      "label": "Customer Account Descriptive Flexfield Segment 26",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE27",
+      "position": 84,
+      "label": "Customer Account Descriptive Flexfield Segment 27",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE28",
+      "position": 85,
+      "label": "Customer Account Descriptive Flexfield Segment 28",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE29",
+      "position": 86,
+      "label": "Customer Account Descriptive Flexfield Segment 29",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    },
+    {
+      "name": "ATTRIBUTE30",
+      "position": 87,
+      "label": "Customer Account Descriptive Flexfield Segment 30",
+      "group": "Account Descriptive Flexfields",
+      "required": false,
+      "max_characters": 150,
+      "max_utf8_bytes": 255
+    }
+  ],
+  "loader_validation_gaps": [
+    {
+      "id": "AR-CITY-DOMAIN",
+      "category": "domain",
+      "member": "ArUpdCustomers.csv",
+      "columns": [
+        "SALES_TAX_INSIDE_CITY_LIMITS"
+      ],
+      "issue": "Worksheet describes 1/0; table reference describes Y/N; do not translate automatically.",
+      "consequence": "The loader may reject or interpret supplied data; some rows may persist. No atomicity or undocumented validation guarantee.",
+      "loader_handling": "Retain interface/product request IDs and row diagnostics; reconcile persisted results and obtain a new decision for corrections.",
+      "status": "unresolved",
+      "value_handling": "preserve",
+      "source_ids": [
+        "TEMPLATE26D",
+        "CONTROL26B"
+      ]
+    }
+  ],
+  "live_blockers": {
+    "AR-MAPPING-COMPATIBILITY": "Target-delivered template determines emitted layout; qualify the selected deployment and requested fields. Scoped authoring tests do not establish compatibility for other releases or every field boundary.",
+    "AR-OPERATION-OWNERSHIP": "Complete create/update/reuse matching, field mutability and existing-target effects require review.",
+    "AR-RECONCILIATION": "Authoritative persisted readback for every requested entity/value remains to be wired to the declared journey.",
+    "AR-CORE-READINESS": "Current central registration routing, privileges, immutable acceptance handoff and automatic-retry compatibility require verification."
+  },
+  "sources": {
+    "target_template_sha256": "8869f28164ab9d7fee2bfd52ea47b35c28b5901293d04af5ed8576b9eef6e261",
+    "public_template_release": "26B",
+    "target_template_release": "26D / 11.13.26.10.0",
+    "layout_basis": "Target-delivered Customers row-5 columns and reviewed Module1.GenCSV; headerless 87 fields then END. No macro executed.",
+    "validation_basis": "Target-template comments and asterisks; documented conflicts remain loader gaps. Macro NOT NULL comments alone do not impose unconditional requiredness. Address-set requiredness is corroborated by controlled 26D interface behavior and deployed table nullability.",
+    "control_file_sha256": "c85f853f709c7adaec364476049c74f21f00ac5fc5bfdf97b6e2a96c89a548e4",
+    "control_byte_length_basis": "Reviewed 26D ArUpdCustomers.ctl uses delimited CHAR fields without character-length semantics: four explicit byte lengths and default 255 bytes for other input fields. Independently confirmed ADDRESS_DESCRIPTION rejection at 3000 UTF-8 bytes within 1000 characters. Both character and UTF-8 byte ceilings apply; see references/control-byte-limits.md."
+  }
+}

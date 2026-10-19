@@ -1,0 +1,288 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_MANAGE_CSP_REASONS",
+      "task_name": "Candidate Selection Process Reasons",
+      "start_node": "CSPRSN.VALIDATE_INPUTS",
+      "nodes": [
+        {
+          "id": "CSPRSN.VALIDATE_INPUTS",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CSPRSN.CLASSIFY_REQUEST",
+            "missing": "CSPRSN.HANDLE_ISSUES",
+            "invalid": "CSPRSN.HANDLE_ISSUES",
+            "unsupported": "CSPRSN.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Candidate Selection Process Reasons request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSPRSN.CLASSIFY_REQUEST",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "authoring": "CSPRSN.RESOLVE_REFERENCES",
+            "verification": "CSPRSN.VERIFY_RESULT",
+            "unsupported": "CSPRSN.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSPRSN.VALIDATE_INPUTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classify the validated request as authoring, verification, or unsupported",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSPRSN.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "CSPRSN.CHECK_DEPENDENCIES",
+            "missing": "CSPRSN.HANDLE_ISSUES",
+            "ambiguous": "CSPRSN.HANDLE_ISSUES",
+            "failed": "CSPRSN.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSPRSN.CLASSIFY_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the current export and every reason, group, translation, or association identity needed by an authoring request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSPRSN.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CSPRSN.CHECK_DESIGN",
+            "not_required": "CSPRSN.CHECK_DESIGN",
+            "needs_input": "CSPRSN.HANDLE_ISSUES",
+            "unresolved": "CSPRSN.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSPRSN.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After the request's exact identities and current task export resolve",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSPRSN.CHECK_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CSPRSN.VALIDATE_PACKAGE",
+            "blocked": "CSPRSN.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSPRSN.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supported authoring request after dependency readiness",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSPRSN.VALIDATE_PACKAGE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CSPRSN.DONE_AUTHORING",
+            "invalid": "CSPRSN.HANDLE_ISSUES",
+            "unsupported": "CSPRSN.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSPRSN.CHECK_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A candidate FSM CSV package has been authored and must pass the immutable handoff gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSPRSN.VERIFY_RESULT",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "CSPRSN.DONE_VERIFIED",
+            "failed": "CSPRSN.HANDLE_ISSUES",
+            "partial": "CSPRSN.HANDLE_ISSUES",
+            "uncertain": "CSPRSN.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSPRSN.CLASSIFY_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Reconcile a supplied post-import export or sanitized ProcessLog with the intended delta and preserved baseline",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSPRSN.HANDLE_ISSUES",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CSPRSN.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, identity, lookup, dependency, design, package, authorization, process, or verification issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSPRSN.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSPRSN.HANDLE_ISSUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An issue was safely classified and returned",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSPRSN.DONE_AUTHORING",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSPRSN.VALIDATE_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated immutable authoring package and reconciliation plan are ready for the Core Data Loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSPRSN.DONE_VERIFIED",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSPRSN.VERIFY_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Supplied post-import evidence was reconciled with the intended delta and preserved baseline",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

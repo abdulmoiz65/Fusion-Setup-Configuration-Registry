@@ -1,0 +1,181 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_EXM_MANAGE_AUTO_SUBMISSION_AND_MATCHING_OPTIONS",
+      "task_name": "Manage Auto Submission and Matching Options",
+      "start_node": "AUTO_VALIDATE",
+      "nodes": [
+        {
+          "id": "AUTO_VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "AUTO_DEPENDENCIES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Task validation before any Data Loader handoff",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AUTO_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "AUTO_LOOKUPS"
+          },
+          "prerequisites": [
+            "AUTO_VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Task validation before any Data Loader handoff",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AUTO_LOOKUPS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "passed": "AUTO_DEFAULTS"
+          },
+          "prerequisites": [
+            "AUTO_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Task validation before any Data Loader handoff",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AUTO_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "AUTO_DESIGN"
+          },
+          "prerequisites": [
+            "AUTO_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Task validation before any Data Loader handoff",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AUTO_DESIGN",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "AUTO_HANDOFF"
+          },
+          "prerequisites": [
+            "AUTO_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Task validation before any Data Loader handoff",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AUTO_HANDOFF",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "AUTO_RETURN"
+          },
+          "prerequisites": [
+            "AUTO_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Task validation before any Data Loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AUTO_RETURN",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AUTO_HANDOFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All task-rule gates passed; return validation results only",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "result-terminal",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

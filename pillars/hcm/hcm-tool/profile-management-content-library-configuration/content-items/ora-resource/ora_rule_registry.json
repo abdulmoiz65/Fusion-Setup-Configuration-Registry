@@ -1,0 +1,723 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HRT_MANAGE_PROFILE_CONTENT_ITEMS",
+      "task_name": "Content Items",
+      "start_node": "CI.CAPTURE_CONFIGURATION",
+      "nodes": [
+        {
+          "id": "CI.CAPTURE_CONFIGURATION",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CI.CHECK_DEPENDENCIES",
+            "ambiguous": "CI.RETURN_QUESTION",
+            "unsupported": "CI.RETURN_UNSUPPORTED",
+            "invalid": "CI.RETURN_BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Content Items request, including direct values, blank-template rows, and existing-file intake",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CI.SELECT_EVIDENCE_PROVIDER",
+            "proposal_only": "CI.ENFORCE_DESIGN",
+            "import_ready": "CI.VALIDATE_FSM_IMPORT",
+            "item_catalog_fsm_import_ready": "CI.HANDOFF_ITEM_CATALOG_FSM",
+            "hdl_import_ready": "CI.RETURN_UNSUPPORTED",
+            "goal_hdl_import_ready": "CI.VALIDATE_GOAL_FALLBACK",
+            "evidence_unavailable": "CI.RETURN_BLOCKED",
+            "unsupported_mutation": "CI.RETURN_UNSUPPORTED",
+            "blocked": "CI.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.CAPTURE_CONFIGURATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported supplied Content Items configuration review, exact review, or create-only import request is being resolved",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.SELECT_EVIDENCE_PROVIDER",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "fsm_export": "CI.CHECK_EXACT_EXISTING",
+            "catalog_rest": "CI.CHECK_REST_EXACT_EXISTING",
+            "unregistered": "CI.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact current Content Item evidence is required",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.CHECK_REST_EXACT_EXISTING",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CI.CHECK_EXACT_EXISTING",
+            "evidence_unavailable": "CI.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.SELECT_EVIDENCE_PROVIDER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A registered enhanced-profile non-GOAL context selected CATALOG_REST",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.CHECK_EXACT_EXISTING",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "exact_from_customer": "CI.RETURN_EXACT_DUPLICATE",
+            "exact_from_seeded": "CI.RETURN_BLOCKED",
+            "exact_from_rest": "CI.RETURN_EXACT_DUPLICATE",
+            "not_found": "CI.ENFORCE_DESIGN",
+            "multiple_exact": "CI.RETURN_BLOCKED",
+            "evidence_unavailable": "CI.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.SELECT_EVIDENCE_PROVIDER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected provider returned complete normalized exact evidence and the owning type is exact",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CI.BUILD_REVIEW_PROPOSAL",
+            "blocked": "CI.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A preliminary supplied-configuration scope or not-found configuration proposal is being prepared",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.BUILD_REVIEW_PROPOSAL",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "CI.RETURN_PROPOSAL",
+            "confirmation_or_execution_requested": "CI.RETURN_UNSUPPORTED",
+            "blocked": "CI.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A compliant review-only Content Items proposal is ready to fingerprint",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.RETURN_PROPOSAL",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CI.BUILD_REVIEW_PROPOSAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A fingerprinted review-only proposal is returned with no execution authorization",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.RETURN_EXACT_DUPLICATE",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CI.CHECK_EXACT_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An actual matched existing item identifier is displayed and creation is blocked; no reuse recommendation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.RETURN_QUESTION",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CI.CAPTURE_CONFIGURATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One concise technical-scope clarification is required",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.RETURN_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input, evidence, exactness, dependency, design, or persistence is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.RETURN_UNSUPPORTED",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request is out of scope, uses an unsupported object/mutation, or bypasses the approved create-only route",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.VALIDATE_FSM_IMPORT",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CI.ENFORCE_FSM_IMPORT",
+            "invalid": "CI.RETURN_IMPORT_BLOCKED",
+            "changed": "CI.RETURN_IMPORT_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create-only Content Items package is presented to Task Hook for core.data-loader preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.ENFORCE_FSM_IMPORT",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CI.RETURN_IMPORT_READY",
+            "blocked": "CI.RETURN_IMPORT_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.VALIDATE_FSM_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact create-only Content Items FSM package is being validated immediately before the Core Data Loader preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.RETURN_IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CI.ENFORCE_FSM_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Task validation returns the exact create-only package evidence to core.data-loader for immutable preview; no upload is authorized",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.RETURN_IMPORT_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The create-only package or Data Loader handoff contract is invalid, stale, changed, unsupported, or incomplete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.RESOLVE_HDL_ITEM_CATALOG",
+          "node_type": "decision",
+          "sequence": 17,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "one_exact_catalog_zero_item_matches": "CI.VALIDATE_HDL_IMPORT",
+            "catalog_missing": "CI.RETURN_HDL_IMPORT_BLOCKED",
+            "catalog_ambiguous": "CI.RETURN_HDL_IMPORT_BLOCKED",
+            "item_exists": "CI.RETURN_HDL_IMPORT_BLOCKED",
+            "evidence_unavailable": "CI.RETURN_HDL_IMPORT_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Historical regression only, unreachable from the current V1 start nodes: an enhanced-profile catalog-bound ContentItem V2 create requires an exact active Item Catalog and the exact provider-specific zero-match and lifecycle receipt",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.VALIDATE_HDL_IMPORT",
+          "node_type": "decision",
+          "sequence": 18,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CI.ENFORCE_HDL_IMPORT",
+            "invalid": "CI.RETURN_HDL_IMPORT_BLOCKED",
+            "changed": "CI.RETURN_HDL_IMPORT_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.RESOLVE_HDL_ITEM_CATALOG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An enhanced-profile create-only ContentItem V2 HDL package is presented to Task Hook for core.data-loader preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.ENFORCE_HDL_IMPORT",
+          "node_type": "decision",
+          "sequence": 19,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CI.RETURN_HDL_IMPORT_READY",
+            "blocked": "CI.RETURN_HDL_IMPORT_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.VALIDATE_HDL_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact enhanced-profile create-only ContentItem V2 HDL package is being validated immediately before the Core Data Loader preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.RETURN_HDL_IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CI.ENFORCE_HDL_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Task validation returns the exact create-only ContentItem V2 HDL package evidence to core.data-loader for immutable preview; no upload is authorized",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.HANDOFF_ITEM_CATALOG_FSM",
+          "node_type": "decision",
+          "sequence": 21,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "eligible": "CI.RETURN_ITEM_CATALOG_FSM_HANDOFF",
+            "provider_unavailable": "CI.RETURN_ITEM_CATALOG_FSM_BLOCKED",
+            "duplicate_or_anchor_mismatch": "CI.RETURN_ITEM_CATALOG_FSM_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_item_catalog_fsm_handoff for exact normalized values and either an eligible narrow existing-parent provider or the independently registered complete new-set capability, including SKILL. This local handoff does not build, call Fusion, or upload a package.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.VALIDATE_GOAL_FALLBACK",
+          "node_type": "decision",
+          "sequence": 22,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "eligible": "CI.RESOLVE_GOAL_HDL_EVIDENCE",
+            "strict_fsm_only": "CI.RETURN_HDL_IMPORT_BLOCKED",
+            "unselected": "CI.RETURN_HDL_IMPORT_BLOCKED",
+            "blocked": "CI.RETURN_HDL_IMPORT_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Locally validate an explicit verified GOAL exception against the complete reviewed request and not_submitted execution history; no external call, package construction or approval is performed",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.RESOLVE_GOAL_HDL_EVIDENCE",
+          "node_type": "decision",
+          "sequence": 23,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "dual_zero_match_certification_ready": "CI.VALIDATE_GOAL_HDL_IMPORT",
+            "verified_general_use_ready": "CI.VALIDATE_GOAL_HDL_IMPORT",
+            "duplicate": "CI.RETURN_HDL_IMPORT_BLOCKED",
+            "evidence_unavailable": "CI.RETURN_HDL_IMPORT_BLOCKED",
+            "wrong_lifecycle": "CI.RETURN_HDL_IMPORT_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.VALIDATE_GOAL_FALLBACK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An explicitly selected verified enhanced-profile GOAL ContentItem V2 exception locally evaluates the exact provider lifecycle and a reopened fresh complete GOAL FSM dual-key receipt; it performs no REST lookup",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.VALIDATE_GOAL_HDL_IMPORT",
+          "node_type": "decision",
+          "sequence": 24,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CI.ENFORCE_GOAL_HDL_IMPORT",
+            "invalid": "CI.RETURN_HDL_IMPORT_BLOCKED",
+            "changed": "CI.RETURN_HDL_IMPORT_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.RESOLVE_GOAL_HDL_EVIDENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An explicit enhanced-profile GOAL provider-certification or verified general-use HDL package is presented to Task Hook for core.data-loader preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.ENFORCE_GOAL_HDL_IMPORT",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CI.RETURN_GOAL_HDL_IMPORT_READY",
+            "blocked": "CI.RETURN_HDL_IMPORT_BLOCKED"
+          },
+          "prerequisites": [
+            "CI.VALIDATE_GOAL_HDL_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact enhanced-profile GOAL lifecycle-governed ContentItem V2 HDL package is being validated immediately before the Core Data Loader preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.RETURN_GOAL_HDL_IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 26,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CI.ENFORCE_GOAL_HDL_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Task validation returns the exact lifecycle-gated GOAL ContentItem V2 HDL package evidence to core.data-loader for immutable preview; no upload is authorized",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.RETURN_HDL_IMPORT_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 27,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The HDL package, provider lifecycle, Item Catalog or GOAL FSM evidence, zero-match lock, metadata validation, or Data Loader handoff is invalid, stale, changed, ambiguous, duplicate, or incomplete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.RETURN_ITEM_CATALOG_FSM_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 28,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CI.HANDOFF_ITEM_CATALOG_FSM"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Content Items returns the approved business definition and evidence to Item Catalogs. Item Catalogs owns the FSM package, Task Hook task identity, Data Loader preview, and parent-no-drift readback; no upload is authorized here.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CI.RETURN_ITEM_CATALOG_FSM_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 29,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CI.HANDOFF_ITEM_CATALOG_FSM"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected narrow or independent new-set Item Catalog capability, scope, target or required bindings are invalid. Missing optional pre-import export is not itself a blocker. Stop without falling back to HDL, creating a package, or uploading.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

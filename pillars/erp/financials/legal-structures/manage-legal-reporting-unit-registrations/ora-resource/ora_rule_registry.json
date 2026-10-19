@@ -1,0 +1,231 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "XLE_MANAGE_LEGAL_REPORTING_UNIT_REGISTRATIONS",
+      "task_name": "Manage Legal Reporting Unit Registrations",
+      "start_node": "LRUR.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "LRUR.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LRUR.RESOLVE_REFERENCES",
+            "invalid": "LRUR.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before any lookup or package preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRUR.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LRUR.CHECK_DEPENDENCIES",
+            "blocked": "LRUR.HANDLE_ERROR",
+            "failure": "LRUR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LRUR.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve every applicable local and live reference",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRUR.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LRUR.APPLY_DEFAULTS",
+            "blocked": "LRUR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LRUR.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After reference resolution",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRUR.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "LRUR.ENFORCE_DESIGN",
+            "blocked": "LRUR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LRUR.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After dependencies are ready",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRUR.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "LRUR.PACKAGE_PREVIEW_GATE",
+            "blocked": "LRUR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LRUR.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before final-package readiness validation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRUR.PACKAGE_PREVIEW_GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LRUR.READY_FOR_DATA_LOADER_PREVIEW",
+            "blocked": "LRUR.HANDLE_ERROR",
+            "failure": "LRUR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LRUR.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After the task SKILL.md local workflow has produced the exact final immutable FSM ZIP and immediately before core.data-loader builds its preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRUR.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "LRUR.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, dependency, default, enforcement, or package-readiness failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRUR.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRUR.READY_FOR_DATA_LOADER_PREVIEW",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LRUR.PACKAGE_PREVIEW_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All task rules and final-package readiness checks passed; the central Data Loader preview has not yet been created or approved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

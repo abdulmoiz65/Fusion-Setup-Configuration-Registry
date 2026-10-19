@@ -1,0 +1,84 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_CSO_CONTENT_TYPES_INDEXING_MGMT_REDWOOD",
+      "task_name": "Manage Knowledge Content Types Redwood",
+      "start_node": "CONTENT_TYPES_REDWOOD.BASELINE_CONTRACT",
+      "nodes": [
+        {
+          "id": "CONTENT_TYPES_REDWOOD.BASELINE_CONTRACT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CONTENT_TYPES_REDWOOD.COMPLETE",
+            "unavailable_or_unclear": "CONTENT_TYPES_REDWOOD.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A content type create or update is requested",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CONTENT_TYPES_REDWOOD.COMPLETE",
+          "node_type": "terminal",
+          "sequence": 2,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CONTENT_TYPES_REDWOOD.BASELINE_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The baseline package structure and required relationships are clear and all required validation passes",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CONTENT_TYPES_REDWOOD.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 3,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CONTENT_TYPES_REDWOOD.BASELINE_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The baseline is unavailable or a required package relationship remains unclear",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

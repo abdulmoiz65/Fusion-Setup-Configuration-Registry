@@ -1,0 +1,298 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PJO_MANAGE_PROJECT_PLAN_TYPES",
+      "task_name": "Manage Project Plan Types",
+      "start_node": "PJO.PPT.DEFAULTS",
+      "nodes": [
+        {
+          "id": "PJO.PPT.DEFAULTS",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted-or-preserved": "PJO.PPT.VALIDATE_INPUT",
+            "unresolved": "PJO.PPT.INPUT_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Apply only documented omitted-field defaults for a new PROJECT_PLAN; otherwise preserve supplied/current values and continue",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 169
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PJO.PPT.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PJO.PPT.READINESS",
+            "invalid": "PJO.PPT.INPUT_ISSUES"
+          },
+          "prerequisites": [
+            "PJO.PPT.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Any assisted request for Manage Project Plan Types",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 317
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PJO.PPT.READINESS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PJO.PPT.RESOLVE_LOVS",
+            "blocked": "PJO.PPT.ROUTE_ISSUES"
+          },
+          "prerequisites": [
+            "PJO.PPT.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Any validated request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PJO.PPT.RESOLVE_LOVS",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "locally-resolved": "PJO.PPT.DESIGN_GATE",
+            "live-required": "PJO.PPT.LIVE_LOVS",
+            "unresolved-nonblocking": "PJO.PPT.DESIGN_GATE",
+            "invalid": "PJO.PPT.ROUTE_ISSUES"
+          },
+          "prerequisites": [
+            "PJO.PPT.READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate supported local checks and record unsupported-reference warnings; select live-required whenever any supported live check remains, even when other checks are unresolved; otherwise continue to design",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 484
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PJO.PPT.LIVE_LOVS",
+          "node_type": "step",
+          "sequence": 26,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PJO.PPT.DESIGN_GATE",
+            "unresolved-nonblocking": "PJO.PPT.DESIGN_GATE",
+            "invalid": "PJO.PPT.ROUTE_ISSUES"
+          },
+          "prerequisites": [
+            "PJO.PPT.RESOLVE_LOVS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Execute applicable Live Lookups through their declared read-only adapters, then evaluate dependent resolvers for supported references; no static field runs externally",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 485
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PJO.PPT.DESIGN_GATE",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "PJO.PPT.EXECUTION_GATE",
+            "blocked": "PJO.PPT.DESIGN_ISSUES"
+          },
+          "prerequisites": [
+            "PJO.PPT.READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Local resolution completed, and any required live resolver completed, on the incoming graph branch",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 143
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PJO.PPT.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "preview-ready": "PJO.PPT.PREVIEW_READY",
+            "approved-fsm-route": "PJO.PPT.DONE",
+            "approval-or-route-missing": "PJO.PPT.ROUTE_ISSUES"
+          },
+          "prerequisites": [
+            "PJO.PPT.DESIGN_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After supported applicable rules and exact package validation, with unresolved warnings disclosed: preview-only may return without import approval; submission still requires checksum-bound approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PJO.PPT.INPUT_ISSUES",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PJO.PPT.ROUTE_ISSUES",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Readiness or approval is missing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PJO.PPT.DESIGN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Design enforcement blocks the request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PJO.PPT.PREVIEW_READY",
+          "node_type": "terminal",
+          "sequence": 75,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PJO.PPT.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated immutable preview prepared; no setup mutation or import approval claimed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PJO.PPT.DONE",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PJO.PPT.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved FSM route is ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

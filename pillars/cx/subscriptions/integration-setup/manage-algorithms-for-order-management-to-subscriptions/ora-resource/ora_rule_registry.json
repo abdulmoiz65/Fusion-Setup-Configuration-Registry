@@ -1,0 +1,206 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_ALGORITHMS_FOR_ORDER_MANAGEMENT_TO_SUBSCRIPTIONS",
+      "task_name": "Manage Algorithms for Order Management to Subscriptions",
+      "start_node": "OMSUBALGO.VALIDATE.REQUEST",
+      "nodes": [
+        {
+          "id": "OMSUBALGO.VALIDATE.REQUEST",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "OMSUBALGO.RESOLVE.MAPPING.ASSESSMENT",
+            "missing-or-invalid": "OMSUBALGO.RETURN.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Algorithms request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMSUBALGO.RESOLVE.MAPPING.ASSESSMENT",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "OMSUBALGO.RESOLVE.DEPENDENCIES",
+            "blocked": "OMSUBALGO.RETURN.ISSUES"
+          },
+          "prerequisites": [
+            "OMSUBALGO.VALIDATE.REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation passed",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMSUBALGO.RESOLVE.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "OMSUBALGO.ENFORCE.DESIGN",
+            "blocked": "OMSUBALGO.RETURN.ISSUES"
+          },
+          "prerequisites": [
+            "OMSUBALGO.RESOLVE.MAPPING.ASSESSMENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The mapping assessment is validated and all conditionally applicable dependencies are satisfied",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMSUBALGO.ENFORCE.DESIGN",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "algorithm-not-required": "OMSUBALGO.RETURN.NO_CHANGE",
+            "draft-ready": "OMSUBALGO.APPROVAL.GATE",
+            "blocked": "OMSUBALGO.RETURN.ISSUES"
+          },
+          "prerequisites": [
+            "OMSUBALGO.RESOLVE.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependency readiness is satisfied",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMSUBALGO.RETURN.NO_CHANGE",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OMSUBALGO.ENFORCE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The validated assessment shows that no Algorithm change is required",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMSUBALGO.APPROVAL.GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved-standard": "OMSUBALGO.RETURN.ARTIFACT",
+            "approved-provisional-warning-not-accepted": "OMSUBALGO.RETURN.ISSUES",
+            "approval-missing-or-out-of-scope": "OMSUBALGO.RETURN.ISSUES"
+          },
+          "prerequisites": [
+            "OMSUBALGO.ENFORCE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A reviewable draft exists, a safe target is selected, and an artifact request is in scope",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMSUBALGO.RETURN.ARTIFACT",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OMSUBALGO.APPROVAL.GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An approved, validated local Algorithm_BO.xml artifact and SubscriptionManagementandOrderManagementIntegration.zip are ready; provisional output remains not ready to import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMSUBALGO.RETURN.ISSUES",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any blocking validation, dependency, mapping prerequisite, design, approval, artifact, or scope outcome occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

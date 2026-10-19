@@ -1,0 +1,263 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_RELEASE_SEQUENCE_RULES",
+      "task_name": "Release Sequence Rules",
+      "start_node": "RSR.VALIDATE_UI_INPUT",
+      "nodes": [
+        {
+          "id": "RSR.VALIDATE_UI_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RSR.CHECK_LOV_READINESS",
+            "invalid": "RSR.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Release Sequence Rules input is prepared for Data Loader validation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_input_validation.md",
+                "line": 10,
+                "column": "Resolver",
+                "message": "Resolver `core.data-loader` generated sample must match ^[a-z][a-z0-9_]*$; use a stable lowercase snake_case name that describes the lookup business purpose"
+              },
+              {
+                "file": "ora_input_validation.md",
+                "line": 12,
+                "column": "Resolver",
+                "message": "Resolver FSM export template must match ^[a-z][a-z0-9_]*$; use a stable lowercase snake_case name that describes the lookup business purpose"
+              }
+            ]
+          }
+        },
+        {
+          "id": "RSR.CHECK_LOV_READINESS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RSR.APPLY_UI_DEFAULTS",
+            "blocked": "RSR.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "RSR.VALIDATE_UI_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supplied priority or sort needs display-value resolution",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RSR.APPLY_UI_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "RSR.RESOLVE_PRIORITY_CODES",
+            "not_applicable": "RSR.RESOLVE_PRIORITY_CODES",
+            "failed": "RSR.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "RSR.CHECK_LOV_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Release Sequence Rules record passes UI-input readiness",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RSR.RESOLVE_PRIORITY_CODES",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RSR.RESOLVE_SORT_CODES",
+            "unresolved": "RSR.HANDLE_ISSUE",
+            "ambiguous": "RSR.HANDLE_ISSUE",
+            "failed": "RSR.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "RSR.APPLY_UI_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A friendly priority value requires resolution",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RSR.RESOLVE_SORT_CODES",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RSR.CHECK_DFF_READINESS",
+            "unresolved": "RSR.HANDLE_ISSUE",
+            "ambiguous": "RSR.HANDLE_ISSUE",
+            "failed": "RSR.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "RSR.RESOLVE_PRIORITY_CODES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A friendly sort value requires resolution",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RSR.CHECK_DFF_READINESS",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RSR.DONE",
+            "not_applicable": "RSR.DONE",
+            "blocked": "RSR.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "RSR.RESOLVE_SORT_CODES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A REST sequenceDFF value or an FSM DFF/attribute value is supplied",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RSR.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior node is invalid, blocked, unresolved, ambiguous, or failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RSR.DONE",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RSR.CHECK_DFF_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All documented task-local rules have passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Error disclosure is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "incomplete",
+        "blocking_reasons": [
+          {
+            "node_id": "RSR.VALIDATE_UI_INPUT",
+            "file": "ora_input_validation.md",
+            "line": 10,
+            "column": "Resolver",
+            "message": "Resolver `core.data-loader` generated sample must match ^[a-z][a-z0-9_]*$; use a stable lowercase snake_case name that describes the lookup business purpose"
+          },
+          {
+            "node_id": "RSR.VALIDATE_UI_INPUT",
+            "file": "ora_input_validation.md",
+            "line": 12,
+            "column": "Resolver",
+            "message": "Resolver FSM export template must match ^[a-z][a-z0-9_]*$; use a stable lowercase snake_case name that describes the lookup business purpose"
+          }
+        ]
+      }
+    }
+  ]
+}

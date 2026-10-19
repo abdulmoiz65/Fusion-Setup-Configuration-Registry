@@ -1,0 +1,284 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_POSITION_SECURITY_PROFILE",
+      "task_name": "Manage Position Security Profile",
+      "start_node": "POS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "POS.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "new_profile": "POS.VERIFY_PROFILE_NAME",
+            "existing_or_renamed_profile": "POS.FIND_PROFILE",
+            "invalid": "POS.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A position security profile is being validated, created, or updated; a proposed Name equal to current Name is an unchanged-name update",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.FIND_PROFILE",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found_unchanged": "POS.LOOKUP_CONFIGURATION",
+            "found_rename": "POS.VERIFY_PROFILE_NAME",
+            "not_found_or_ambiguous": "POS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "POS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An existing profile or rename target is requested; verify the old Name against the supplied current ID",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.VERIFY_PROFILE_NAME",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "create_available": "POS.LOOKUP_CONFIGURATION",
+            "rename_available": "POS.RENAME_CSV_GATE",
+            "unavailable_or_ambiguous": "POS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "POS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new Name is checked only after existing identity is verified for a rename",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.RENAME_CSV_GATE",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "mapping_unverified": "POS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "POS.VERIFY_PROFILE_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A genuine rename has an available new Name but its CSV parent and child update identity is unverified; block before preview or import",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.LOOKUP_CONFIGURATION",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "available": "POS.RESOLVE_SECURITY_LOOKUPS",
+            "unavailable": "POS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "POS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A position security profile is being validated, created, or updated",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.RESOLVE_SECURITY_LOOKUPS",
+          "node_type": "step",
+          "sequence": 22,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "POS.RESOLVE_CSV_CONTEXT",
+            "missing": "POS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "POS.LOOKUP_CONFIGURATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more Name uniqueness, responsibility type, scope of responsibility, hierarchy type, PosHierarchyTreeStructCode, PosHierarchyContent, top-position selection, YES_NO, INCLUDE_EXCLUDE, PositionName, TopPositionName, PositionTreeName, BusinessUnitSecurityProfileName, or DepartmentSecurityProfileName values requiring resolution are supplied",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.RESOLVE_CSV_CONTEXT",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "POS.APPLY_DEFAULTS",
+            "missing": "POS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "POS.RESOLVE_SECURITY_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Position Security Profile CSV package is being prepared",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "POS.ENFORCE_SCOPE",
+            "skipped": "POS.ENFORCE_SCOPE"
+          },
+          "prerequisites": [
+            "POS.RESOLVE_CSV_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Profile defaults are evaluated after configuration lookup and CSV context resolution",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.ENFORCE_SCOPE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "POS.DONE",
+            "blocked": "POS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "POS.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A position security profile create or update is being prepared for preview or import",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.DONE",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "POS.ENFORCE_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation, defaults, and design enforcement are complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A task rule returns an issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

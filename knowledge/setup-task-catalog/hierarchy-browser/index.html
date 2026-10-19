@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Setup Catalog Hierarchy Browser</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <h1>Setup Catalog Hierarchy</h1>
+          <p id="catalogMeta">Loading catalog</p>
+        </div>
+        <div class="topbar-actions" aria-label="View controls">
+          <button id="expandMatchesButton" class="icon-button" type="button" title="Expand matches" aria-label="Expand matches">
+            <span aria-hidden="true">+</span>
+          </button>
+          <button id="collapseButton" class="icon-button" type="button" title="Collapse all" aria-label="Collapse all">
+            <span aria-hidden="true">-</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="summary-grid" aria-label="Catalog summary">
+        <div class="metric">
+          <span>Pillars</span>
+          <strong id="pillarCount">0</strong>
+        </div>
+        <div class="metric">
+          <span>Offerings</span>
+          <strong id="offeringCount">0</strong>
+        </div>
+        <div class="metric">
+          <span>Functional Areas</span>
+          <strong id="functionalAreaCount">0</strong>
+        </div>
+        <div class="metric">
+          <span>Setup Tasks</span>
+          <strong id="taskCount">0</strong>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="sidebar" aria-label="Catalog filters">
+          <div class="search-wrap">
+            <label for="searchInput">Search</label>
+            <input id="searchInput" type="search" placeholder="Offering, area, task, code">
+          </div>
+          <div id="pillarFilters" class="pillars" aria-label="Pillar filters"></div>
+        </aside>
+
+        <section class="tree-panel" aria-label="Hierarchy">
+          <div class="panel-heading">
+            <h2>Hierarchy</h2>
+            <span id="visibleCount">0 nodes</span>
+          </div>
+          <div id="treeRoot" class="tree-root" role="tree" aria-label="Offerings, functional areas, and setup tasks"></div>
+        </section>
+
+        <aside class="detail-panel" aria-label="Selected item details">
+          <div id="detailEmpty" class="detail-empty">Select an item</div>
+          <div id="detailContent" class="detail-content" hidden>
+            <div class="detail-kicker" id="detailType"></div>
+            <h2 id="detailTitle"></h2>
+            <div id="detailCode" class="detail-code"></div>
+            <dl id="detailFacts" class="facts"></dl>
+            <div id="detailDescription" class="description"></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+    <script src="catalog-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

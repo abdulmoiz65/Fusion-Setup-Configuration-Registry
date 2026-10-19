@@ -1,0 +1,183 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_MANAGE_RELATED_ITEM_TYPES",
+      "task_name": "Manage Related Item Types",
+      "start_node": "RIT.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "RIT.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RIT.RESOLVE_LOOKUP_CODE",
+            "invalid": "RIT.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before a related item type update",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RIT.RESOLVE_LOOKUP_CODE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RIT.FIND_EXISTING",
+            "not_found": "RIT.HANDLE_ISSUE",
+            "ambiguous": "RIT.HANDLE_ISSUE",
+            "lookup_failed": "RIT.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "RIT.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preparing a Data Loader PATCH source for a related item type meaning",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RIT.FIND_EXISTING",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "RIT.ENFORCE_UPDATE",
+            "not_found": "RIT.HANDLE_ISSUE",
+            "ambiguous": "RIT.HANDLE_ISSUE",
+            "lookup_failed": "RIT.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "RIT.RESOLVE_LOOKUP_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preparing an update for an existing related item type",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RIT.ENFORCE_UPDATE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "allowed": "RIT.DONE",
+            "blocked": "RIT.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "RIT.FIND_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing related item type identity and lookup code are resolved",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RIT.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Prior node reports invalid input, an unresolved identity, or a lookup failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RIT.DONE",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RIT.ENFORCE_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Update request passed all documented authoring gates",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Error disclosure complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

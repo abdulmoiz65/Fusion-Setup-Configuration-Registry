@@ -1,0 +1,335 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_ANC_MANAGE_ABSENCE_TYPES",
+      "task_name": "Absence Types",
+      "start_node": "AT.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "AT.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "AT.RESOLVE_DEPENDENCIES",
+            "invalid": "AT.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Absence Types validation or Data Loader preparation request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 124
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "AT.RESOLVE_REFERENCES",
+            "blocked": "AT.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AT.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After required input groups and pattern intent are classified",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved_or_not_required": "AT.APPLY_DEFAULTS",
+            "unresolved": "AT.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AT.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After initial validation and dependency classification, resolve every applicable LOV and exact non-create identity",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 127
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied_or_not_needed": "AT.NORMALIZE_DATE_EFFECTIVE_OPERATION",
+            "unresolved": "AT.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AT.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After required dependencies and applicable LOV values resolve",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 156
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.NORMALIZE_DATE_EFFECTIVE_OPERATION",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "normalized": "AT.REFRESH_DATALOADER_TEMPLATE",
+            "invalid": "AT.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AT.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every date-effective Absence Types Data Loader preparation request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 125
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.REFRESH_DATALOADER_TEMPLATE",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "create_contract_ready": "AT.REFRESH_DESCRIBE",
+            "non_create_contract_ready": "AT.REFRESH_DESCRIBE",
+            "contract_failed": "AT.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AT.NORMALIZE_DATE_EFFECTIVE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every date-effective Data Loader preparation; verify parent and included-section operation support from the registered UCM template",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 128
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.REFRESH_DESCRIBE",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "contract_ready": "AT.ENFORCE_DESIGN",
+            "not_required": "AT.ENFORCE_DESIGN",
+            "contract_failed": "AT.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AT.REFRESH_DATALOADER_TEMPLATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "DFF data is supplied, the environment changed, or current DFF metadata is required; not authoritative for DAT columns",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 129
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "eligible": "AT.READINESS_GATE",
+            "blocked": "AT.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AT.REFRESH_DESCRIBE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After input validation, identity/dependency resolution, date-effective normalization, template refresh, and defaulting",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.READINESS_GATE",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "AT.WAIT_FOR_FINAL_COMPLETION",
+            "blocked": "AT.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AT.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before submitting the current approved archive through core.data-loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.WAIT_FOR_FINAL_COMPLETION",
+          "node_type": "decision",
+          "sequence": 100,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "AT.DONE_VALIDATED",
+            "failed": "AT.HANDLE_ISSUE",
+            "timeout": "AT.HANDLE_ISSUE",
+            "mismatch": "AT.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AT.READINESS_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After core.data-loader submission, gate completion on terminal status and exact target readback before reporting success",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "AT.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any input, dependency, lookup, metadata, design, approval, transport, Fusion, process, or persistence error",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 120,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AT.HANDLE_ISSUE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.DONE_VALIDATED",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AT.WAIT_FOR_FINAL_COMPLETION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Absence Types operation completed with verified target read-back",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

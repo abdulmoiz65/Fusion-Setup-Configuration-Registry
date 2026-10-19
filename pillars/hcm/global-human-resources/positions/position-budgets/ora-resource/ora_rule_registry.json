@@ -1,0 +1,287 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_POSITION_BUDGETS",
+      "task_name": "Position Budgets",
+      "start_node": "PB.VALIDATE",
+      "nodes": [
+        {
+          "id": "PB.VALIDATE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PB.READ_POSITION_BUDGET",
+            "missing": "PB.ERROR",
+            "invalid": "PB.ERROR",
+            "unsupported": "PB.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Position Budgets request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PB.READ_POSITION_BUDGET",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PB.VERIFY_PROFILE",
+            "list_returned": "PB.VERIFY_PROFILE",
+            "create_available": "PB.VERIFY_PROFILE",
+            "blocked": "PB.ERROR",
+            "failed": "PB.ERROR"
+          },
+          "prerequisites": [
+            "PB.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Position Budget read, edit, delete, or create uniqueness check is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PB.VERIFY_PROFILE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PB.RESOLVE_ALLOCATE_BY",
+            "not_required": "PB.RESOLVE_ALLOCATE_BY",
+            "needs_input": "PB.ERROR",
+            "unresolved": "PB.ERROR"
+          },
+          "prerequisites": [
+            "PB.READ_POSITION_BUDGET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before Position Budget create or edit",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PB.RESOLVE_ALLOCATE_BY",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PB.DEFAULTS",
+            "not_required": "PB.DEFAULTS",
+            "needs_input": "PB.ERROR",
+            "unresolved": "PB.ERROR"
+          },
+          "prerequisites": [
+            "PB.VERIFY_PROFILE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After the position-budgeting profile resolves to Y and before create or edit",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PB.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 35,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "preserved": "PB.ENFORCE_ALLOCATION",
+            "not_required": "PB.ENFORCE_ALLOCATION"
+          },
+          "prerequisites": [
+            "PB.RESOLVE_ALLOCATE_BY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After applicable reads and dependencies are complete",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PB.ENFORCE_ALLOCATION",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "PB.ROUTE",
+            "not_required": "PB.ROUTE",
+            "blocked": "PB.ERROR"
+          },
+          "prerequisites": [
+            "PB.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After applicable current-budget, profile, Allocate By, and preservation rules",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PB.ROUTE",
+          "node_type": "decision",
+          "sequence": 45,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read": "PB.DONE",
+            "create_or_edit_or_delete_ready": "PB.LOADER_READY",
+            "mutation_blocked": "PB.ERROR"
+          },
+          "prerequisites": [
+            "PB.ENFORCE_ALLOCATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select read completion or the Core Data Loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PB.ERROR",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "PB.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior node returns invalid, missing, ambiguous, blocked, failed, partial, timed-out, uncertain, stale, or unsupported",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PB.DONE",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PB.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PB.LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 65,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PB.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Mutation rules passed; return PB.LOADER_READY to the task skill",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PB.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request cannot safely continue without correction or reconciliation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

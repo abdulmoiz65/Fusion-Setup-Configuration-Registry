@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "canonical_file": "oracle_hcm_request_feedback_template_best_practices.md",
+  "canonical_markdown_sha256": "665d6ed1149e5e995479964e9b5c35298b964018072d71b15a537aeb49b7573f",
+  "source_last_updated": "2026-09-03",
+  "source_markdown": "/Users/rajukum/TalentManagement/OracleWork/FDOS/ImplementationAndBestPractices/oracle_hcm_request_feedback_template_best_practices.md",
+  "html_disposition": "Parity checked only; not copied or used as a duplicate knowledge source.",
+  "copy_policy": "The canonical file must remain a byte-for-byte copy of the supplied Markdown source unless its source and checksum are deliberately updated."
+}

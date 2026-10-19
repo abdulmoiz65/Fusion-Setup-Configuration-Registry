@@ -1,0 +1,237 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_MP_SITE_CONFIGURATION",
+      "task_name": "Opportunity Marketplace Jobs Configurations",
+      "start_node": "JC.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "JC.VALIDATE_REQUEST",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "JC.EXPORT_CURRENT",
+            "invalid": "JC.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Job Configuration request is supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JC.EXPORT_CURRENT",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "exported": "JC.VALIDATE_REFERENCES",
+            "unavailable": "JC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "JC.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new Job Configuration passed input validation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JC.VALIDATE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "JC.VALIDATE_IDENTITY",
+            "not_applicable": "JC.VALIDATE_IDENTITY",
+            "invalid": "JC.RETURN_ISSUES",
+            "ambiguous": "JC.RETURN_ISSUES",
+            "unavailable": "JC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "JC.EXPORT_CURRENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new Job Configuration has a fresh export and supplied reference values",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JC.VALIDATE_IDENTITY",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "JC.DERIVE_REC_TYPE_DEFAULT",
+            "invalid": "JC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "JC.VALIDATE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new Job Configuration has passed reference validation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JC.DERIVE_REC_TYPE_DEFAULT",
+          "node_type": "decision",
+          "sequence": 45,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "derived": "JC.GENERATE_PACKAGE",
+            "not_applicable": "JC.GENERATE_PACKAGE",
+            "invalid": "JC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "JC.VALIDATE_IDENTITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new Job Configuration passed identity validation; derive DefaultFlag for supplied Recruiting Type rows or record not applicable",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JC.GENERATE_PACKAGE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "JC.PREVIEW_IMPORT",
+            "blocked": "JC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "JC.DERIVE_REC_TYPE_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new Job Configuration passed identity validation and DefaultFlag derivation or its not-applicable check",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JC.PREVIEW_IMPORT",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready_for_approval": "JC.IMPORT_READY",
+            "preflight_failed": "JC.RETURN_ISSUES",
+            "approval_missing": "JC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "JC.GENERATE_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A candidate Job Configuration archive passed design enforcement",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JC.IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JC.PREVIEW_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An immutable preview is valid and the task is awaiting explicit import approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JC.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, dependency, lookup, design, preflight, or approval blocker occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

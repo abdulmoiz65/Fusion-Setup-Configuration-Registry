@@ -1,0 +1,183 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "BEN_MANAGE_AUTHORIZATION",
+      "task_name": "Enrollment Authorizations",
+      "start_node": "ENROLL_AUTH.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "ENROLL_AUTH.VALIDATE_REQUEST",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ENROLL_AUTH.LOOKUP_PROGRAM",
+            "invalid": "ENROLL_AUTH.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate the selected operation, mapped HDL object, current-sample artifact, and required record identity before a data-changing load",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENROLL_AUTH.LOOKUP_PROGRAM",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "core.fusion-api.rest-api-client",
+          "transitions": {
+            "matched": "ENROLL_AUTH.LOOKUP_PLAN",
+            "skipped": "ENROLL_AUTH.LOOKUP_PLAN",
+            "forbidden": "ENROLL_AUTH.LOOKUP_PLAN",
+            "invalid": "ENROLL_AUTH.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "ENROLL_AUTH.VALIDATE_REQUEST"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validate supplied benefitLegalDisclaimers.ProgramName against benefitProgramsLOV Name; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENROLL_AUTH.LOOKUP_PLAN",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "reference_lookup",
+          "execution_route": "core.fusion-api.rest-api-client",
+          "transitions": {
+            "matched": "ENROLL_AUTH.GATE_EXECUTION",
+            "skipped": "ENROLL_AUTH.GATE_EXECUTION",
+            "forbidden": "ENROLL_AUTH.GATE_EXECUTION",
+            "invalid": "ENROLL_AUTH.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "ENROLL_AUTH.LOOKUP_PROGRAM"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validate supplied benefitLegalDisclaimers.PlanName against benefitPlansLOV Name; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENROLL_AUTH.GATE_EXECUTION",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "ENROLL_AUTH.READY_FOR_EXECUTION",
+            "blocked": "ENROLL_AUTH.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "ENROLL_AUTH.LOOKUP_PLAN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm approval is bound to the environment, operation, benefitLegalDisclaimers object, and preflighted immutable artifact; unverified_forbidden must be authoritatively resolved before live load",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENROLL_AUTH.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "ENROLL_AUTH.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, metadata, authentication, approval, or load failure blocks progress",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENROLL_AUTH.READY_FOR_EXECUTION",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ENROLL_AUTH.GATE_EXECUTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every documented gate passed; ready for the selected core.data-loader workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENROLL_AUTH.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was safely disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

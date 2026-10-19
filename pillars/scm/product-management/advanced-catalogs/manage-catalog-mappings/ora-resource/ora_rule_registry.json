@@ -1,0 +1,181 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "EGI_MANAGE_CATALOG_MAPPINGS",
+      "task_name": "Manage Catalog Mappings",
+      "start_node": "MCM.VALIDATE_CSV_CONTRACT",
+      "nodes": [
+        {
+          "id": "MCM.VALIDATE_CSV_CONTRACT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MCM.RESOLVE_SOURCE_CATEGORIES",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate all CSV contracts and build one immutable context for every mapping-detail row.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCM.RESOLVE_SOURCE_CATEGORIES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "evaluated": "MCM.RESOLVE_TARGET_CATEGORIES"
+          },
+          "prerequisites": [
+            "MCM.VALIDATE_CSV_CONTRACT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Evaluate source-category membership for every immutable detail-row context and retain all row findings.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCM.RESOLVE_TARGET_CATEGORIES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "evaluated": "MCM.RESOLVE_ROOT_ITEM_CLASSES",
+            "not-applicable": "MCM.RESOLVE_ROOT_ITEM_CLASSES"
+          },
+          "prerequisites": [
+            "MCM.RESOLVE_SOURCE_CATEGORIES"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Evaluate every non-ROOT_ICC target category using only its context's target catalog and target category.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCM.RESOLVE_ROOT_ITEM_CLASSES",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "evaluated": "MCM.AGGREGATE_VALIDATION_OUTCOMES",
+            "not-applicable": "MCM.AGGREGATE_VALIDATION_OUTCOMES"
+          },
+          "prerequisites": [
+            "MCM.RESOLVE_TARGET_CATEGORIES"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Evaluate every ROOT_ICC target as an item class using only its context's target category.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCM.AGGREGATE_VALIDATION_OUTCOMES",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "MCM.RETURN_SUCCESS",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MCM.RESOLVE_ROOT_ITEM_CLASSES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Aggregate all CSV-contract, source, target, ROOT_ICC, ambiguity, and read-failure findings after every applicable row branch completes.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCM.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MCM.AGGREGATE_VALIDATION_OUTCOMES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every applicable source, target-category, and ROOT_ICC item-class lookup resolves exactly for every mapping-detail row.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "CSV-contract validation failed directly, or one or more read-only lookup findings were aggregated for Manage Catalog Mappings.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

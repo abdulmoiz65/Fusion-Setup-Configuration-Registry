@@ -1,0 +1,320 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_SERVICE_MAPPINGS_FOR_SUBSCRIPTIONS_TO_MAINTENANCE_CLOUD",
+      "task_name": "Manage Service Mappings for Subscriptions to Maintenance Cloud",
+      "start_node": "MNTSM.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "MNTSM.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MNTSM.RESOLVE_LOOKUPS",
+            "invalid": "MNTSM.REPORT_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate phase, current mapping evidence, source question, subscription coverage context, target interface context, and handoff shape.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MNTSM.RESOLVE_LOOKUPS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MNTSM.CHECK_DEPENDENCIES",
+            "unresolved": "MNTSM.REPORT_ISSUES",
+            "incomplete_contract": "MNTSM.REPORT_ISSUES"
+          },
+          "prerequisites": [
+            "MNTSM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve documented lookup contracts for service mapping source evidence, subscription maintenance context, target interface fields, source decisions, handoff, and publication state.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 30,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 31,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 33,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 34,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 35,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "MNTSM.CHECK_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "MNTSM.ENFORCE_DESIGN",
+            "needs_decision": "MNTSM.REPORT_ISSUES",
+            "prerequisite_pending": "MNTSM.REPORT_ISSUES",
+            "blocked": "MNTSM.REPORT_ISSUES"
+          },
+          "prerequisites": [
+            "MNTSM.RESOLVE_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate Service Mapping contract, subscription context, target field context, source decision, handoff readiness, and publication evidence for the current rule_phase.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MNTSM.ENFORCE_DESIGN",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "MNTSM.CHECK_EXECUTION_CONTRACT",
+            "blocked": "MNTSM.REPORT_ISSUES"
+          },
+          "prerequisites": [
+            "MNTSM.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce source authority, preventive-maintenance scope, target interface boundary, source-to-target pairing, publication boundary, and handoff boundary.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MNTSM.CHECK_EXECUTION_CONTRACT",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MNTSM.EVALUATE_HANDOFF",
+            "blocked": "MNTSM.REPORT_ISSUES",
+            "unsupported": "MNTSM.RETURN_UNSUPPORTED"
+          },
+          "prerequisites": [
+            "MNTSM.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Gate exact supported scope for source analysis, handoff, publication checks, and unsupported-operation requests.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MNTSM.EVALUATE_HANDOFF",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MNTSM.RETURN_RULE_RESULTS",
+            "invalid": "MNTSM.REPORT_ISSUES"
+          },
+          "prerequisites": [
+            "MNTSM.CHECK_EXECUTION_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate completed source-resolution and handoff checks; valid means checkpoint completion only, not deployed Service Mapping or Maintenance Cloud transfer success.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MNTSM.RETURN_RULE_RESULTS",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MNTSM.EVALUATE_HANDOFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return source-resolution and handoff findings for the current checkpoint; this is not proof of published Service Mapping or Maintenance Cloud transfer success.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MNTSM.REPORT_ISSUES",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "reported": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Classify blockers, missing contracts, failed evidence, unresolved source decisions, or unsupported requests and return the safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return blocking findings without retrying lookups, publishing Service Mapping, mutating algorithms, or running scheduled processes.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MNTSM.RETURN_UNSUPPORTED",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Refuse unsupported live operations and identify the missing contract or owning workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "incomplete",
+        "blocking_reasons": [
+          {
+            "node_id": "MNTSM.RESOLVE_LOOKUPS",
+            "file": "ora_reference_lookups.md",
+            "line": 30,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "MNTSM.RESOLVE_LOOKUPS",
+            "file": "ora_reference_lookups.md",
+            "line": 31,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "MNTSM.RESOLVE_LOOKUPS",
+            "file": "ora_reference_lookups.md",
+            "line": 33,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "MNTSM.RESOLVE_LOOKUPS",
+            "file": "ora_reference_lookups.md",
+            "line": 34,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "MNTSM.RESOLVE_LOOKUPS",
+            "file": "ora_reference_lookups.md",
+            "line": 35,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,259 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_OFFICIAL_COMMUNITIES",
+      "task_name": "Manage Official Communities",
+      "start_node": "OCM.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "OCM.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "OCM.CHECK_DEPENDENCIES",
+            "invalid": "OCM.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "One or more Official Community parent or child rows are normalized",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OCM.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "OCM.RESOLVE_REFERENCE",
+            "not_required": "OCM.RESOLVE_REFERENCE",
+            "blocked": "OCM.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "OCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Applicable dependencies are evaluated for every selected Official Community parent and child row",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OCM.RESOLVE_REFERENCE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OCM.APPLY_DEFAULTS",
+            "not_required": "OCM.APPLY_DEFAULTS",
+            "blocked": "OCM.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "OCM.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An applicable documented profile-option, identity, visibility, or current-state lookup is required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OCM.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "OCM.ENFORCE_DESIGN",
+            "preserved": "OCM.ENFORCE_DESIGN",
+            "blocked": "OCM.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "OCM.RESOLVE_REFERENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated Official Community rows omit only a source-documented and target-confirmed default",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OCM.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "OCM.EXECUTION_GATE",
+            "blocked": "OCM.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "OCM.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated rows have completed applicable dependencies, lookups, defaults, capability gates, and manager-safety checks",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OCM.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "evidence_available": "OCM.EVALUATE_RESULT",
+            "blocked": "OCM.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "OCM.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validation-only result or exact approved profile-change, parent, and child row set is ready for evaluation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OCM.EVALUATE_RESULT",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "OCM.RETURN_SUCCESS",
+            "issues": "OCM.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "OCM.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation or mutation evidence is reconciled with the approved profile-change, parent, and child previews",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OCM.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "OCM.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "An applicable profile dependency/change or Official Community parent or child row is blocked by validation, dependency, lookup, design, approval, execution, timeout, or verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OCM.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OCM.EVALUATE_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every selected profile change and valid parent and child row is verified and row-specific results are available",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OCM.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OCM.HANDLE_ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more profile dependencies/changes or Official Community parent or child rows cannot safely complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

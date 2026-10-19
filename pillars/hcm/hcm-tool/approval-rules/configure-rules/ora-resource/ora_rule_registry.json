@@ -1,0 +1,273 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_CONFIGURE_RULES",
+      "task_name": "Configure Rules",
+      "start_node": "APPROVAL_RULES.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "APPROVAL_RULES.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "APPROVAL_RULES.RESOLVE_PROCESS",
+            "invalid": "APPROVAL_RULES.INPUT_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Configure Rules design is requested",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_RULES.RESOLVE_PROCESS",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "APPROVAL_RULES.APPLY_DEFAULTS",
+            "not_found": "APPROVAL_RULES.PROCESS_ISSUE",
+            "ambiguous": "APPROVAL_RULES.PROCESS_ISSUE",
+            "lookup_failed": "APPROVAL_RULES.LOOKUP_ISSUE"
+          },
+          "prerequisites": [
+            "APPROVAL_RULES.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An exact approval process name is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_RULES.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "reviewed": "APPROVAL_RULES.ENFORCE_DESIGN"
+          },
+          "prerequisites": [
+            "APPROVAL_RULES.RESOLVE_PROCESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A hierarchy participant type is selected without an explicit override",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_RULES.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "APPROVAL_RULES.VERIFY_WRITE_CONTRACT",
+            "blocked": "APPROVAL_RULES.DESIGN_ISSUE"
+          },
+          "prerequisites": [
+            "APPROVAL_RULES.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Configure Rules design has passed initial validation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_RULES.VERIFY_WRITE_CONTRACT",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "contract_missing": "APPROVAL_RULES.WRITE_CONTRACT_REQUIRED",
+            "contract_available": "APPROVAL_RULES.WRITE_CONTRACT_AVAILABLE"
+          },
+          "prerequisites": [
+            "APPROVAL_RULES.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create, update, delete, or publish action is requested",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_RULES.INPUT_ISSUE",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "APPROVAL_RULES.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Required design information is absent or invalid",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_RULES.DESIGN_ISSUE",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "APPROVAL_RULES.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A documented design gate blocks the requested rule",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_RULES.PROCESS_ISSUE",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "APPROVAL_RULES.RESOLVE_PROCESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "No exact process match exists or multiple matches need selection",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_RULES.LOOKUP_ISSUE",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "APPROVAL_RULES.RESOLVE_PROCESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported read-only lookup fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_RULES.WRITE_CONTRACT_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "APPROVAL_RULES.VERIFY_WRITE_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mutation is requested without a registered write contract",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_RULES.WRITE_CONTRACT_AVAILABLE",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "APPROVAL_RULES.VERIFY_WRITE_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The registered write contract is complete; obtain a current immutable preview and explicit approval before execution",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

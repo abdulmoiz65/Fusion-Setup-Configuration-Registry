@@ -1,0 +1,498 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "ORA_CREATE_DIGITAL_CUSTOMER_SERVICE_CUSTOM_ROLE_MAPPING",
+      "task_name": "Manage Custom Role Mapping for Digital Customer Service",
+      "start_node": "DCS.ROLE_MAPPING.VALIDATE",
+      "nodes": [
+        {
+          "id": "DCS.ROLE_MAPPING.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DCS.ROLE_MAPPING.LOOKUP_ASSIGNED_ROLES",
+            "blocked": "DCS.ROLE_MAPPING.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any request for Digital Customer Service custom role mapping",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCS.ROLE_MAPPING.LOOKUP_ASSIGNED_ROLES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "DCS.ROLE_MAPPING.READY",
+            "no_match": "DCS.ROLE_MAPPING.READY",
+            "blocked": "DCS.ROLE_MAPPING.BLOCKED"
+          },
+          "prerequisites": [
+            "DCS.ROLE_MAPPING.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing self-service role assignment evidence is needed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCS.ROLE_MAPPING.READY",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCS.ROLE_MAPPING.LOOKUP_ASSIGNED_ROLES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation and lookup checks are complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCS.ROLE_MAPPING.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 95,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCS.ROLE_MAPPING.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Role mapping evidence is missing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_MANAGE_PROXY_USER_CONFIGURATION_DATA",
+      "task_name": "Manage Proxy User Configuration Data",
+      "start_node": "DCS.PROXY_CONFIG.VALIDATE",
+      "nodes": [
+        {
+          "id": "DCS.PROXY_CONFIG.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DCS.PROXY_CONFIG.READY",
+            "blocked": "DCS.PROXY_CONFIG.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any request for proxy user configuration data",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCS.PROXY_CONFIG.READY",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCS.PROXY_CONFIG.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation checks are complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCS.PROXY_CONFIG.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 95,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCS.PROXY_CONFIG.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Proxy configuration evidence is missing or unsafe",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_CSS_ACCOUNT_SETUP_OPTS",
+      "task_name": "Manage Digital Customer Service Account Setup Profile Options",
+      "start_node": "DCS.ACCOUNT_OPTS.VALIDATE",
+      "nodes": [
+        {
+          "id": "DCS.ACCOUNT_OPTS.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DCS.ACCOUNT_OPTS.LOOKUP_PROFILE_VALUE",
+            "blocked": "DCS.ACCOUNT_OPTS.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any request for account setup profile options",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCS.ACCOUNT_OPTS.LOOKUP_PROFILE_VALUE",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "DCS.ACCOUNT_OPTS.READY",
+            "no_match": "DCS.ACCOUNT_OPTS.BLOCKED"
+          },
+          "prerequisites": [
+            "DCS.ACCOUNT_OPTS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Current-session profile option value evidence is needed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCS.ACCOUNT_OPTS.READY",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCS.ACCOUNT_OPTS.LOOKUP_PROFILE_VALUE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation and lookup checks are complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCS.ACCOUNT_OPTS.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 95,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCS.ACCOUNT_OPTS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input, dependency, or lookup evidence is missing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_CSS_REG_PROFILE_OPTS",
+      "task_name": "Manage Digital Customer Service Profile Options",
+      "start_node": "DCS.PROFILE_OPTS.VALIDATE",
+      "nodes": [
+        {
+          "id": "DCS.PROFILE_OPTS.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DCS.PROFILE_OPTS.LOOKUP_PROFILE_VALUE",
+            "blocked": "DCS.PROFILE_OPTS.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any request for Digital Customer Service profile options",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCS.PROFILE_OPTS.LOOKUP_PROFILE_VALUE",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "DCS.PROFILE_OPTS.READY",
+            "no_match": "DCS.PROFILE_OPTS.BLOCKED"
+          },
+          "prerequisites": [
+            "DCS.PROFILE_OPTS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Current-session profile option value evidence is needed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCS.PROFILE_OPTS.READY",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCS.PROFILE_OPTS.LOOKUP_PROFILE_VALUE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation and lookup checks are complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCS.PROFILE_OPTS.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 95,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCS.PROFILE_OPTS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input, dependency, or lookup evidence is missing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_SELF_SERVICE_RELATIONSHIP_TYPE_STANDARD_LOOKUP",
+      "task_name": "Manage Self-Service Relationship Type Standard Lookup",
+      "start_node": "DCS.REL_TYPE.VALIDATE",
+      "nodes": [
+        {
+          "id": "DCS.REL_TYPE.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DCS.REL_TYPE.LOOKUP_CODES",
+            "blocked": "DCS.REL_TYPE.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any request for self-service relationship type lookup values",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCS.REL_TYPE.LOOKUP_CODES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "DCS.REL_TYPE.READY",
+            "no_match": "DCS.REL_TYPE.READY",
+            "many_matches": "DCS.REL_TYPE.BLOCKED"
+          },
+          "prerequisites": [
+            "DCS.REL_TYPE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Lookup-code duplicate or update evidence is needed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCS.REL_TYPE.READY",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCS.REL_TYPE.LOOKUP_CODES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation and lookup checks are complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DCS.REL_TYPE.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 95,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DCS.REL_TYPE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Lookup code evidence is missing or ambiguous",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

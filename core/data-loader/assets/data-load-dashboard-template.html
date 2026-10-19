@@ -1,0 +1,58 @@
+<div id="loader-dashboard" aria-label="Data Loader result">
+  <style>
+    #loader-dashboard { --ink:#201f1f; --muted:#706b69; --rule:#dfdcda; --surface:#fffdfd; --good:#087d26; --warn:#8c6114; --bad:#b42318; color:var(--ink); background:var(--surface); border-radius:.6rem; overflow:hidden; box-shadow:0 .1rem .45rem rgb(42 29 31 / 16%); }
+    #loader-dashboard::before { content:''; display:block; height:1.05rem; background:repeating-linear-gradient(112deg,transparent 0 2.3rem,rgb(255 255 255 / 16%) 2.3rem 2.65rem,transparent 2.65rem 4.7rem),linear-gradient(90deg,#743f4d 0%,#a25b69 35%,#d18480 52%,#f0c85f 67%,#9f5768 83%,#743f4d 100%); }
+    #loader-dashboard .loader-header, #loader-dashboard section { padding:1.1rem 1.35rem; border-top:1px solid var(--rule); }
+    #loader-dashboard .loader-header { border-top:0; }
+    #loader-dashboard h2, #loader-dashboard h3 { margin:0; font-weight:500; }
+    #loader-dashboard h3 { margin-bottom:.7rem; font-size:1rem; }
+    #loader-dashboard .loader-summary { margin:.55rem 0 0; color:var(--muted); }
+    #loader-dashboard .loader-state { display:inline-flex; align-items:center; gap:.35rem; margin-top:.65rem; font-weight:600; }
+    #loader-dashboard .loader-state.success { color:var(--good); } #loader-dashboard .loader-state.progress { color:var(--warn); } #loader-dashboard .loader-state.failed { color:var(--bad); }
+    #loader-dashboard table { width:100%; border-collapse:collapse; font-size:.94rem; } #loader-dashboard th, #loader-dashboard td { padding:.52rem .35rem; border-top:1px solid var(--rule); text-align:left; vertical-align:top; } #loader-dashboard th { color:var(--muted); font-weight:600; } #loader-dashboard thead th, #loader-dashboard .loader-facts tbody tr:first-child th, #loader-dashboard .loader-facts tbody tr:first-child td { border-top:0; } #loader-dashboard tbody td { color:var(--ink); -webkit-text-fill-color:var(--ink); } #loader-dashboard td.number { text-align:right; font-variant-numeric:tabular-nums; } #loader-dashboard .loader-status-table th:nth-child(n+3), #loader-dashboard .loader-status-table td.number { text-align:center; }
+    #loader-dashboard ul { margin:0; padding-left:1.25rem; } #loader-dashboard li + li { margin-top:.38rem; }
+    #loader-dashboard .loader-next { background:#fff8e8; } #loader-dashboard .loader-next p { margin:0; }
+    #loader-dashboard a { color:#743f4d; text-decoration:underline; }
+    @media (max-width:520px) { #loader-dashboard .loader-status-table { font-size:.8rem; } #loader-dashboard th, #loader-dashboard td { padding:.45rem .2rem; } }
+  </style>
+  <header class="loader-header"><h2></h2><p class="loader-summary"></p><div class="loader-state" aria-live="polite"></div></header>
+  <section class="loader-facts" hidden><table><tbody></tbody></table></section>
+  <section class="loader-sections" hidden><h3>Sections</h3><ul></ul></section>
+  <section class="loader-preview" hidden><h3>Preview</h3><table><thead><tr><th>Section</th><th>Details</th></tr></thead><tbody></tbody></table></section>
+  <section class="loader-status" hidden><table class="loader-status-table"><thead><tr><th>Data Set</th><th>Status</th><th>Total</th><th>Loaded</th><th>Failed</th></tr></thead><tbody></tbody></table></section>
+  <section class="loader-errors" hidden><h3>Diagnostics</h3><table><thead><tr><th>Business Object</th><th>Stage</th><th>Error</th></tr></thead><tbody></tbody></table></section>
+  <section class="loader-failure" hidden><h3>Failure details</h3><table><tbody></tbody></table></section>
+  <section class="loader-next" hidden><h3>Next action</h3><p></p></section>
+  <script>
+    const loaderReport = __LOADER_REPORT__;
+    (() => {
+      const root = document.getElementById('loader-dashboard');
+      const text = (value) => value == null || value === '' ? '—' : String(value);
+      const addCell = (row, value, className = '') => { const cell = document.createElement('td'); cell.textContent = text(value); if (className) cell.className = className; row.appendChild(cell); };
+      const show = (selector) => { root.querySelector(selector).hidden = false; };
+      const toneLabels = { success: 'Succeeded', progress: 'In progress', failed: 'Failed' };
+      root.querySelector('h2').textContent = text(loaderReport.title);
+      const isStatusReport = loaderReport.kind === 'status';
+      const isSampleReport = loaderReport.kind === 'sample';
+      const isAttributeDetailsReport = loaderReport.kind === 'attribute-details';
+      const isInitiationReport = loaderReport.kind === 'initiation';
+      const hidesHeaderDetails = isStatusReport || isSampleReport || isAttributeDetailsReport || isInitiationReport;
+      const summary = root.querySelector('.loader-summary');
+      const state = root.querySelector('.loader-state');
+      summary.hidden = hidesHeaderDetails;
+      state.hidden = hidesHeaderDetails;
+      if (!hidesHeaderDetails) {
+        summary.textContent = text(loaderReport.summary);
+        state.classList.add(loaderReport.tone || 'progress');
+        state.textContent = toneLabels[loaderReport.tone] || 'Not available yet';
+      }
+      if (Array.isArray(loaderReport.facts) && loaderReport.facts.length) { show('.loader-facts'); const body = root.querySelector('.loader-facts tbody'); loaderReport.facts.forEach(([label, value]) => { const row = document.createElement('tr'); const header = document.createElement('th'); header.scope = 'row'; header.textContent = text(label); row.append(header); addCell(row, value); body.appendChild(row); }); }
+      if (Array.isArray(loaderReport.sections) && loaderReport.sections.length) { show('.loader-sections'); const list = root.querySelector('.loader-sections ul'); loaderReport.sections.forEach((section) => { const item = document.createElement('li'); item.textContent = text(section); list.appendChild(item); }); }
+      if (Array.isArray(loaderReport.previews) && loaderReport.previews.length) { show('.loader-preview'); const body = root.querySelector('.loader-preview tbody'); loaderReport.previews.forEach((preview) => { const row = document.createElement('tr'); addCell(row, preview.section); addCell(row, preview.details); body.appendChild(row); }); }
+      if (Array.isArray(loaderReport.statusRows) && loaderReport.statusRows.length) { show('.loader-status'); const body = root.querySelector('.loader-status tbody'); loaderReport.statusRows.forEach((item) => { const row = document.createElement('tr'); addCell(row, item.name); addCell(row, item.status); addCell(row, item.total, 'number'); addCell(row, item.loaded, 'number'); addCell(row, item.failed, 'number'); body.appendChild(row); }); }
+      if (Array.isArray(loaderReport.errors) && loaderReport.errors.length) { show('.loader-errors'); const body = root.querySelector('.loader-errors tbody'); loaderReport.errors.forEach((item) => { const row = document.createElement('tr'); addCell(row, item.businessObject); addCell(row, item.stage); addCell(row, item.message); body.appendChild(row); }); }
+      if (loaderReport.failure) { show('.loader-failure'); const body = root.querySelector('.loader-failure tbody'); const row = document.createElement('tr'); const header = document.createElement('th'); header.scope = 'row'; header.textContent = text(loaderReport.failure.stage); row.append(header); addCell(row, Array.isArray(loaderReport.failure.details) ? loaderReport.failure.details.join(' · ') : loaderReport.failure.details); body.appendChild(row); }
+      if (loaderReport.nextAction) { show('.loader-next'); root.querySelector('.loader-next p').textContent = text(loaderReport.nextAction); }
+    })();
+  </script>
+</div>

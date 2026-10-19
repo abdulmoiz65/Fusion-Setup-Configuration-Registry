@@ -1,0 +1,159 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_INVENTORY_BUSINESS_EVENT_CONFIGURATIONS",
+      "task_name": "Inventory Business Event Configurations",
+      "start_node": "IBEC.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "IBEC.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "IBEC.RESOLVE_EVENT_TYPE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "An Inventory Business Event Configurations row is supplied for validation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IBEC.RESOLVE_EVENT_TYPE",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "IBEC.RESOLVE_EVENT_NAME",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IBEC.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "EventTypeCode or EventType meaning is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IBEC.RESOLVE_EVENT_NAME",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "IBEC.CONFIRM_FUSION_DATA_FOUNDATION",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IBEC.RESOLVE_EVENT_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "EventCode or EventName meaning is supplied after event type resolution",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IBEC.CONFIRM_FUSION_DATA_FOUNDATION",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "IBEC.RETURN_SUCCESS",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IBEC.RESOLVE_EVENT_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before configuring an event for the supplied inventory organization",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IBEC.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IBEC.CONFIRM_FUSION_DATA_FOUNDATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation, both event lookups, and Fusion data foundation readiness succeed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input validation, lookup, or foundation readiness identifies a blocker",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

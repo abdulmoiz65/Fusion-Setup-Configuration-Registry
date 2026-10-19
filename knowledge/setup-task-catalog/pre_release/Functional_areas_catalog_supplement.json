@@ -1,0 +1,2066 @@
+{
+  "count": 204,
+  "totalResults": 204,
+  "removals": [
+    {
+      "FeatureCode": "CMS_TOTCOMP_STAT",
+      "FeatureName": "Total Compensation Statements",
+      "effectiveRelease": "next-release",
+      "reason": "Replaced by curated taxonomy code ORA_TOTAL_COMPENSATION_STATEMENTS"
+    },
+    {
+      "FeatureCode": "ORA_HXT_TIME_AND_LABOR",
+      "FeatureName": "Time and Labor",
+      "effectiveRelease": "next-release",
+      "reason": "Replaced by curated taxonomy code ORA_TIME_AND_LABOR"
+    },
+    {
+      "FeatureCode": "ORA_TIME_AND_LABOR_WFM_PROCESSES",
+      "FeatureName": "WFM Processes",
+      "effectiveRelease": "next-release",
+      "reason": "Replaced by curated taxonomy code ORA_WFM_PROCESSES"
+    }
+  ],
+  "items": [
+    {
+      "FeatureCode": "ORA_FMK_FUSION_MARKETING",
+      "FeatureName": "Oracle Fusion Marketing",
+      "Classification": "LICENSE",
+      "EnabledFlag": "N",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_ENTERPRISE",
+      "FeatureName": "Enterprise",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_LEGAL_AND_LEGISLATIVE_ORGANIZATIONS",
+      "FeatureName": "Legal and Legislative Organizations",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_DOCUMENT_TYPES",
+      "FeatureName": "Document Types",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_EMPLOYMENT_ACTIONS_FRAMEWORK",
+      "FeatureName": "Employment Actions Framework",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_LOCATIONS",
+      "FeatureName": "Locations",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PERSON_RECORD",
+      "FeatureName": "Person Record",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COLLECTIVE_AGREEMENTS",
+      "FeatureName": "Collective Agreements",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_SUPPLEMENTARY_ORGANIZATIONS",
+      "FeatureName": "Supplementary Organizations",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_DEPARTMENTS",
+      "FeatureName": "Departments",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GRADES",
+      "FeatureName": "Grades",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_JOBS",
+      "FeatureName": "Jobs",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_POSITIONS",
+      "FeatureName": "Positions",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_HCM_TREES",
+      "FeatureName": "HCM Trees",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_SENIORITY_DATES",
+      "FeatureName": "Seniority Dates",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMMON",
+      "FeatureName": "Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_HCM_SECURITY_PROFILE",
+      "FeatureName": "HCM Security Profile",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_CONFIGURE_PUBLIC_WORKERS_FOR_ORACLE_SEARCH",
+      "FeatureName": "Configure Public Workers for Oracle Search",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_HCM_DATA_ROLE",
+      "FeatureName": "HCM Data Role",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_FFS_FA_MOBILE_EXPERIENCE",
+      "FeatureName": "Mobile Experience",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_FFS_FA_SCHEDULING_AND_DISPATCH",
+      "FeatureName": "Scheduling and Dispatch",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_TOOLS",
+      "FeatureName": "Payroll Tools",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_ELEMENTS_EARNINGS_AND_DEDUCTIONS",
+      "FeatureName": "Elements, Earnings and Deductions",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_RATES_AND_VALUES",
+      "FeatureName": "Payroll Rates and Values",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TIME_AND_LABOR_ADDITIONAL",
+      "FeatureName": "Time and Labor Additional",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_ABSENCE",
+      "FeatureName": "Absence",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_ABSENCES_ADDITIONAL",
+      "FeatureName": "Absences Additional",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_WFM_COMMON",
+      "FeatureName": "WFM Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_SCHEDULING",
+      "FeatureName": "Scheduling",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_LEGISLATION_AND_COUNTRY_EXTENSION",
+      "FeatureName": "Legislation and Country Extension",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_DEFINITION_AND_CALENDAR",
+      "FeatureName": "Payroll Definition and Calendar",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_ORGANIZATION_CARDS",
+      "FeatureName": "Payroll Organization Cards",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_CALCULATION_CARDS_AND_CALCULATION_VALUES",
+      "FeatureName": "Calculation Cards and Calculation Values",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_BALANCES",
+      "FeatureName": "Payroll Balances",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_PROCESS_RULE_AND_FLOW",
+      "FeatureName": "Payroll Process Rule and Flow",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_COSTING",
+      "FeatureName": "Payroll Cost Accounting",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_PAYMENTS_AND_PAYSLIP",
+      "FeatureName": "Payroll Payments and Payslip",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_HCM_DATA_ROLES",
+      "FeatureName": "HCM Data Roles",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TIME_AND_LABOR_RULES",
+      "FeatureName": "Time and Labor Rules",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TIME_CLOCK_DEVICE",
+      "FeatureName": "Time Clock Device",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_SALARY_AND_BASE_PAY",
+      "FeatureName": "Salary and Base Pay",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_INDIVIDUAL_COMPENSATION_PLANS_AND_HISTORY",
+      "FeatureName": "Individual Compensation Plans and History",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_WORKFORCE_COMPENSATION_PLAN",
+      "FeatureName": "Workforce Compensation Plan",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GRADE_STEP_PROGRESSION",
+      "FeatureName": "Grade Step Progression",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TOTAL_COMPENSATION_STATEMENTS",
+      "FeatureName": "Total Compensation Statements",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_DATA_AND_BATCH_CONTROLS",
+      "FeatureName": "Compensation Data and Batch Controls",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_HCM_EXTRACT",
+      "FeatureName": "HCM Extract",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_APPLICATION_ATTACHMENT",
+      "FeatureName": "Application Attachment",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_AUDIT_AND_REPORTING",
+      "FeatureName": "Audit and Reporting",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PERFORMANCE_ROLE",
+      "FeatureName": "Performance Role",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PERFORMANCE_DOCUMENT_TYPE",
+      "FeatureName": "Performance Document Type",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PERFORMANCE_PROCESS_FLOW",
+      "FeatureName": "Performance Process Flow",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PERFORMANCE_TEMPLATE_SECTION",
+      "FeatureName": "Performance Template Section",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_REQUESTED_FEEDBACK_TEMPLATE",
+      "FeatureName": "Requested Feedback Template",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PERFORMANCE_TEMPLATE",
+      "FeatureName": "Performance Template",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_CHECK_IN_TEMPLATE",
+      "FeatureName": "Check-in Template",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_REQUEST_FEEDBACK_TEMPLATE",
+      "FeatureName": "Request Feedback Template",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_LEGAL_ENTITY",
+      "FeatureName": "Legal Entity",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BUSINESS_UNIT",
+      "FeatureName": "Business Unit",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_REVIEW_PERIOD",
+      "FeatureName": "Review Period",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GOAL_PLAN",
+      "FeatureName": "Goal Plan",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PERFORMANCE_LIBRARY_GOALS",
+      "FeatureName": "Performance Library Goals",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_DEVELOPMENT_LIBRARY_GOALS",
+      "FeatureName": "Development Library Goals",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_RECRUITING_COMMON",
+      "FeatureName": "Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_RECRUITING_HCM_TOOL",
+      "FeatureName": "HCM Tool",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_RECRUITING_FOUNDATION_DATA",
+      "FeatureName": "Recruiting Foundation",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_RECRUITING_CONFIGURATION",
+      "FeatureName": "Recruiting Configuration",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GTG_RM_INITIAL_USERS",
+      "FeatureName": "Assign Initial Users",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GTG_ACTIVATE_ALGORITHMS",
+      "FeatureName": "Activate Algorithms",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GTG_ADD_OTHER_DATA_SOURCES",
+      "FeatureName": "Add Other Data Sources",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_RECRUITING_CONTENT",
+      "FeatureName": "Recruiting Content",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_COMMON",
+      "FeatureName": "Payroll Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_EVENTS_AND_RETROACTIVITY",
+      "FeatureName": "Payroll Events and Retroactivity",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TIME_AND_LABOR_COMMON",
+      "FeatureName": "Time and Labor Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TIME_AND_LABOR_HCM_TOOL",
+      "FeatureName": "Time and Labor HCM Tool",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TIME_AND_LABOR_WFM_PROCESSES",
+      "FeatureName": "WFM Processes",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_WORKFORCE_SCHEDULING_COMMON",
+      "FeatureName": "Workforce Scheduling Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_WORKFORCE_SCHEDULING_HCM_TOOL",
+      "FeatureName": "Workforce Scheduling HCM Tool",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GLOBAL_HUMAN_RESOURCES_COMMON",
+      "FeatureName": "Global Human Resources Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GLOBAL_HUMAN_RESOURCES_HCM_TOOL",
+      "FeatureName": "Global Human Resources HCM Tool",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GLOBAL_HUMAN_RESOURCES_LEGAL_ENTITY",
+      "FeatureName": "Global Human Resources Legal Entity",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GLOBAL_HUMAN_RESOURCES_BUSINESS_UNIT",
+      "FeatureName": "Global Human Resources Business Unit",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GLOBAL_HUMAN_RESOURCES_LEGAL_JURISDICTION_AND_AUTHORITY",
+      "FeatureName": "Global Human Resources Legal Jurisdiction and Authority",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GLOBAL_HUMAN_RESOURCES_CHART_OF_ACCOUNTS",
+      "FeatureName": "Global Human Resources Chart of Accounts",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GLOBAL_HUMAN_RESOURCES_PAYROLL_TOOLS",
+      "FeatureName": "Global Human Resources Payroll Tools",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GLOBAL_HUMAN_RESOURCES_BENEFITS_GENERAL_CONFIGURATION",
+      "FeatureName": "Global Human Resources Benefits General Configuration",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GLOBAL_HUMAN_RESOURCES_PAYROLL_DEFINITION_AND_CALENDAR",
+      "FeatureName": "Global Human Resources Payroll Definition and Calendar",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_HCM_SECURITY_COMMON",
+      "FeatureName": "HCM Security Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_HCM_SECURITY_SECURITY_CONSOLE",
+      "FeatureName": "HCM Security Security Console",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_HCM_SECURITY_PAYROLL_DEFINITION_AND_CALENDAR",
+      "FeatureName": "HCM Security Payroll Definition and Calendar",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_HCM_SECURITY_ELEMENTS_EARNINGS_AND_DEDUCTIONS",
+      "FeatureName": "HCM Security Elements, Earnings and Deductions",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_HCM_SECURITY_DOCUMENT_TYPES",
+      "FeatureName": "HCM Security Document Types",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_HCM_SECURITY_HCM_TOOL",
+      "FeatureName": "HCM Security HCM Tool",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_HCM_SECURITY_CANDIDATE_AND_REQUISITION_DATA",
+      "FeatureName": "HCM Security Candidate and Requisition Data",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_ENTERPRISE",
+      "FeatureName": "Payroll Enterprise",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_LEGAL_AND_LEGISLATIVE_ORGANIZATIONS",
+      "FeatureName": "Payroll Legal and Legislative Organizations",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_HCM_SECURITY_PROFILE",
+      "FeatureName": "Payroll HCM Security Profile",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_HCM_DATA_ROLE",
+      "FeatureName": "Payroll HCM Data Role",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_CHART_OF_ACCOUNTS",
+      "FeatureName": "Payroll Chart of Accounts",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_LEDGER_STRUCTURE",
+      "FeatureName": "Payroll Ledger Structure",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PAYROLL_BANKING_AND_PAYMENTS",
+      "FeatureName": "Payroll Banking and Payments",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GOAL_MANAGEMENT_COMMON",
+      "FeatureName": "Goal Management Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GOAL_MANAGEMENT_HCM_TOOL",
+      "FeatureName": "Goal Management HCM Tool",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GOAL_MANAGEMENT_BENEFITS_ELIGIBILITY",
+      "FeatureName": "Goal Management Benefits Eligibility",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GOAL_MANAGEMENT_PERFORMANCE_DOCUMENT_TYPE",
+      "FeatureName": "Goal Management Performance Document Type",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_GOAL_MANAGEMENT_REQUEST_FEEDBACK_TEMPLATE",
+      "FeatureName": "Goal Management Request Feedback Template",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PERFORMANCE_MANAGEMENT_COMMON",
+      "FeatureName": "Performance Management Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PERFORMANCE_MANAGEMENT_HCM_TOOL",
+      "FeatureName": "Performance Management HCM Tool",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PERFORMANCE_MANAGEMENT_BENEFITS_ELIGIBILITY",
+      "FeatureName": "Performance Management Benefits Eligibility",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PERFORMANCE_MANAGEMENT_PAYROLL_TOOLS",
+      "FeatureName": "Performance Management Payroll Tools",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PERFORMANCE_MANAGEMENT_REVIEW_PERIOD",
+      "FeatureName": "Performance Management Review Period",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_PERFORMANCE_MANAGEMENT_PERFORMANCE_LIBRARY_GOALS",
+      "FeatureName": "Performance Management Performance Library Goals",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_COMMON",
+      "FeatureName": "Compensation Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_EMPLOYMENT_ACTIONS_FRAMEWORK",
+      "FeatureName": "Compensation Employment Actions Framework",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_GRADES",
+      "FeatureName": "Compensation Grades",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_GRADE_RATES",
+      "FeatureName": "Compensation Grade Rates",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_DOCUMENT_TYPES",
+      "FeatureName": "Compensation Document Types",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_JOBS",
+      "FeatureName": "Compensation Jobs",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_LOCATIONS",
+      "FeatureName": "Compensation Locations",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_POSITIONS",
+      "FeatureName": "Compensation Positions",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_PAYROLL_TOOLS",
+      "FeatureName": "Compensation Payroll Tools",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_ELEMENTS_EARNINGS_AND_DEDUCTIONS",
+      "FeatureName": "Compensation Elements, Earnings and Deductions",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_PAYROLL_RATES_AND_VALUES",
+      "FeatureName": "Compensation Payroll Rates and Values",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_PAYROLL_BALANCES",
+      "FeatureName": "Compensation Payroll Balances",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_BENEFITS_ELIGIBILITY",
+      "FeatureName": "Compensation Benefits Eligibility",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION_HCM_TOOL",
+      "FeatureName": "Compensation HCM Tool",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TOTAL_REWARDS_STATEMENT",
+      "FeatureName": "Total Rewards Statement",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_RECRUITING_ADDRESS_VALIDATION",
+      "FeatureName": "Recruiting Address Validation",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_RECRUITING_COMMON",
+      "FeatureName": "Recruiting Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_RECRUITING_LOCATIONS",
+      "FeatureName": "Recruiting Locations",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_RECRUITING_JOBS",
+      "FeatureName": "Recruiting Jobs",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_RECRUITING_HCM_TREES",
+      "FeatureName": "Recruiting HCM Trees",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_RECRUITING_PAYROLL_TOOLS",
+      "FeatureName": "Recruiting Payroll Tools",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_RECRUITING_BENEFITS_ELIGIBILITY",
+      "FeatureName": "Recruiting Benefits Eligibility",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_RECRUITING_HCM_TOOL",
+      "FeatureName": "Recruiting HCM Tool",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_CANDIDATE_EXPERIENCE_CONFIGURATION",
+      "FeatureName": "Candidate Experience Configuration",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_ABSENCE_MANAGEMENT_COMMON",
+      "FeatureName": "Absence Management Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_ABSENCE_MANAGEMENT_ENTERPRISE",
+      "FeatureName": "Absence Management Enterprise",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_ABSENCE_MANAGEMENT_LEGAL_AND_LEGISLATIVE_ORGANIZATIONS",
+      "FeatureName": "Absence Management Legal and Legislative Organizations",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_ABSENCE_MANAGEMENT_ELEMENTS_EARNINGS_AND_DEDUCTIONS",
+      "FeatureName": "Absence Management Elements, Earnings and Deductions",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_ABSENCE_MANAGEMENT_PERSON_RECORD",
+      "FeatureName": "Absence Management Person Record",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_ABSENCE_MANAGEMENT_EMPLOYMENT_ACTIONS_FRAMEWORK",
+      "FeatureName": "Absence Management Employment Actions Framework",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_ABSENCE_MANAGEMENT_BENEFITS_ELIGIBILITY",
+      "FeatureName": "Absence Management Benefits Eligibility",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_ABSENCE_MANAGEMENT_WFM_COMMON",
+      "FeatureName": "Absence Management WFM Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_ABSENCE_MANAGEMENT_PAYROLL_TOOLS",
+      "FeatureName": "Absence Management Payroll Tools",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_ABSENCE_MANAGEMENT_PAYROLL_RATES_AND_VALUES",
+      "FeatureName": "Absence Management Payroll Rates and Values",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_WORKFORCE_SCHEDULING_ENTERPRISE",
+      "FeatureName": "Workforce Scheduling Enterprise",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_WORKFORCE_SCHEDULING_LEGAL_AND_LEGISLATIVE_ORGANIZATIONS",
+      "FeatureName": "Workforce Scheduling Legal and Legislative Organizations",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_WORKFORCE_SCHEDULING_PERSON_RECORD",
+      "FeatureName": "Workforce Scheduling Person Record",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_WORKFORCE_SCHEDULING_EMPLOYMENT_ACTIONS_FRAMEWORK",
+      "FeatureName": "Workforce Scheduling Employment Actions Framework",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_WORKFORCE_SCHEDULING_ABSENCE",
+      "FeatureName": "Workforce Scheduling Absence",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_WORKFORCE_SCHEDULING_TIME_AND_LABOR",
+      "FeatureName": "Workforce Scheduling Time and Labor",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TIME_AND_LABOR_ENTERPRISE",
+      "FeatureName": "Time and Labor Enterprise",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TIME_AND_LABOR_LEGAL_AND_LEGISLATIVE_ORGANIZATIONS",
+      "FeatureName": "Time and Labor Legal and Legislative Organizations",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TIME_AND_LABOR_PERSON_RECORD",
+      "FeatureName": "Time and Labor Person Record",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TIME_AND_LABOR_EMPLOYMENT_ACTIONS_FRAMEWORK",
+      "FeatureName": "Time and Labor Employment Actions Framework",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TIME_AND_LABOR_ELEMENTS_EARNINGS_AND_DEDUCTIONS",
+      "FeatureName": "Time and Labor Elements, Earnings and Deductions",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TIME_AND_LABOR_WFM_COMMON",
+      "FeatureName": "Time and Labor WFM Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TIME_AND_LABOR_PAYROLL_TOOLS",
+      "FeatureName": "Time and Labor Payroll Tools",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TIME_AND_LABOR_FOUNDATION",
+      "FeatureName": "Time and Labor Foundation",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_WFM_PROCESSES",
+      "FeatureName": "WFM Processes",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_ABSENCE",
+      "FeatureName": "Benefits Absence",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_COMMON",
+      "FeatureName": "Benefits Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_SALARY_AND_BASE_PAY",
+      "FeatureName": "Benefits Salary and Base Pay",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_ENTERPRISE",
+      "FeatureName": "Benefits Enterprise",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_LEGAL_AND_LEGISLATIVE_ORGANIZATIONS",
+      "FeatureName": "Benefits Legal and Legislative Organizations",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_DEPARTMENTS",
+      "FeatureName": "Benefits Departments",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_DOCUMENT_TYPES",
+      "FeatureName": "Benefits Document Types",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_EMPLOYMENT_ACTIONS_FRAMEWORK",
+      "FeatureName": "Benefits Employment Actions Framework",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_GRADES",
+      "FeatureName": "Benefits Grades",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_JOBS",
+      "FeatureName": "Benefits Jobs",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_LOCATIONS",
+      "FeatureName": "Benefits Locations",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_PERSON_RECORD",
+      "FeatureName": "Benefits Person Record",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_POSITIONS",
+      "FeatureName": "Benefits Positions",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_COLLECTIVE_AGREEMENTS",
+      "FeatureName": "Benefits Collective Agreements",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_HCM_TREES",
+      "FeatureName": "Benefits HCM Trees",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_SENIORITY_DATES",
+      "FeatureName": "Benefits Seniority Dates",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_SUPPLEMENTARY_ORGANIZATIONS",
+      "FeatureName": "Benefits Supplementary Organizations",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_HCM_SECURITY_PROFILE",
+      "FeatureName": "Benefits HCM Security Profile",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_HCM_DATA_ROLE",
+      "FeatureName": "Benefits HCM Data Role",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_ELEMENTS_EARNINGS_AND_DEDUCTIONS",
+      "FeatureName": "Benefits Elements, Earnings and Deductions",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_HCM_EXTRACT",
+      "FeatureName": "Benefits HCM Extract",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_PAYROLL_BALANCES",
+      "FeatureName": "Benefits Payroll Balances",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_PAYROLL_TOOLS",
+      "FeatureName": "Benefits Payroll Tools",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_SECURITY_CONSOLE",
+      "FeatureName": "Benefits Security Console",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_TIME_AND_LABOR",
+      "FeatureName": "Benefits Time and Labor",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_GENERAL_CONFIGURATION",
+      "FeatureName": "Benefits General Configuration",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_ELIGIBILITY",
+      "FeatureName": "Benefits Eligibility",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_PROGRAM_AND_PLAN_HIERARCHY",
+      "FeatureName": "Benefits Program and Plan Hierarchy",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_RATES",
+      "FeatureName": "Benefits Rates",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_BILLING",
+      "FeatureName": "Benefits Billing",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_HCM_SECURITY_CONSOLE",
+      "FeatureName": "HCM  Security Console",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TALENT_REVIEW_COMMON",
+      "FeatureName": "Talent Review Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TALENT_REVIEW_HCM_TOOL",
+      "FeatureName": "Talent Review HCM Tool",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TALENT_REVIEW_DEPARTMENTS",
+      "FeatureName": "Talent Review Departments",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TALENT_REVIEW_JOBS",
+      "FeatureName": "Talent Review Jobs",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TALENT_REVIEW_POTENTIAL_ASSESSMENT",
+      "FeatureName": "Talent Review Potential Assessment",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_TALENT_REVIEW_TALENT_REVIEW_TEMPLATE",
+      "FeatureName": "Talent Review Talent Review Template",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_SUCCESSION_MANAGEMENT_COMMON",
+      "FeatureName": "Succession Management and Talent Pool Common",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_SUCCESSION_MANAGEMENT_HCM_TOOL",
+      "FeatureName": "Succession Management and Talent Pool HCM Tool",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_SUCCESSION_MANAGEMENT_BUSINESS_UNIT",
+      "FeatureName": "Succession Management and Talent Pool Business Unit",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_SUCCESSION_MANAGEMENT_DEPARTMENTS",
+      "FeatureName": "Succession Management and Talent Pool Departments",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_SUCCESSION_MANAGEMENT_JOBS",
+      "FeatureName": "Succession Management and Talent Pool Jobs",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    },
+    {
+      "FeatureCode": "ORA_SUCCESSION_MANAGEMENT_POSITIONS",
+      "FeatureName": "Succession Management and Talent Pool Positions",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "FUNCTIONAL_AREA"
+    }
+  ]
+}

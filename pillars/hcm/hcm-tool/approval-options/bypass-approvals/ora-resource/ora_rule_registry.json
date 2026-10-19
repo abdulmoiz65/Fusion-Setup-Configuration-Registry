@@ -1,0 +1,227 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_BYPASS_APPROVALS",
+      "task_name": "Bypass Approvals",
+      "start_node": "APPROVAL_PROCESS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "APPROVAL_PROCESS.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "APPROVAL_PROCESS.FIND_BY_PROCESS_NAME",
+            "missing_process": "APPROVAL_PROCESS.MISSING",
+            "invalid_bypass_mode": "BYPASS_OPTION.CONFLICT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_PROCESS.FIND_BY_PROCESS_NAME",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "APPROVAL_PROCESS.ENFORCE_SCOPE",
+            "not_found": "APPROVAL_PROCESS.NOT_FOUND",
+            "ambiguous": "APPROVAL_PROCESS.NOT_FOUND"
+          },
+          "prerequisites": [
+            "APPROVAL_PROCESS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "approval_process is present",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_PROCESS.ENFORCE_SCOPE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "allowed": "BYPASS_OPTION.ENFORCE_EXCLUSIVITY",
+            "blocked": "APPROVAL_PROCESS.NOT_FOUND"
+          },
+          "prerequisites": [
+            "APPROVAL_PROCESS.FIND_BY_PROCESS_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact approval process lookup completed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BYPASS_OPTION.ENFORCE_EXCLUSIVITY",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "regular": "APPROVAL_PROCESS.DONE",
+            "asynchronous": "APPROVAL_PROCESS.DONE",
+            "disabled": "APPROVAL_PROCESS.DONE",
+            "conflict": "BYPASS_OPTION.CONFLICT"
+          },
+          "prerequisites": [
+            "APPROVAL_PROCESS.ENFORCE_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact approval process lookup completed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_PROCESS.MISSING",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "approval_process is missing or blank",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_PROCESS.NOT_FOUND",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Exact Process Name lookup has no single result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BYPASS_OPTION.CONFLICT",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Regular and asynchronous bypass options conflict",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROVAL_PROCESS.DONE",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BYPASS_OPTION.ENFORCE_EXCLUSIVITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approval process and bypass mode gates passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Error disclosure complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

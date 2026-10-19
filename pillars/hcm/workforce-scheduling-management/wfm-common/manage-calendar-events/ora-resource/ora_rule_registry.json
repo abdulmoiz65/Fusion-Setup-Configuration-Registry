@@ -1,0 +1,585 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_CALENDAR_EVENT",
+      "task_name": "Manage Calendar Events",
+      "start_node": "MCE.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "MCE.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MCE.ROUTE_FLOW",
+            "invalid": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before defaulting, design enforcement, preview, or mutation handoff",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCE.ROUTE_FLOW",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "calendar_event": "MCE.RESOLVE_CATEGORY",
+            "calendar": "MCAL.VALIDATE_INPUT",
+            "invalid": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCE.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A request identifies either Calendar Event maintenance or Calendar maintenance",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCE.RESOLVE_CATEGORY",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MCE.APPLY_DEFAULTS",
+            "blocked": "MCE.HANDLE_ERROR",
+            "failure": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCE.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A category selection is required for a calendar event",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCE.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "MCE.ENFORCE_CALENDAR_EVENT_DESIGN",
+            "blocked": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCE.RESOLVE_CATEGORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Required inputs and any category lookup have succeeded",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCE.ENFORCE_CALENDAR_EVENT_DESIGN",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "MCE.ENFORCE_USER_FACING_VALUES",
+            "blocked": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCE.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preview or mutation handoff for a calendar event",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCE.ENFORCE_USER_FACING_VALUES",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "MCE.COMPLETE_SUMMARY",
+            "blocked": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCE.ENFORCE_CALENDAR_EVENT_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before returning any user-facing setup response",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCE.COMPLETE_SUMMARY",
+          "node_type": "step",
+          "sequence": 55,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "generated": "MCE.PROVIDER_APPROVAL_HANDOFF",
+            "blocked": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCE.ENFORCE_USER_FACING_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Generate the Complete Summary from verified structured user values and actually applied defaults before provider-owned approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCE.PROVIDER_APPROVAL_HANDOFF",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "handed_off": "MCE.READY",
+            "blocked": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCE.COMPLETE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Hand off the completed summary to the unchanged provider-owned approval process; do not collect, decide, or execute approval in this task",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCAL.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MCAL.VERIFY_UPDATE_CALENDAR_ID",
+            "invalid": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCE.ROUTE_FLOW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a calendar",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCAL.VERIFY_UPDATE_CALENDAR_ID",
+          "node_type": "step",
+          "sequence": 115,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "MCAL.APPLY_DEFAULTS",
+            "not_applicable": "MCAL.APPLY_DEFAULTS",
+            "blocked": "MCE.HANDLE_ERROR",
+            "failure": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCAL.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Updating a calendar through Data Loader; not applicable to create",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCAL.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "MCAL.RESOLVE_EVENT_SELECTOR",
+            "blocked": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCAL.VERIFY_UPDATE_CALENDAR_ID"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating a calendar or opening its event picker",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCAL.RESOLVE_EVENT_SELECTOR",
+          "node_type": "step",
+          "sequence": 130,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "event": "MCAL.CHECK_EVENT_DEPENDENCY",
+            "event_category": "MCAL.RESOLVE_EVENT_CATEGORY",
+            "blocked": "MCE.HANDLE_ERROR",
+            "failure": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCAL.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Calendar-page event picker is used",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCAL.RESOLVE_EVENT_CATEGORY",
+          "node_type": "step",
+          "sequence": 140,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MCAL.CHECK_EVENT_DEPENDENCY",
+            "blocked": "MCE.HANDLE_ERROR",
+            "failure": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCAL.RESOLVE_EVENT_SELECTOR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected Calendar-page event type exposes Event Category",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCAL.CHECK_EVENT_DEPENDENCY",
+          "node_type": "step",
+          "sequence": 150,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MCAL.RESOLVE_EVENTS",
+            "not_applicable": "MCAL.ENFORCE_CALENDAR_DESIGN",
+            "blocked": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCAL.RESOLVE_EVENT_SELECTOR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A calendar event-picker action is requested",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCAL.RESOLVE_EVENTS",
+          "node_type": "step",
+          "sequence": 160,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MCAL.ENFORCE_CALENDAR_DESIGN",
+            "blocked": "MCE.HANDLE_ERROR",
+            "failure": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCAL.CHECK_EVENT_DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more calendar events are selected for a calendar",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCAL.ENFORCE_CALENDAR_DESIGN",
+          "node_type": "decision",
+          "sequence": 170,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "MCAL.ENFORCE_USER_FACING_VALUES",
+            "blocked": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCAL.CHECK_EVENT_DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preview or mutation handoff for a calendar",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCAL.ENFORCE_USER_FACING_VALUES",
+          "node_type": "decision",
+          "sequence": 180,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "MCAL.COMPLETE_SUMMARY",
+            "blocked": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCAL.ENFORCE_CALENDAR_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before returning any user-facing Calendar response",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCAL.COMPLETE_SUMMARY",
+          "node_type": "step",
+          "sequence": 190,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "generated": "MCAL.PROVIDER_APPROVAL_HANDOFF",
+            "blocked": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCAL.ENFORCE_USER_FACING_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Generate the Complete Summary from verified structured Calendar values and actually applied defaults before provider-owned approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCAL.PROVIDER_APPROVAL_HANDOFF",
+          "node_type": "step",
+          "sequence": 200,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "handed_off": "MCAL.READY",
+            "blocked": "MCE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCAL.COMPLETE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Hand off the completed Calendar summary to the unchanged provider-owned approval process; do not collect, decide, or execute approval in this task",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCAL.READY",
+          "node_type": "terminal",
+          "sequence": 210,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MCAL.PROVIDER_APPROVAL_HANDOFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Calendar Complete Summary generated and handed to the unchanged provider-owned approval process",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCE.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 300,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MCE.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any input, lookup, default, design, summary, or response-sanitization failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCE.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 310,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was disclosed in business language",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCE.READY",
+          "node_type": "terminal",
+          "sequence": 320,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MCE.PROVIDER_APPROVAL_HANDOFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Complete Summary generated and handed to the unchanged provider-owned approval process",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

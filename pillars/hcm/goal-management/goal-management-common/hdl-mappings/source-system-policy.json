@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "routes": ["hdl_generate", "hdl_dat_preflight"],
+  "environmentOwners": {"Fusion": "FDOS"},
+  "precedence": ["suppliedSourceSystemOwner", "environmentOwner"],
+  "lookupType": "HRC_SOURCE_SYSTEM_OWNER",
+  "invalidConfiguredOwner": "block_configuration_error",
+  "selectFirstEnabledOwner": false,
+  "createMissingOwner": false
+}

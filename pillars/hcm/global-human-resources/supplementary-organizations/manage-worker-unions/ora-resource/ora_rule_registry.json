@@ -1,0 +1,348 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PER_MANAGE_WORKER_UNIONS",
+      "task_name": "Manage Worker Unions",
+      "start_node": "UNION.VALIDATE",
+      "nodes": [
+        {
+          "id": "UNION.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "UNION.READ",
+            "missing": "UNION.ERROR",
+            "invalid": "UNION.ERROR",
+            "unsupported": "UNION.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Worker Unions request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UNION.READ",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "UNION.CONTEXT",
+            "list_returned": "UNION.CONTEXT",
+            "create_available": "UNION.CONTEXT",
+            "delete_resolved": "UNION.HISTORY",
+            "not_found": "UNION.ERROR",
+            "duplicate": "UNION.ERROR",
+            "ambiguous": "UNION.ERROR",
+            "failed": "UNION.ERROR"
+          },
+          "prerequisites": [
+            "UNION.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read is requested, an exact target is required before edit or delete-effective-split, a uniqueness check is required before create, or a reference must resolve",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UNION.HISTORY",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "eligible": "UNION.CONTEXT",
+            "not_required": "UNION.CONTEXT",
+            "first_row": "UNION.ERROR",
+            "missing": "UNION.ERROR",
+            "ambiguous": "UNION.ERROR",
+            "failed": "UNION.ERROR"
+          },
+          "prerequisites": [
+            "UNION.READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "delete-effective-split is requested after the current Worker Union is read using today's effective date",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UNION.CONTEXT",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "UNION.VALUESET",
+            "not_required": "UNION.VALUESET",
+            "ambiguous": "UNION.ERROR",
+            "failed": "UNION.ERROR"
+          },
+          "prerequisites": [
+            "UNION.READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Worker Union EFF contexts or segments are requested or supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UNION.VALUESET",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "UNION.DEPENDENCIES",
+            "not_required": "UNION.DEPENDENCIES",
+            "invalid": "UNION.ERROR",
+            "failed": "UNION.ERROR"
+          },
+          "prerequisites": [
+            "UNION.CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Worker Union EFF segment values or Additional Information codes are supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UNION.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "UNION.DEFAULTS",
+            "not_required": "UNION.DEFAULTS",
+            "needs_input": "UNION.ERROR",
+            "unresolved": "UNION.ERROR"
+          },
+          "prerequisites": [
+            "UNION.VALUESET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After all applicable reference lookups",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UNION.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "UNION.DESIGN",
+            "preserved": "UNION.DESIGN",
+            "not_required": "UNION.DESIGN",
+            "blocked": "UNION.ERROR"
+          },
+          "prerequisites": [
+            "UNION.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, current-state reads, and required resolvers are complete",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UNION.DESIGN",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "UNION.ROUTE",
+            "not_required": "UNION.ROUTE",
+            "blocked": "UNION.ERROR"
+          },
+          "prerequisites": [
+            "UNION.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, dependency resolution, and defaulting",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UNION.ROUTE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read": "UNION.DONE",
+            "create_or_edit_or_delete_ready": "UNION.LOADER_READY",
+            "mutation_blocked": "UNION.ERROR"
+          },
+          "prerequisites": [
+            "UNION.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select read completion or the Core Data Loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UNION.ERROR",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "UNION.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior node returns invalid, missing, ambiguous, first-row, blocked, failed, partial, timed-out, uncertain, stale, unverified, or unsupported",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UNION.DONE",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "UNION.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UNION.LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "UNION.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Mutation rules passed; return UNION.LOADER_READY to the task skill",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UNION.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request cannot safely continue without correction or reconciliation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

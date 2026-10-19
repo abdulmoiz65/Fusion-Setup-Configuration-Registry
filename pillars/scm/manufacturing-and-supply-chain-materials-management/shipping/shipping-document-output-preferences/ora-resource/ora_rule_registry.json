@@ -1,0 +1,130 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_SHIPPING_DOCUMENT_OUTPUT_PREFERENCES",
+      "task_name": "Shipping Document Output Preferences",
+      "start_node": "SDOP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "SDOP.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "orientation_supplied": "SDOP.LOOKUP_ORIENTATION",
+            "side_only": "SDOP.LOOKUP_SIDE",
+            "no_print_lookup": "SDOP.DONE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SDOP.LOOKUP_ORIENTATION",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "side_supplied": "SDOP.LOOKUP_SIDE",
+            "no_print_side": "SDOP.DONE"
+          },
+          "prerequisites": [
+            "SDOP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Print orientation is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 12
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SDOP.LOOKUP_SIDE",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SDOP.DONE"
+          },
+          "prerequisites": [
+            "SDOP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Print side is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 13
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SDOP.DONE",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input validated and all applicable lookup paths completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SDOP.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any rule fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 13
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

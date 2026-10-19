@@ -1,0 +1,107 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_UNITS_OF_MEASURE_USAGES",
+      "task_name": "Units of Measure Usages",
+      "start_node": "UOMUSAGES.VALIDATE_EXECUTION_ROUTE",
+      "nodes": [
+        {
+          "id": "UOMUSAGES.VALIDATE_EXECUTION_ROUTE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "UOMUSAGES.CHECK_DATALOADER_READINESS",
+            "blocked": "UOMUSAGES.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Units of Measure Usages execution request.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UOMUSAGES.CHECK_DATALOADER_READINESS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "UOMUSAGES.DATALOADER_HANDOFF",
+            "blocked": "UOMUSAGES.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "UOMUSAGES.VALIDATE_EXECUTION_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The execution route has passed validation.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UOMUSAGES.DATALOADER_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "UOMUSAGES.CHECK_DATALOADER_READINESS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The governed route and dependency readiness passed; hand off to core.data-loader.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UOMUSAGES.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any execution-route or dependency prerequisite is blocked or fails.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

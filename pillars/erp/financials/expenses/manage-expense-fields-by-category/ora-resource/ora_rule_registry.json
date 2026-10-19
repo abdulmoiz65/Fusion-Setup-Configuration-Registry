@@ -1,0 +1,182 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "EXM_MANAGE_EXPENSE_FIELDS_BY_CATEGORY",
+      "task_name": "Manage Expense Fields by Category",
+      "start_node": "EXMCF.RESOLVE",
+      "nodes": [
+        {
+          "id": "EXMCF.RESOLVE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "EXMCF.DEPENDENCY",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMCF.DEPENDENCY",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "success": "EXMCF.VALIDATE",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EXMCF.RESOLVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMCF.VALIDATE",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "EXMCF.DEFAULT",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EXMCF.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMCF.DEFAULT",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "success": "EXMCF.DESIGN",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EXMCF.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMCF.DESIGN",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "success": "EXMCF.DONE",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EXMCF.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A resource check fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMCF.DONE",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EXMCF.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return resource validation results only; not import success",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

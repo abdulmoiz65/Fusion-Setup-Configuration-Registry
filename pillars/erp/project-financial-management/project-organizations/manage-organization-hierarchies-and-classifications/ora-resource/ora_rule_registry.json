@@ -1,0 +1,453 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PJF_MANAGE_ORGANIZATION_HIERARCHIES_AND_CLASSIFICATIONS",
+      "task_name": "Manage Organization Hierarchies and Classifications",
+      "start_node": "OHCL.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "OHCL.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "OHCL.RESOLVE_CURRENT_STATE",
+            "status_requested": "OHCL.STATUS_REQUEST_GATE",
+            "invalid": "OHCL.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "For preparation apply the required groups; for a later explicit status/results/verification request validate saved project, target, task and acceptance context without requiring a new hierarchy design or import",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.RESOLVE_CURRENT_STATE",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "OHCL.CHECK_CLASSIFICATION_REFERENCE",
+            "missing": "OHCL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "OHCL.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Current-state reconciliation is required, or an unchanged create baseline is confirmed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 205
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.CHECK_CLASSIFICATION_REFERENCE",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OHCL.RESOLVE_ALLOWED_VALUES",
+            "not_required": "OHCL.RESOLVE_ALLOWED_VALUES",
+            "failure": "OHCL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "OHCL.RESOLVE_CURRENT_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate the explicit current-reference request guard for list_organization_classifications_rest_reference; run the governed read only when requested, otherwise return not_required without a GET",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 206
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.RESOLVE_ALLOWED_VALUES",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "OHCL.RESOLVE_DEFAULT_HIERARCHY",
+            "invalid": "OHCL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "OHCL.CHECK_CLASSIFICATION_REFERENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate the hierarchy type and classifications",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 207
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.RESOLVE_DEFAULT_HIERARCHY",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "OHCL.CHECK_DEPENDENCIES",
+            "not_required": "OHCL.CHECK_DEPENDENCIES",
+            "missing": "OHCL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "OHCL.RESOLVE_ALLOWED_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the conditional default hierarchy combination",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 208
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.CHECK_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "OHCL.APPLY_DEFAULTS",
+            "missing": "OHCL.HANDLE_ERROR",
+            "unsupported": "OHCL.REFUSED"
+          },
+          "prerequisites": [
+            "OHCL.RESOLVE_DEFAULT_HIERARCHY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After current state and target values resolve",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "OHCL.ENFORCE_DESIGN",
+            "blocked": "OHCL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "OHCL.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Preserve omitted and out-of-scope values without inventing a hierarchy design",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "OHCL.EXECUTION_GATE",
+            "blocked": "OHCL.HANDLE_ERROR",
+            "unsupported": "OHCL.REFUSED"
+          },
+          "prerequisites": [
+            "OHCL.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before controlled import approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "accepted_processing": "OHCL.PROCESSING",
+            "persistence_failed": "OHCL.HANDLE_ERROR",
+            "missing": "OHCL.HANDLE_ERROR",
+            "declined": "OHCL.REFUSED"
+          },
+          "prerequisites": [
+            "OHCL.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require core preflight, Task Hook and exact-archive approval; submit once and register acceptance before returning without status or export calls; persistence failure retains a known ID and never resubmits",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.STATUS_REQUEST_GATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "status_requested": "OHCL.LOAD_COMPLETION_GATE",
+            "invalid": "OHCL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "OHCL.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require a later explicit status/results/verification request and registered matching project, target, task, request ID and approved archive checksum; resume without preparation, approval or submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.LOAD_COMPLETION_GATE",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "terminal_success": "OHCL.VERIFY_TARGET_STATE",
+            "terminal_status": "OHCL.RETURN_STATUS",
+            "processing": "OHCL.PROCESSING",
+            "polling_timeout": "OHCL.PROCESSING",
+            "failure": "OHCL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "OHCL.STATUS_REQUEST_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only on an explicit resume use core status/count/error checks; terminal_success requires requested setup verification, terminal_status is successful status-only completion; active or timed-out status stops without polling again",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.VERIFY_TARGET_STATE",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "OHCL.READY",
+            "mismatch": "OHCL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "OHCL.LOAD_COMPLETION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only on requested setup verification after terminal load success, use the core result/error evidence and a fresh same-task export to compare approved changes and preservation; no verification immediately after submission",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 209
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 13,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "OHCL.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, readiness, reference lookup, approval, execution, resume or verification issue occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.READY",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OHCL.VERIFY_TARGET_STATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Requested setup verification proves approved changes and preservation after terminal load success",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.PROCESSING",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Accepted initiation or requested active/timed-out status; retain receipt and wait for another explicit request; task is not complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.RETURN_STATUS",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OHCL.LOAD_COMPLETION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the requested successful load status/count/error result without setup-verification or task-completion claim",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.FAILED",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OHCL.HANDLE_ERROR"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A disclosed issue prevents readiness or completion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OHCL.REFUSED",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Requested route or action is unsupported or declined",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

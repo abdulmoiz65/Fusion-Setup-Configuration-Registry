@@ -1,0 +1,217 @@
+{
+  "count": 17,
+  "totalResults": 17,
+  "removals": [
+    {
+      "FeatureCode": "PER_CORE",
+      "FeatureName": "Compensation Management",
+      "effectiveRelease": "next-release",
+      "reason": "Offering removed from the upcoming Oracle Fusion release"
+    },
+    {
+      "FeatureCode": "ORA_IRC_RCE",
+      "FeatureName": "Recruiting and Candidate Experience",
+      "effectiveRelease": "next-release",
+      "reason": "Offering removed from the upcoming Oracle Fusion release"
+    },
+    {
+      "FeatureCode": "PER_WKF_DEPL",
+      "FeatureName": "Workforce Deployment",
+      "effectiveRelease": "next-release",
+      "reason": "Offering removed from the upcoming Oracle Fusion release"
+    },
+    {
+      "FeatureCode": "PER_WKF_DEV",
+      "FeatureName": "Workforce Development",
+      "effectiveRelease": "next-release",
+      "reason": "Offering removed from the upcoming Oracle Fusion release"
+    }
+  ],
+  "items": [
+    {
+      "FeatureCode": "ORA_FMK_MARKETING",
+      "FeatureName": "Marketing",
+      "Classification": "ROOT_NODE",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[\"ORA_FMK_MARKETING_YES\"]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "CX"
+    },
+    {
+      "FeatureCode": "ORA_GLOBAL_HUMAN_RESOURCES",
+      "FeatureName": "Global Human Resources",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING"
+    },
+    {
+      "FeatureCode": "ORA_IRC_HCM_COMMUNICATE",
+      "FeatureName": "HCM Communicate",
+      "Classification": "ROOT_NODE",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[\"ORA_IRC_HCM_COMMUNICATE_YES\"]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "HCM"
+    },
+    {
+      "FeatureCode": "ORA_HCM_SECURITY",
+      "FeatureName": "HCM Security",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING"
+    },
+    {
+      "FeatureCode": "ORA_FIELD_SERVICE",
+      "FeatureName": "Field Service",
+      "Classification": "ROOT_NODE",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[\"ORA_FIELD_SERVICE_YES\"]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "CX"
+    },
+    {
+      "FeatureCode": "ORA_WORKFORCE_ABSENCE_MANAGEMENT",
+      "FeatureName": "Workforce Absence Management",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "HCM"
+    },
+    {
+      "FeatureCode": "ORA_WORKFORCE_SCHEDULING_MANAGEMENT",
+      "FeatureName": "Workforce Scheduling Management",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "HCM"
+    },
+    {
+      "FeatureCode": "ORA_GLOBAL_PAYROLL",
+      "FeatureName": "Global Payroll",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "HCM"
+    },
+    {
+      "FeatureCode": "ORA_WORKFORCE_TIME_MANAGEMENT",
+      "FeatureName": "Workforce Time Management",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "HCM"
+    },
+    {
+      "FeatureCode": "ORA_COMPENSATION",
+      "FeatureName": "Compensation",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "HCM"
+    },
+    {
+      "FeatureCode": "ORA_PERFORMANCE_MANAGEMENT",
+      "FeatureName": "Performance Management",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "HCM"
+    },
+    {
+      "FeatureCode": "ORA_GOAL_MANAGEMENT",
+      "FeatureName": "Goal Management",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "HCM"
+    },
+    {
+      "FeatureCode": "ORA_RISK_AND_CONTROLS",
+      "FeatureName": "Risk and Security",
+      "Classification": "ROOT_NODE",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[\"YES_300000000489229\"]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "ERP"
+    },
+    {
+      "FeatureCode": "ORA_RECRUITING",
+      "FeatureName": "Recruiting",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "HCM"
+    },
+    {
+      "FeatureCode": "ORA_BENEFITS_CONFIG",
+      "FeatureName": "Benefits Configuration",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "HCM"
+    },
+    {
+      "FeatureCode": "ORA_TALENT_REVIEW_SETUP",
+      "FeatureName": "Talent Review Setup",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "HCM"
+    },
+    {
+      "FeatureCode": "ORA_SUCCESSION_MANAGEMENT",
+      "FeatureName": "Succession Management and Talent Pool",
+      "Classification": "SUPPLEMENTAL",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "HCM"
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "schema_version": "ar-customer-registration-contract-v1",
+  "classification": "Oracle Highly Restricted",
+  "release": "26D (11.13.26.10.0)",
+  "registration_fields": {
+    "BUS_OBJ_FILE_DISCRIMINATOR": "customers",
+    "BUS_OBJ_TOP_DISCRIMINATOR": "customers",
+    "OBJECT_TYPE": "FBDI",
+    "PRODUCT_AREA": "ORA_FSCR",
+    "PRODUCT_FAMILY": "ERP",
+    "MODULE_ID": "61ECAF4AAAF9E990E040449821C61C97",
+    "APPLICATION_ID": "222",
+    "LOAD_ADAPTER_INTERFACE_ID": "59",
+    "LOAD_ADAPTER_REF": "FUN_ERP_INTERFACE_OPTIONS:222:59",
+    "BUSINESS_OBJECT_VO_FQ_NAME": "oracle.apps.hcm.common.dataLoader.fbdi.Fbdi222Option59VO"
+  },
+  "adapter_config": {
+    "schemaVersion": 1,
+    "enabled": true,
+    "importValidation": {
+      "warningPolicy": "FAIL",
+      "checks": [
+        {
+          "type": "rowCount",
+          "table": "AR_UPD_CUSTOMERS",
+          "operator": "GT",
+          "KEY_ATTRIBUTE_NAME": "LOAD_REQUEST_ID",
+          "value": 0,
+          "failureMessage": "No customers rows were imported"
+        },
+        {
+          "type": "query",
+          "sql": "select count(*) from AR_UPD_CUSTOMERS where load_request_id = ?",
+          "binds": [
+            {
+              "source": "interfaceRequestId"
+            }
+          ],
+          "operator": "GT",
+          "value": 0,
+          "failureMessage": "No customers rows were imported"
+        }
+      ]
+    },
+    "applicationArguments": {
+      "submit.argument1": {
+        "source": "scopeColumn",
+        "name": "BATCH_NAME",
+        "required": true
+      },
+      "submit.argument2": {
+        "source": "scopeColumn",
+        "name": "DOCUMENT_ID",
+        "required": false
+      },
+      "submit.argument3": {
+        "source": "scopeColumn",
+        "name": "BATCH_ID",
+        "required": false
+      },
+      "submit.argument4": {
+        "source": "scopeColumn",
+        "name": "LOAD_MODE",
+        "required": true
+      },
+      "submit.argument5": {
+        "source": "scopeColumn",
+        "name": "IMPORT_PROCESS_ID",
+        "required": true
+      }
+    },
+    "loadExecution": {
+      "strategy": "SEQUENTIAL",
+      "failurePolicy": "STOP_ON_ERROR",
+      "scopeResolver": {
+        "source": "interfaceQueryRows",
+        "sql": "SELECT DISTINCT TO_CHAR(c.LOAD_REQUEST_ID) AS SCOPE_KEY, 'FSCR_CUSTOMERS_' || TO_CHAR(c.LOAD_REQUEST_ID) AS BATCH_NAME, CAST(NULL AS VARCHAR2(240)) AS DOCUMENT_ID, CAST(NULL AS NUMBER) AS BATCH_ID, 'ESSCREATE' AS LOAD_MODE, c.LOAD_REQUEST_ID AS IMPORT_PROCESS_ID FROM AR_UPD_CUSTOMERS c WHERE c.LOAD_REQUEST_ID = ? ORDER BY 1",
+        "binds": [
+          {
+            "source": "interfaceRequestId"
+          }
+        ],
+        "keyColumn": "SCOPE_KEY",
+        "cardinality": "ONE_OR_MORE"
+      }
+    },
+    "observability": {
+      "import": {
+        "interfaceTables": [
+          "AR_UPD_BANK_ACCOUNTS",
+          "AR_UPD_CONTACTS",
+          "AR_UPD_CUSTOMERS",
+          "AR_UPD_REF_ACCOUNTS"
+        ],
+        "primaryInterfaceTable": "AR_UPD_CUSTOMERS",
+        "requestColumn": "LOAD_REQUEST_ID",
+        "errorsRef": "load"
+      },
+      "load": {
+        "summary": {
+          "source": "interfaceQuery",
+          "sql": "SELECT COUNT(*) AS status_total_count, NVL(SUM(CASE WHEN c.UPLOAD_STATUS = 'SUCCESS' THEN 1 ELSE 0 END), 0) AS status_success_count, NVL(SUM(CASE WHEN c.UPLOAD_STATUS IN ('FAILED', 'FAILED_NOT_CORRECTABLE', 'BLOCKED') THEN 1 ELSE 0 END), 0) AS status_error_count, NVL(SUM(CASE WHEN c.UPLOAD_STATUS = 'SUCCESS' OR c.UPLOAD_STATUS IN ('FAILED', 'FAILED_NOT_CORRECTABLE', 'BLOCKED') THEN 0 ELSE 1 END), 0) AS status_pending_count FROM AR_UPD_CUSTOMERS c WHERE c.LOAD_REQUEST_ID = ?",
+          "binds": [
+            {
+              "source": "interfaceRequestId"
+            }
+          ],
+          "emptyPolicy": "ERROR"
+        },
+        "errors": {
+          "source": "interfaceQueryRows",
+          "sql": "WITH failed_rows AS ( SELECT c.CUST_UPLOAD_ID, c.LOAD_REQUEST_ID, c.BATCH_ID, c.FILE_RECORD_NUM, c.UPLOAD_STATUS, c.ORIG_SOURCE_SYSTEM, JSON_OBJECT('uploadId' VALUE TO_CHAR(c.CUST_UPLOAD_ID), 'ORIG_SOURCE_SYSTEM_NAME' VALUE c.ORIG_SOURCE_SYSTEM_NAME, 'PARTY_ORIG_SYSTEM_REFERENCE' VALUE c.PARTY_ORIG_SYSTEM_REFERENCE, 'CUST_ORIG_SYSTEM_REFERENCE' VALUE c.CUST_ORIG_SYSTEM_REFERENCE, 'CUST_SITE_ORIG_SYS_REF' VALUE c.CUST_SITE_ORIG_SYS_REF, 'LOCATION_ORIG_SYSTEM_REFERENCE' VALUE c.LOCATION_ORIG_SYSTEM_REFERENCE, 'CUST_SITEUSE_ORIG_SYS_REF' VALUE c.CUST_SITEUSE_ORIG_SYS_REF, 'SITE_USE_CODE' VALUE c.SITE_USE_CODE NULL ON NULL RETURNING CLOB) AS row_identity FROM AR_UPD_CUSTOMERS c WHERE c.LOAD_REQUEST_ID = ? AND c.UPLOAD_STATUS IN ('FAILED', 'FAILED_NOT_CORRECTABLE', 'BLOCKED') ), linked_errors AS ( SELECT DISTINCT c.CUST_UPLOAD_ID, TO_CHAR(c.CUST_UPLOAD_ID) || ':' || TO_CHAR(e.CUST_ERROR_ID) AS error_key, 'FSCR_ROW_V1=' || CASE WHEN DBMS_LOB.GETLENGTH(c.row_identity) <= 600 AND LENGTHB(DBMS_LOB.SUBSTR(c.row_identity, 600, 1)) <= 600 THEN DBMS_LOB.SUBSTR(c.row_identity, 600, 1) ELSE JSON_OBJECT('uploadId' VALUE TO_CHAR(c.CUST_UPLOAD_ID), 'identityOmitted' VALUE 'length' RETURNING VARCHAR2(100)) END || ' ' || 'Message=' || SUBSTR(NVL(e.ERROR_MESSAGE_NAME, 'UNAVAILABLE'), 1, 100) || ', original=' || SUBSTR(NVL(e.ORIGINAL_ERROR_MESSAGE, 'UNAVAILABLE'), 1, 100) || ', interface=' || SUBSTR(NVL(e.INTERFACE_TABLE_NAME, 'UNAVAILABLE'), 1, 100) || CASE WHEN e.TOKEN1_NAME IS NOT NULL THEN ', ' || SUBSTR(e.TOKEN1_NAME, 1, 30) || '=' || SUBSTR(NVL(e.TOKEN1_VALUE, '(null)'), 1, 70) ELSE '' END || CASE WHEN e.TOKEN2_NAME IS NOT NULL THEN ', ' || SUBSTR(e.TOKEN2_NAME, 1, 30) || '=' || SUBSTR(NVL(e.TOKEN2_VALUE, '(null)'), 1, 70) ELSE '' END || CASE WHEN e.TOKEN3_NAME IS NOT NULL THEN ', ' || SUBSTR(e.TOKEN3_NAME, 1, 30) || '=' || SUBSTR(NVL(e.TOKEN3_VALUE, '(null)'), 1, 70) ELSE '' END || CASE WHEN e.TOKEN4_NAME IS NOT NULL THEN ', ' || SUBSTR(e.TOKEN4_NAME, 1, 30) || '=' || SUBSTR(NVL(e.TOKEN4_VALUE, '(null)'), 1, 70) ELSE '' END || CASE WHEN e.TOKEN5_NAME IS NOT NULL THEN ', ' || SUBSTR(e.TOKEN5_NAME, 1, 30) || '=' || SUBSTR(NVL(e.TOKEN5_VALUE, '(null)'), 1, 70) ELSE '' END AS error_message, NVL(e.ERROR_MESSAGE_NAME, 'AR_UPD_CUSTOMERS_' || c.UPLOAD_STATUS) AS error_code, 'CUST_UPLOAD_ID=' || TO_CHAR(c.CUST_UPLOAD_ID) || ', BATCH_ID=' || NVL(TO_CHAR(c.BATCH_ID), '(unassigned)') || ', FILE_RECORD_NUM=' || NVL(TO_CHAR(c.FILE_RECORD_NUM), '(unassigned)') AS record_reference, TO_CHAR(c.LOAD_REQUEST_ID) AS scope_key FROM failed_rows c JOIN AR_UPD_ERROR_DETAILS d ON d.UPLOAD_OWNER_TABLE_NAME = 'AR_UPD_CUSTOMERS' AND d.UPLOAD_OWNER_TABLE_ID = c.CUST_UPLOAD_ID AND d.ERROR_OWNER_TABLE_NAME = 'AR_UPD_CUST_ERRORS' JOIN AR_UPD_CUST_ERRORS e ON e.CUST_ERROR_ID = d.ERROR_OWNER_TABLE_ID AND e.BATCH_ID = c.BATCH_ID AND e.ORIG_SOURCE_SYSTEM = c.ORIG_SOURCE_SYSTEM AND e.REQUEST_ID = d.REQUEST_ID ), all_errors AS ( SELECT error_key, error_message, error_code, record_reference, scope_key FROM linked_errors UNION ALL SELECT TO_CHAR(c.CUST_UPLOAD_ID) || ':STATUS' AS error_key, 'FSCR_ROW_V1=' || CASE WHEN DBMS_LOB.GETLENGTH(c.row_identity) <= 600 AND LENGTHB(DBMS_LOB.SUBSTR(c.row_identity, 600, 1)) <= 600 THEN DBMS_LOB.SUBSTR(c.row_identity, 600, 1) ELSE JSON_OBJECT('uploadId' VALUE TO_CHAR(c.CUST_UPLOAD_ID), 'identityOmitted' VALUE 'length' RETURNING VARCHAR2(100)) END || ' ' || 'Customer upload status=' || c.UPLOAD_STATUS || ', no matching detailed error was found. Review this batch in Manage Customer Uploads and its ESS output.' AS error_message, 'AR_UPD_CUSTOMERS_' || c.UPLOAD_STATUS AS error_code, 'CUST_UPLOAD_ID=' || TO_CHAR(c.CUST_UPLOAD_ID) || ', BATCH_ID=' || NVL(TO_CHAR(c.BATCH_ID), '(unassigned)') || ', FILE_RECORD_NUM=' || NVL(TO_CHAR(c.FILE_RECORD_NUM), '(unassigned)') AS record_reference, TO_CHAR(c.LOAD_REQUEST_ID) AS scope_key FROM failed_rows c WHERE NOT EXISTS ( SELECT 1 FROM linked_errors e WHERE e.CUST_UPLOAD_ID = c.CUST_UPLOAD_ID ) ) SELECT error_key, error_message, error_code, record_reference, scope_key FROM all_errors ORDER BY scope_key, record_reference, error_key",
+          "binds": [
+            {
+              "source": "interfaceRequestId"
+            }
+          ],
+          "maxRows": 500
+        }
+      }
+    },
+    "auxiliaryMetadata": {
+      "fileNamePrefixes": [
+        "ArUpdBankAccounts",
+        "ArUpdContacts",
+        "ArUpdCustomers",
+        "ArUpdRefAccounts"
+      ],
+      "ucmAccountName": "fin/receivables/import"
+    }
+  },
+  "reviewed_source_sha256": "e297dc01fc21eadb5174aa3f5e5ce2d059969c811b0a87a0eba839d9a835ecd6",
+  "scope": "Customers worksheet registration with complete bounded JSON row identity in MessageText; explicit identityOmitted for long identities. Exact deployed recipe independently verified on 26D. API delivery qualification is separate; unchanged import arguments, routing, counts and error joins."
+}

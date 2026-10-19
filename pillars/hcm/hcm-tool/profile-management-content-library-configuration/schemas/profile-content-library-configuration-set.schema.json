@@ -1,0 +1,316 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "profile-content-library-configuration-set.schema.json",
+  "title": "Profile Management Content Library Configuration Set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "complete_set_id",
+    "input_method",
+    "source",
+    "scope",
+    "objects",
+    "mappings",
+    "validation_results",
+    "dependencies",
+    "exact_match_results",
+    "lifecycle"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "complete_set_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "input_method": {
+      "enum": ["conversation", "blank_template", "spreadsheet", "csv", "host_extracted_document"]
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_codes", "complete_related_set"],
+      "properties": {
+        "task_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "HRT_MANAGE_PROFILE_CONTENT_TYPES",
+              "HRT_MANAGE_PROFILE_CONTENT_ITEMS",
+              "ORA_MANAGE_PROFILE_ITEM_CATALOG",
+              "HRT_MANAGE_INSTANCE_QUALIFIERS",
+              "HRT_MANAGE_EDUCATIONAL_ESTABLISHMENTS"
+            ]
+          }
+        },
+        "complete_related_set": {
+          "type": "boolean"
+        }
+      }
+    },
+    "objects": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "content_types",
+        "content_type_properties",
+        "content_type_relationships",
+        "content_items",
+        "content_item_rating_descriptions",
+        "content_item_relationships",
+        "item_catalogs",
+        "item_catalog_content_items",
+        "item_catalog_item_rating_descriptions",
+        "instance_qualifiers",
+        "instance_qualifier_sets",
+        "educational_establishments",
+        "behavior_item_catalogs",
+        "competency_to_behavior_relationships"
+      ],
+      "properties": {
+        "content_types": {"$ref": "#/$defs/records"},
+        "content_type_properties": {"$ref": "#/$defs/records"},
+        "content_type_relationships": {"$ref": "#/$defs/records"},
+        "content_items": {"$ref": "#/$defs/records"},
+        "content_item_rating_descriptions": {"$ref": "#/$defs/records"},
+        "content_item_relationships": {"$ref": "#/$defs/records"},
+        "item_catalogs": {"$ref": "#/$defs/records"},
+        "item_catalog_content_items": {"$ref": "#/$defs/records"},
+        "item_catalog_item_rating_descriptions": {"$ref": "#/$defs/records"},
+        "instance_qualifiers": {"$ref": "#/$defs/records"},
+        "instance_qualifier_sets": {"$ref": "#/$defs/records"},
+        "educational_establishments": {"$ref": "#/$defs/records"},
+        "behavior_item_catalogs": {"$ref": "#/$defs/records"},
+        "competency_to_behavior_relationships": {"$ref": "#/$defs/records"}
+      }
+    },
+    "mappings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/mapping"}
+    },
+    "validation_results": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/checkResult"}
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/dependency"}
+    },
+    "exact_match_results": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/exactMatchResult"}
+    },
+    "lifecycle": {
+      "$ref": "#/$defs/lifecycle"
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["safe_filename", "sha256", "retention"],
+      "properties": {
+        "safe_filename": {"type": ["string", "null"]},
+        "sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "retention": {
+          "enum": ["external-reference-only", "not-applicable"]
+        },
+        "external_reference": {"type": ["string", "null"]}
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/record"}
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["local_key", "provider_key", "values", "source_references", "review_status"],
+      "properties": {
+        "local_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provider_key": {
+          "$ref": "#/$defs/providerKey"
+        },
+        "values": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "number", "integer", "boolean", "null"]
+          }
+        },
+        "parent_local_key": {"type": ["string", "null"]},
+        "related_local_key": {"type": ["string", "null"]},
+        "source_references": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "review_status": {
+          "enum": ["supplied", "inferred-pending-review", "confirmed", "blocked", "not-applicable"]
+        }
+      }
+    },
+    "providerKey": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "values"],
+      "properties": {
+        "type": {"type": "string", "minLength": 1},
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_reference", "target", "confidence", "status"],
+      "properties": {
+        "source_reference": {"type": "string", "minLength": 1},
+        "target": {"type": "string", "minLength": 1},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "status": {
+          "enum": ["supplied", "confirmed", "uncertain", "blocked"]
+        }
+      }
+    },
+    "checkResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["check", "status", "object_reference", "message"],
+      "properties": {
+        "check": {"type": "string", "minLength": 1},
+        "status": {"enum": ["passed", "warning", "blocked"]},
+        "object_reference": {"type": ["string", "null"]},
+        "message": {"type": "string"}
+      }
+    },
+    "dependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dependency_type", "exact_reference", "status", "evidence_reference"],
+      "properties": {
+        "dependency_type": {
+          "enum": ["rating_model", "value_set", "lookup", "profile_option"]
+        },
+        "exact_reference": {"type": "string", "minLength": 1},
+        "status": {"enum": ["verified", "missing", "ambiguous", "evidence-unavailable"]},
+        "evidence_reference": {"type": ["string", "null"]}
+      }
+    },
+    "exactMatchResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["object_reference", "provider_key", "status", "classification", "match_source", "match_count", "evidence_reference", "differing_fields", "warnings"],
+      "properties": {
+        "object_reference": {"type": "string", "minLength": 1},
+        "provider_key": {"$ref": "#/$defs/providerKey"},
+        "status": {
+          "enum": ["ready", "blocked"]
+        },
+        "classification": {
+          "enum": ["exact", "not-found", "multiple-exact", "evidence-unavailable"]
+        },
+        "match_source": {
+          "enum": ["customer", "seeded", null]
+        },
+        "match_count": {"type": "integer", "minimum": 0},
+        "matched_identifiers": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/providerKey"}
+        },
+        "evidence_reference": {"type": ["string", "null"]},
+        "differing_fields": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "warnings": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "preview_fingerprint", "approval", "submission_receipts", "readback"],
+      "properties": {
+        "status": {
+          "enum": [
+            "captured",
+            "mapped",
+            "validated",
+            "duplicate_checked",
+            "preview_ready",
+            "approved",
+            "submitted_pending_verification",
+            "process_failed",
+            "readback_pending",
+            "verified",
+            "readback_mismatch",
+            "blocked"
+          ]
+        },
+        "preview_fingerprint": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "approval": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["preview_fingerprint", "approval_statement"],
+          "properties": {
+            "preview_fingerprint": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "approval_statement": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "submission_receipts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["task_code", "package_sha256", "request_id", "status"],
+            "properties": {
+              "task_code": {"type": "string", "minLength": 1},
+              "package_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+              "request_id": {"type": "string", "minLength": 1},
+              "status": {"const": "submitted"}
+            }
+          }
+        },
+        "readback": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["evidence_reference", "evidence_sha256", "differences"],
+          "properties": {
+            "evidence_reference": {"type": "string", "minLength": 1},
+            "evidence_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "differences": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        }
+      }
+    }
+  }
+}

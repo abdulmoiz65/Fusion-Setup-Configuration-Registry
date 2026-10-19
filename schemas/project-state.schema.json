@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fdos.oracle.example/schemas/project-state.schema.json",
+  "title": "Project State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "project_name",
+    "customer",
+    "implementation_phase",
+    "state_version",
+    "created_at",
+    "updated_at",
+    "artifact_index_ref",
+    "baseline_refs",
+    "decision_refs",
+    "active_skill_path",
+    "status"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "customer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "implementation_phase": {
+      "type": "string",
+      "enum": ["discovery", "design", "build", "test", "deploy", "operate"]
+    },
+    "state_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "current_objective_ref": {
+      "type": ["string", "null"]
+    },
+    "current_scope_ref": {
+      "type": ["string", "null"]
+    },
+    "artifact_index_ref": {
+      "type": "string"
+    },
+    "latest_run_ref": {
+      "type": ["string", "null"]
+    },
+    "runbook_control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "active_runbook_ref",
+        "server_url",
+        "created_at",
+        "failure"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pending", "active", "failed", "unknown"]
+        },
+        "active_runbook_ref": {
+          "type": ["string", "null"]
+        },
+        "server_url": {
+          "type": ["string", "null"],
+          "format": "uri"
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "failure": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "baseline_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "decision_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "active_skill_path": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["initialized", "in_progress", "blocked", "ready_for_review", "completed"]
+    }
+  }
+}

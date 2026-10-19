@@ -1,0 +1,132 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "EXM_MANAGE_EXPENSES_SYSTEM_OPTIONS",
+      "task_name": "Manage Expenses System Options",
+      "start_node": "EXMSO.VALIDATE_EDIT_INPUT",
+      "nodes": [
+        {
+          "id": "EXMSO.VALIDATE_EDIT_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "EXMSO.CONFIRM_BASELINE",
+            "invalid": "EXMSO.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A confirmed FSM option-edit package is requested",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMSO.CONFIRM_BASELINE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "EXMSO.DATA_LOADER_HANDOFF",
+            "unresolved": "EXMSO.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EXMSO.VALIDATE_EDIT_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A confirmed FSM option-edit package passed input validation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMSO.DATA_LOADER_HANDOFF",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "EXMSO.READY_FOR_DATA_LOADER",
+            "blocked": "EXMSO.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EXMSO.CONFIRM_BASELINE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The confirmed package is unchanged and has not been submitted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMSO.READY_FOR_DATA_LOADER",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EXMSO.DATA_LOADER_HANDOFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A confirmed package is ready for mandatory core.data-loader preflight; no import has occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMSO.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, baseline, package, or Data Loader handoff blocker prevents completion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

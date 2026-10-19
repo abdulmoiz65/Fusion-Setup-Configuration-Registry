@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cap-update-evidence.schema.json",
+  "title": "CAP sparse update preparation evidence",
+  "description": "Evidence shape only. The pillar validator, reference hash verification, shared preflight, exact immutable artifact approval and real authorization remain mandatory. No evidence file alone authorizes a write.",
+  "type": "object",
+  "required": ["sourceFingerprint", "operation", "businessObject", "restContext", "environment", "runbook", "verifiedAt", "expiresAt", "baseline", "intendedFields", "fields", "templateFields", "checks"],
+  "properties": {
+    "sourceFingerprint": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "operation": {"const": "update"},
+    "businessObject": {"const": "learningCatalogProfiles"},
+    "restContext": {"const": "ORA_HCM_REST"},
+    "verifiedAt": {"type": "string", "format": "date-time"},
+    "expiresAt": {"type": "string", "format": "date-time"},
+    "environment": {
+      "type": "object", "required": ["name", "host"],
+      "properties": {"name": {"type": "string", "minLength": 1}, "host": {"type": "string", "format": "uri"}}
+    },
+    "runbook": {
+      "type": "object", "required": ["status", "runID", "projectStateRef"],
+      "properties": {"status": {"const": "active"}, "runID": {"type": "string", "minLength": 1}, "projectStateRef": {"type": "string", "minLength": 1}}
+    },
+    "baseline": {
+      "type": "object", "required": ["learningCatalogProfileNumber", "name", "description", "status", "visibility", "isSystemDefault"], "additionalProperties": false,
+      "properties": {
+        "learningCatalogProfileNumber": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "learningCatalogProfileId": {"type": ["string", "null"]},
+        "name": {"type": ["string", "null"]},
+        "description": {"type": ["string", "null"]},
+        "visibility": {"type": ["string", "null"]},
+        "status": {"type": ["string", "null"]},
+        "isSystemDefault": {"type": ["string", "null"]},
+        "providerNamesList": {"type": ["string", "null"]},
+        "reconcilePriority": {"type": ["string", "null"]},
+        "processingStatus": {"type": ["string", "null"]}
+      }
+    },
+    "intendedFields": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "description": {"type": "string", "minLength": 1, "maxLength": 4000},
+        "name": {"type": "string", "minLength": 1, "maxLength": 250},
+        "visibility": {"enum": ["ORA_EVERYONE", "ORA_CONTRIBUTORS"]}
+      }
+    },
+    "fields": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object", "required": ["type", "updatable", "allowChanges", "maxLength"],
+        "properties": {
+          "type": {"const": "string"}, "updatable": {"type": "boolean"},
+          "allowChanges": {"type": "string"}, "maxLength": {"type": "integer", "minimum": 1},
+          "enum": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}
+        }
+      }
+    },
+    "templateFields": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "checks": {
+      "type": "object",
+      "required": ["registration", "fieldMapping", "identity", "omission", "effectiveContext", "baseline", "processingAcceptance", "concurrency", "privileges"],
+      "properties": {
+        "registration": {"$ref": "#/$defs/verified"},
+        "fieldMapping": {"allOf": [{"$ref": "#/$defs/verified"}, {"type": "object", "required": ["restAction"], "properties": {"restAction": {"const": "PATCH"}}}]},
+        "identity": {
+          "allOf": [{"$ref": "#/$defs/verified"}, {
+            "type": "object",
+            "required": ["mapping", "numberField", "profileNumber", "itemRouteVerified", "loaderMappingVerified", "unchangedIdentityPayload"],
+            "properties": {
+              "mapping": {"enum": ["number_only", "registered_composite"]}, "numberField": {"const": "learningCatalogProfileNumber"},
+              "profileNumber": {"type": "string", "minLength": 1},
+              "itemRouteVerified": {"const": true}, "loaderMappingVerified": {"const": true},
+              "unchangedIdentityPayload": {"enum": ["excluded", "accepted"]},
+              "dateField": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]*$"},
+              "dateValue": {"type": "string", "format": "date", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+              "patchUrl": {"type": "string", "pattern": "^/learningCatalogProfiles/<[A-Za-z][A-Za-z0-9_]*>,<learningCatalogProfileNumber>$"},
+              "canonicalKey": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2},[A-Za-z0-9][A-Za-z0-9_.-]*$"},
+              "resolvedItemPath": {"type": "string", "pattern": "^/learningCatalogProfiles/[0-9]{4}-[0-9]{2}-[0-9]{2},[A-Za-z0-9][A-Za-z0-9_.-]*$"},
+              "dateFieldIsStagingOnly": {"const": true},
+              "dateFieldExcludedFromPayload": {"const": true},
+              "dateFieldMappingVerified": {"const": true},
+              "dateFieldDataType": {"enum": ["Date", "String"]},
+              "dateFieldFormat": {"enum": ["yyyy-MM-dd", "yyyy/MM/dd"], "description": "DAT staging format; canonical dateValue and resolved URL remain ISO."}
+            },
+            "if": {"properties": {"mapping": {"const": "registered_composite"}}},
+            "then": {
+              "required": ["dateField", "dateValue", "patchUrl", "canonicalKey", "resolvedItemPath", "dateFieldIsStagingOnly", "dateFieldExcludedFromPayload", "dateFieldMappingVerified", "dateFieldDataType", "dateFieldFormat"],
+              "if": {"properties": {"dateFieldDataType": {"const": "Date"}}},
+              "then": {"properties": {"dateFieldFormat": {"const": "yyyy/MM/dd"}}},
+              "else": {"properties": {"dateFieldFormat": {"const": "yyyy-MM-dd"}}}
+            },
+            "else": {"not": {"anyOf": [
+              {"required": ["dateField"]}, {"required": ["dateValue"]}, {"required": ["patchUrl"]},
+              {"required": ["canonicalKey"]}, {"required": ["resolvedItemPath"]},
+              {"required": ["dateFieldIsStagingOnly"]}, {"required": ["dateFieldExcludedFromPayload"]},
+              {"required": ["dateFieldMappingVerified"]}, {"required": ["dateFieldDataType"]},
+              {"required": ["dateFieldFormat"]}
+            ]}}
+          }]
+        },
+        "omission": {"allOf": [{"$ref": "#/$defs/verified"}, {"type": "object", "required": ["absentFieldsPreserved"], "properties": {"absentFieldsPreserved": {"const": true}}}]},
+        "effectiveContext": {
+          "allOf": [{"$ref": "#/$defs/verified"}, {
+            "type": "object", "required": ["executionDatePolicy", "observedDate"],
+            "properties": {
+              "executionDatePolicy": {"enum": ["server_current", "fixed_key_date"]}, "observedDate": {"type": "string", "format": "date"},
+              "effectiveOf": {"const": "RangeMode=UPDATE"}, "mappingVerified": {"const": true}
+            },
+            "dependentRequired": {"effectiveOf": ["mappingVerified"]}
+          }]
+        },
+        "baseline": {"allOf": [{"$ref": "#/$defs/verified"}, {"type": "object", "required": ["matchCount", "complete"], "properties": {"matchCount": {"const": 1}, "complete": {"const": true}}}]},
+        "processingAcceptance": {"$ref": "#/$defs/verified"},
+        "concurrency": {
+          "allOf": [{"$ref": "#/$defs/verified"}, {
+            "type": "object", "required": ["mode", "sameFieldOverwritePossible", "unrelatedFieldsOmitted"],
+            "properties": {"mode": {"const": "sparse_last_writer_wins"}, "sameFieldOverwritePossible": {"const": true}, "unrelatedFieldsOmitted": {"const": true}}
+          }]
+        },
+        "privileges": {
+          "type": "object", "required": ["status", "source", "operation"],
+          "properties": {"status": {"enum": ["verified", "assessed"]}, "source": {"type": "string", "minLength": 1}, "operation": {"const": "update"}, "knownDenial": {"const": false}},
+          "if": {"properties": {"status": {"const": "assessed"}}},
+          "then": {"required": ["enforcement", "grantsVerified", "knownDenial"], "properties": {"enforcement": {"const": "core.data-loader"}, "grantsVerified": {"const": false}}}
+        },
+        "duplicateCheck": {
+          "allOf": [{"$ref": "#/$defs/verified"}, {
+            "type": "object", "required": ["complete", "name", "matchingProfileNumbers"],
+            "properties": {"complete": {"const": true}, "name": {"type": "string", "minLength": 1}, "matchingProfileNumbers": {"type": "array", "items": {"type": "string", "minLength": 1}}}
+          }]
+        }
+      },
+      "if": {"properties": {"identity": {"properties": {"mapping": {"const": "registered_composite"}}}}},
+      "then": {"properties": {
+        "effectiveContext": {"properties": {"executionDatePolicy": {"const": "fixed_key_date"}}},
+        "registration": {
+          "required": ["patchUrl", "excludeInPayload"],
+          "properties": {
+            "patchUrl": {"type": "string", "pattern": "^/learningCatalogProfiles/<[A-Za-z][A-Za-z0-9_]*>,<learningCatalogProfileNumber>$"},
+            "excludeInPayload": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}
+          }
+        }
+      }},
+      "else": {"properties": {"effectiveContext": {"properties": {"executionDatePolicy": {"const": "server_current"}}}}}
+    }
+  },
+  "$defs": {
+    "verified": {"type": "object", "required": ["status", "source"], "properties": {"status": {"const": "verified"}, "source": {"type": "string", "minLength": 1}}}
+  }
+}

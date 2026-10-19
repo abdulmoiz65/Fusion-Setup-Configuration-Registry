@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "capability_id": "item-catalog-new-set-v1",
+  "task_code": "ORA_MANAGE_PROFILE_ITEM_CATALOG",
+  "lifecycle": "certification-only",
+  "parent_strategy": "one-new-catalog",
+  "child_strategy": "all-supplied-portable-children",
+  "contexts": ["BEHAVIOR", "CERTIFICATION", "COMPETENCY", "DEGREE", "EDUCATION_LEVEL", "HONOR", "LANGUAGE", "MEMBERSHIP", "PROJECT", "SKILL"],
+  "allowed_supplier_codes": ["C"],
+  "excluded_catalog_codes": {
+    "SKILL": ["ORA_ORACLE_SKILLS_LIBRARY", "ORA_CUSTOM_SKILLS_LIBRARY", "ORA_LIGHTCAST_SKILLS_LIBRARY"]
+  },
+  "source_basis": "ItemCatalogMigrationService root logical graph; ContentItemVOImpl.resolveAttributes resolves ContentValueSetId from the parent logical row in phase two.",
+  "runtime_verification": "not-established",
+  "promotion": "Separate reviewed complete-set evidence required; narrow one-child certification is not inherited."
+}

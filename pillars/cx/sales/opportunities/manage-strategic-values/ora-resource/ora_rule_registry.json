@@ -1,0 +1,457 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "MOO_MANAGE_STRATEGIC_VALUES",
+      "task_name": "Manage Strategic Values",
+      "start_node": "OPP.STRATEGIC.VALIDATE",
+      "nodes": [
+        {
+          "id": "OPP.STRATEGIC.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "OPP.STRATEGIC.RESOLVE_PARENT",
+            "missing": "OPP.STRATEGIC.RETURN_MISSING",
+            "invalid": "OPP.STRATEGIC.RETURN_MISSING",
+            "failed": "OPP.STRATEGIC.RETURN_FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Strategic Values request; set-scoped requests require an explicit Common-versus-different decision and reject malformed, unknown, cross-environment, or conflicting set identity",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.RESOLVE_PARENT",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OPP.STRATEGIC.RESOLVE_SET",
+            "missing": "OPP.STRATEGIC.RETURN_MISSING",
+            "failed": "OPP.STRATEGIC.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STRATEGIC.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the exact MOO_SETID_STRATEGIC_VALUE parent, task scope, editability metadata, canonical link, and nonblank ReferenceGroupName",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.RESOLVE_SET",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OPP.STRATEGIC.DEPENDENCY",
+            "not_applicable": "OPP.STRATEGIC.DEPENDENCY",
+            "missing": "OPP.STRATEGIC.RETURN_MISSING",
+            "failed": "OPP.STRATEGIC.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STRATEGIC.RESOLVE_PARENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the explicit set decision, exact set, and requested assignment for SingleLookup or every Package REST_FALLBACK row without substitution. FSM Package defers per-row validation to package verification; full-task Export has no selector",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.DEPENDENCY",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "OPP.STRATEGIC.RESOLVE_STATE",
+            "not_applicable": "OPP.STRATEGIC.RESOLVE_STATE",
+            "missing": "OPP.STRATEGIC.RETURN_MISSING",
+            "failed": "OPP.STRATEGIC.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STRATEGIC.RESOLVE_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify explicit set decisions, returned reference group, exact sets and requested assignments for SingleLookup or every Package REST_FALLBACK row; never infer Common Set. Only native FSM Package defers per-row checks to package verification",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.RESOLVE_STATE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OPP.STRATEGIC.VERIFY_PACKAGE",
+            "not_found": "OPP.STRATEGIC.VERIFY_PACKAGE",
+            "empty": "OPP.STRATEGIC.VERIFY_PACKAGE",
+            "not_applicable": "OPP.STRATEGIC.VERIFY_PACKAGE",
+            "failed": "OPP.STRATEGIC.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STRATEGIC.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve exact current state for SingleLookup or every distinct Package REST_FALLBACK row; native FSM Package and full-task Export continue as not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.VERIFY_PACKAGE",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "ready": "OPP.STRATEGIC.DESIGN",
+            "not_applicable": "OPP.STRATEGIC.DESIGN",
+            "fallback_required": "OPP.STRATEGIC.RETURN_FALLBACK_REQUIRED",
+            "fallback_candidate": "OPP.STRATEGIC.VERIFY_FALLBACK",
+            "missing": "OPP.STRATEGIC.RETURN_MISSING",
+            "failed": "OPP.STRATEGIC.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STRATEGIC.RESOLVE_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate native exact-task CSVs, including header-only recovery and unchanged parent linkage; usable or repairable CSV stays on FSM. Only documented exhausted Create/Update/Disable returns fallback_required to the router. REST_FALLBACK returns fallback_candidate for dedicated verification; Export/Import stay FSM-only and Inventory/Read/REST Delete are not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.VERIFY_FALLBACK",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "eligible": "OPP.STRATEGIC.DESIGN",
+            "already_applied": "OPP.STRATEGIC.RETURN_VERIFIED",
+            "missing": "OPP.STRATEGIC.RETURN_MISSING",
+            "blocked": "OPP.STRATEGIC.RETURN_MISSING",
+            "failed": "OPP.STRATEGIC.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STRATEGIC.VERIFY_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "REST_FALLBACK only: verify final CSV exhaustion, same-target receipt, fresh exact parent/set/per-row reads, and complete prior-submission reconciliation. Pending/uncertain/partial work or repairable CSV blocks; all-applied returns without writing",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.DESIGN",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "OPP.STRATEGIC.GATE",
+            "blocked": "OPP.STRATEGIC.RETURN_MISSING",
+            "failed": "OPP.STRATEGIC.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STRATEGIC.VERIFY_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce explicit set scope, parent identity, per-row operation/state, immutable identity, impact and minimal deltas. FSM requires package readiness; REST_FALLBACK requires the dedicated verifier's eligible outcome, write privileges and a separate immutable preview; REST_DELETE retains its separate contract",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.GATE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read_only": "OPP.STRATEGIC.RETURN_READ",
+            "rest_approved": "OPP.STRATEGIC.RETURN_REST_READY",
+            "fsm_handoff_ready": "OPP.STRATEGIC.RETURN_FSM_READY",
+            "accepted_initiation": "OPP.STRATEGIC.RETURN_ACCEPTED",
+            "export_ready": "OPP.STRATEGIC.RETURN_EXPORT_READY",
+            "missing": "OPP.STRATEGIC.RETURN_MISSING",
+            "failed": "OPP.STRATEGIC.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STRATEGIC.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return read-only or Export evidence without mutation; validated native FSM packages go to Data Loader and terminate at accepted initiation. REST_FALLBACK needs dedicated eligibility and separate immediate exact-preview approval; REST_DELETE needs its explicit no-body DELETE approval. Both use Apps Common once and exact disclosed verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.RETURN_READ",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STRATEGIC.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Inventory or Read completed with exact parent, reference-group, pagination, set, assignment when requested, and lookup evidence",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.RETURN_REST_READY",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STRATEGIC.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Separately approved eligible REST_FALLBACK Create/Update/Disable requests or explicit REST_DELETE are ready for Apps Common; submit each displayed request once, verify immediately and stop on first failure/uncertainty",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.RETURN_FSM_READY",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STRATEGIC.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "One unchanged MOO_MANAGE_STRATEGIC_VALUES Create, Update, Disable, or Import ZIP, exact task identity, and resolved persisted Data Loader task context are ready for core.data-loader Task Hook validation and preview; no upload approval or execution has occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.RETURN_ACCEPTED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STRATEGIC.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Core Data Loader returned accepted initiation; end this request without polling, ProcessLog retrieval, result retrieval, or live verification until a later explicit request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.RETURN_EXPORT_READY",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STRATEGIC.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The fresh MOO_MANAGE_STRATEGIC_VALUES export baseline is validated for review or package preparation; no mutation package or upload approval is implied",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.RETURN_MISSING",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Required input, parent/set/code evidence, prerequisite, impact, FSM package/context, fallback exhaustion/reconciliation, or separate REST approval is missing; Data Loader approval is not required before FSM handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.RETURN_FAILED",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Validation, parent/set/code lookup, package or fallback verification, handoff, execution, import, or later explicit verification failed; no retry or route switch is authorized",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.RETURN_FALLBACK_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STRATEGIC.VERIFY_PACKAGE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Applicable CSV recovery is exhausted for Create/Update/Disable with a classified same-target receipt and reconciled prior submissions; RestFallbackEligible=false. Return unchanged intent/rows/sets for one router resume as REST_FALLBACK with fresh reads and its dedicated verifier; no REST write is approved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STRATEGIC.RETURN_VERIFIED",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STRATEGIC.VERIFY_FALLBACK"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Complete fresh reconciliation proves every requested value is already applied and no import job or write remains pending/uncertain; return the verified result without another mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

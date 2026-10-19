@@ -1,0 +1,129 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HZ_MANAGE_PARTY_USAGE_FILTER_RULES",
+      "task_name": "Manage Party Usage Filter Rules",
+      "start_node": "PUFR.VALIDATE_CONTEXT",
+      "nodes": [
+        {
+          "id": "PUFR.VALIDATE_CONTEXT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PUFR.VALIDATE_OPERATION",
+            "invalid": "PUFR.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before operation review or immutable preview creation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUFR.VALIDATE_OPERATION",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PUFR.VALIDATED",
+            "invalid": "PUFR.ERROR"
+          },
+          "prerequisites": [
+            "PUFR.VALIDATE_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before an export POST or Data Loader import preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUFR.ERROR",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "PUFR.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any validation, approval, authentication, submission, polling, process, or persistence stage fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUFR.VALIDATED",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PUFR.VALIDATE_OPERATION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The whole-task operation contract is ready for its operation-specific preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUFR.ISSUES",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "The request has unresolved validation, approval, execution, or persistence issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

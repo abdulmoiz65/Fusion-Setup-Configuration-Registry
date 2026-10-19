@@ -1,0 +1,259 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_CATEGORIES",
+      "task_name": "Manage Categories",
+      "start_node": "CAT.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "CAT.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CAT.CHECK_DEPENDENCIES",
+            "invalid": "CAT.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Applicable profile-option context and one or more Category parent and child rows are normalized",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAT.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CAT.RESOLVE_REFERENCE",
+            "not_required": "CAT.RESOLVE_REFERENCE",
+            "blocked": "CAT.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CAT.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Applicable profile, CAP, access, Category parent, and child dependencies are evaluated independently",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAT.RESOLVE_REFERENCE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CAT.APPLY_DEFAULTS",
+            "not_required": "CAT.APPLY_DEFAULTS",
+            "blocked": "CAT.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CAT.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An applicable documented Category, Topic, person, capability, membership, asset, DFF, profile-option, or Data Loader lookup is required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAT.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CAT.ENFORCE_DESIGN",
+            "preserved": "CAT.ENFORCE_DESIGN",
+            "blocked": "CAT.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CAT.RESOLVE_REFERENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated profile decisions and Category rows preserve or apply only documented, disclosed safe defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAT.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAT.EXECUTION_GATE",
+            "blocked": "CAT.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CAT.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated profile decisions and Category parent/child rows have completed applicable dependencies, lookups, defaults, and prerequisite readbacks",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAT.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "evidence_available": "CAT.EVALUATE_RESULT",
+            "blocked": "CAT.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CAT.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validation-only result or exact approved profile-option, parent, and child row set has current evidence, prerequisite readbacks, and verified operation routes",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAT.EVALUATE_RESULT",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "CAT.RETURN_SUCCESS",
+            "issues": "CAT.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CAT.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Profile readback plus validation or mutation evidence is reconciled with the approved stable row previews",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAT.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "CAT.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Category profile dependency, parent, or child row is blocked by input, dependency, lookup, design, approval, execution, timeout, persistence, or verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAT.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAT.EVALUATE_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every selected valid profile dependency, Category parent, and eligible child row is verified with row-specific results",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAT.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAT.HANDLE_ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more Category profile dependencies, parent rows, or child rows cannot safely complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

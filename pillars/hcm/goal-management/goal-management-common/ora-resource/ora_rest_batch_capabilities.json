@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.0",
+  "registry_id": "hcm-goal-management-rest-batch-capabilities",
+  "transport_intent": "adf_batch",
+  "batch_root_pattern": "/hcmRestApi/resources/{release}",
+  "transaction_context": "hcm-goal-management-independent-setup",
+  "evidence": [
+    "Oracle ADF REST batch request contract",
+    "pillars/hcm/goal-management/goal-management-common/rest-batch.md"
+  ],
+  "capabilities": [
+    {
+      "capability_id": "review-period-create",
+      "pattern": "independent_setup",
+      "resource": "reviewPeriods",
+      "operation": "create",
+      "path_kind": "collection",
+      "runtime_action": "create",
+      "runtime_method": "POST"
+    },
+    {
+      "capability_id": "review-period-update",
+      "pattern": "independent_setup",
+      "resource": "reviewPeriods",
+      "operation": "update",
+      "path_kind": "item",
+      "runtime_action": "update",
+      "runtime_method": "PATCH"
+    },
+    {
+      "capability_id": "review-period-delete",
+      "pattern": "independent_setup",
+      "resource": "reviewPeriods",
+      "operation": "delete",
+      "path_kind": "item",
+      "runtime_action": "delete",
+      "runtime_method": "DELETE"
+    },
+    {
+      "capability_id": "library-goal-create",
+      "pattern": "independent_setup",
+      "resource": "libraryGoals",
+      "operation": "create",
+      "path_kind": "collection",
+      "runtime_action": "create",
+      "runtime_method": "POST"
+    },
+    {
+      "capability_id": "library-goal-update",
+      "pattern": "independent_setup",
+      "resource": "libraryGoals",
+      "operation": "update",
+      "path_kind": "item",
+      "runtime_action": "update",
+      "runtime_method": "PATCH"
+    },
+    {
+      "capability_id": "library-goal-delete",
+      "pattern": "independent_setup",
+      "resource": "libraryGoals",
+      "operation": "delete",
+      "path_kind": "item",
+      "runtime_action": "delete",
+      "runtime_method": "DELETE"
+    },
+    {
+      "capability_id": "goal-plan-create",
+      "pattern": "independent_setup",
+      "resource": "goalPlans",
+      "operation": "create",
+      "path_kind": "collection",
+      "runtime_action": "create",
+      "runtime_method": "POST"
+    },
+    {
+      "capability_id": "goal-plan-update",
+      "pattern": "independent_setup",
+      "resource": "goalPlans",
+      "operation": "update",
+      "path_kind": "item",
+      "runtime_action": "update",
+      "runtime_method": "PATCH"
+    },
+    {
+      "capability_id": "goal-plan-delete",
+      "pattern": "independent_setup",
+      "resource": "goalPlans",
+      "operation": "delete",
+      "path_kind": "item",
+      "runtime_action": "delete",
+      "runtime_method": "DELETE"
+    }
+  ]
+}

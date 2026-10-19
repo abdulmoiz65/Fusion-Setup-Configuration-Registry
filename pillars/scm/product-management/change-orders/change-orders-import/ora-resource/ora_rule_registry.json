@@ -1,0 +1,132 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_EGP_FBDI_IMPORT_CHANGE_ORDERS",
+      "task_name": "Change Orders Import",
+      "start_node": "CHANGE_ORDER_FBDI.VALIDATE",
+      "nodes": [
+        {
+          "id": "CHANGE_ORDER_FBDI.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CHANGE_ORDER_FBDI.READY",
+            "invalid": "CHANGE_ORDER_FBDI.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate source, current template, package, and immutable evidence before handoff.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CHANGE_ORDER_FBDI.READY",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CHANGE_ORDER_FBDI.HANDOFF",
+            "blocked": "CHANGE_ORDER_FBDI.FAILED"
+          },
+          "prerequisites": [
+            "CHANGE_ORDER_FBDI.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before handing the validated Change Order Import ZIP unchanged to `core.data-loader`.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CHANGE_ORDER_FBDI.HANDOFF",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CHANGE_ORDER_FBDI.COMPLETE",
+            "blocked": "CHANGE_ORDER_FBDI.FAILED"
+          },
+          "prerequisites": [
+            "CHANGE_ORDER_FBDI.READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Immediately before handing the unchanged validated ZIP to `core.data-loader`.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CHANGE_ORDER_FBDI.COMPLETE",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CHANGE_ORDER_FBDI.HANDOFF"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Local validation and immutable handoff evidence are complete.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CHANGE_ORDER_FBDI.FAILED",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any local validation, template, public-source transport, or artifact-persistence failure occurs.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

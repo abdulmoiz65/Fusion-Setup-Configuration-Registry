@@ -1,0 +1,2743 @@
+{
+  "mapping_catalog": {
+    "version": 1,
+    "criteria_mapping": [
+      {
+        "criterion": "Legal Employer / Legal Entity",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_LGL_ENTY_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "ORGANIZATION_ID",
+        "target_reference": "HR_ALL_ORGANIZATION_UNITS_F_VL",
+        "runtime_action": "Resolve target legal-employer ID",
+        "notes": "Explicit mapping in p_populate_elig_mappings"
+      },
+      {
+        "criterion": "Assignment Status",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_EE_STAT_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "ASSIGNMENT_STATUS_TYPE_ID",
+        "target_reference": "PER_ASSIGNMENT_STATUS_TYPES_VL",
+        "runtime_action": "Resolve target assignment-status-type ID",
+        "notes": "Explicit mapping"
+      },
+      {
+        "criterion": "Salary Basis",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PY_BSS_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "PAY_BASIS_ID",
+        "target_reference": "CMP_SALARY_BASES_VL",
+        "runtime_action": "Resolve target salary-basis ID",
+        "notes": "Explicit mapping"
+      },
+      {
+        "criterion": "Person Type",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PER_TYP_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "PERSON_TYPE_ID",
+        "target_reference": "PER_PERSON_TYPES_VL",
+        "runtime_action": "Resolve target person-type ID",
+        "notes": "Use user and system person type as disambiguators"
+      },
+      {
+        "criterion": "Business Unit",
+        "criterion_code": "EBU",
+        "criterion_table": "BEN_ELIG_GEN_CRIT_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "CRIT_CHAR1",
+        "target_reference": "FUN_ALL_BUSINESS_UNITS_V",
+        "runtime_action": "Resolve target BU ID",
+        "notes": "Stored as text representation of numeric ID"
+      },
+      {
+        "criterion": "Job Family",
+        "criterion_code": "JFM",
+        "criterion_table": "BEN_ELIG_GEN_CRIT_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "CRIT_CHAR1",
+        "target_reference": "PER_JOB_FAMILY_F_VL",
+        "runtime_action": "Resolve target job-family ID",
+        "notes": "Use code plus name where possible"
+      },
+      {
+        "criterion": "Payroll",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PYRL_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "PAYROLL_ID",
+        "target_reference": "PAY_ALL_PAYROLLS_F",
+        "runtime_action": "Resolve target payroll ID",
+        "notes": "Legislative data group is a useful disambiguator"
+      },
+      {
+        "criterion": "Position",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PSTN_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "POSITION_ID",
+        "target_reference": "HR_ALL_POSITIONS_F_VL",
+        "runtime_action": "Resolve target position ID",
+        "notes": "Use position code and business unit where possible"
+      },
+      {
+        "criterion": "Work Location",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_WK_LOC_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "LOCATION_ID",
+        "target_reference": "HR_LOCATIONS_ALL_VL",
+        "runtime_action": "Resolve target location ID",
+        "notes": "Use internal location code and reference-data set where possible"
+      },
+      {
+        "criterion": "Job",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_JOB_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "JOB_ID",
+        "target_reference": "PER_JOBS",
+        "runtime_action": "Resolve target job ID",
+        "notes": "Use job code and reference-data set where possible"
+      },
+      {
+        "criterion": "Grade",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_GRD_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "GRADE_ID",
+        "target_reference": "PER_GRADES_F_VL",
+        "runtime_action": "Resolve target grade ID",
+        "notes": "Use grade code and reference-data set where possible"
+      },
+      {
+        "criterion": "Leaving / Termination Reason",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_LVG_RSN_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "ACTION_ID",
+        "target_reference": "PER_ACTIONS_VL",
+        "runtime_action": "Resolve target action ID",
+        "notes": "The package maps actions rather than an action-reason ID"
+      },
+      {
+        "criterion": "Organization Unit / Department",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_ORG_UNIT_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "ORGANIZATION_ID",
+        "target_reference": "PER_DEPARTMENTS",
+        "runtime_action": "Resolve target department ID",
+        "notes": "Explicit mapping"
+      },
+      {
+        "criterion": "Collective Agreement",
+        "criterion_code": "CAG",
+        "criterion_table": "BEN_ELIG_GEN_CRIT_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "CRIT_CHAR1",
+        "target_reference": "PER_COL_AGREEMENTS_F_VL",
+        "runtime_action": "Resolve target collective-agreement ID",
+        "notes": "Use identification code plus name where possible"
+      },
+      {
+        "criterion": "Union",
+        "criterion_code": "UNN",
+        "criterion_table": "BEN_ELIG_GEN_CRIT_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "CRIT_NUMBER1 / CRIT_CHAR1",
+        "target_reference": "HR_ORGANIZATION_V",
+        "runtime_action": "Resolve target union organization ID",
+        "notes": "Package reads CRIT_NUMBER1 but declares mapped column CRIT_CHAR1; verify REST schema"
+      },
+      {
+        "criterion": "Competency",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_COMPTNCY_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "COMPETENCE_ID",
+        "target_reference": "HRT_COMPETENCIES_V",
+        "runtime_action": "Resolve target competency/content-item ID",
+        "notes": "Explicit mapping"
+      },
+      {
+        "criterion": "Competency Rating Model",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_COMPTNCY_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "RATING_MODEL_ID",
+        "target_reference": "HRT_RATING_MODELS_VL",
+        "runtime_action": "Resolve target rating-model ID",
+        "notes": "Required when populated"
+      },
+      {
+        "criterion": "Competency Rating Level",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_COMPTNCY_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "RATING_LEVEL_ID",
+        "target_reference": "HRT_RATING_LEVELS_VL",
+        "runtime_action": "Resolve target rating-level ID",
+        "notes": "Resolve within the selected rating model"
+      },
+      {
+        "criterion": "Qualification Type",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_QUAL_TITL_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "QUALIFICATION_TYPE_ID",
+        "target_reference": "HRT_CONTENT_TYPES_VL",
+        "runtime_action": "Resolve target content-type ID",
+        "notes": "Required when populated"
+      },
+      {
+        "criterion": "Qualification",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_QUAL_TITL_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "QUALIFICATION_ID",
+        "target_reference": "HRT_QUALIFICATIONS_V",
+        "runtime_action": "Resolve target qualification/content-item ID",
+        "notes": "Resolve within qualification type"
+      },
+      {
+        "criterion": "Performance Template",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PERF_RTNG_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "PERF_TMPL_ID",
+        "target_reference": "HRA_TMPL_DEFNS_VL",
+        "runtime_action": "Resolve target template-definition ID",
+        "notes": "Required when populated"
+      },
+      {
+        "criterion": "Performance Template Period",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PERF_RTNG_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "TMPL_PERIOD_ID",
+        "target_reference": "HRA_TMPL_PERIODS_VL",
+        "runtime_action": "Resolve target template-period ID",
+        "notes": "Resolve within the selected performance template"
+      },
+      {
+        "criterion": "Performance Rating Model",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PERF_RTNG_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "RATING_MODEL_ID",
+        "target_reference": "HRT_RATING_MODELS_VL",
+        "runtime_action": "Resolve target rating-model ID",
+        "notes": "Required when populated"
+      },
+      {
+        "criterion": "Performance Rating Level",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PERF_RTNG_PRTE",
+        "classification": "REQUIRED",
+        "source_column": "RATING_LEVEL_ID",
+        "target_reference": "HRT_RATING_LEVELS_VL",
+        "runtime_action": "Resolve target rating-level ID",
+        "notes": "Resolve within the selected rating model"
+      },
+      {
+        "criterion": "Hours Worked - Defined Balance",
+        "criterion_code": "",
+        "criterion_table": "BEN_HRS_WKD_IN_PERD_FCTR",
+        "classification": "CONDITIONAL",
+        "source_column": "DEFINED_BALANCE_ID",
+        "target_reference": "PAY_DEFINED_BALANCES",
+        "runtime_action": "Resolve target defined-balance ID when populated",
+        "notes": "Factor itself is Benefits-owned and created in the run"
+      },
+      {
+        "criterion": "Hours Worked - Balance Legal Employer",
+        "criterion_code": "",
+        "criterion_table": "BEN_BNFTS_BAL_F",
+        "classification": "CONDITIONAL",
+        "source_column": "LEGAL_ENTITY_ID",
+        "target_reference": "HR_ALL_ORGANIZATION_UNITS_F_VL",
+        "runtime_action": "Resolve target legal-employer ID when a Benefits Balance is used",
+        "notes": "Nested dependency of Hours Worked"
+      },
+      {
+        "criterion": "Compensation Level - Defined Balance",
+        "criterion_code": "",
+        "criterion_table": "BEN_COMP_LVL_FCTR",
+        "classification": "CONDITIONAL",
+        "source_column": "DEFINED_BALANCE_ID",
+        "target_reference": "PAY_DEFINED_BALANCES",
+        "runtime_action": "Resolve target defined-balance ID when populated",
+        "notes": "Factor itself is Benefits-owned and created in the run"
+      },
+      {
+        "criterion": "Compensation Level - Balance Legal Employer",
+        "criterion_code": "",
+        "criterion_table": "BEN_BNFTS_BAL_F",
+        "classification": "CONDITIONAL",
+        "source_column": "LEGAL_ENTITY_ID",
+        "target_reference": "HR_ALL_ORGANIZATION_UNITS_F_VL",
+        "runtime_action": "Resolve target legal-employer ID when a Benefits Balance is used",
+        "notes": "Nested dependency of Compensation Level"
+      },
+      {
+        "criterion": "Benefits Group - Legal Employer",
+        "criterion_code": "",
+        "criterion_table": "BEN_BENFTS_GRP",
+        "classification": "CONDITIONAL",
+        "source_column": "LEGAL_ENTITY_ID",
+        "target_reference": "HR_ALL_ORGANIZATION_UNITS_F_VL",
+        "runtime_action": "Resolve target legal-employer ID when populated",
+        "notes": "Create Benefits Group and track its returned ID"
+      },
+      {
+        "criterion": "Benefit Balance - Legal Employer",
+        "criterion_code": "",
+        "criterion_table": "BEN_BNFTS_BAL_F",
+        "classification": "CONDITIONAL",
+        "source_column": "LEGAL_ENTITY_ID",
+        "target_reference": "HR_ALL_ORGANIZATION_UNITS_F_VL",
+        "runtime_action": "Resolve target legal-employer ID for package-local Benefit Balances",
+        "notes": "Pre-resolve Benefit Balance legal employers"
+      },
+      {
+        "criterion": "Formula",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIGY_PRFL_RL",
+        "classification": "INTERNAL_DEPENDENCY",
+        "source_column": "FORMULA_ID",
+        "target_reference": "FF_FORMULAS_B_F",
+        "runtime_action": "Create formula first or resolve by stable natural key",
+        "notes": "Plan-copy code creates formula PK maps rather than eligibility mapping rows"
+      },
+      {
+        "criterion": "Leave of Absence Type",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_LOA_RSN_PRTE",
+        "classification": "RESOLVER_GAP",
+        "source_column": "ABSENCE_ATTENDANCE_TYPE_ID",
+        "target_reference": "ANC_ABSENCE_TYPES_VL",
+        "runtime_action": "Resolve target absence-type ID",
+        "notes": "Reference is used by the criterion but absent from p_populate_elig_mappings"
+      },
+      {
+        "criterion": "Leave of Absence Reason",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_LOA_RSN_PRTE",
+        "classification": "RESOLVER_GAP",
+        "source_column": "ABS_ATTENDANCE_REASON_ID",
+        "target_reference": "ANC_ABSENCE_REASONS_VL",
+        "runtime_action": "Resolve target absence-reason ID when populated",
+        "notes": "Reference is used by the criterion but absent from p_populate_elig_mappings"
+      },
+      {
+        "criterion": "Age",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_AGE_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "AGE_FCTR_ID",
+        "target_reference": "BEN_AGE_FCTR",
+        "runtime_action": "Create factor and track returned ID",
+        "notes": "Benefits-owned object"
+      },
+      {
+        "criterion": "Compensation",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_COMP_LVL_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "COMP_LVL_FCTR_ID",
+        "target_reference": "BEN_COMP_LVL_FCTR",
+        "runtime_action": "Create factor and track returned ID",
+        "notes": "Benefits-owned object"
+      },
+      {
+        "criterion": "Benefits Group",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_BENFTS_GRP_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "BENFTS_GRP_ID",
+        "target_reference": "BEN_BENFTS_GRP",
+        "runtime_action": "Create group and track returned ID",
+        "notes": "Benefits-owned object; validate package-local names first and existing names through benefitGroupsLOV"
+      },
+      {
+        "criterion": "Bargaining Unit",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_BRGNG_UNIT_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "",
+        "target_reference": "BARGAINING_UNIT_CODE lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "No target ID mapping block"
+      },
+      {
+        "criterion": "Manager",
+        "criterion_code": "MNG",
+        "criterion_table": "BEN_ELIG_GEN_CRIT_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "CRIT_CHAR1",
+        "target_reference": "BEN_YES_NO lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "Yes/No criterion"
+      },
+      {
+        "criterion": "Religion",
+        "criterion_code": "REL",
+        "criterion_table": "BEN_ELIG_GEN_CRIT_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "CRIT_CHAR1",
+        "target_reference": "PER_RELIGION lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "Lookup criterion"
+      },
+      {
+        "criterion": "Combined Age and Length of Service",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_CMBN_AGE_LOS_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "CMBN_AGE_LOS_FCTR_ID",
+        "target_reference": "BEN_CMBN_AGE_LOS_FCTR",
+        "runtime_action": "Create factor and track returned ID",
+        "notes": "Benefits-owned object"
+      },
+      {
+        "criterion": "Disabled",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_DSBLD_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "",
+        "target_reference": "REGISTERED_DISABLED lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "No target ID mapping block"
+      },
+      {
+        "criterion": "Percent Full Time",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PCT_FL_TM_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "PCT_FL_TM_FCTR_ID",
+        "target_reference": "BEN_PCT_FL_TM_FCTR",
+        "runtime_action": "Create factor and track returned ID",
+        "notes": "Benefits-owned object"
+      },
+      {
+        "criterion": "Full Time / Part Time",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_FL_TM_PT_TM_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "",
+        "target_reference": "EMP_CAT lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "No target ID mapping block"
+      },
+      {
+        "criterion": "Gender",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_GNDR_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "",
+        "target_reference": "SEX lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "No target ID mapping block"
+      },
+      {
+        "criterion": "Hourly / Salaried",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_HRLY_SLRD_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "",
+        "target_reference": "HOURLY_SALARIED_CODE lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "No target ID mapping block"
+      },
+      {
+        "criterion": "Probation Period",
+        "criterion_code": "EPN",
+        "criterion_table": "BEN_ELIG_GEN_CRIT_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "CRIT_NUMBER1 and control fields",
+        "target_reference": "Literal/range plus BEN_ELIG_OPERATOR / CMP_MONTH / CMP_DATE / CHECKLIST_QUALIFYING_UNITS lookups",
+        "runtime_action": "Validate literals and lookup codes",
+        "notes": "Source comments say it is hard-coded with no FK"
+      },
+      {
+        "criterion": "Hire Date",
+        "criterion_code": "HRD",
+        "criterion_table": "BEN_ELIG_GEN_CRIT_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "CRIT_NUMBER1 and control fields",
+        "target_reference": "Literal/range plus BEN_ELIG_LOS_DT / CMP_MONTH / CMP_DATE / CHECKLIST_QUALIFYING_UNITS / BEN_ELIG_OPERATOR lookups",
+        "runtime_action": "Validate literals and lookup codes",
+        "notes": "Source comments say it is hard-coded with no FK"
+      },
+      {
+        "criterion": "Labor Union Member",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_LBR_MMBR_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "",
+        "target_reference": "BEN_PDW_ELPRO_LBR_MMBR lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "Distinct from Union UNN which requires mapping"
+      },
+      {
+        "criterion": "Length of Service",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_LOS_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "LOS_FCTR_ID",
+        "target_reference": "BEN_LOS_FCTR",
+        "runtime_action": "Create factor and track returned ID",
+        "notes": "Benefits-owned object"
+      },
+      {
+        "criterion": "Marital Status",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_MRTL_STS_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "",
+        "target_reference": "MAR_STATUS lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "No target ID mapping block"
+      },
+      {
+        "criterion": "Job Function",
+        "criterion_code": "JBF",
+        "criterion_table": "BEN_ELIG_GEN_CRIT_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "CRIT_CHAR1",
+        "target_reference": "JOB_FUNCTION_CODE lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "Lookup criterion rather than job-function object ID"
+      },
+      {
+        "criterion": "Postal Code Range",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PSTL_CD_R_RNG_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "PSTL_ZIP_RNG_ID",
+        "target_reference": "BEN_PSTL_ZIP_RNG",
+        "runtime_action": "Create range and track returned ID",
+        "notes": "Benefits-owned object"
+      },
+      {
+        "criterion": "Quartile in Grade",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_QUA_IN_GR_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "",
+        "target_reference": "CMP_QUAR_IN_GRD lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "No target ID mapping block"
+      },
+      {
+        "criterion": "Scheduled Hours",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_SCHEDD_HRS_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "",
+        "target_reference": "FREQUENCY / BEN_LOS_DET / BEN_RNDG lookups",
+        "runtime_action": "Validate lookup codes and numeric range",
+        "notes": "Frequency determination and rounding fields use HCM lookups"
+      },
+      {
+        "criterion": "Service Area",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_SVC_AREA_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "SVC_AREA_ID",
+        "target_reference": "BEN_SVC_AREA",
+        "runtime_action": "Create service area and track returned ID",
+        "notes": "Benefits-owned object"
+      },
+      {
+        "criterion": "Tobacco Use",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_TBCO_USE_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "",
+        "target_reference": "TOBACCO_USER lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "No target ID mapping block"
+      },
+      {
+        "criterion": "User-defined Criteria",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIGY_CRIT_VALUES",
+        "classification": "NOT_REQUIRED",
+        "source_column": "ELIGY_CRITERIA_ID",
+        "target_reference": "BEN_ELIGY_CRITERIA",
+        "runtime_action": "Create criterion definition/value and track returned IDs",
+        "notes": "Benefits-owned objects"
+      },
+      {
+        "criterion": "Geography",
+        "criterion_code": "GEO",
+        "criterion_table": "BEN_ELIG_GEN_CRIT_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "CRIT_CHAR1 through CRIT_CHAR5",
+        "target_reference": "Territory/geography plus ADDRESS_TYPE and YES_NO lookups",
+        "runtime_action": "Validate and send codes/literals",
+        "notes": "CRIT_CHAR4 is address type and CRIT_CHAR5 is primary-address flag"
+      },
+      {
+        "criterion": "Health Coverage Selected",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_HLTH_CVG_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "",
+        "target_reference": "Benefits/internal or literal",
+        "runtime_action": "Resolve only run-created Benefits IDs if API requires them",
+        "notes": "No external mapping block"
+      },
+      {
+        "criterion": "Military Status",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_MLTRY_STAT_PRTE",
+        "classification": "NOT_REQUIRED",
+        "source_column": "",
+        "target_reference": "YES_NO lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "No external mapping block"
+      },
+      {
+        "criterion": "Student Status",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_STDNT_STAT_CVG",
+        "classification": "NOT_REQUIRED",
+        "source_column": "",
+        "target_reference": "BEN_STUDENT_STATUS lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "No external mapping block"
+      },
+      {
+        "criterion": "Dependent Coverage Required Relationship",
+        "criterion_code": "",
+        "criterion_table": "BEN_DPNT_CVG_RQD_RLSHP",
+        "classification": "NOT_REQUIRED",
+        "source_column": "PER_RELSHP_TYP_CD",
+        "target_reference": "CONTACT lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "Uses the plan-design HcmLookupVO"
+      },
+      {
+        "criterion": "Designator Enrolled Coverage",
+        "criterion_code": "",
+        "criterion_table": "BEN_DSGNTR_ENRLD_CVG",
+        "classification": "NOT_REQUIRED",
+        "source_column": "DSGNTR_CRNTLY_ENRLD_FLAG",
+        "target_reference": "YES_NO lookup",
+        "runtime_action": "Validate and send lookup code",
+        "notes": "No external mapping block"
+      }
+    ],
+    "criteria_resolver_links": [
+      {
+        "criterion": "Legal Employer / Legal Entity",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_LGL_ENTY_PRTE",
+        "source_column": "ORGANIZATION_ID",
+        "resolver_key": "legal_employer"
+      },
+      {
+        "criterion": "Assignment Status",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_EE_STAT_PRTE",
+        "source_column": "ASSIGNMENT_STATUS_TYPE_ID",
+        "resolver_key": "assignment_status"
+      },
+      {
+        "criterion": "Salary Basis",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PY_BSS_PRTE",
+        "source_column": "PAY_BASIS_ID",
+        "resolver_key": "salary_basis"
+      },
+      {
+        "criterion": "Person Type",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PER_TYP_PRTE",
+        "source_column": "PERSON_TYPE_ID",
+        "resolver_key": "person_type"
+      },
+      {
+        "criterion": "Business Unit",
+        "criterion_code": "EBU",
+        "criterion_table": "BEN_ELIG_GEN_CRIT_PRTE",
+        "source_column": "CRIT_CHAR1",
+        "resolver_key": "business_unit"
+      },
+      {
+        "criterion": "Job Family",
+        "criterion_code": "JFM",
+        "criterion_table": "BEN_ELIG_GEN_CRIT_PRTE",
+        "source_column": "CRIT_CHAR1",
+        "resolver_key": "job_family"
+      },
+      {
+        "criterion": "Payroll",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PYRL_PRTE",
+        "source_column": "PAYROLL_ID",
+        "resolver_key": "payroll"
+      },
+      {
+        "criterion": "Position",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PSTN_PRTE",
+        "source_column": "POSITION_ID",
+        "resolver_key": "position"
+      },
+      {
+        "criterion": "Work Location",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_WK_LOC_PRTE",
+        "source_column": "LOCATION_ID",
+        "resolver_key": "work_location"
+      },
+      {
+        "criterion": "Job",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_JOB_PRTE",
+        "source_column": "JOB_ID",
+        "resolver_key": "job"
+      },
+      {
+        "criterion": "Grade",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_GRD_PRTE",
+        "source_column": "GRADE_ID",
+        "resolver_key": "grade"
+      },
+      {
+        "criterion": "Leaving / Termination Reason",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_LVG_RSN_PRTE",
+        "source_column": "ACTION_ID",
+        "resolver_key": "leaving_action"
+      },
+      {
+        "criterion": "Organization Unit / Department",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_ORG_UNIT_PRTE",
+        "source_column": "ORGANIZATION_ID",
+        "resolver_key": "department"
+      },
+      {
+        "criterion": "Collective Agreement",
+        "criterion_code": "CAG",
+        "criterion_table": "BEN_ELIG_GEN_CRIT_PRTE",
+        "source_column": "CRIT_CHAR1",
+        "resolver_key": "collective_agreement"
+      },
+      {
+        "criterion": "Union",
+        "criterion_code": "UNN",
+        "criterion_table": "BEN_ELIG_GEN_CRIT_PRTE",
+        "source_column": "CRIT_NUMBER1 / CRIT_CHAR1",
+        "resolver_key": "union"
+      },
+      {
+        "criterion": "Competency",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_COMPTNCY_PRTE",
+        "source_column": "COMPETENCE_ID",
+        "resolver_key": "competency_content_item"
+      },
+      {
+        "criterion": "Competency Rating Model",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_COMPTNCY_PRTE",
+        "source_column": "RATING_MODEL_ID",
+        "resolver_key": "rating_model"
+      },
+      {
+        "criterion": "Competency Rating Level",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_COMPTNCY_PRTE",
+        "source_column": "RATING_LEVEL_ID",
+        "resolver_key": "rating_level"
+      },
+      {
+        "criterion": "Qualification Type",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_QUAL_TITL_PRTE",
+        "source_column": "QUALIFICATION_TYPE_ID",
+        "resolver_key": "content_type"
+      },
+      {
+        "criterion": "Qualification",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_QUAL_TITL_PRTE",
+        "source_column": "QUALIFICATION_ID",
+        "resolver_key": "qualification_content_item"
+      },
+      {
+        "criterion": "Performance Template",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PERF_RTNG_PRTE",
+        "source_column": "PERF_TMPL_ID",
+        "resolver_key": "performance_template"
+      },
+      {
+        "criterion": "Performance Template Period",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PERF_RTNG_PRTE",
+        "source_column": "TMPL_PERIOD_ID",
+        "resolver_key": "performance_template_period"
+      },
+      {
+        "criterion": "Performance Rating Model",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PERF_RTNG_PRTE",
+        "source_column": "RATING_MODEL_ID",
+        "resolver_key": "rating_model"
+      },
+      {
+        "criterion": "Performance Rating Level",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_PERF_RTNG_PRTE",
+        "source_column": "RATING_LEVEL_ID",
+        "resolver_key": "rating_level"
+      },
+      {
+        "criterion": "Hours Worked - Defined Balance",
+        "criterion_code": "",
+        "criterion_table": "BEN_HRS_WKD_IN_PERD_FCTR",
+        "source_column": "DEFINED_BALANCE_ID",
+        "resolver_key": "defined_balance"
+      },
+      {
+        "criterion": "Hours Worked - Balance Legal Employer",
+        "criterion_code": "",
+        "criterion_table": "BEN_BNFTS_BAL_F",
+        "source_column": "LEGAL_ENTITY_ID",
+        "resolver_key": "legal_employer"
+      },
+      {
+        "criterion": "Compensation Level - Defined Balance",
+        "criterion_code": "",
+        "criterion_table": "BEN_COMP_LVL_FCTR",
+        "source_column": "DEFINED_BALANCE_ID",
+        "resolver_key": "defined_balance"
+      },
+      {
+        "criterion": "Compensation Level - Balance Legal Employer",
+        "criterion_code": "",
+        "criterion_table": "BEN_BNFTS_BAL_F",
+        "source_column": "LEGAL_ENTITY_ID",
+        "resolver_key": "legal_employer"
+      },
+      {
+        "criterion": "Benefits Group - Legal Employer",
+        "criterion_code": "",
+        "criterion_table": "BEN_BENFTS_GRP",
+        "source_column": "LEGAL_ENTITY_ID",
+        "resolver_key": "legal_employer"
+      },
+      {
+        "criterion": "Benefit Balance - Legal Employer",
+        "criterion_code": "",
+        "criterion_table": "BEN_BNFTS_BAL_F",
+        "source_column": "LEGAL_ENTITY_ID",
+        "resolver_key": "legal_employer"
+      },
+      {
+        "criterion": "Formula",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIGY_PRFL_RL",
+        "source_column": "FORMULA_ID",
+        "resolver_key": "fast_formula"
+      },
+      {
+        "criterion": "Leave of Absence Type",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_LOA_RSN_PRTE",
+        "source_column": "ABSENCE_ATTENDANCE_TYPE_ID",
+        "resolver_key": "absence_type"
+      },
+      {
+        "criterion": "Leave of Absence Reason",
+        "criterion_code": "",
+        "criterion_table": "BEN_ELIG_LOA_RSN_PRTE",
+        "source_column": "ABS_ATTENDANCE_REASON_ID",
+        "resolver_key": "absence_reason"
+      }
+    ],
+    "hcm_lookup_criteria": [
+      {
+        "criterion": "Bargaining Unit",
+        "criterion_code": "",
+        "lookup_role": "Criterion value",
+        "lookup_type": "BARGAINING_UNIT_CODE",
+        "stored_attribute": "BrgngUnitCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/BargainingUnitCriteriaVO.xml",
+        "lookup_type_line": "47",
+        "notes": "The active LOV uses HcmLookupValuesVVO with the same fixed lookup type"
+      },
+      {
+        "criterion": "Disabled",
+        "criterion_code": "",
+        "lookup_role": "Criterion value",
+        "lookup_type": "REGISTERED_DISABLED",
+        "stored_attribute": "DsbldCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/DisabilityCriteriaVO.xml",
+        "lookup_type_line": "40",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Full Time / Part Time",
+        "criterion_code": "",
+        "lookup_role": "Criterion value",
+        "lookup_type": "EMP_CAT",
+        "stored_attribute": "FlTmPtTmCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/FullTimeOrPartTimeCriteriaVO.xml",
+        "lookup_type_line": "47",
+        "notes": "The active LOV uses HcmLookupValuesVVO with the same fixed lookup type"
+      },
+      {
+        "criterion": "Gender",
+        "criterion_code": "",
+        "lookup_role": "Criterion value",
+        "lookup_type": "SEX",
+        "stored_attribute": "Sex",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/GenderCriteriaVO.xml",
+        "lookup_type_line": "41",
+        "notes": "The active LOV uses HcmLookupValuesVVO with the same fixed lookup type"
+      },
+      {
+        "criterion": "Hourly / Salaried",
+        "criterion_code": "",
+        "lookup_role": "Criterion value",
+        "lookup_type": "HOURLY_SALARIED_CODE",
+        "stored_attribute": "HrlySlrdCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/HourlyOrSalariedCriteriaVO.xml",
+        "lookup_type_line": "47",
+        "notes": "The active LOV uses HcmLookupValuesVVO with the same fixed lookup type"
+      },
+      {
+        "criterion": "Job Function",
+        "criterion_code": "JBF",
+        "lookup_role": "Criterion value",
+        "lookup_type": "JOB_FUNCTION_CODE",
+        "stored_attribute": "CritChar1",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/JobFunctionCriteriaVO.xml",
+        "lookup_type_line": "45",
+        "notes": "The active LOV uses HcmLookupValuesVVO with the same fixed lookup type"
+      },
+      {
+        "criterion": "Labor Union Member",
+        "criterion_code": "",
+        "lookup_role": "Criterion value",
+        "lookup_type": "BEN_PDW_ELPRO_LBR_MMBR",
+        "stored_attribute": "LbrMmbrFlag",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/LaborUnionMemberCriteriaVO.xml",
+        "lookup_type_line": "46",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Marital Status",
+        "criterion_code": "",
+        "lookup_role": "Criterion value",
+        "lookup_type": "MAR_STATUS",
+        "stored_attribute": "MaritalStatus",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/MaritalStatusCriteriaVO.xml",
+        "lookup_type_line": "48",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Manager",
+        "criterion_code": "MNG",
+        "lookup_role": "Criterion value",
+        "lookup_type": "BEN_YES_NO",
+        "stored_attribute": "CritChar1",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/PeopleManagerCriteriaVO.xml",
+        "lookup_type_line": "45",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Military Status",
+        "criterion_code": "",
+        "lookup_role": "Criterion value",
+        "lookup_type": "YES_NO",
+        "stored_attribute": "MltryStatCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/MilitaryStatusCriteriaVO.xml",
+        "lookup_type_line": "48",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Opted for Medicare",
+        "criterion_code": "",
+        "lookup_role": "Criterion value",
+        "lookup_type": "YES_NO",
+        "stored_attribute": "OptdMdcrFlag",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/OptedForMedicareCriteriaVO.xml",
+        "lookup_type_line": "34",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Other Coverage",
+        "criterion_code": "",
+        "lookup_role": "Coordination-of-benefits flag",
+        "lookup_type": "YES_NO",
+        "stored_attribute": "CoordBenNoCvgFlag",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/OtherCoverageCriteriaVO.xml",
+        "lookup_type_line": "42",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Quartile in Grade",
+        "criterion_code": "",
+        "lookup_role": "Criterion value",
+        "lookup_type": "CMP_QUAR_IN_GRD",
+        "stored_attribute": "QuarInGradeCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/QuartileInGradeCriteriaVO.xml",
+        "lookup_type_line": "46",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Religion",
+        "criterion_code": "REL",
+        "lookup_role": "Criterion value",
+        "lookup_type": "PER_RELIGION",
+        "stored_attribute": "CritChar1",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/ReligionCriteriaVO.xml",
+        "lookup_type_line": "43",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Student Status",
+        "criterion_code": "",
+        "lookup_role": "Criterion value",
+        "lookup_type": "BEN_STUDENT_STATUS",
+        "stored_attribute": "StdntStatCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedModel/entity/StudentStatusCriteriaEO.xml",
+        "lookup_type_line": "27",
+        "notes": "The VO binds through the entity accessor"
+      },
+      {
+        "criterion": "Tobacco Use",
+        "criterion_code": "",
+        "lookup_role": "Criterion value",
+        "lookup_type": "TOBACCO_USER",
+        "stored_attribute": "UsesTbcoFlag",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/TobaccoUseCriteriaVO.xml",
+        "lookup_type_line": "41",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Designator Enrolled Coverage",
+        "criterion_code": "",
+        "lookup_role": "Designator currently enrolled flag",
+        "lookup_type": "YES_NO",
+        "stored_attribute": "DsgntrCrntlyEnrldFlag",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/DesignatorCurrentlyEnrolledVO.xml",
+        "lookup_type_line": "47",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Dependent Coverage Required Relationship",
+        "criterion_code": "",
+        "lookup_role": "Relationship type",
+        "lookup_type": "CONTACT",
+        "stored_attribute": "PerRelshpTypCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/RequiredRelationshipCriteriaVO.xml",
+        "lookup_type_line": "45",
+        "notes": "Uses the plan-design HcmLookupVO rather than the common HcmLookupPVO"
+      },
+      {
+        "criterion": "Geography",
+        "criterion_code": "GEO",
+        "lookup_role": "Address type",
+        "lookup_type": "ADDRESS_TYPE",
+        "stored_attribute": "CritChar4",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/GeographyCriteriaVO.xml",
+        "lookup_type_line": "112",
+        "notes": "Country state and city use geography or territory views rather than HCM lookups"
+      },
+      {
+        "criterion": "Geography",
+        "criterion_code": "GEO",
+        "lookup_role": "Primary-address flag",
+        "lookup_type": "YES_NO",
+        "stored_attribute": "CritChar5",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/GeographyCriteriaVO.xml",
+        "lookup_type_line": "125",
+        "notes": "The UI listener identifies this as the primary flag"
+      },
+      {
+        "criterion": "Hire Date",
+        "criterion_code": "HRD",
+        "lookup_role": "Date basis",
+        "lookup_type": "BEN_ELIG_LOS_DT",
+        "stored_attribute": "CritChar1",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/HiredateCriteriaVO.xml",
+        "lookup_type_line": "127",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Hire Date",
+        "criterion_code": "HRD",
+        "lookup_role": "Month",
+        "lookup_type": "CMP_MONTH",
+        "stored_attribute": "CritChar2",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/HiredateCriteriaVO.xml",
+        "lookup_type_line": "88",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Hire Date",
+        "criterion_code": "HRD",
+        "lookup_role": "Day",
+        "lookup_type": "CMP_DATE",
+        "stored_attribute": "CritChar3",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/HiredateCriteriaVO.xml",
+        "lookup_type_line": "76",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Hire Date",
+        "criterion_code": "HRD",
+        "lookup_role": "Units",
+        "lookup_type": "CHECKLIST_QUALIFYING_UNITS",
+        "stored_attribute": "CritChar4",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/HiredateCriteriaVO.xml",
+        "lookup_type_line": "101",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Hire Date",
+        "criterion_code": "HRD",
+        "lookup_role": "Operator",
+        "lookup_type": "BEN_ELIG_OPERATOR",
+        "stored_attribute": "Operator11",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/HiredateCriteriaVO.xml",
+        "lookup_type_line": "114",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Hire Date",
+        "criterion_code": "HRD",
+        "lookup_role": "Alternate service-date source",
+        "lookup_type": "BEN_SVC_DT_TO_USE",
+        "stored_attribute": "",
+        "binding_state": "DECLARED_ONLY",
+        "source_model": "protectedUiModel/view/HiredateCriteriaVO.xml",
+        "lookup_type_line": "52",
+        "notes": "Accessor is declared but no ListBinding in this VO consumes it"
+      },
+      {
+        "criterion": "Hire Date",
+        "criterion_code": "HRD",
+        "lookup_role": "Alternate equality-date control",
+        "lookup_type": "CMP_XPROPR_EQLTYDATE",
+        "stored_attribute": "",
+        "binding_state": "DECLARED_ONLY",
+        "source_model": "protectedUiModel/view/HiredateCriteriaVO.xml",
+        "lookup_type_line": "64",
+        "notes": "Accessor is declared but no ListBinding in this VO consumes it"
+      },
+      {
+        "criterion": "Probation Period",
+        "criterion_code": "EPN",
+        "lookup_role": "Operator",
+        "lookup_type": "BEN_ELIG_OPERATOR",
+        "stored_attribute": "Operator11",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/ProbationPeriodCriteriaVO.xml",
+        "lookup_type_line": "102",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Probation Period",
+        "criterion_code": "EPN",
+        "lookup_role": "Month",
+        "lookup_type": "CMP_MONTH",
+        "stored_attribute": "CritChar2",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/ProbationPeriodCriteriaVO.xml",
+        "lookup_type_line": "64",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Probation Period",
+        "criterion_code": "EPN",
+        "lookup_role": "Day",
+        "lookup_type": "CMP_DATE",
+        "stored_attribute": "CritChar3",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/ProbationPeriodCriteriaVO.xml",
+        "lookup_type_line": "76",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Probation Period",
+        "criterion_code": "EPN",
+        "lookup_role": "Units",
+        "lookup_type": "CHECKLIST_QUALIFYING_UNITS",
+        "stored_attribute": "CritChar4",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/ProbationPeriodCriteriaVO.xml",
+        "lookup_type_line": "89",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Probation Period",
+        "criterion_code": "EPN",
+        "lookup_role": "Alternate equality-date control",
+        "lookup_type": "CMP_XPROPR_EQLTYDATE",
+        "stored_attribute": "",
+        "binding_state": "DECLARED_ONLY",
+        "source_model": "protectedUiModel/view/ProbationPeriodCriteriaVO.xml",
+        "lookup_type_line": "52",
+        "notes": "Accessor is declared but no ListBinding in this VO consumes it"
+      },
+      {
+        "criterion": "Scheduled Hours",
+        "criterion_code": "",
+        "lookup_role": "Frequency",
+        "lookup_type": "FREQUENCY",
+        "stored_attribute": "FreqCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/ScheduleHoursVO.xml",
+        "lookup_type_line": "138",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Scheduled Hours",
+        "criterion_code": "",
+        "lookup_role": "Determination rule",
+        "lookup_type": "BEN_LOS_DET",
+        "stored_attribute": "DeterminationCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/ScheduleHoursVO.xml",
+        "lookup_type_line": "125",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Scheduled Hours",
+        "criterion_code": "",
+        "lookup_role": "Rounding rule",
+        "lookup_type": "BEN_RNDG",
+        "stored_attribute": "RoundingCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/ScheduleHoursVO.xml",
+        "lookup_type_line": "112",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Covered by Another Plan",
+        "criterion_code": "",
+        "lookup_role": "Coverage determination date",
+        "lookup_type": "BEN_CVG_DET_DT",
+        "stored_attribute": "CvgDetDtCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedModel/entity/CoveredByAnotherPlanCriteriaEO.xml",
+        "lookup_type_line": "42",
+        "notes": "The VO binds through the entity accessor"
+      },
+      {
+        "criterion": "Covered by Another Plan in Program",
+        "criterion_code": "",
+        "lookup_role": "Coverage determination date",
+        "lookup_type": "BEN_CVG_DET_DT",
+        "stored_attribute": "EnrlDetDtCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedUiModel/view/CoveredByAnotherPlanInProgramCriteriaVO.xml",
+        "lookup_type_line": "31",
+        "notes": "LookupCode is stored and Meaning is displayed"
+      },
+      {
+        "criterion": "Covered by Another Plan Type",
+        "criterion_code": "",
+        "lookup_role": "Coverage determination date",
+        "lookup_type": "BEN_CVG_DET_DT",
+        "stored_attribute": "EnrlDetDtCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedModel/entity/CoveredByAnotherPlanTypeCriteriaEO.xml",
+        "lookup_type_line": "49",
+        "notes": "The VO binds through the entity accessor"
+      },
+      {
+        "criterion": "Covered by Another Program",
+        "criterion_code": "",
+        "lookup_role": "Coverage determination date",
+        "lookup_type": "BEN_CVG_DET_DT",
+        "stored_attribute": "EnrlDetDtCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedModel/entity/CoveredByAnotherProgramCriteriaEO.xml",
+        "lookup_type_line": "35",
+        "notes": "The VO binds through the entity accessor"
+      },
+      {
+        "criterion": "Enrolled in Another Option",
+        "criterion_code": "",
+        "lookup_role": "Enrollment determination date",
+        "lookup_type": "BEN_CVG_DET_DT",
+        "stored_attribute": "EnrlDetDtCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedModel/entity/EnrolledInAnotherOptionCriteriaEO.xml",
+        "lookup_type_line": "32",
+        "notes": "The VO binds through the entity accessor"
+      },
+      {
+        "criterion": "Enrolled in Another Plan",
+        "criterion_code": "",
+        "lookup_role": "Enrollment determination date",
+        "lookup_type": "BEN_CVG_DET_DT",
+        "stored_attribute": "EnrlDetDtCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedModel/entity/EnrolledInAnotherPlanCriteriaEO.xml",
+        "lookup_type_line": "41",
+        "notes": "The VO binds through the entity accessor"
+      },
+      {
+        "criterion": "Enrolled in Another Plan in Program",
+        "criterion_code": "",
+        "lookup_role": "Enrollment determination date",
+        "lookup_type": "BEN_CVG_DET_DT",
+        "stored_attribute": "EnrlDetDtCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedModel/entity/EnrolledInAnotherPlanInProgramCriteriaEO.xml",
+        "lookup_type_line": "37",
+        "notes": "The VO binds through the entity accessor"
+      },
+      {
+        "criterion": "Enrolled in Another Plan Type",
+        "criterion_code": "",
+        "lookup_role": "Enrollment determination date",
+        "lookup_type": "BEN_CVG_DET_DT",
+        "stored_attribute": "EnrlDetDtCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedModel/entity/EnrolledInAnotherPlanTypeCriteriaEO.xml",
+        "lookup_type_line": "37",
+        "notes": "The VO binds through the entity accessor"
+      },
+      {
+        "criterion": "Enrolled in Another Program",
+        "criterion_code": "",
+        "lookup_role": "Enrollment determination date",
+        "lookup_type": "BEN_CVG_DET_DT",
+        "stored_attribute": "EnrlDetDtCd",
+        "binding_state": "ACTIVE",
+        "source_model": "protectedModel/entity/EnrolledInAnotherProgramCriteriaEO.xml",
+        "lookup_type_line": "38",
+        "notes": "The VO binds through the entity accessor"
+      },
+      {
+        "criterion": "User-defined Criteria",
+        "criterion_code": "",
+        "lookup_role": "Set 1 value 1",
+        "lookup_type": "DYNAMIC: COL1_LOOKUP_TYPE",
+        "stored_attribute": "CharValue1",
+        "binding_state": "DYNAMIC",
+        "source_model": "protectedUiModel/view/UserDefinedCriteriaValueVO.xml",
+        "lookup_type_line": "81",
+        "notes": "The selected HCM lookup type is stored on the criterion definition"
+      },
+      {
+        "criterion": "User-defined Criteria",
+        "criterion_code": "",
+        "lookup_role": "Set 1 value 2",
+        "lookup_type": "DYNAMIC: COL1_LOOKUP_TYPE",
+        "stored_attribute": "CharValue2",
+        "binding_state": "DYNAMIC",
+        "source_model": "protectedUiModel/view/UserDefinedCriteriaValueVO.xml",
+        "lookup_type_line": "105",
+        "notes": "The selected HCM lookup type is stored on the criterion definition"
+      },
+      {
+        "criterion": "User-defined Criteria",
+        "criterion_code": "",
+        "lookup_role": "Set 2 value 1",
+        "lookup_type": "DYNAMIC: COL2_LOOKUP_TYPE",
+        "stored_attribute": "CharValue3",
+        "binding_state": "DYNAMIC",
+        "source_model": "protectedUiModel/view/UserDefinedCriteriaValueVO.xml",
+        "lookup_type_line": "93",
+        "notes": "The selected HCM lookup type is stored on the criterion definition"
+      },
+      {
+        "criterion": "User-defined Criteria",
+        "criterion_code": "",
+        "lookup_role": "Set 2 value 2",
+        "lookup_type": "DYNAMIC: COL2_LOOKUP_TYPE",
+        "stored_attribute": "CharValue4",
+        "binding_state": "DYNAMIC",
+        "source_model": "protectedUiModel/view/UserDefinedCriteriaValueVO.xml",
+        "lookup_type_line": "117",
+        "notes": "The selected HCM lookup type is stored on the criterion definition"
+      },
+      {
+        "criterion": "Service Area",
+        "criterion_code": "",
+        "lookup_role": "Service/product type",
+        "lookup_type": "BEN_PRDCT",
+        "stored_attribute": "OrgUnitPrdct",
+        "binding_state": "SUPPORTING_SETUP",
+        "source_model": "protectedUiModel/view/ServiceAreaVO.xml",
+        "lookup_type_line": "56",
+        "notes": "Lookup belongs to the Benefits-owned Service Area setup referenced by the criterion"
+      },
+      {
+        "criterion": "Postal Code Range",
+        "criterion_code": "",
+        "lookup_role": "Service/product type",
+        "lookup_type": "BEN_PRDCT",
+        "stored_attribute": "ServiceTypr",
+        "binding_state": "SUPPORTING_SETUP",
+        "source_model": "protectedUiModel/view/PostalZipRangesExcelSearchVO.xml",
+        "lookup_type_line": "30",
+        "notes": "Lookup belongs to the Benefits-owned postal/service-area setup referenced by the criterion"
+      },
+      {
+        "criterion": "Business Unit",
+        "criterion_code": "EBU",
+        "lookup_role": "Unused yes/no accessor",
+        "lookup_type": "BEN_YES_NO",
+        "stored_attribute": "",
+        "binding_state": "DECLARED_ONLY",
+        "source_model": "protectedUiModel/view/BusinessUnitCriteriaVO.xml",
+        "lookup_type_line": "28",
+        "notes": "The criterion's active LOV resolves a Business Unit object; no ListBinding consumes this lookup accessor"
+      },
+      {
+        "criterion": "Job Family",
+        "criterion_code": "JFM",
+        "lookup_role": "Unused yes/no accessor",
+        "lookup_type": "BEN_YES_NO",
+        "stored_attribute": "",
+        "binding_state": "DECLARED_ONLY",
+        "source_model": "protectedUiModel/view/JobFamilyCriteriaVO.xml",
+        "lookup_type_line": "29",
+        "notes": "The criterion's active LOV resolves a Job Family object; no ListBinding consumes this lookup accessor"
+      },
+      {
+        "criterion": "Performance Rating",
+        "criterion_code": "",
+        "lookup_role": "Unused performance-source accessor",
+        "lookup_type": "BEN_ELIG_PERF_SOURCE",
+        "stored_attribute": "",
+        "binding_state": "DECLARED_ONLY",
+        "source_model": "protectedUiModel/view/PerformanceRatingCriteriaVO.xml",
+        "lookup_type_line": "50",
+        "notes": "No ListBinding consumes this lookup accessor; active fields use template period rating model and rating level objects"
+      }
+    ],
+    "rest_api_resolvers": [
+      {
+        "resolver_key": "legal_employer",
+        "criteria": "Legal Employer; Hours Worked Balance Legal Employer; Compensation Level Balance Legal Employer; Benefits Group Legal Employer",
+        "classification": "REQUIRED/CONDITIONAL",
+        "verification": "LOCAL_AND_OFFICIAL",
+        "path": "/hcmRestApi/resources/11.13.18.05/legalEmployersLov",
+        "match_fields": "Name;LegislationCode;effective date",
+        "result_id": "OrganizationId",
+        "required_context": "LegislationCode;EffectiveDate",
+        "resolution_rule": "Exactly one active exact-name row in the legislation",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-legalemployerslov-get.html"
+      },
+      {
+        "resolver_key": "assignment_status",
+        "criteria": "Assignment Status",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID",
+        "path": "/hcmRestApi/resources/11.13.18.05/assignmentStatusTypesLov",
+        "match_fields": "AssignmentStatusCode;UserStatus;HRStatus;effective date",
+        "result_id": "AssignmentStatusTypeId",
+        "required_context": "EffectiveDate",
+        "resolution_rule": "Prefer exact code; validate label/status/date",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-assignmentstatustypeslov-get.html"
+      },
+      {
+        "resolver_key": "salary_basis",
+        "criteria": "Salary Basis",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/salaryBasisLov",
+        "match_fields": "Code;SalaryBasisName;LegislativeDataGroupId;effective date",
+        "result_id": "SalaryBasisId",
+        "required_context": "LegislativeDataGroupId;EffectiveDate",
+        "resolution_rule": "Use findByBasisCode and validate target LDG/status",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-salarybasislov-get.html"
+      },
+      {
+        "resolver_key": "person_type",
+        "criteria": "Person Type",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID",
+        "path": "/hcmRestApi/resources/11.13.18.05/personTypesLOV",
+        "match_fields": "UserPersonType;SystemPersonType",
+        "result_id": "PersonTypeId",
+        "required_context": "",
+        "resolution_rule": "Exact user and system person type",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-persontypeslov-get.html"
+      },
+      {
+        "resolver_key": "business_unit",
+        "criteria": "Business Unit",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/hcmBusinessUnitsLOV",
+        "match_fields": "Name;Status",
+        "result_id": "BusinessUnitId",
+        "required_context": "LegalEmployerId when available",
+        "resolution_rule": "Exactly one active exact-name row; constrain legal employer when supplied",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-hcmbusinessunitslov-get.html"
+      },
+      {
+        "resolver_key": "job_family",
+        "criteria": "Job Family",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID",
+        "path": "/hcmRestApi/resources/11.13.18.05/jobFamiliesLov",
+        "match_fields": "JobFamilyCode;JobFamilyName;effective date",
+        "result_id": "JobFamilyId",
+        "required_context": "EffectiveDate",
+        "resolution_rule": "Exact code and active effective row",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-jobfamilieslov-get.html"
+      },
+      {
+        "resolver_key": "payroll",
+        "criteria": "Payroll",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/payrollDefinitionsLOV",
+        "match_fields": "PayrollName;LegislativeDataGroupId;PeriodType;effective date",
+        "result_id": "PayrollId",
+        "required_context": "LegislativeDataGroupId;EffectiveDate",
+        "resolution_rule": "Exact name in resolved LDG and effective date",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-payrolldefinitionslov-get.html"
+      },
+      {
+        "resolver_key": "position",
+        "criteria": "Position",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/positionsLovV2",
+        "match_fields": "PositionCode;PositionName;BusinessUnitId;effective date",
+        "result_id": "PositionId",
+        "required_context": "BusinessUnitId;EffectiveDate",
+        "resolution_rule": "Exact code in resolved BU and effective date",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-positionslovv2-get.html"
+      },
+      {
+        "resolver_key": "work_location",
+        "criteria": "Work Location",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/locationsLov",
+        "match_fields": "LocationCode;LocationName;SetId;effective date",
+        "result_id": "LocationId",
+        "required_context": "SetId;EffectiveDate",
+        "resolution_rule": "Exact code in resolved reference-data set",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-locationslov-get.html"
+      },
+      {
+        "resolver_key": "job",
+        "criteria": "Job",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/jobsLovV2",
+        "match_fields": "JobCode;JobName;SetId;JobFamilyId;effective date",
+        "result_id": "JobId",
+        "required_context": "SetId;EffectiveDate",
+        "resolution_rule": "Exact code in resolved set and effective date",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-jobslovv2-get.html"
+      },
+      {
+        "resolver_key": "grade",
+        "criteria": "Grade",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/gradesLov",
+        "match_fields": "GradeCode;Name;SetId;effective date",
+        "result_id": "GradeId",
+        "required_context": "SetId;EffectiveDate",
+        "resolution_rule": "Exact code in resolved set and effective date",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-gradeslov-get.html"
+      },
+      {
+        "resolver_key": "leaving_action",
+        "criteria": "Leaving / Termination Reason",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID",
+        "path": "/hcmRestApi/resources/11.13.18.05/actionsLOV",
+        "match_fields": "ActionCode;ActionName;ActionTypeCode;effective date",
+        "result_id": "ActionId",
+        "required_context": "EffectiveDate;termination context",
+        "resolution_rule": "Exact action code and valid termination context",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-actionslov-get.html"
+      },
+      {
+        "resolver_key": "department",
+        "criteria": "Organization Unit / Department",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID",
+        "path": "/hcmRestApi/resources/11.13.18.05/departments",
+        "match_fields": "Name;effective date",
+        "result_id": "OrganizationId",
+        "required_context": "EffectiveDate",
+        "resolution_rule": "Exact name on the current date-effective department collection row",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-departments-get.html"
+      },
+      {
+        "resolver_key": "collective_agreement",
+        "criteria": "Collective Agreement",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/collectiveAgreementsLov",
+        "match_fields": "IdentificationCode;CollectiveAgreementName;LegalEntityId;LegislationCode;UnionId;BargainingUnitCode;effective date",
+        "result_id": "CollectiveAgreementId",
+        "required_context": "LegalEntityId or LegislationCode;EffectiveDate",
+        "resolution_rule": "Exact identification code plus enterprise context",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-collectiveagreementslov-get.html"
+      },
+      {
+        "resolver_key": "union",
+        "criteria": "Union",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/unionsLov",
+        "match_fields": "UnionName;LegislationCode;effective date;Status",
+        "result_id": "OrganizationId",
+        "required_context": "LegislationCode;EffectiveDate",
+        "resolution_rule": "Exact active union name in legislation",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-unionslov-get.html"
+      },
+      {
+        "resolver_key": "content_type",
+        "criteria": "Qualification Type",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID",
+        "path": "/hcmRestApi/resources/11.13.18.05/contentTypesLOV",
+        "match_fields": "ContentTypeName;ContextName",
+        "result_id": "ContentTypeId",
+        "required_context": "",
+        "resolution_rule": "Exact content type name and context",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-contenttypeslov-get.html"
+      },
+      {
+        "resolver_key": "competency_content_item",
+        "criteria": "Competency",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/contentItemsLov",
+        "match_fields": "ContentTypeId;Name;ContentValueSetCode;active dates",
+        "result_id": "ContentItemId",
+        "required_context": "Competency ContentTypeId;EffectiveDate",
+        "resolution_rule": "findActiveContentItemByDate then exact name/catalog",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-contentitemslov-get.html"
+      },
+      {
+        "resolver_key": "qualification_content_item",
+        "criteria": "Qualification",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/contentItemsLov",
+        "match_fields": "ContentTypeId;Name;ContentValueSetCode;active dates",
+        "result_id": "ContentItemId",
+        "required_context": "Qualification ContentTypeId;EffectiveDate",
+        "resolution_rule": "findActiveContentItemByDate then exact name/catalog",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-contentitemslov-get.html"
+      },
+      {
+        "resolver_key": "rating_model",
+        "criteria": "Competency Rating Model; Performance Rating Model",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID",
+        "path": "/hcmRestApi/resources/11.13.18.05/ratingModelsLOV",
+        "match_fields": "RatingModelCode;RatingName",
+        "result_id": "RatingModelId",
+        "required_context": "",
+        "resolution_rule": "findByRatingModelCode and validate exact name",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-ratingmodelslov-get.html"
+      },
+      {
+        "resolver_key": "rating_level",
+        "criteria": "Competency Rating Level; Performance Rating Level",
+        "classification": "REQUIRED",
+        "verification": "OFFICIAL_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/ratingLevelsLOV",
+        "match_fields": "RatingLevelCode;RatingDescription;RatingModelId",
+        "result_id": "RatingLevelId",
+        "required_context": "RatingModelId",
+        "resolution_rule": "Exact level code within resolved rating model",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-ratinglevelslov-get.html"
+      },
+      {
+        "resolver_key": "performance_template_period",
+        "criteria": "Performance Template Period",
+        "classification": "REQUIRED",
+        "verification": "INTERNAL_SOURCE_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates",
+        "match_fields": "TemplateDefnId;CustomaryName;ShortName;ReviewPeriodId;NominalFromDate;NominalToDate",
+        "result_id": "TmplPeriodId",
+        "required_context": "Resolved TemplateDefnId; nominal/effective date",
+        "resolution_rule": "Expand periods under the resolved template and require one exact active child; never substitute ReviewPeriodId",
+        "official_doc": ""
+      },
+      {
+        "resolver_key": "performance_template",
+        "criteria": "Performance Template",
+        "classification": "REQUIRED",
+        "verification": "INTERNAL_SOURCE_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates",
+        "match_fields": "Name;DocumentTypeId;DocumentTypeName;TemplateTypeCode;DateFrom;DateTo;Status",
+        "result_id": "TemplateDefnId",
+        "required_context": "Document type; EffectiveDate",
+        "resolution_rule": "findByWord for candidate discovery then require one exact active/effective template",
+        "official_doc": ""
+      },
+      {
+        "resolver_key": "defined_balance",
+        "criteria": "Hours Worked Defined Balance; Compensation Level Defined Balance",
+        "classification": "CONDITIONAL",
+        "verification": "INTERNAL_SOURCE_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/payrollGenericLOV",
+        "match_fields": "BalanceName;DimensionName;LegislationCode;LegislativeDataGroupId",
+        "result_id": "DefinedBalanceId",
+        "required_context": "LegislationCode or resolved LegislativeDataGroupId; Manage Balance Group privilege",
+        "resolution_rule": "Use PayRestName=BalanceGroupUI_DefinedBalanceSearchVO and map ResultKeyN to ResultValueN; require one exact context match",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-payrollgenericlov-get.html"
+      },
+      {
+        "resolver_key": "absence_type",
+        "criteria": "Leave of Absence Type",
+        "classification": "RESOLVER_GAP",
+        "verification": "INTERNAL_SOURCE_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/absenceTypesLovV2",
+        "match_fields": "Name;LegislationCode;LegislativeDataGroupId;Status;EffectiveStartDate;EffectiveEndDate",
+        "result_id": "AbsenceTypeId",
+        "required_context": "LegislationCode or LegislativeDataGroupId; EffectiveDate",
+        "resolution_rule": "findByWord on Name then require one exact active/effective setup row; no PersonId is required",
+        "official_doc": ""
+      },
+      {
+        "resolver_key": "absence_reason",
+        "criteria": "Leave of Absence Reason",
+        "classification": "RESOLVER_GAP",
+        "verification": "OFFICIAL_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/absenceTypeReasonsLOV",
+        "match_fields": "AbsenceTypeId;Name;StatusCd;effective date",
+        "result_id": "AbsenceTypeReasonId",
+        "required_context": "AbsenceTypeId;EffectiveDate",
+        "resolution_rule": "findByAbsenceTypeId then exact active reason name",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-absencetypereasonslov-get.html"
+      },
+      {
+        "resolver_key": "fast_formula_type",
+        "criteria": "Fast Formula type dependency",
+        "classification": "INTERNAL_DEPENDENCY",
+        "verification": "INTERNAL_SOURCE_EXACT_ID",
+        "path": "/hcmRestApi/resources/11.13.18.05/fastFormulaTypesLOV",
+        "match_fields": "FormulaTypeName;BaseFormulaTypeName",
+        "result_id": "FormulaTypeId",
+        "required_context": "",
+        "resolution_rule": "FindByFormulaTypeName for candidate discovery then require one exact formula-type name",
+        "official_doc": ""
+      },
+      {
+        "resolver_key": "fast_formula",
+        "criteria": "Formula",
+        "classification": "INTERNAL_DEPENDENCY",
+        "verification": "INTERNAL_SOURCE_EXACT_ID_CONTEXT",
+        "path": "/hcmRestApi/resources/11.13.18.05/fastFormulas",
+        "match_fields": "FormulaName;FormulaTypeId;LegislativeDataGroupId;LegislationCode;EffectiveStartDate;EffectiveEndDate",
+        "result_id": "FormulaId",
+        "required_context": "Resolved FormulaTypeId; EffectiveDate; LegislativeDataGroupId or LegislationCode",
+        "resolution_rule": "findByFilterCriteria then require one exact name/type/context/effective row; prefer create-first ID tracking when the workflow creates the formula",
+        "official_doc": ""
+      },
+      {
+        "resolver_key": "common_lookup_validation",
+        "criteria": "Lookup-based NOT_REQUIRED criteria",
+        "classification": "NOT_REQUIRED",
+        "verification": "OFFICIAL_VALIDATION_ONLY",
+        "path": "/fscmRestApi/resources/11.13.18.05/commonLookupsLOV",
+        "match_fields": "LookupType;LookupCode;legislation/access",
+        "result_id": "LookupCode",
+        "required_context": "LookupType",
+        "resolution_rule": "Use LookupTypeFinder and validate exact code; this is not an ID mapping",
+        "official_doc": "https://docs.oracle.com/en/cloud/saas/human-resources/farws/op-commonlookupslov-get.html"
+      }
+    ]
+  },
+  "openapi": {
+    "openapi": "3.1.2",
+    "info": {
+      "title": "Oracle Fusion Benefits Plan Copy Import API",
+      "version": "1.2.0",
+      "description": "Host-neutral contract for the approval-gated Benefits Plan Copy import workflow. Authentication and the Fusion origin are supplied at runtime."
+    },
+    "servers": [
+      {
+        "url": "/",
+        "description": "Fusion origin supplied by the selected OAuth environment"
+      }
+    ],
+    "tags": [
+      {
+        "name": "Plan Copy"
+      },
+      {
+        "name": "ESS"
+      }
+    ],
+    "security": [
+      {
+        "FusionOAuth": []
+      }
+    ],
+    "paths": {
+      "/hcmRestApi/resources/latest/benefitPlanCopyParameters": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RestFrameworkVersion"
+          }
+        ],
+        "post": {
+          "operationId": "createPlanCopy",
+          "tags": [
+            "Plan Copy"
+          ],
+          "summary": "Create a Benefits Plan Copy import",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/vnd.oracle.adf.resourceitem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanCopyCreate"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Plan Copy import created",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PlanCopy"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/hcmRestApi/resources/latest/benefitPlanCopyParameters/{plCopyId}": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RestFrameworkVersion"
+          },
+          {
+            "$ref": "#/components/parameters/PlCopyId"
+          }
+        ],
+        "get": {
+          "operationId": "getPlanCopy",
+          "tags": [
+            "Plan Copy"
+          ],
+          "summary": "Get Plan Copy processing status",
+          "responses": {
+            "200": {
+              "description": "Plan Copy import status",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PlanCopy"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/hcmRestApi/resources/latest/benefitPlanCopyParameters/{plCopyId}/enclosure/PackageContent": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RestFrameworkVersion"
+          },
+          {
+            "$ref": "#/components/parameters/PlCopyId"
+          }
+        ],
+        "put": {
+          "operationId": "uploadPlanCopyPackage",
+          "tags": [
+            "Plan Copy"
+          ],
+          "summary": "Upload the Plan Copy package enclosure",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/zip": {}
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "Package uploaded"
+            }
+          }
+        }
+      },
+      "/hcmRestApi/resources/latest/benefitPlanCopyParameters/{plCopyId}/enclosure/RequestLogs": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RestFrameworkVersion"
+          },
+          {
+            "$ref": "#/components/parameters/PlCopyId"
+          }
+        ],
+        "get": {
+          "operationId": "getPlanCopyRequestLog",
+          "tags": [
+            "Plan Copy"
+          ],
+          "summary": "Download the consolidated Plan Copy import log",
+          "responses": {
+            "200": {
+              "description": "Consolidated import log stored in PARAM_ATTRIBUTE_BLOB2",
+              "content": {
+                "application/octet-stream": {
+                  "schema": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/hcmRestApi/resources/latest/benefitPlanCopyParameters/{plCopyId}/action/generateMappings": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RestFrameworkVersion"
+          },
+          {
+            "$ref": "#/components/parameters/PlCopyId"
+          }
+        ],
+        "post": {
+          "operationId": "generatePlanCopyMappings",
+          "tags": [
+            "Plan Copy"
+          ],
+          "summary": "Generate mappings and import the RequestSource FDOS Plan Copy package",
+          "requestBody": {
+            "$ref": "#/components/requestBodies/AdfAction"
+          },
+          "responses": {
+            "200": {
+              "description": "Combined mapping and import ESS request submitted",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ActionResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/hcmRestApi/resources/latest/benefitPlanCopyParameters/{plCopyId}/child/mappings": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RestFrameworkVersion"
+          },
+          {
+            "$ref": "#/components/parameters/PlCopyId"
+          }
+        ],
+        "get": {
+          "operationId": "listPlanCopyMappings",
+          "tags": [
+            "Plan Copy"
+          ],
+          "summary": "List generated Plan Copy mappings",
+          "parameters": [
+            {
+              "name": "q",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "fields",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            {
+              "name": "totalResults",
+              "in": "query",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Plan Copy mappings",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CollectionResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/hcmRestApi/resources/latest/benefitPlanCopyParameters/{plCopyId}/child/logs": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RestFrameworkVersion"
+          },
+          {
+            "$ref": "#/components/parameters/PlCopyId"
+          }
+        ],
+        "get": {
+          "operationId": "listPlanCopyLogs",
+          "tags": [
+            "Plan Copy"
+          ],
+          "summary": "List Plan Copy processing logs",
+          "parameters": [
+            {
+              "name": "limit",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            {
+              "name": "totalResults",
+              "in": "query",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Plan Copy processing logs",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CollectionResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/ess/rest/scheduler/v1/requests/{requestId}": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "get": {
+          "operationId": "getEssRequest",
+          "tags": [
+            "ESS"
+          ],
+          "summary": "Get an ESS request status",
+          "responses": {
+            "200": {
+              "description": "ESS request status",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "securitySchemes": {
+        "FusionOAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "OAuth 2.0 access token",
+          "description": "Access token supplied by the shared Fusion OAuth client"
+        }
+      },
+      "parameters": {
+        "RestFrameworkVersion": {
+          "name": "REST-Framework-Version",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "const": "9"
+          }
+        },
+        "PlCopyId": {
+          "name": "plCopyId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "RequestId": {
+          "name": "requestId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "requestBodies": {
+        "AdfAction": {
+          "required": true,
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "type": "object",
+                "maxProperties": 0
+              }
+            }
+          }
+        }
+      },
+      "schemas": {
+        "PlanCopyCreate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "Name",
+            "EffectiveDate",
+            "FileName",
+            "ComponentObjType",
+            "Description",
+            "ReuseCode",
+            "SendNotifications",
+            "RequestSource"
+          ],
+          "properties": {
+            "Name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "EffectiveDate": {
+              "type": "string",
+              "format": "date"
+            },
+            "FileName": {
+              "type": "string",
+              "minLength": 1
+            },
+            "ComponentObjType": {
+              "type": "string",
+              "const": "ELIG"
+            },
+            "Description": {
+              "type": "string",
+              "const": "Benefits Plan Copy REST import"
+            },
+            "ReuseCode": {
+              "type": "string",
+              "const": "N"
+            },
+            "SendNotifications": {
+              "type": "string",
+              "const": "N"
+            },
+            "RequestSource": {
+              "type": "string",
+              "const": "FDOS",
+              "description": "Runs import from the generateMappings request without a separate submitImport action."
+            }
+          }
+        },
+        "PlanCopy": {
+          "type": "object",
+          "properties": {
+            "PlCopyId": {
+              "type": "integer"
+            },
+            "ImportPlDesign": {
+              "type": "integer"
+            },
+            "RequestStatus": {
+              "type": "string"
+            },
+            "MappingRequestStatus": {
+              "type": "string"
+            }
+          }
+        },
+        "ActionResult": {
+          "type": "object",
+          "properties": {
+            "result": {
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object"
+                }
+              ]
+            }
+          }
+        },
+        "CollectionResponse": {
+          "type": "object",
+          "required": [
+            "items"
+          ],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "hasMore": {
+              "type": "boolean"
+            },
+            "count": {
+              "type": "integer"
+            },
+            "totalResults": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    }
+  },
+  "map_rules": {
+    "version": 1,
+    "component_object_id": "300100655047592",
+    "component_object_type": "ELIG",
+    "criteria": {
+      "Legal Employer": {
+        "reference_criterion": "Legal Employer / Legal Entity",
+        "display_field": "Name"
+      },
+      "Benefit Group Legal Employer": {
+        "reference_criterion": "Benefits Group - Legal Employer",
+        "lookup_criterion": "Legal Employer",
+        "display_field": "Name",
+        "input_source": "benefit_group_legal_employer",
+        "classification": "CONDITIONAL"
+      },
+      "Benefit Balance Legal Employer": {
+        "reference_criterion": "Benefit Balance - Legal Employer",
+        "lookup_criterion": "Legal Employer",
+        "display_field": "Name",
+        "input_source": "benefit_balance_legal_employer",
+        "classification": "CONDITIONAL"
+      },
+      "Assignment Status": {
+        "reference_criterion": "Assignment Status",
+        "display_field": "UserStatus"
+      },
+      "Salary Basis": {
+        "reference_criterion": "Salary Basis",
+        "display_field": "SalaryBasisName"
+      },
+      "Person Type": {
+        "reference_criterion": "Person Type",
+        "display_field": "UserPersonType",
+        "attribute_fields": {
+          "MapAttribute1": "SystemPersonType"
+        },
+        "literal_fields": {
+          "MapAttribute2": "Employee"
+        }
+      },
+      "Business Unit": {
+        "reference_criterion": "Business Unit",
+        "display_field": "Name"
+      },
+      "Job Family": {
+        "reference_criterion": "Job Family",
+        "display_field": "JobFamilyName",
+        "attribute_fields": {
+          "MapAttribute1": "JobFamilyCode"
+        }
+      },
+      "Termination Reason": {
+        "reference_criterion": "Leaving / Termination Reason",
+        "display_field": "ActionName"
+      },
+      "Department": {
+        "reference_criterion": "Organization Unit / Department",
+        "display_field": "Name"
+      },
+      "Collective Agreement": {
+        "reference_criterion": "Collective Agreement",
+        "display_field": "CollectiveAgreementName",
+        "attribute_fields": {
+          "MapAttribute1": "IdentificationCode"
+        }
+      },
+      "Union": {
+        "reference_criterion": "Union",
+        "display_field": "UnionName",
+        "column_name": "CRIT_CHAR1"
+      }
+    }
+  },
+  "lookup_mappings": {
+    "version": 4,
+    "criteria": {
+      "Assignment Status": {
+        "endpoint": "/hcmRestApi/resources/11.13.18.05/assignmentStatusTypesLov",
+        "catalog": "assignmentStatusTypesLov",
+        "source_fields": [
+          "UserStatus",
+          "AssignmentStatusCode"
+        ],
+        "target_fields": {
+          "AssignmentStatusTypeName": "UserStatus"
+        },
+        "query": {
+          "q": "UserStatus='{meaning}'"
+        },
+        "required_values": {
+          "HRStatus": "ACTIVE"
+        }
+      },
+      "Bargaining Unit": {
+        "endpoint": "/fscmRestApi/resources/11.13.18.05/commonLookupsLOV",
+        "catalog": "BARGAINING_UNIT_CODE",
+        "source_fields": [
+          "Meaning",
+          "LookupCode"
+        ],
+        "target_fields": {
+          "BrgngUnitCd": "LookupCode"
+        },
+        "query": {
+          "finder": "LookupTypeFinder;LookupType=BARGAINING_UNIT_CODE,ActiveDate={active_date}"
+        },
+        "required_values": {
+          "LookupType": "BARGAINING_UNIT_CODE"
+        }
+      },
+      "Business Unit": {
+        "endpoint": "/hcmRestApi/resources/11.13.18.05/hcmBusinessUnitsLOV",
+        "catalog": "hcmBusinessUnitsLOV",
+        "source_fields": [
+          "Name"
+        ],
+        "target_fields": {
+          "BusinessUnitName": "Name"
+        },
+        "query": {
+          "q": "Name='{meaning}'"
+        },
+        "required_values": {}
+      },
+      "Hourly or Salaried": {
+        "endpoint": "/fscmRestApi/resources/11.13.18.05/commonLookupsLOV",
+        "catalog": "HOURLY_SALARIED_CODE",
+        "source_fields": [
+          "Meaning",
+          "LookupCode"
+        ],
+        "target_fields": {
+          "HrlySlrdCd": "LookupCode"
+        },
+        "query": {
+          "finder": "LookupTypeFinder;LookupType=HOURLY_SALARIED_CODE,ActiveDate={active_date}"
+        },
+        "required_values": {
+          "LookupType": "HOURLY_SALARIED_CODE"
+        }
+      },
+      "Job Function": {
+        "endpoint": "/fscmRestApi/resources/11.13.18.05/commonLookupsLOV",
+        "catalog": "JOB_FUNCTION_CODE",
+        "source_fields": [
+          "Meaning",
+          "LookupCode"
+        ],
+        "target_fields": {
+          "CritChar1": "LookupCode"
+        },
+        "query": {
+          "finder": "LookupTypeFinder;LookupType=JOB_FUNCTION_CODE,ActiveDate={active_date}"
+        },
+        "required_values": {
+          "LookupType": "JOB_FUNCTION_CODE"
+        }
+      },
+      "Labor Union Member": {
+        "endpoint": "/fscmRestApi/resources/11.13.18.05/commonLookupsLOV",
+        "catalog": "BEN_PDW_ELPRO_LBR_MMBR",
+        "source_fields": [
+          "Meaning",
+          "LookupCode"
+        ],
+        "target_fields": {
+          "LbrMmbrFlag": "LookupCode"
+        },
+        "query": {
+          "finder": "LookupTypeFinder;LookupType=BEN_PDW_ELPRO_LBR_MMBR,ActiveDate={active_date}"
+        },
+        "required_values": {
+          "LookupType": "BEN_PDW_ELPRO_LBR_MMBR"
+        }
+      },
+      "Legal Employer": {
+        "endpoint": "/hcmRestApi/resources/11.13.18.05/legalEmployersLov",
+        "catalog": "legalEmployersLov",
+        "source_fields": [
+          "Name"
+        ],
+        "target_fields": {
+          "OrganizationName": "Name"
+        },
+        "query": {
+          "q": "Name='{meaning}'"
+        },
+        "required_values": {}
+      },
+      "Marital Status": {
+        "endpoint": "/fscmRestApi/resources/11.13.18.05/commonLookupsLOV",
+        "catalog": "MAR_STATUS",
+        "source_fields": [
+          "Meaning",
+          "LookupCode"
+        ],
+        "target_fields": {
+          "MaritalStatus": "LookupCode"
+        },
+        "query": {
+          "finder": "LookupTypeFinder;LookupType=MAR_STATUS,ActiveDate={active_date}"
+        },
+        "required_values": {
+          "LookupType": "MAR_STATUS"
+        }
+      },
+      "Manager": {
+        "endpoint": "/fscmRestApi/resources/11.13.18.05/commonLookupsLOV",
+        "catalog": "BEN_YES_NO",
+        "source_fields": [
+          "Meaning",
+          "LookupCode"
+        ],
+        "target_fields": {
+          "CritChar1": "LookupCode"
+        },
+        "query": {
+          "finder": "LookupTypeFinder;LookupType=BEN_YES_NO,ActiveDate={active_date}"
+        },
+        "required_values": {
+          "LookupType": "BEN_YES_NO"
+        }
+      },
+      "Religion": {
+        "endpoint": "/fscmRestApi/resources/11.13.18.05/commonLookupsLOV",
+        "catalog": "PER_RELIGION",
+        "source_fields": [
+          "Meaning",
+          "LookupCode"
+        ],
+        "target_fields": {
+          "CritChar1": "LookupCode"
+        },
+        "query": {
+          "finder": "LookupTypeFinder;LookupType=PER_RELIGION,ActiveDate={active_date}"
+        },
+        "required_values": {
+          "LookupType": "PER_RELIGION"
+        }
+      },
+      "Union": {
+        "endpoint": "/hcmRestApi/resources/11.13.18.05/unionsLov",
+        "catalog": "unionsLov",
+        "source_fields": [
+          "UnionName"
+        ],
+        "target_fields": {
+          "CritCharOrganizationName": "UnionName",
+          "OrganizationName": "UnionName"
+        },
+        "query": {
+          "q": "UnionName='{meaning}'"
+        },
+        "required_values": {}
+      },
+      "Tobacco Use": {
+        "endpoint": "/fscmRestApi/resources/11.13.18.05/commonLookupsLOV",
+        "catalog": "TOBACCO_USER",
+        "source_fields": [
+          "Meaning",
+          "LookupCode"
+        ],
+        "target_fields": {
+          "UsesTbcoFlag": "LookupCode"
+        },
+        "query": {
+          "finder": "LookupTypeFinder;LookupType=TOBACCO_USER,ActiveDate={active_date}"
+        },
+        "required_values": {
+          "LookupType": "TOBACCO_USER"
+        }
+      },
+      "Gender": {
+        "endpoint": "/fscmRestApi/resources/11.13.18.05/commonLookupsLOV",
+        "catalog": "SEX",
+        "source_fields": [
+          "Meaning",
+          "LookupCode"
+        ],
+        "target_fields": {
+          "Sex": "LookupCode"
+        },
+        "query": {
+          "finder": "LookupTypeFinder;LookupType=SEX,ActiveDate={active_date}"
+        },
+        "required_values": {
+          "LookupType": "SEX"
+        }
+      },
+      "Disabled": {
+        "endpoint": "/fscmRestApi/resources/11.13.18.05/commonLookupsLOV",
+        "catalog": "REGISTERED_DISABLED",
+        "source_fields": [
+          "Meaning",
+          "LookupCode"
+        ],
+        "target_fields": {
+          "DsbldCd": "LookupCode"
+        },
+        "query": {
+          "finder": "LookupTypeFinder;LookupType=REGISTERED_DISABLED,ActiveDate={active_date}"
+        },
+        "required_values": {
+          "LookupType": "REGISTERED_DISABLED"
+        }
+      },
+      "Termination Reason": {
+        "endpoint": "/hcmRestApi/resources/11.13.18.05/actionsLOV",
+        "catalog": "actionsLOV",
+        "source_fields": [
+          "ActionName",
+          "ActionCode"
+        ],
+        "target_fields": {
+          "ActionName": "ActionName",
+          "LvgRsnCd": "ActionCode"
+        },
+        "query": {
+          "q": "ActionName='{meaning}'"
+        },
+        "required_values": {
+          "ActionTypeCode": "EMPL_TERMINATE"
+        }
+      },
+      "Assignment Category": {
+        "endpoint": "/fscmRestApi/resources/11.13.18.05/commonLookupsLOV",
+        "catalog": "EMP_CAT",
+        "source_fields": [
+          "Meaning",
+          "LookupCode"
+        ],
+        "target_fields": {
+          "FlTmPtTmCd": "LookupCode"
+        },
+        "query": {
+          "finder": "LookupTypeFinder;LookupType=EMP_CAT,ActiveDate={active_date}"
+        },
+        "required_values": {
+          "LookupType": "EMP_CAT"
+        }
+      },
+      "Salary Basis": {
+        "endpoint": "/hcmRestApi/resources/11.13.18.05/salaryBasisLov",
+        "catalog": "salaryBasisLov",
+        "source_fields": [
+          "SalaryBasisName",
+          "Code"
+        ],
+        "target_fields": {
+          "SalaryBasisName": "SalaryBasisName"
+        },
+        "query": {
+          "q": "SalaryBasisName='{meaning}'"
+        },
+        "required_values": {}
+      },
+      "Quartile in Grade": {
+        "endpoint": "/fscmRestApi/resources/11.13.18.05/commonLookupsLOV",
+        "catalog": "CMP_QUAR_IN_GRD",
+        "source_fields": [
+          "Meaning",
+          "LookupCode"
+        ],
+        "target_fields": {
+          "QuarInGradeCd": "LookupCode"
+        },
+        "query": {
+          "finder": "LookupTypeFinder;LookupType=CMP_QUAR_IN_GRD,ActiveDate={active_date}"
+        },
+        "required_values": {
+          "LookupType": "CMP_QUAR_IN_GRD"
+        }
+      },
+      "Formula": {
+        "endpoint": "/hcmRestApi/resources/11.13.18.05/fastFormulas",
+        "catalog": "fastFormulas",
+        "source_fields": [
+          "FormulaName"
+        ],
+        "target_fields": {
+          "ParticipationandRateEligibilityFormulaName": "FormulaName"
+        },
+        "query": {
+          "q": "FormulaName='{meaning}'"
+        },
+        "required_values": {}
+      },
+      "Department": {
+        "endpoint": "/hcmRestApi/resources/11.13.18.05/departments",
+        "catalog": "departments",
+        "source_fields": [
+          "Name"
+        ],
+        "target_fields": {
+          "OrganizationName": "Name"
+        },
+        "query": {
+          "q": "Name='{meaning}'"
+        },
+        "required_values": {},
+        "multiple_match_policy": "first"
+      },
+      "Job Family": {
+        "endpoint": "/hcmRestApi/resources/11.13.18.05/jobFamiliesLov",
+        "catalog": "jobFamiliesLov",
+        "source_fields": [
+          "JobFamilyName",
+          "JobFamilyCode"
+        ],
+        "target_fields": {
+          "JobFamilyName": "JobFamilyName",
+          "JobFamilyCode": "JobFamilyCode"
+        },
+        "query": {
+          "q": "JobFamilyName='{meaning}'"
+        },
+        "required_values": {
+          "ActiveStatus": "A"
+        }
+      },
+      "Collective Agreement": {
+        "endpoint": "/hcmRestApi/resources/11.13.18.05/collectiveAgreementsLov",
+        "catalog": "collectiveAgreementsLov",
+        "source_fields": [
+          "CollectiveAgreementName",
+          "IdentificationCode"
+        ],
+        "target_fields": {
+          "CritCharCollectiveAgreementName": "CollectiveAgreementName",
+          "IdentificationCode": "IdentificationCode",
+          "CollectiveAgreementName": "CollectiveAgreementName"
+        },
+        "query": {
+          "q": "CollectiveAgreementName='{meaning}'"
+        },
+        "required_values": {}
+      },
+      "Person Type": {
+        "endpoint": "/hcmRestApi/resources/11.13.18.05/personTypesLOV",
+        "catalog": "personTypesLOV",
+        "source_fields": [
+          "UserPersonType"
+        ],
+        "target_fields": {
+          "UserPersonType": "UserPersonType",
+          "SystemPersonType": "SystemPersonType"
+        },
+        "query": {
+          "q": "ActiveFlag=true"
+        },
+        "required_values": {
+          "ActiveFlag": true,
+          "SystemPersonType": "EMP"
+        }
+      },
+      "Benefit Groups": {
+        "endpoint": "/hcmRestApi/resources/11.13.18.05/benefitGroupsLOV",
+        "catalog": "benefitGroupsLOV",
+        "source_fields": [
+          "BenefitGroupName"
+        ],
+        "target_fields": {
+          "BenefitsGroupName": "BenefitGroupName"
+        },
+        "query": {
+          "q": "BenefitGroupName='{meaning}'"
+        },
+        "required_values": {}
+      }
+    }
+  },
+  "version": 1
+}

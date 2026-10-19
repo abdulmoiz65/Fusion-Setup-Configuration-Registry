@@ -1,0 +1,309 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PJF_MANAGE_PROJECT_STATUSES",
+      "task_name": "Manage Project Statuses",
+      "start_node": "PSTATUS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "PSTATUS.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PSTATUS.LOOKUP_IDENTITIES",
+            "invalid": "PSTATUS.RETURN_ISSUES",
+            "unsupported": "PSTATUS.RETURN_REFUSAL"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request: run the local operation scope guard first; unsupported refuses before external lookups, malformed input returns issues, and needs_baseline may proceed only to declared identity/baseline resolution",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSTATUS.LOOKUP_IDENTITIES",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PSTATUS.FIND_STATUS",
+            "not_required": "PSTATUS.FIND_STATUS",
+            "failure": "PSTATUS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PSTATUS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run lookup_project_status_identities for named reads, write identity coverage and lifecycle/workflow targets, or consume its verified supplied current response; whole-task export/template-only requests require no extra lookup",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 331
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSTATUS.FIND_STATUS",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "PSTATUS.APPLY_DEFAULTS",
+            "failure": "PSTATUS.RETURN_ISSUES",
+            "unsupported": "PSTATUS.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "PSTATUS.LOOKUP_IDENTITIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve current identity/baseline and rerun check_project_status_operation_scope for existing changes before defaults; implicit rename/clear/child removal refuses, unresolved required baseline returns issues; whole-task reads skip per-status matching",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 332
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSTATUS.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "PSTATUS.RESOLVE_GRAPH",
+            "failure": "PSTATUS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PSTATUS.FIND_STATUS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After object/classification and baseline resolution; resolve PROJECT create controls using the selected current-or-standard policy with basis disclosure, apply other create defaults or preserve updates; read/export performs no defaulting",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSTATUS.RESOLVE_GRAPH",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "PSTATUS.ROUTE_OPERATION",
+            "failure": "PSTATUS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PSTATUS.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate lifecycle mode, exact native bridge, both workflow outcome codes, complete requested action set and use evidence; disclose deferred downstream checks",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 333
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSTATUS.ROUTE_OPERATION",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "supported": "PSTATUS.RESOLVE_DEPENDENCIES",
+            "unsupported": "PSTATUS.RETURN_REFUSAL",
+            "invalid": "PSTATUS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PSTATUS.RESOLVE_GRAPH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After capability and graph resolution",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSTATUS.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PSTATUS.ENFORCE_DESIGN",
+            "missing": "PSTATUS.RETURN_ISSUES",
+            "conflict": "PSTATUS.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "PSTATUS.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve only dependencies for the selected operation; whole-task export does not require status fixtures",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSTATUS.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "PSTATUS.EXECUTION_GATE",
+            "blocked": "PSTATUS.RETURN_REFUSAL",
+            "failure": "PSTATUS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PSTATUS.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before import approval; warnings and deferred checks stay visible",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSTATUS.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PSTATUS.RETURN_SUCCESS",
+            "not_ready": "PSTATUS.RETURN_ISSUES",
+            "declined": "PSTATUS.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "PSTATUS.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return validation/read guidance or require the exact Data Loader approved preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSTATUS.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PSTATUS.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Local validation complete or package approved; not proof of a successful Fusion write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSTATUS.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Correctable issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSTATUS.RETURN_REFUSAL",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Unsupported/conflicting/declined action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

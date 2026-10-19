@@ -1,0 +1,357 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "EGP_MANAGE_DEFAULT_ITEM_CLASS",
+      "task_name": "Manage Default Item Class",
+      "start_node": "DIC.VALIDATE_USER_INPUT",
+      "nodes": [
+        {
+          "id": "DIC.VALIDATE_USER_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DIC.CHECK_FSM_TEMPLATE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Manage Default Item Class import is requested",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DIC.CHECK_FSM_TEMPLATE",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DIC.APPLY_ROOT_ITEM_CLASS",
+            "missing": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "DIC.VALIDATE_USER_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Manage Default Item Class import is requested",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DIC.APPLY_ROOT_ITEM_CLASS",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "DIC.PREPARE_IMPORT_DATA"
+          },
+          "prerequisites": [
+            "DIC.CHECK_FSM_TEMPLATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Manage Default Item Class import is requested",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DIC.PREPARE_IMPORT_DATA",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "DIC.RETURN_SUCCESS",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "DIC.APPLY_ROOT_ITEM_CLASS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Manage Default Item Class import is requested",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Manage Default Item Class import gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DIC.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DIC.PREPARE_IMPORT_DATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "User data is mapped to the reviewed template and ready for core.data-loader validation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "EGP_MANAGE_LIFECYCLE_PHASES",
+      "task_name": "Manage Lifecycle Phases",
+      "start_node": "LCP.VALIDATE_PROVIDED_INPUT",
+      "nodes": [
+        {
+          "id": "LCP.VALIDATE_PROVIDED_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LCP.LOOKUP_PHASE_TYPE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate PhaseName and PhaseType identity needed to resolve PhaseType; defer all PhaseSeq and PhaseCode validation until the fresh live baseline is available",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.LOOKUP_PHASE_TYPE",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "LCP.FETCH_LIVE_SEQUENCE_BASELINE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCP.VALIDATE_PROVIDED_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Manage Lifecycle Phases import is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.FETCH_LIVE_SEQUENCE_BASELINE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "fetch_live_baseline",
+          "execution_route": "shared.setup-export.task-level-export",
+          "transitions": {
+            "ready": "LCP.DEFAULT_MISSING_VALUES",
+            "missing": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCP.LOOKUP_PHASE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before proposing, defaulting, or validating PhaseSeq or PhaseCode for a Manage Lifecycle Phases import",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.DEFAULT_MISSING_VALUES",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "LCP.VALIDATE_FINAL_VALUES",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCP.FETCH_LIVE_SEQUENCE_BASELINE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Manage Lifecycle Phases import is requested",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.VALIDATE_FINAL_VALUES",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LCP.CHECK_TEMPLATE_ZIP",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCP.DEFAULT_MISSING_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate derived and supplied Manage Lifecycle Phases values after defaulting",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCP.CHECK_TEMPLATE_ZIP",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RETURN_SUCCESS",
+            "missing": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCP.VALIDATE_FINAL_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Manage Lifecycle Phases import is requested",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A required import gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LCP.CHECK_TEMPLATE_ZIP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All required import gates pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

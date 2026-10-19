@@ -1,0 +1,70 @@
+# Gig Descriptive Flexfields Input Validation
+
+For copy, update, and disable, ask only for Segment Name when missing, then validate a fresh exact-task export for this request; if unavailable or empty, use the qualified Global fallback proposal instead of stopping; label older evidence UNVERIFIED. For new create, use a validated matching package or export fresh when absent. Follow the required-values table, confirmation, optional-values table, confirmation sequence in ../SKILL.md.
+
+Global create, copy, update, and disable may use the [verified fallback export contract](ora_gig_global_segment_archive_contract.md), after a selected-environment exact-task export attempt fails, times out, or returns unusable rows. Confirm the complete design and disclose unavailable current-state checks as `UNVERIFIED`. Verification and context-sensitive work require a validated populated current-definition package. Global copy/update/disable use the confirmed fallback rules when fresh evidence is unavailable. Standalone list/inspect still requires a fresh export.
+
+Validate only requests for Gig Descriptive Flexfields under Recruiting Configuration. This contract supports read-only task export for segment retrieval, guided planning for the exact Gig DFF, and fail-closed mutation behavior.
+
+## Required Groups
+
+| Requirement Group | Accepted Fields | If Missing | How to Resolve | Applies When | Resolver |
+|---|---|---|---|---|---|
+| Exact task identity | task_code = ORA_IRC_MANAGE_OM_GIG_DESCRIPTIVE_FLEXFIELDS; offering = ORA_RECRUITING; functional_area = ORA_RECRUITING_CONFIGURATION | MISSING | Supply the exact catalog identity; do not substitute another descriptive-flexfield task | Every request | |
+| Exact flexfield identity | flexfield_code = IRC_MP_GIGS_DFF; application_id = 821 | MISSING | Supply both exact values | Every request | |
+| Explicit operation | operation = Inspect, PlanCreate, PlanUpdate, PlanDisable, or Verify | MISSING | Select one supported operation; redirect a delete request to PlanDisable only after confirmation | Every request | |
+| Segment scope | scope = All, Global, or one exact existing Gig context code and label | MISSING | Use All for a full Inspect/list request; otherwise select Global or provide an exact context for authoritative verification | Every segment request | verify_gig_context_identity |
+| Existing segment identity | Exact unique segment name, code, or API name | MISSING | Supply or select one exact existing segment | PlanUpdate, PlanDisable, Verify, or copy with a named source | verify_gig_dff_current_definition |
+| Current-definition package | Validated exact-task package; copy/update/disable require a fresh export attempt and either usable rows or the confirmed Global fallback | MISSING | For copy, update, and disable, ask only for Segment Name when missing, then validate a fresh exact-task export for this request; if unavailable or empty, use the qualified Global fallback proposal instead of stopping; label older evidence UNVERIFIED. For new create, use a validated matching package or export fresh when absent. Follow the required-values table, confirmation, optional-values table, confirmation sequence in ../SKILL.md. Global create, copy, update, and disable may use the qualified fallback. | Inspect/list, PlanCreate, PlanUpdate, PlanDisable, copy, or duplicate | resolve_gig_dff_segments_from_task_export |
+| Copy identifiers | Proposed unique name, code, API name, and prompt | MISSING | Follow the main skill copy procedure: suggest _Copy for name/code/prompt and Copy for API name, validate each field separately, propose a valid alternative for invalid/long/reserved/conflicting suggestions, and require confirmation; never silently truncate | Copy or duplicate | verify_gig_dff_current_definition |
+| Segment name first | Requested new name, existing target name, or copy source name | MISSING | Ask only for Segment Name initially; retain supplied values | PlanCreate, PlanUpdate, PlanDisable, copy, or duplicate | verify_gig_dff_current_definition |
+| Suggested segment proposal | Confirmed or changed proposal for code, API name, data type, table column, value set, prompt, display type, and applicable update delta | MISSING | Apply the name-based design rules in ../SKILL.md using the validated package or qualified new-Global fallback, propose type-compatible values together, and require confirmation | Every PlanCreate, PlanUpdate, copy, or duplicate | verify_gig_dff_current_definition |
+| Optional Edit Segment fields | Description; Enabled; Range Type; Required; Default Type; Definition Help Text; Instruction Help Text; Display Size; Display Height; Read-only | MISSING | After required design confirmation and before final archive construction, show all fields together with these target-environment defaults: blank; Yes; None; No; None; blank; blank; blank (UI default); blank (UI default); No. For update, show the authoritative current value beside each default. Ask once whether the requester wants to provide or change any optional fields | PlanCreate, PlanUpdate, copy, or duplicate | verify_gig_dff_current_definition |
+| FSM create-row transport fields | Nonempty ShortPrompt; positive unused SequenceNumber | MISSING | Include suggested ShortPrompt and positive unused SequenceNumber in the required-values table for the same confirmation; use the qualified fallback disclosure when necessary | PlanCreate reaches FSM archive preparation | verify_gig_dff_current_definition |
+| Existing value set | Exact displayed value-set code or name | MISSING | Retrieve a compatible existing value set and suggest its code/name in the required-values table; table confirmation selects it; never create or invent a value set | A segment uses an existing value set | verify_gig_value_set_compatibility |
+| Final FSM archive | Immutable Gig-specific CSV or ZIP from a proven authoritative contract, including the target export's ASM metadata, one IRC_MP_GIGS_DFF/application-821 root row, and the complete exported member set | ARTIFACT_PREPARATION | Use the validated populated Gig export as the package baseline; retain its headers, metadata, parent rows, and existing rows, then add only the requested delta. Never copy Referral package structure. | PlanCreate or PlanUpdate reaches import preparation | |
+| Change control | Exact preview or immutable artifact and a standalone approval bound to it | APPROVAL_REQUIRED | Do not collect owner, approval-reference, or acceptance-criteria fields during segment intake. Present the final preview and obtain approval immediately before mutation. | Before save, deployment, or import | |
+
+## Dependency-Aware Validation
+
+| Applies When | Result | Next Action | Resolver |
+|---|---|---|---|
+| Exact task or DFF identity is absent | MISSING | Return the expected identity and stop | |
+| More than one DFF, context, segment, or value set matches | AMBIGUOUS | Resolve one exact target and stop | |
+| A Referral context or another DFF is supplied | UNSUPPORTED | Reject it; do not inherit or alias the identity | |
+| No authoritative Gig context can be verified from the exact-task export or approved baseline | BLOCKED | Return verified Global rows separately and stop context-sensitive work | verify_gig_context_identity |
+| A copy source is omitted | Collect interactively | Run a fresh task-level export and require one exact source selection; if unavailable or empty, stop copy with the current-definition blocker; use the qualified Global fallback if the fresh export is unavailable or empty | |
+| PlanCreate has unanswered required fields | Collect interactively | Preserve answers and ask the next applicable question without exposing internal node state | |
+| PlanUpdate omits an existing property | Preserve | Carry forward the authoritative current value | verify_gig_dff_current_definition |
+| A request lacks a current-definition package, required current value, value-set result, or package contract | BLOCKED | Attempt a fresh export for copy/update/disable; if unavailable or empty, present the qualified Global fallback and confirm unresolved fields. For new create check a validated matching package or export when absent. Do not substitute another DFF, route, or artifact. | |
+| A fresh Gig setup-data export is header-only or lacks the IRC_MP_GIGS_DFF/application-821 root row | EXPORT_BASELINE_MISSING | Global create, copy, update, and disable may use the verified structural contract after an export attempt fails, times out, or returns unusable rows; validate checksum and identity, confirm the complete design, disclose unverified current-state checks, and build exactly one operation-specific Global delta. Verification and context-sensitive work require a validated populated current-definition package; Global copy/update/disable may use the confirmed fallback. For list/inspect, use only a fresh export and report no configured segments when empty. | |
+| Approval does not match the latest preview or checksum | APPROVAL_REQUIRED | Invalidate approval and present a new exact preview | |
+
+## Field Validation
+
+| Check | What Happens | Applies When | Resolver |
+|---|---|---|---|
+| Operation enumeration | Accept Inspect, PlanCreate, PlanUpdate, PlanDisable, or Verify only | Every request | |
+| Task equality | Require exact task code ORA_IRC_MANAGE_OM_GIG_DESCRIPTIVE_FLEXFIELDS within ORA_RECRUITING / ORA_RECRUITING_CONFIGURATION. Resolve displaySequence and taskListItemShortName from the unique entry in knowledge/setup-task-catalog/effective/offering-functional-area-task-catalog.json; do not compare against historical hardcoded values or use catalog displaySequence as the segment SequenceNumber | Every request | |
+| DFF equality | Require exact IRC_MP_GIGS_DFF and application 821 | Every request | |
+| Current-definition CSV evidence | For copy, update, and disable, ask only for Segment Name when missing, then validate a fresh exact-task export for this request; if unavailable or empty, use the qualified Global fallback proposal instead of stopping; label older evidence UNVERIFIED. For new create, use a validated matching package or export fresh when absent. Follow the required-values table, confirmation, optional-values table, confirmation sequence in ../SKILL.md. Preserve exact task/DFF/application validation and the Global change fallback. | Inspect/list request, PlanCreate, PlanUpdate, copy, or duplicate | resolve_gig_dff_segments_from_task_export |
+| Scope isolation | Accept All for full retrieval, Global, or one exact verified existing Gig context; reject Referral contexts | Every segment request | verify_gig_context_identity |
+| Retrieval result isolation | Return Global segment rows plus context-sensitive rows joined to exact contexts belonging to IRC_MP_GIGS_DFF; exclude the hidden context selector and every other DFF | Inspect/list request | resolve_gig_dff_segments_from_task_export |
+| Required Create Segment fields | Require name, code, API name, data type, available table column, compatible value set, prompt, and display type | PlanCreate | verify_gig_dff_current_definition |
+| Segment data type | Accept Character, Number, Date, or Date Time | PlanCreate | |
+| Table-column selection | Require a visible unused type-compatible UI option; never ask the requester to guess ATTRIBUTE_* | PlanCreate | verify_gig_dff_current_definition |
+| Gig runtime compatibility | Accept Format Only, Independent, or Table only when supported by the intended Gig page | PlanCreate or PlanUpdate | verify_gig_value_set_compatibility |
+| Copy derivation | Treat copy as PlanCreate; preserve the source and confirm unique field-specific suggestions | Copy or duplicate | verify_gig_dff_current_definition |
+| Segment identifier grammar | Apply the authoritative current Gig UI or transport grammar; use 1 to 30 alphanumeric characters beginning with an English letter only after the common DFF rule is confirmed | PlanCreate | verify_gig_dff_current_definition |
+| Optional settings | Treat description, enabled, range, required, default, help, display dimensions, read-only, BI, sensitivity, and reporting as optional unless selected or required for compatibility | PlanCreate | |
+| FSM artifact identity | Require the proven Gig-specific filenames, members, headers, parents, translations, metadata, encoding, delta, and checksum | Before import preview | |
+| Global FSM row placement | Require `ORA_FND_APP_DESCRIPTIVE_FLEXFIELD_GLOBAL_SEGMENT.csv`, parent IRC_MP_GIGS_DFF/application 821, and ContextCode `Global Data Elements`; require the complete exported field set and compatible target value set | PlanCreate in Global scope | |
+| Approval binding | Accept only standalone approval for the latest unchanged exact preview or immutable checksum | Before any mutation | |
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| GIG_DFF.VALIDATE_INPUT | step | 10 | validate_input | valid->GIG_DFF.RESOLVE_REFERENCES;missing->GIG_DFF.RETURN_ISSUES;invalid->GIG_DFF.RETURN_ISSUES;ambiguous->GIG_DFF.RETURN_ISSUES;unsupported->GIG_DFF.RETURN_ISSUES | none | stop | Every supported request |
+| GIG_DFF.MONITOR_IMPORT | decision | 70 | evaluate_result | succeeded->GIG_DFF.RETURN_IMPORT_SUCCESS;completed_with_errors->GIG_DFF.RETURN_ISSUES;failed->GIG_DFF.RETURN_ISSUES;timed_out->GIG_DFF.RETURN_ISSUES;log_unavailable->GIG_DFF.RETURN_ISSUES | GIG_DFF.EXECUTE | stop | For an accepted create, update, or copy import, monitor every 15 seconds for at most 300 seconds, download and read the FSM ProcessLog, reconcile all actionable errors, and never retry the submission |
+| GIG_DFF.VERIFY | decision | 80 | evaluate_result | verified->GIG_DFF.RETURN_VERIFY_SUCCESS;missing->GIG_DFF.RETURN_ISSUES;invalid->GIG_DFF.RETURN_ISSUES;failed->GIG_DFF.RETURN_ISSUES | GIG_DFF.EXECUTE | stop | Only for a separate functional Verify request; task-scoped status monitoring and ProcessLog review remain mandatory for accepted create, update, or copy imports |

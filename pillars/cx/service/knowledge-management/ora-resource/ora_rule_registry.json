@@ -1,0 +1,1327 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "ORA_CSO_ARTICLE_STATUS_MGMT",
+      "task_name": "Manage Knowledge Article Statuses",
+      "start_node": "ARTICLESTATUS.VALIDATE",
+      "nodes": [
+        {
+          "id": "ARTICLESTATUS.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "ARTICLESTATUS.LOOKUP",
+            "failure": "ARTICLESTATUS.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Knowledge Article Statuses request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ARTICLESTATUS.LOOKUP",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "ARTICLESTATUS.DEPENDENCIES",
+            "not_found": "ARTICLESTATUS.DEPENDENCIES",
+            "failure": "ARTICLESTATUS.FAILED"
+          },
+          "prerequisites": [
+            "ARTICLESTATUS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An Article Statuses request has passed input validation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ARTICLESTATUS.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "ARTICLESTATUS.DESIGN",
+            "blocked": "ARTICLESTATUS.FAILED",
+            "failure": "ARTICLESTATUS.FAILED"
+          },
+          "prerequisites": [
+            "ARTICLESTATUS.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before an Article Statuses request is ready for preview",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ARTICLESTATUS.DESIGN",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "ARTICLESTATUS.READY",
+            "failure": "ARTICLESTATUS.FAILED"
+          },
+          "prerequisites": [
+            "ARTICLESTATUS.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before an Article Statuses change is treated as ready for preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ARTICLESTATUS.READY",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ARTICLESTATUS.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Article Statuses guidance is ready for preview handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ARTICLESTATUS.FAILED",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Article Statuses validation, lookup, dependency, or design gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_CSO_CONTENT_TYPES_MGMT",
+      "task_name": "Manage Knowledge Content Types Classic",
+      "start_node": "CONTENTTYPESCLASSIC.VALIDATE",
+      "nodes": [
+        {
+          "id": "CONTENTTYPESCLASSIC.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "CONTENTTYPESCLASSIC.READY",
+            "failure": "CONTENTTYPESCLASSIC.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Classic content-type request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CONTENTTYPESCLASSIC.READY",
+          "node_type": "terminal",
+          "sequence": 2,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CONTENTTYPESCLASSIC.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classic content-type request is routed to the Redwood task skill",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CONTENTTYPESCLASSIC.FAILED",
+          "node_type": "terminal",
+          "sequence": 3,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Classic content-type routing validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_CSO_FILE_ATTACHMENTS_MGMT",
+      "task_name": "Manage Knowledge Files and Images",
+      "start_node": "FILEATTACHMENTS.VALIDATE",
+      "nodes": [
+        {
+          "id": "FILEATTACHMENTS.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "FILEATTACHMENTS.READY",
+            "failure": "FILEATTACHMENTS.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Knowledge Files and Images request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FILEATTACHMENTS.READY",
+          "node_type": "terminal",
+          "sequence": 2,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FILEATTACHMENTS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "File attachment guidance is ready for preview handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FILEATTACHMENTS.FAILED",
+          "node_type": "terminal",
+          "sequence": 3,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "File attachment input validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_CSO_KNOWLEDGE_PANEL_PROFILE_MGMT",
+      "task_name": "Manage Knowledge Panel Profile Options",
+      "start_node": "KNOWLEDGEPANELPROFILE.VALIDATE",
+      "nodes": [
+        {
+          "id": "KNOWLEDGEPANELPROFILE.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "KNOWLEDGEPANELPROFILE.LOOKUP",
+            "failure": "KNOWLEDGEPANELPROFILE.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Knowledge Panel FSM profile-option update request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGEPANELPROFILE.LOOKUP",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "KNOWLEDGEPANELPROFILE.DESIGN",
+            "not_found": "KNOWLEDGEPANELPROFILE.FAILED",
+            "failure": "KNOWLEDGEPANELPROFILE.FAILED"
+          },
+          "prerequisites": [
+            "KNOWLEDGEPANELPROFILE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Knowledge Panel FSM profile-option update has passed input validation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGEPANELPROFILE.DESIGN",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "KNOWLEDGEPANELPROFILE.READY",
+            "failure": "KNOWLEDGEPANELPROFILE.FAILED"
+          },
+          "prerequisites": [
+            "KNOWLEDGEPANELPROFILE.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a Knowledge Panel FSM profile-option update is treated as ready for approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGEPANELPROFILE.READY",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "KNOWLEDGEPANELPROFILE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Knowledge Panel profile option guidance is ready for approval handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGEPANELPROFILE.FAILED",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Knowledge Panel profile option validation, lookup, or design gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_CSO_KNOWLEDGE_SEARCH_PROFILE_MGMT",
+      "task_name": "Manage Knowledge Search Profile Options",
+      "start_node": "KNOWLEDGESEARCHPROFILE.VALIDATE",
+      "nodes": [
+        {
+          "id": "KNOWLEDGESEARCHPROFILE.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "KNOWLEDGESEARCHPROFILE.LOOKUP",
+            "failure": "KNOWLEDGESEARCHPROFILE.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Knowledge Search FSM profile-option update request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGESEARCHPROFILE.LOOKUP",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "KNOWLEDGESEARCHPROFILE.DESIGN",
+            "not_found": "KNOWLEDGESEARCHPROFILE.FAILED",
+            "failure": "KNOWLEDGESEARCHPROFILE.FAILED"
+          },
+          "prerequisites": [
+            "KNOWLEDGESEARCHPROFILE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Knowledge Search FSM profile-option update has passed input validation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGESEARCHPROFILE.DESIGN",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "KNOWLEDGESEARCHPROFILE.READY",
+            "failure": "KNOWLEDGESEARCHPROFILE.FAILED"
+          },
+          "prerequisites": [
+            "KNOWLEDGESEARCHPROFILE.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a Knowledge Search FSM profile-option update is treated as ready for approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGESEARCHPROFILE.READY",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "KNOWLEDGESEARCHPROFILE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Knowledge Search profile option guidance is ready for approval handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGESEARCHPROFILE.FAILED",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Knowledge Search profile option validation, lookup, or design gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_CSO_LOCALES_MGMT",
+      "task_name": "Manage Knowledge Locales",
+      "start_node": "KNOWLEDGELOCALES.VALIDATE",
+      "nodes": [
+        {
+          "id": "KNOWLEDGELOCALES.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "KNOWLEDGELOCALES.LOOKUP",
+            "failure": "KNOWLEDGELOCALES.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Knowledge Locales request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGELOCALES.LOOKUP",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "KNOWLEDGELOCALES.DEPENDENCIES",
+            "not_found": "KNOWLEDGELOCALES.DEPENDENCIES",
+            "failure": "KNOWLEDGELOCALES.FAILED"
+          },
+          "prerequisites": [
+            "KNOWLEDGELOCALES.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A locale review or locale configuration request has passed input validation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGELOCALES.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "KNOWLEDGELOCALES.DESIGN",
+            "blocked": "KNOWLEDGELOCALES.FAILED",
+            "failure": "KNOWLEDGELOCALES.FAILED"
+          },
+          "prerequisites": [
+            "KNOWLEDGELOCALES.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a locale configuration request is ready for preview",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGELOCALES.DESIGN",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "KNOWLEDGELOCALES.READY",
+            "failure": "KNOWLEDGELOCALES.FAILED"
+          },
+          "prerequisites": [
+            "KNOWLEDGELOCALES.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a locale configuration request is treated as ready for preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGELOCALES.READY",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "KNOWLEDGELOCALES.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Locale guidance is ready for preview handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGELOCALES.FAILED",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, dependency, or design gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_CSO_MY_KNOWLEDGE_PROFILE_MGMT",
+      "task_name": "Manage My Knowledge Profile Options",
+      "start_node": "MYKNOWLEDGEPROFILE.VALIDATE",
+      "nodes": [
+        {
+          "id": "MYKNOWLEDGEPROFILE.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "MYKNOWLEDGEPROFILE.LOOKUP",
+            "failure": "MYKNOWLEDGEPROFILE.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every My Knowledge FSM profile-option update request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MYKNOWLEDGEPROFILE.LOOKUP",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "MYKNOWLEDGEPROFILE.DESIGN",
+            "not_found": "MYKNOWLEDGEPROFILE.FAILED",
+            "failure": "MYKNOWLEDGEPROFILE.FAILED"
+          },
+          "prerequisites": [
+            "MYKNOWLEDGEPROFILE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A My Knowledge FSM profile-option update has passed input validation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MYKNOWLEDGEPROFILE.DESIGN",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "MYKNOWLEDGEPROFILE.READY",
+            "failure": "MYKNOWLEDGEPROFILE.FAILED"
+          },
+          "prerequisites": [
+            "MYKNOWLEDGEPROFILE.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a My Knowledge profile option update is treated as ready for approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MYKNOWLEDGEPROFILE.READY",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MYKNOWLEDGEPROFILE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "My Knowledge profile option guidance is ready for approval handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MYKNOWLEDGEPROFILE.FAILED",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any My Knowledge profile option validation, lookup, or design gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_CSO_SEARCH_DICT_MGMT",
+      "task_name": "Manage Knowledge Search Dictionary",
+      "start_node": "SEARCHDICTIONARY.VALIDATE",
+      "nodes": [
+        {
+          "id": "SEARCHDICTIONARY.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "SEARCHDICTIONARY.READY",
+            "failure": "SEARCHDICTIONARY.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every search-dictionary setup-data request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SEARCHDICTIONARY.READY",
+          "node_type": "terminal",
+          "sequence": 2,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SEARCHDICTIONARY.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search-dictionary guidance is ready for preview handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SEARCHDICTIONARY.FAILED",
+          "node_type": "terminal",
+          "sequence": 3,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Search-dictionary input validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_CSO_USER_GROUPS_MGMT",
+      "task_name": "Manage Knowledge User Groups",
+      "start_node": "USERGROUPS.VALIDATE",
+      "nodes": [
+        {
+          "id": "USERGROUPS.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "USERGROUPS.LOOKUP",
+            "failure": "USERGROUPS.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Knowledge User Groups request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "USERGROUPS.LOOKUP",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "USERGROUPS.DESIGN",
+            "not_found": "USERGROUPS.FAILED",
+            "failure": "USERGROUPS.FAILED"
+          },
+          "prerequisites": [
+            "USERGROUPS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Business Unit Support is enabled and a Business Unit name or businessUnitIds value must be validated",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "USERGROUPS.DESIGN",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "USERGROUPS.READY",
+            "failure": "USERGROUPS.FAILED"
+          },
+          "prerequisites": [
+            "USERGROUPS.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a user-group request is ready for preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "USERGROUPS.READY",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "USERGROUPS.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "User group guidance is ready for preview handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "USERGROUPS.FAILED",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any user group validation, lookup, or design gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_MANAGE_KNOWLEDGE_COMMON_PROFILE_OPTION",
+      "task_name": "Manage Knowledge Common Profile Options",
+      "start_node": "KNOWLEDGECOMMONPROFILE.VALIDATE",
+      "nodes": [
+        {
+          "id": "KNOWLEDGECOMMONPROFILE.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "KNOWLEDGECOMMONPROFILE.LOOKUP",
+            "failure": "KNOWLEDGECOMMONPROFILE.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Knowledge Common FSM profile-option update request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGECOMMONPROFILE.LOOKUP",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "KNOWLEDGECOMMONPROFILE.DESIGN",
+            "not_found": "KNOWLEDGECOMMONPROFILE.FAILED",
+            "failure": "KNOWLEDGECOMMONPROFILE.FAILED"
+          },
+          "prerequisites": [
+            "KNOWLEDGECOMMONPROFILE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Knowledge Common FSM profile-option update has passed input validation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGECOMMONPROFILE.DESIGN",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "KNOWLEDGECOMMONPROFILE.READY",
+            "failure": "KNOWLEDGECOMMONPROFILE.FAILED"
+          },
+          "prerequisites": [
+            "KNOWLEDGECOMMONPROFILE.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a Knowledge Common profile option update is treated as ready for approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGECOMMONPROFILE.READY",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "KNOWLEDGECOMMONPROFILE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Knowledge Common profile option guidance is ready for approval handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KNOWLEDGECOMMONPROFILE.FAILED",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Knowledge Common profile option validation, lookup, or design gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_MANAGE_KNOWLEDGE_FOR_SERVICE_REQUESTS_PROFILE_OPTIONS",
+      "task_name": "Manage Knowledge for Service Requests with Redwood User Interface Profile Options",
+      "start_node": "SERVICEREQUESTSPROFILE.VALIDATE",
+      "nodes": [
+        {
+          "id": "SERVICEREQUESTSPROFILE.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "SERVICEREQUESTSPROFILE.LOOKUP",
+            "failure": "SERVICEREQUESTSPROFILE.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Knowledge for Service Requests FSM profile-option update request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SERVICEREQUESTSPROFILE.LOOKUP",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "SERVICEREQUESTSPROFILE.DEPENDENCIES",
+            "failure": "SERVICEREQUESTSPROFILE.FAILED"
+          },
+          "prerequisites": [
+            "SERVICEREQUESTSPROFILE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Knowledge for Service Requests FSM profile-option update has passed input validation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SERVICEREQUESTSPROFILE.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "SERVICEREQUESTSPROFILE.DESIGN",
+            "blocked": "SERVICEREQUESTSPROFILE.FAILED",
+            "failure": "SERVICEREQUESTSPROFILE.FAILED"
+          },
+          "prerequisites": [
+            "SERVICEREQUESTSPROFILE.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a Knowledge for Service Requests FSM profile-option update is ready for preview",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SERVICEREQUESTSPROFILE.DESIGN",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "SERVICEREQUESTSPROFILE.READY",
+            "failure": "SERVICEREQUESTSPROFILE.FAILED"
+          },
+          "prerequisites": [
+            "SERVICEREQUESTSPROFILE.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a Knowledge for Service Requests FSM profile-option update is treated as ready for approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SERVICEREQUESTSPROFILE.READY",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SERVICEREQUESTSPROFILE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Knowledge for Service Requests profile option guidance is ready for approval handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SERVICEREQUESTSPROFILE.FAILED",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Knowledge for Service Requests profile option validation, lookup, dependency, or design gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

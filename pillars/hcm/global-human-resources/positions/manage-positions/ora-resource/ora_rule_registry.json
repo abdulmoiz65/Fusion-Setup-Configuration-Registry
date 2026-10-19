@@ -1,0 +1,468 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_POSITION",
+      "task_name": "Manage Positions",
+      "start_node": "POS.INPUT",
+      "nodes": [
+        {
+          "id": "POS.INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "POS.CONTRACT",
+            "missing": "POS.ERROR",
+            "invalid": "POS.ERROR",
+            "unsupported": "POS.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Positions request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 127
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.CONTRACT",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "POS.IDENTITY",
+            "failed": "POS.ERROR"
+          },
+          "prerequisites": [
+            "POS.INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm the positionsV2 describe resolver contract before live resolution",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.IDENTITY",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "POS.CONTENT_READ",
+            "create_available": "POS.CONTENT_READ",
+            "list_returned": "POS.CONTENT_READ",
+            "not_found": "POS.ERROR",
+            "duplicate": "POS.ERROR",
+            "ambiguous": "POS.ERROR",
+            "failed": "POS.ERROR"
+          },
+          "prerequisites": [
+            "POS.CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a list, exact target, or both independent create uniqueness checks through find_manage_positions",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.CONTENT_READ",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "POS.BUSINESS_UNIT",
+            "not_applicable": "POS.BUSINESS_UNIT",
+            "not_found": "POS.ERROR",
+            "unsupported": "POS.ERROR",
+            "ambiguous": "POS.ERROR",
+            "failed": "POS.ERROR"
+          },
+          "prerequisites": [
+            "POS.IDENTITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read requested Position sections and resolve update or delete child targets through read_position_section_rows",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.BUSINESS_UNIT",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "POS.DEPARTMENT",
+            "not_applicable": "POS.DEPARTMENT",
+            "not_found": "POS.ERROR",
+            "inactive": "POS.ERROR",
+            "ambiguous": "POS.ERROR",
+            "failed": "POS.ERROR"
+          },
+          "prerequisites": [
+            "POS.CONTENT_READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve BusinessUnitName and BusinessUnitId through resolve_position_business_unit",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.DEPARTMENT",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "POS.JOB",
+            "not_applicable": "POS.JOB",
+            "not_found": "POS.ERROR",
+            "inactive": "POS.ERROR",
+            "out_of_range": "POS.ERROR",
+            "ambiguous": "POS.ERROR",
+            "failed": "POS.ERROR"
+          },
+          "prerequisites": [
+            "POS.BUSINESS_UNIT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve DepartmentName and DepartmentId through resolve_position_department",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.JOB",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "POS.LOCATION",
+            "not_applicable": "POS.LOCATION",
+            "not_found": "POS.ERROR",
+            "inactive": "POS.ERROR",
+            "out_of_range": "POS.ERROR",
+            "ambiguous": "POS.ERROR",
+            "failed": "POS.ERROR"
+          },
+          "prerequisites": [
+            "POS.DEPARTMENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve JobName, JobCode, and JobId through resolve_position_job",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.LOCATION",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "POS.FIELD_VALUES",
+            "not_applicable": "POS.FIELD_VALUES",
+            "not_found": "POS.ERROR",
+            "inactive": "POS.ERROR",
+            "out_of_range": "POS.ERROR",
+            "ambiguous": "POS.ERROR",
+            "failed": "POS.ERROR"
+          },
+          "prerequisites": [
+            "POS.JOB"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve LocationName, LocationCode, and LocationId through resolve_position_location",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.FIELD_VALUES",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "POS.DEPENDENCIES",
+            "not_applicable": "POS.DEPENDENCIES",
+            "not_found": "POS.ERROR",
+            "inactive": "POS.ERROR",
+            "out_of_range": "POS.ERROR",
+            "unsupported": "POS.ERROR",
+            "ambiguous": "POS.ERROR",
+            "failed": "POS.ERROR"
+          },
+          "prerequisites": [
+            "POS.LOCATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve every other supplied lookup, foreign reference, context, or segment through resolve_position_field_value",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "POS.DEFAULTS",
+            "not_required": "POS.DEFAULTS",
+            "needs_input": "POS.ERROR",
+            "unresolved": "POS.ERROR"
+          },
+          "prerequisites": [
+            "POS.FIELD_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After Position and related-reference lookups and before defaulting",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "POS.DESIGN",
+            "preserved": "POS.DESIGN",
+            "not_required": "POS.DESIGN",
+            "blocked": "POS.ERROR"
+          },
+          "prerequisites": [
+            "POS.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, current-state reads, and required resolvers are complete",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.DESIGN",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "POS.ROUTE",
+            "not_required": "POS.ROUTE",
+            "blocked": "POS.ERROR"
+          },
+          "prerequisites": [
+            "POS.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, dependencies, lookups, and defaulting are complete",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.ROUTE",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read": "POS.DONE",
+            "create_or_edit_or_delete_ready": "POS.LOADER_READY",
+            "mutation_blocked": "POS.ERROR"
+          },
+          "prerequisites": [
+            "POS.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select read completion or the Core Data Loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.ERROR",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "POS.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior node returns invalid, missing, ambiguous, blocked, failed, partial, timed-out, uncertain, stale, or unverified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.DONE",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "POS.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Requested positionsV2 sections were read",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "POS.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Create, edit, or delete rules passed; invoke core.data-loader in HDL mode and follow its authoritative preview and approval workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POS.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request cannot safely continue without correction or reconciliation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

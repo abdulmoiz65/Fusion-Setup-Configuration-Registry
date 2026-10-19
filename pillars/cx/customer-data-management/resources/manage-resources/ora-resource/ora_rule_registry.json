@@ -1,0 +1,943 @@
+{
+  "schema_version": "2.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HZ_MANAGE_RESOURCES",
+      "task_name": "Manage Resources",
+      "start_node": "MR.COLLECT",
+      "nodes": [
+        {
+          "id": "MR.COLLECT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "collect_input",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "MR.OPERATION"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A ResourceUser CX Import, Export Management, direct reportees lookup, or single-resource GET is requested.",
+          "source": {
+            "file": "ora_input_intake.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.OPERATION",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "collect_input",
+          "execution_route": "local",
+          "transitions": {
+            "import": "MR.IMPORT_DEFAULT",
+            "export": "MR.EXPORT_DEFAULT",
+            "reportees": "MR.REPORTEES_VALIDATE",
+            "get": "MR.GET_VALIDATE",
+            "unsupported_write": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.COLLECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Intake selects CX Import, Export Management, direct reportees, or single-resource GET. A one-resource write without a supported import source stops; it never enters Data Loader REST mode.",
+          "source": {
+            "file": "ora_input_intake.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.IMPORT_DEFAULT",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "MR.IMPORT_VALIDATE"
+          },
+          "prerequisites": [
+            "MR.OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected operation is ResourceUser import.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.EXPORT_DEFAULT",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "MR.EXPORT_VALIDATE"
+          },
+          "prerequisites": [
+            "MR.OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected operation is ResourceUser export.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.IMPORT_VALIDATE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MR.IMPORT_DEPENDENCIES",
+            "invalid": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.IMPORT_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "ResourceUser import inputs and source data are collected. BusinessUnit, LegalEntity, role-code, and manager-email reference validation applies only to the first 10 non-header CSV rows; if later rows remain, valid requires explicit confirmation to proceed for them.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.EXPORT_VALIDATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MR.EXPORT_DESIGN",
+            "invalid": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.EXPORT_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "ResourceUser export inputs are collected.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.IMPORT_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "MR.IMPORT_BULK",
+            "blocked": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.IMPORT_VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "ResourceUser import source data passed field validation. For the first 10 non-header rows only, resolve values mapped to BusinessUnit and LegalEntity through their documented exact live lookups before bulk preparation.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.IMPORT_BULK",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "process_bulk",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "MR.IMPORT_DESIGN",
+            "invalid": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.IMPORT_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A CSV import source is ready for mapping and data validation.",
+          "source": {
+            "file": "ora_bulk_intake.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.IMPORT_DESIGN",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "MR.IMPORT_PREVIEW",
+            "blocked": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.IMPORT_BULK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated ResourceUser import is ready for preview.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.EXPORT_DESIGN",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "MR.EXPORT_PREVIEW",
+            "blocked": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.EXPORT_VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated ResourceUser export is ready for preview.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.IMPORT_PREVIEW",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "preview_gate",
+          "execution_route": "local",
+          "transitions": {
+            "reviewed": "MR.IMPORT_APPROVE"
+          },
+          "prerequisites": [
+            "MR.IMPORT_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Data Loader CX preview and Task Hook preview use the exact immutable source and final archive SHA-256.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.EXPORT_PREVIEW",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "preview_gate",
+          "execution_route": "local",
+          "transitions": {
+            "reviewed": "MR.EXPORT_APPROVE"
+          },
+          "prerequisites": [
+            "MR.EXPORT_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Export name, filter, fields, and output settings are reviewed.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.IMPORT_APPROVE",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "approval_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "MR.IMPORT_SUBMIT",
+            "declined": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.IMPORT_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A live Data Loader initiation is requested.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.EXPORT_APPROVE",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "approval_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "MR.EXPORT_SUBMIT",
+            "declined": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.EXPORT_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A live export action is requested.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.IMPORT_SUBMIT",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "MR.IMPORT_RESULT"
+          },
+          "prerequisites": [
+            "MR.IMPORT_APPROVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The approved source, SHA-256, and task-validation envelope are revalidated immediately before one Data Loader initiation.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.EXPORT_SUBMIT",
+          "node_type": "step",
+          "sequence": 16,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "MR.EXPORT_RESULT"
+          },
+          "prerequisites": [
+            "MR.EXPORT_APPROVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit approval was obtained for export.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.IMPORT_RESULT",
+          "node_type": "decision",
+          "sequence": 17,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "MR.POST_IMPORT_ROUTE",
+            "incomplete": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.IMPORT_SUBMIT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Data Loader completion check, not initiation alone, confirms a completed ResourceUser import. On success, validate post-import ESS eligibility and readiness, present every eligible job, and request fresh approval to submit them before ending the result flow.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.EXPORT_RESULT",
+          "node_type": "decision",
+          "sequence": 18,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "MR.DONE_EXPORT",
+            "incomplete": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.EXPORT_SUBMIT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The core export workflow returns job status and a ZIP download result.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.POST_IMPORT_ROUTE",
+          "node_type": "decision",
+          "sequence": 19,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "none": "MR.DONE_IMPORT_NO_ESS",
+            "eligible": "MR.RH_VALIDATE",
+            "ineligible": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.IMPORT_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A completed import is classified for the two independent post-import processes.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.RH_VALIDATE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "eligible": "MR.RH_READY",
+            "not_eligible": "MR.LDAP_VALIDATE",
+            "invalid": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.POST_IMPORT_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Reporting Hierarchy Generation eligibility, exact tree triple, successful import evidence, and receiving-skill handoff inputs are evaluated before a fresh post-import approval.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.RH_READY",
+          "node_type": "decision",
+          "sequence": 21,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MR.LDAP_VALIDATE",
+            "blocked": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.RH_VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Reporting Hierarchy Generation handoff inputs are verified before the receiving skill prepares its post-import preview.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.LDAP_VALIDATE",
+          "node_type": "decision",
+          "sequence": 22,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "eligible": "MR.LDAP_READY",
+            "not_eligible": "MR.POST_IMPORT_PREVIEW",
+            "invalid": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.RH_VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Send Pending LDAP Requests eligibility and runtime inputs are evaluated before a fresh post-import approval.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.LDAP_READY",
+          "node_type": "decision",
+          "sequence": 23,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MR.POST_IMPORT_PREVIEW",
+            "blocked": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.LDAP_VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Send Pending LDAP Requests inputs and privilege are verified for post-import preview.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.POST_IMPORT_PREVIEW",
+          "node_type": "step",
+          "sequence": 24,
+          "action_type": "preview_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MR.POST_IMPORT_APPROVE"
+          },
+          "prerequisites": [
+            "MR.LDAP_VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every eligible post-import process has passed validation and readiness; obtain the Reporting Hierarchy ESS preview from its receiving skill and show the local LDAP preview.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.POST_IMPORT_APPROVE",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "approval_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "MR.POST_IMPORT_SUBMIT",
+            "declined": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.POST_IMPORT_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Fresh post_import_ess_execution_approval identifies the eligible post-import ESS job or jobs to submit.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.POST_IMPORT_SUBMIT",
+          "node_type": "step",
+          "sequence": 26,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "MR.POST_IMPORT_RESULT"
+          },
+          "prerequisites": [
+            "MR.POST_IMPORT_APPROVE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Pass an approved Reporting Hierarchy handoff to its receiving skill and submit only the currently approved local LDAP ESS job; track returned requests independently.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.POST_IMPORT_RESULT",
+          "node_type": "decision",
+          "sequence": 27,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "MR.DONE_IMPORT_ESS",
+            "incomplete": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.POST_IMPORT_SUBMIT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Every eligible ESS request reached a terminal status after independent polling.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.DONE_IMPORT_NO_ESS",
+          "node_type": "terminal",
+          "sequence": 28,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MR.POST_IMPORT_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The import is complete and no post-import ESS process is eligible.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.DONE_IMPORT_ESS",
+          "node_type": "terminal",
+          "sequence": 29,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MR.POST_IMPORT_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The import and all eligible ESS processes completed successfully.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.DONE_EXPORT",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MR.EXPORT_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The export result is complete and the requested ZIP is downloaded.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.REPORTEES_VALIDATE",
+          "node_type": "decision",
+          "sequence": 31,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MR.REPORTEES_MANAGER_RESOLVE",
+            "invalid": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A direct reportees request provides exactly one manager ResourceEmail or PartyName and contains no CSV, UCM, bulk, import, or mutation intent.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.REPORTEES_MANAGER_RESOLVE",
+          "node_type": "decision",
+          "sequence": 32,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MR.REPORTEES_LOOKUP",
+            "unresolved": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.REPORTEES_VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve exactly one manager Resource User for a direct reportees request.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.REPORTEES_LOOKUP",
+          "node_type": "decision",
+          "sequence": 33,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "MR.DONE_REPORTEES",
+            "empty": "MR.DONE_REPORTEES",
+            "unresolved": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.REPORTEES_MANAGER_RESOLVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "List all current direct Resource Users whose ResourceOrgManagerEmail exactly equals the resolved manager email.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.DONE_REPORTEES",
+          "node_type": "terminal",
+          "sequence": 34,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MR.REPORTEES_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The complete current direct-reportees list, including an explicit empty list when no current match exists, is returned from the read-only branch.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.GET_VALIDATE",
+          "node_type": "decision",
+          "sequence": 51,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MR.GET_LOOKUP",
+            "invalid": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "resource_user_get supplies exactly one ResourceEmail or ResourcePartyNumber and has no CSV, UCM, bulk, export, or mutation intent.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.GET_LOOKUP",
+          "node_type": "decision",
+          "sequence": 52,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "MR.DONE_GET",
+            "unresolved": "MR.STOP"
+          },
+          "prerequisites": [
+            "MR.GET_VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve one complete exact Resource User by ResourceEmail or ResourcePartyNumber through core.fusion-api.rest-api-client and retain only requested authorized fields.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.DONE_GET",
+          "node_type": "terminal",
+          "sequence": 53,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MR.GET_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One complete exact Resource User was found and only the requested authorized fields were returned from the read-only branch.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MR.STOP",
+          "node_type": "terminal",
+          "sequence": 54,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation, dependency, approval, execution, or result handling stops the selected workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

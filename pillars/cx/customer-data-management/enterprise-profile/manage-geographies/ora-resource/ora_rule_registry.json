@@ -1,0 +1,792 @@
+{
+  "schema_version": "2.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HZ_MANAGE_GEOGRAPHIES",
+      "task_name": "Manage Geographies",
+      "start_node": "GEO.COLLECT",
+      "nodes": [
+        {
+          "id": "GEO.COLLECT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "collect_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "GEO.VALIDATE",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Collect source, execution phase, requested scope, environment, project identity, and source-specific country or data inputs for every Manage Geographies request",
+          "source": {
+            "file": "ora_input_intake.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.VALIDATE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "GEO.SOURCE",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.COLLECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate source, execution phase, requested scope, environment, project path, mapping contract, and source-specific country, data, or polling inputs",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.SOURCE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "oracle_loqate": "GEO.COUNTRY",
+            "user_provided": "GEO.USER.NORMALIZE",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Route exactly one source before Loqate lookups or user-data file processing",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.COUNTRY",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "supported": "GEO.DEFAULTS",
+            "unsupported": "GEO.BLOCKED",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve one Oracle-supported country code for the Loqate branch",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 141
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.DEFAULTS",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "GEO.PROFILES",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.COUNTRY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Normalize Loqate country code and polling options without changing user intent",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.PROFILES",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "GEO.READINESS",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read both configured site-level geography profile values through core.fusion-api.apps-common on the Loqate branch",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 142
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.READINESS",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "GEO.DESIGN",
+            "remediation_required": "GEO.DESIGN",
+            "blocked": "GEO.BLOCKED",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.PROFILES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate exact profile values and carry any eligible remediation into the single business execution preview",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.PROFILE.APPROVE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "approval_gate",
+          "execution_route": "local",
+          "transitions": {
+            "retired": "GEO.DESIGN"
+          },
+          "prerequisites": [
+            "GEO.READINESS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Retired unreachable legacy node retained for registry compatibility; never route to it and never prompt the user",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 338
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.DESIGN",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "GEO.PREVIEW",
+            "blocked": "GEO.BLOCKED",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply all mandatory gates and carry eligible prerequisite remediation into the single business preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.PREVIEW",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "preview_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "GEO.APPROVE",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Build the deterministic artifact, complete every read-only preflight, display one business-only preview, and ask the standard reviewed-archive question once",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 339
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.APPROVE",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "approval_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved_ready": "GEO.EXECUTE",
+            "approved_with_remediation": "GEO.PROFILE.UPDATE",
+            "declined": "GEO.REFUSED"
+          },
+          "prerequisites": [
+            "GEO.PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require one standalone affirmative response to the latest unchanged business preview, verify the artifact, and persist taskValidationEnvelope",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 340
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.PROFILE.UPDATE",
+          "node_type": "step",
+          "sequence": 13,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "success": "GEO.PROFILE.VERIFY",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.APPROVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply only eligible prerequisite changes included in the approved business preview; do not ask another question",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 341
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.PROFILE.VERIFY",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "GEO.EXECUTE",
+            "blocked": "GEO.BLOCKED",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.PROFILE.UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Re-read both profiles and require their exact expected values, then continue without another confirmation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 143
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.EXECUTE",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "success": "GEO.DONE",
+            "timeout": "GEO.TIMEOUT",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.APPROVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Reverify the receipt/artifact, invoke the ESS submit-only contract, capture requestId, and track separately; never resubmit when output is uncertain",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 342
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.DONE",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GEO.EXECUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "ESS reaches a terminal successful status; report the country, job ID, structure, and hierarchy outcomes, then offer another country",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 343
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.TIMEOUT",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GEO.EXECUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Loqate polling window expires while the request remains nonterminal; report the job ID and last business status",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 344
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.USER.NORMALIZE",
+          "node_type": "step",
+          "sequence": 18,
+          "action_type": "process_bulk",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "GEO.USER.VALIDATE",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve execution_phase and selected mapping definitions; for full_import also normalize one-country user structure, hierarchy, table, tree, or CSV into the canonical request model",
+          "source": {
+            "file": "ora_bulk_intake.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.USER.VALIDATE",
+          "node_type": "step",
+          "sequence": 19,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "GEO.USER.PREVIEW",
+            "blocked": "GEO.BLOCKED",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.USER.NORMALIZE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate task-owned mappings, project path, task context, environment, and authorization inputs; for full_import validate additive data, parent chains, reviewed mapping CSV, exact native retained artifact, and required Data Loader preflight fields",
+          "source": {
+            "file": "ora_bulk_intake.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.USER.PREVIEW",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "preview_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "GEO.USER.APPROVE",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.USER.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Complete native stage preflight and exact-byte Task Hook validation before presenting the loader approval report; mapping_only retains its REST mapping preview",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 345
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.USER.APPROVE",
+          "node_type": "decision",
+          "sequence": 21,
+          "action_type": "approval_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "GEO.USER.MAPPING",
+            "declined": "GEO.REFUSED"
+          },
+          "prerequisites": [
+            "GEO.USER.PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approve the unchanged stage artifact and Task Hook preview under core.data-loader policy; persist its envelope",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 346
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.USER.MAPPING",
+          "node_type": "step",
+          "sequence": 22,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "full_import": "GEO.USER.STRUCTURE",
+            "mapping_only": "GEO.USER.MAPPING.DONE",
+            "blocked": "GEO.BLOCKED",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.USER.APPROVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For full_import verify the reviewed stage mapping CSV already retained by preflight; only mapping_only reuses or creates REST mappings",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 347
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.USER.MAPPING.DONE",
+          "node_type": "terminal",
+          "sequence": 23,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GEO.USER.MAPPING"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Every selected stable mapping was reused or created and persisted internally; report business completion and perform no file upload or import activity",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 348
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.USER.STRUCTURE",
+          "node_type": "step",
+          "sequence": 24,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "success": "GEO.USER.PENDING",
+            "skipped": "GEO.USER.HIERARCHY",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.USER.MAPPING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "When requested, submit only the approved structure preflight envelope through native Data Loader and stop after accepted initiation; otherwise skip",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 349
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.USER.STRUCTURE.STATUS",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "success": "GEO.USER.HIERARCHY",
+            "pending": "GEO.USER.PENDING",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.USER.STRUCTURE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only on an explicit status request, check the same structure data set through core.data-loader; require confirmed completion without errors before hierarchy preflight",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 350
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.USER.HIERARCHY",
+          "node_type": "step",
+          "sequence": 26,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "success": "GEO.USER.PENDING",
+            "skipped": "GEO.USER.DONE",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.USER.MAPPING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require compatible structure; validate and obtain approval for a fresh hierarchy artifact, then submit its native approved envelope and stop after initiation",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 351
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.USER.HIERARCHY.STATUS",
+          "node_type": "step",
+          "sequence": 27,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "success": "GEO.USER.DONE",
+            "pending": "GEO.USER.PENDING",
+            "failure": "GEO.FAILED"
+          },
+          "prerequisites": [
+            "GEO.USER.HIERARCHY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only on explicit status request, check the same hierarchy data set through core.data-loader and preserve any successful structure",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 352
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.USER.DONE",
+          "node_type": "terminal",
+          "sequence": 28,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GEO.USER.HIERARCHY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Requested status results confirm all requested stages completed without errors; report business outcomes and UI verification guidance",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 353
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.USER.TIMEOUT",
+          "node_type": "terminal",
+          "sequence": 29,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "An explicitly requested bounded status check times out; retain the same data set identity and never resubmit",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 354
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 37,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A source, country, internal preflight, dependency, design, creation-only, structure, post-change verification, or authorization gate blocks execution",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 128
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.REFUSED",
+          "node_type": "terminal",
+          "sequence": 38,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "User declines the single business execution preview or chooses manual geography setup",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 129
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.FAILED",
+          "node_type": "terminal",
+          "sequence": 39,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Input, lookup, profile mutation, Data Loader, Import Management, Fusion API, ESS, partial-stage, or persistence processing fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 130
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GEO.USER.PENDING",
+          "execution_route": "local",
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          },
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A native CX load was initiated or remains nonterminal; return Data Load In Progress, stop without polling, and retain the hierarchy dependency",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 355
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

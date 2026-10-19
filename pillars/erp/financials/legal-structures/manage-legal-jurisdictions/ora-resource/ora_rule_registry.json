@@ -1,0 +1,330 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "XLE_MANAGE_LEGAL_JURISDICTIONS",
+      "task_name": "Manage Legal Jurisdictions",
+      "start_node": "LJ.DISCOVER_TERRITORIES",
+      "nodes": [
+        {
+          "id": "LJ.DISCOVER_TERRITORIES",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "candidates_ready": "LJ.TERRITORY_SELECTION_GATE",
+            "unavailable": "LJ.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Explicit mode=discover_territories, a create request is missing Territory, or Territory text is supplied; complete minimal identity pagination and applicable coherent enrichment, preserving countries and shorter hierarchies before primary-filtered choice delivery",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 184
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LJ.TERRITORY_SELECTION_GATE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "LJ.DISCOVER_LOVS",
+            "selection_required": "LJ.RETURN_LOVS",
+            "choice_delivery_failed": "LJ.HANDLE_ERROR",
+            "blocked": "LJ.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LJ.DISCOVER_TERRITORIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Identity and applicable enrichment receipts and primary-filter evidence are complete and the eligible candidate set has been built; selection_required requires a complete five-column delivery receipt, not a single confirmation row",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LJ.DISCOVER_LOVS",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "listed": "LJ.RETURN_LOVS",
+            "lov_delivery_failed": "LJ.HANDLE_ERROR",
+            "not_requested": "LJ.VALIDATE_INPUT",
+            "unavailable": "LJ.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LJ.TERRITORY_SELECTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit mode=discover_lovs or guided create after the Territory Resolution Gate resolves; listed requires four complete, separately rendered LOV tables",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 185
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LJ.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LJ.RESOLVE_REFERENCES",
+            "invalid": "LJ.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LJ.DISCOVER_LOVS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before any lookup or FSM package preparation after the Territory gate and complete LOV discovery",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LJ.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LJ.CHECK_DEPENDENCIES",
+            "blocked": "LJ.HANDLE_ERROR",
+            "failure": "LJ.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LJ.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve required live and export-backed references",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 186
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LJ.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LJ.APPLY_DEFAULTS",
+            "blocked": "LJ.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LJ.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After references resolve; require name validation, and record geography/category and identifying-impact checks as not_applicable warnings only when canonical mapping is unavailable for a valid create under the two-check policy.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LJ.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "LJ.ENFORCE_DESIGN",
+            "blocked": "LJ.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LJ.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After dependencies are ready",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LJ.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "LJ.PACKAGE_PREVIEW_GATE",
+            "blocked": "LJ.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LJ.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before final FSM package readiness validation; enforce all applicable checks, retaining the two individually excluded canonical-geography checks as warnings without a readiness override.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LJ.PACKAGE_PREVIEW_GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LJ.READY_FOR_DATA_LOADER_PREVIEW",
+            "blocked": "LJ.HANDLE_ERROR",
+            "failure": "LJ.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LJ.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After final immutable FSM archive and readiness record are available",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 122
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LJ.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "LJ.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, dependency, defaulting, enforcement, or readiness failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 123
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LJ.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 124
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LJ.RETURN_LOVS",
+          "node_type": "terminal",
+          "sequence": 85,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Complete read-only Territory choice delivery or LOV discovery succeeded; no create, package, preview, or import action occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 125
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LJ.READY_FOR_DATA_LOADER_PREVIEW",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LJ.PACKAGE_PREVIEW_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All task rules and first-go readiness checks passed; no preview or import has been created",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 126
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

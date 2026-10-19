@@ -1,0 +1,340 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_FFS_TS_TIME_SLOTS",
+      "task_name": "Time Slots",
+      "start_node": "TS.VALIDATE_WORKBOOK",
+      "nodes": [
+        {
+          "id": "TS.VALIDATE_WORKBOOK",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TS.DEPENDENCIES",
+            "invalid": "TS.DESIGN_BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before dependency checks and design validation for a workbook-supplied Time Slots request.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TS.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TS.DEFAULTS",
+            "blocked": "TS.DESIGN_BLOCKED"
+          },
+          "prerequisites": [
+            "TS.VALIDATE_WORKBOOK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before Time Slots defaults, lookups, and design enforcement.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TS.DEFAULTS",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TS.LOOKUP",
+            "blocked": "TS.DESIGN_BLOCKED"
+          },
+          "prerequisites": [
+            "TS.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Time Slots defaults or time normalization are required before lookup and design enforcement.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TS.LOOKUP",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "ready": "TS.DESIGN_BUSINESS_PURPOSE",
+            "not_found": "TS.DESIGN_BLOCKED",
+            "error": "TS.DESIGN_BLOCKED"
+          },
+          "prerequisites": [
+            "TS.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Time Slots input needs API access, collection lookup, item lookup, or create-absence confirmation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TS.DESIGN_BUSINESS_PURPOSE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "TS.DESIGN_NAMING_AND_STATUS",
+            "not_applicable": "TS.DESIGN_NAMING_AND_STATUS",
+            "fail": "TS.DESIGN_BLOCKED"
+          },
+          "prerequisites": [
+            "TS.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A time slot or time-slot support is proposed.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TS.DESIGN_NAMING_AND_STATUS",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "TS.DESIGN_ALL_DAY_SCOPE",
+            "not_applicable": "TS.DESIGN_ALL_DAY_SCOPE",
+            "fail": "TS.DESIGN_BLOCKED"
+          },
+          "prerequisites": [
+            "TS.DESIGN_BUSINESS_PURPOSE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A time slot is created or changed.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TS.DESIGN_ALL_DAY_SCOPE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "TS.DESIGN_ACTIVITY_TYPE_ELIGIBILITY",
+            "not_applicable": "TS.DESIGN_ACTIVITY_TYPE_ELIGIBILITY",
+            "fail": "TS.DESIGN_BLOCKED"
+          },
+          "prerequisites": [
+            "TS.DESIGN_NAMING_AND_STATUS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An all-day slot is associated to work.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TS.DESIGN_ACTIVITY_TYPE_ELIGIBILITY",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "TS.DESIGN_QUOTA",
+            "not_applicable": "TS.DESIGN_QUOTA",
+            "fail": "TS.DESIGN_BLOCKED"
+          },
+          "prerequisites": [
+            "TS.DESIGN_ALL_DAY_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Slots are associated with Activity Types.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TS.DESIGN_QUOTA",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "TS.DESIGN_AVAILABILITY",
+            "not_applicable": "TS.DESIGN_AVAILABILITY",
+            "fail": "TS.DESIGN_BLOCKED"
+          },
+          "prerequisites": [
+            "TS.DESIGN_ACTIVITY_TYPE_ELIGIBILITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Slots are used for quota-based booking or capacity management.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TS.DESIGN_AVAILABILITY",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "TS.DESIGN_CHANGE_IMPACT",
+            "not_applicable": "TS.DESIGN_CHANGE_IMPACT",
+            "fail": "TS.DESIGN_BLOCKED"
+          },
+          "prerequisites": [
+            "TS.DESIGN_QUOTA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Slots are used for availability-based booking.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TS.DESIGN_CHANGE_IMPACT",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "TS.DESIGN_PASSED",
+            "not_applicable": "TS.DESIGN_PASSED",
+            "fail": "TS.DESIGN_BLOCKED"
+          },
+          "prerequisites": [
+            "TS.DESIGN_AVAILABILITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Time-slot support is removed or a required slot is changed.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TS.DESIGN_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Workbook validation, dependency, lookup, or any design-enforcement rule fails.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TS.DESIGN_PASSED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TS.DESIGN_CHANGE_IMPACT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "All applicable design-enforcement rules pass.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

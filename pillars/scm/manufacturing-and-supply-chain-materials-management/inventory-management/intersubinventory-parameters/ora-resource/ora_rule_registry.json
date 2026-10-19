@@ -1,0 +1,258 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_INTERSUBINVENTORY_PARAMETERS",
+      "task_name": "Intersubinventory Parameters",
+      "start_node": "ISP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "ISP.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ISP.CHECK_READINESS",
+            "invalid": "ISP.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before read-only lookup resolution; validate semantic input, route selection, BO-owned references, exact `All` sentinel, Boolean input, and route-aware structured DFF child input",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ISP.CHECK_READINESS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ISP.RESOLVE_DESTINATION_TYPE",
+            "blocked": "ISP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ISP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After initial validation; run the current selected environment's read-only metadata preflight for exact BO `interSubinventoryParameters` and retain complete sanitized runtime evidence before lookup or handoff",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ISP.RESOLVE_DESTINATION_TYPE",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ISP.RESOLVE_TRANSFER_TYPE",
+            "skipped": "ISP.RESOLVE_TRANSFER_TYPE",
+            "blocked": "ISP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ISP.CHECK_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "`DestinationTypeCode` code or `DestinationType` meaning is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ISP.RESOLVE_TRANSFER_TYPE",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ISP.RESOLVE_RECEIPT_ROUTING",
+            "skipped": "ISP.RESOLVE_RECEIPT_ROUTING",
+            "blocked": "ISP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ISP.RESOLVE_DESTINATION_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "`TransferTypeCode` code or `TransferType` meaning is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ISP.RESOLVE_RECEIPT_ROUTING",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ISP.APPLY_DEFAULTS",
+            "skipped": "ISP.APPLY_DEFAULTS",
+            "blocked": "ISP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ISP.RESOLVE_TRANSFER_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "`ReceiptRoutingCode` code or `ReceiptRouting` meaning is supplied and routing applies",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ISP.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "ISP.VALIDATE_EFFECTIVE_VALUES",
+            "not-applicable": "ISP.VALIDATE_EFFECTIVE_VALUES",
+            "blocked": "ISP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ISP.RESOLVE_RECEIPT_ROUTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After approved lookup resolution; apply only the sourced create defaults without overriding explicit input",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ISP.VALIDATE_EFFECTIVE_VALUES",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ISP.DATA_LOADER_HANDOFF",
+            "invalid": "ISP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ISP.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After approved lookups and defaults; enforce sourced UI conditional/date behavior and selected-route physical output",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ISP.DATA_LOADER_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ISP.VALIDATE_EFFECTIVE_VALUES"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Current-run metadata, local validation, route normalization, approved lookup resolution, and defaulting passed; hand off to `core.data-loader`",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ISP.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "ISP.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any lookup, readiness, validation, defaulting, route-normalization, DFF contract, or Data Loader issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ISP.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A blocking issue was classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

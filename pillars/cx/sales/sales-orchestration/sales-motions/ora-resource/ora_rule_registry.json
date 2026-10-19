@@ -1,0 +1,283 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_SALES_MOTIONS",
+      "task_name": "Sales Motions",
+      "start_node": "SM.VALIDATE",
+      "nodes": [
+        {
+          "id": "SM.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SM.ACCESS",
+            "invalid": "SM.ERROR",
+            "unsupported": "SM.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Sales Motion read request has been normalized.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SM.ACCESS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "SM.SELECT_READ",
+            "blocked": "SM.ERROR"
+          },
+          "prerequisites": [
+            "SM.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "LIST, GET, or QUERY input validation passed.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SM.SELECT_READ",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "list": "SM.LIST",
+            "get": "SM.GET",
+            "query": "SM.QUERY",
+            "blocked": "SM.ERROR",
+            "unsupported": "SM.ERROR"
+          },
+          "prerequisites": [
+            "SM.ACCESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Environment and authentication dependencies are ready; select LIST, GET, or QUERY only.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SM.LIST",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "SM.LIST_DONE",
+            "empty": "SM.LIST_DONE",
+            "unauthorized": "SM.ERROR",
+            "failed": "SM.ERROR"
+          },
+          "prerequisites": [
+            "SM.SELECT_READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected read operation is LIST.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SM.GET",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "SM.GET_DONE",
+            "not_found": "SM.NOT_FOUND",
+            "unauthorized": "SM.ERROR",
+            "failed": "SM.ERROR"
+          },
+          "prerequisites": [
+            "SM.SELECT_READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected read operation is GET.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SM.QUERY",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "SM.QUERY_DONE",
+            "empty": "SM.QUERY_DONE",
+            "unauthorized": "SM.ERROR",
+            "failed": "SM.ERROR"
+          },
+          "prerequisites": [
+            "SM.SELECT_READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected read operation is QUERY.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SM.LIST_DONE",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SM.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The LIST result was returned successfully, including an empty list.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SM.GET_DONE",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SM.GET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact Sales Motion was returned successfully.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SM.NOT_FOUND",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SM.GET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "No Sales Motion exists for the exact supplied ID.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SM.QUERY_DONE",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SM.QUERY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The bounded QUERY result was returned successfully, including an empty list.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SM.ERROR",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request was unsupported, invalid, unauthorized, or failed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

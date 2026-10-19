@@ -1,0 +1,1443 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_PAYROLL_COSTING",
+      "task_name": "Costing of Payrolls",
+      "start_node": "COP.SELECT_OPERATION",
+      "nodes": [
+        {
+          "id": "COP.SELECT_OPERATION",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "search": "COP.SEARCH.VALIDATE_INPUT",
+            "hdl": "COP.HDL.VALIDATE_INPUT",
+            "unsupported": "COP.HDL.HANDLE_ERROR",
+            "invalid": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate the requested operation and route Search or HDL Create, Update, End Date or Zap. Correct, account-only Delete and Delete (ED Split) remain unsupported.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 152
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.SEARCH.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COP.SEARCH.APPLY_DEFAULTS",
+            "invalid": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.SELECT_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search: validate environment selection and supplied filter shapes; omitted optional filters continue to Search defaulting.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 153
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.SEARCH.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "COP.SEARCH.RESOLVE_LDG",
+            "skipped": "COP.SEARCH.RESOLVE_LDG",
+            "invalid": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.SEARCH.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search: apply only Search defaults and normalize costing-state labels using the lookup wire mapping; do not apply HDL account defaults.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.SEARCH.RESOLVE_LDG",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COP.SEARCH.RESOLVE_PERIOD",
+            "skipped": "COP.SEARCH.RESOLVE_PERIOD",
+            "listed": "COP.SEARCH.DONE_LDG",
+            "blocked": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.SEARCH.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search: call resolve_costing_ldg only for requested LDG names, IDs, flex context, or candidates; otherwise return skipped without a call. Return listed only for an LDG-only result scope.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 356
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.SEARCH.RESOLVE_PERIOD",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COP.SEARCH.FIND",
+            "skipped": "COP.SEARCH.FIND",
+            "listed": "COP.SEARCH.DONE_PERIOD_TYPES",
+            "blocked": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.SEARCH.RESOLVE_LDG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search: call list_payroll_period_types only for a requested period type or choice list; otherwise return skipped without a call. Return listed only for a period-type-list-only result scope.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 357
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.SEARCH.FIND",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "COP.SEARCH.DONE",
+            "empty": "COP.SEARCH.DONE",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.SEARCH.RESOLVE_PERIOD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search: call search_payroll_costing with all resolved filters; found or empty requires complete pagination.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 358
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.SEARCH.DONE",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COP.SEARCH.FIND"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Search completed with found or empty results and complete pagination; return mapped rows, applied filters, and the effective date.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.SEARCH.DONE_LDG",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COP.SEARCH.RESOLVE_LDG"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The user requested LDG choices/context only; return complete LDG results with their associated flex values and no payroll search.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.SEARCH.DONE_PERIOD_TYPES",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COP.SEARCH.RESOLVE_PERIOD"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The user requested period-type choices only; return complete code/label choices and no payroll search.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.HDL.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid_create": "COP.CREATE.RESOLVE_IDENTITY",
+            "valid_update": "COP.UPDATE.RESOLVE_STATE",
+            "valid_end_date": "COP.END_DATE.RESOLVE_STATE",
+            "valid_zap": "COP.ZAP.RESOLVE_STATE",
+            "invalid": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate operation-specific selectors and dates before reads. End Date requires a target start and separate inclusive end, not account input.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 154
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.CREATE.RESOLVE_IDENTITY",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COP.CREATE.CHECK_ABSENCE",
+            "blocked": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.HDL.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create only: resolve the canonical LDG and flex, then the payroll definition and HDL identity.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 359
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.CREATE.CHECK_ABSENCE",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "absent": "COP.CREATE.RESOLVE_KFF",
+            "exists": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.CREATE.RESOLVE_IDENTITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create only: require zero active Generic Costing parents for PAY, PayrollId, LDG, and the requested start date.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 360
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.CREATE.RESOLVE_KFF",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COP.CREATE.VALIDATE_SEGMENTS",
+            "blocked": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.CREATE.CHECK_ABSENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create only: retrieve the runtime descriptor for the selected LDG flex.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 361
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.CREATE.VALIDATE_SEGMENTS",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "COP.HDL.APPLY_DEFAULTS",
+            "invalid": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.CREATE.RESOLVE_KFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create only: validate the supplied account components using the runtime descriptor and its declared LOV contracts.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 362
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.UPDATE.RESOLVE_STATE",
+          "node_type": "decision",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COP.UPDATE.RESOLVE_KFF",
+            "blocked": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.HDL.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Update only: resolve canonical payroll/LDG/flex, complete PAY history and the matching current parent/account baseline using the Update lookup rules.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 364
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.UPDATE.RESOLVE_KFF",
+          "node_type": "decision",
+          "sequence": 17,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COP.UPDATE.VALIDATE_SEGMENTS",
+            "blocked": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.UPDATE.RESOLVE_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the current runtime descriptor for the Update LDG flex.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 365
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.UPDATE.VALIDATE_SEGMENTS",
+          "node_type": "decision",
+          "sequence": 18,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "COP.HDL.APPLY_DEFAULTS",
+            "invalid": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.UPDATE.RESOLVE_KFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Build the complete expected distribution with only explicit COST segment changes and validate all populated values at the new effective date.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 366
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.HDL.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 19,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "COP.HDL.CHECK_DEPENDENCIES",
+            "skipped": "COP.HDL.CHECK_DEPENDENCIES",
+            "invalid": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.HDL.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply operation-scoped defaults only after that branch has resolved identity, current state, KFF and segment validation. Create requires its four lookup nodes; Update requires its three lookup nodes. Never apply the Create end-date default to Update.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.HDL.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready_create": "COP.CREATE.VALIDATE_SOURCE",
+            "ready_update": "COP.UPDATE.VALIDATE_SOURCE",
+            "blocked": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.HDL.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require operation-specific identity, state, KFF and segment facts. Create requires its four preceding lookup nodes; Update requires COP.UPDATE.RESOLVE_STATE, COP.UPDATE.RESOLVE_KFF and COP.UPDATE.VALIDATE_SEGMENTS. Approval remains deferred to the submission gate.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.END_DATE.RESOLVE_STATE",
+          "node_type": "decision",
+          "sequence": 21,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COP.END_DATE.CHECK_STATE",
+            "blocked": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.HDL.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "End Date only: resolve canonical payroll/LDG, complete history and the exact selected parent/accounts using the End Date lookup rules; skip KFF validation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 368
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.END_DATE.CHECK_STATE",
+          "node_type": "decision",
+          "sequence": 22,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COP.END_DATE.APPLY_DEFAULTS",
+            "already_ended": "COP.END_DATE.NO_CHANGE",
+            "invalid": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.END_DATE.RESOLVE_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate the latest interval, explicit date bounds and complete baseline. Equal end is a verified no-op.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 159
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.END_DATE.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 23,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "COP.END_DATE.VALIDATE_SOURCE",
+            "invalid": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.END_DATE.CHECK_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Set only PAY, canonical keys and ReplaceLastEffectiveEndDate=Y for the parent-only End Date contract; preserve both resolved dates.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.END_DATE.NO_CHANGE",
+          "node_type": "terminal",
+          "sequence": 24,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COP.END_DATE.CHECK_STATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The selected latest interval already ends on the requested date; report verified state with no load.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.CREATE.VALIDATE_SOURCE",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COP.HDL.ENFORCE_ROUTE",
+            "invalid": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.HDL.CHECK_DEPENDENCIES",
+            "COP.CREATE.VALIDATE_SEGMENTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After Create lookups/defaults, the invoking runbook prepares both DAT members and the immutable ZIP through core.data-loader. Validate the Create DAT contract, loader schema, and Task Hook preview without submitting or requesting an earlier approval.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 155
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.UPDATE.VALIDATE_SOURCE",
+          "node_type": "decision",
+          "sequence": 26,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COP.HDL.ENFORCE_ROUTE",
+            "invalid": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.HDL.CHECK_DEPENDENCIES",
+            "COP.UPDATE.VALIDATE_SEGMENTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce the verified Update DAT contract, exact immutable expectation, live loader schema and Task Hook preview before approval.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 157
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.END_DATE.VALIDATE_SOURCE",
+          "node_type": "decision",
+          "sequence": 27,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COP.END_DATE.ENFORCE",
+            "invalid": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.END_DATE.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate the exact parent-only DAT and immutable archive through core.data-loader and Task Hook; preserve the special date-effectivity attribute.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 160
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.HDL.ENFORCE_ROUTE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready_create": "COP.HDL.GATE_CREATE",
+            "ready_update": "COP.HDL.GATE_UPDATE",
+            "blocked": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.HDL.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before handoff, require the applicable successful source-validation node and all branch-specific lookup facts. Create uses COP.CREATE.VALIDATE_SOURCE; Update uses COP.UPDATE.VALIDATE_SOURCE.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.END_DATE.ENFORCE",
+          "node_type": "decision",
+          "sequence": 31,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "COP.END_DATE.GATE",
+            "blocked": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.END_DATE.VALIDATE_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce parent-only End Date scope, preserved history/accounts and exact loader-approved source. Approval is obtained only for this immutable archive.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.ZAP.RESOLVE_STATE",
+          "node_type": "decision",
+          "sequence": 32,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COP.ZAP.RESOLVE_ACCOUNTS",
+            "blocked": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.HDL.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve canonical payroll/LDG and complete PAY history for the exact selector start; retain the entire selected logical allocation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 370
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.ZAP.RESOLVE_ACCOUNTS",
+          "node_type": "decision",
+          "sequence": 33,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COP.ZAP.CHECK_STATE",
+            "blocked": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.ZAP.RESOLVE_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Invoke query_payroll_costing_history_accounts for every selected history key and retain complete physical child identities or explicit proof of no children.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 371
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.ZAP.CHECK_STATE",
+          "node_type": "decision",
+          "sequence": 34,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COP.ZAP.CHECK_DEPENDENCIES",
+            "invalid": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.ZAP.RESOLVE_ACCOUNTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require one selector match, complete nonoverlapping logical history and exact detail coverage with consistent physical identities. No missing child set may be treated as empty.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 162
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.ZAP.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 35,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "COP.ZAP.APPLY_DEFAULTS",
+            "blocked": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.ZAP.CHECK_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require canonical payroll/LDG identity and complete history/detail evidence; skip KFF dependencies. Archive approval remains deferred until execution.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.ZAP.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 36,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "COP.ZAP.VALIDATE_SOURCE",
+            "invalid": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.ZAP.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply only SourceType PAY and resolved canonical keys. Preserve earliest history start, latest history end and all bound physical identities. No open-end default, percentage conversion, account sequence or SET instruction applies.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.ZAP.VALIDATE_SOURCE",
+          "node_type": "decision",
+          "sequence": 37,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COP.ZAP.ENFORCE",
+            "invalid": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.ZAP.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate the exact parent and conditional account DELETE members against the Zap contract and current core.data-loader DELETE/schema support. Prepare immutable archive and Task Hook preview; stop at actual validation failures.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 163
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.ZAP.ENFORCE",
+          "node_type": "decision",
+          "sequence": 38,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "COP.ZAP.GATE",
+            "blocked": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.ZAP.VALIDATE_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require complete logical history and exact account scope, loader-approved DELETE archive and successful Task Hook rules. Prepare the destructive preview before the single core.data-loader approval gate.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.HDL.GATE_CREATE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "COP.CREATE.RESULT",
+            "blocked": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.HDL.ENFORCE_ROUTE",
+            "COP.CREATE.VALIDATE_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact Create archive passed source/schema and Task Hook validation, has current prerequisite evidence and core.data-loader approval, and is handed once to core.data-loader. No direct REST write or second approval flow is permitted.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.CREATE.RESULT",
+          "node_type": "decision",
+          "sequence": 42,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "terminal_succeeded": "COP.CREATE.VERIFY",
+            "pending": "COP.CREATE.PENDING",
+            "terminal_failed": "COP.HDL.HANDLE_ERROR",
+            "timed_out": "COP.HDL.HANDLE_ERROR",
+            "unknown": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.HDL.GATE_CREATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate the exact submitted Create archive's Content ID, Request ID, and loader status; verification requires terminal success for both objects.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 156
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.CREATE.PENDING",
+          "node_type": "terminal",
+          "sequence": 43,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COP.CREATE.RESULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The same Create load is initiated or pending. Return its governed resume reference; a later authorized status check resumes COP.CREATE.RESULT for that handoff without resubmission.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.CREATE.VERIFY",
+          "node_type": "decision",
+          "sequence": 44,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "COP.CREATE.DONE",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.CREATE.RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify the exact parent and account expectations only after terminal success for both Create DAT members.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 363
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.HDL.GATE_UPDATE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "COP.UPDATE.RESULT",
+            "blocked": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.HDL.ENFORCE_ROUTE",
+            "COP.UPDATE.VALIDATE_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact Update archive passed source/schema and Task Hook validation, has fresh core.data-loader approval, and is submitted once through that service.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.UPDATE.RESULT",
+          "node_type": "decision",
+          "sequence": 52,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "terminal_succeeded": "COP.UPDATE.VERIFY",
+            "pending": "COP.UPDATE.PENDING",
+            "terminal_failed": "COP.HDL.HANDLE_ERROR",
+            "timed_out": "COP.HDL.HANDLE_ERROR",
+            "unknown": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.HDL.GATE_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate the same accepted Update load. Resume on an explicit status or verification request; no automatic resubmission.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 158
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.UPDATE.PENDING",
+          "node_type": "terminal",
+          "sequence": 53,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COP.UPDATE.RESULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return accepted initiation or pending status with the same loader reference. An explicit later status or verification request resumes COP.UPDATE.RESULT without re-submission.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.UPDATE.VERIFY",
+          "node_type": "decision",
+          "sequence": 54,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "COP.UPDATE.DONE",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.UPDATE.RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Update history and account comparisons to the immutable baseline and expectation after terminal loader success.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 367
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.END_DATE.GATE",
+          "node_type": "decision",
+          "sequence": 55,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "COP.END_DATE.RESULT",
+            "blocked": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.END_DATE.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Submit the exact parent-only archive once through core.data-loader after source/schema and Task Hook success and fresh approval. No direct mutation route.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.END_DATE.RESULT",
+          "node_type": "decision",
+          "sequence": 56,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "pending": "COP.END_DATE.PENDING",
+            "terminal_succeeded": "COP.END_DATE.VERIFY",
+            "terminal_failed": "COP.HDL.HANDLE_ERROR",
+            "timed_out": "COP.HDL.HANDLE_ERROR",
+            "unknown": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.END_DATE.GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return pending on accepted initiation; resume the same loader result only on explicit status or verification request, without resubmission.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 161
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.END_DATE.PENDING",
+          "node_type": "terminal",
+          "sequence": 57,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COP.END_DATE.RESULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the accepted or pending load reference without polling. An explicit later status or verification request resumes the same result.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.END_DATE.VERIFY",
+          "node_type": "decision",
+          "sequence": 58,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "COP.END_DATE.DONE",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.END_DATE.RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply End Date history and inclusive-end/next-day account comparisons only after terminal success of the exact parent-only load.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 369
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.ZAP.GATE",
+          "node_type": "decision",
+          "sequence": 59,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "COP.ZAP.RESULT",
+            "blocked": "COP.HDL.HANDLE_ERROR",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.ZAP.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Hand the exact validated Zap archive once to core.data-loader after its single current destructive approval and Task Hook envelope. No direct mutation route.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.CREATE.DONE",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COP.CREATE.VERIFY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Create is verified through matching parent and account reads after terminal success for both loaded objects. Persist only redacted run and verification facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.ZAP.RESULT",
+          "node_type": "decision",
+          "sequence": 61,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "pending": "COP.ZAP.PENDING",
+            "terminal_succeeded": "COP.ZAP.VERIFY",
+            "terminal_failed": "COP.HDL.HANDLE_ERROR",
+            "timed_out": "COP.HDL.HANDLE_ERROR",
+            "unknown": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.ZAP.GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Accepted initiation is pending. On an explicit later status request require terminal success of the same Content ID/Request ID for every included object before verification. Never automatically replay a deletion.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 164
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.ZAP.PENDING",
+          "node_type": "terminal",
+          "sequence": 62,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COP.ZAP.RESULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return accepted initiation or pending result with saved complete history/account scope and loader reference. Resume only on an explicit status/verification request; do not poll or resubmit automatically.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.ZAP.VERIFY",
+          "node_type": "decision",
+          "sequence": 63,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "COP.ZAP.DONE",
+            "failed": "COP.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COP.ZAP.RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify saved logical history and every historical start are absent only after terminal success of the same Zap load; never rediscover the deleted selector as a prerequisite.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 372
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.UPDATE.DONE",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COP.UPDATE.VERIFY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Update is verified: prior history/accounts preserved and the new interval matches the approved change and full carried-forward distribution.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.END_DATE.DONE",
+          "node_type": "terminal",
+          "sequence": 71,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COP.END_DATE.VERIFY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "End Date verified: only the latest end changed, prior history and accounts are unchanged, and the parent is absent the following day.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.ZAP.DONE",
+          "node_type": "terminal",
+          "sequence": 72,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COP.ZAP.VERIFY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Zap verified: the selected logical allocation is absent from complete history and every saved historical start returns zero parents and accounts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.HDL.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "COP.HDL.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, dependency, design, approval, loader, artifact, or unsupported-operation failure.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COP.HDL.FAILED",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COP.HDL.HANDLE_ERROR"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The request stopped with a classified diagnostic and safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

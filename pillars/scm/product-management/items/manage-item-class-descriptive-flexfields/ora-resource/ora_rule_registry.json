@@ -1,0 +1,132 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "EGP_ITEM_CLASS_DFFS",
+      "task_name": "Manage Item Class Descriptive Flexfields",
+      "start_node": "ICDFF.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "ICDFF.VALIDATE_REQUEST",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ICDFF.RESOLVE_CURRENT_DEFINITION",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A create, update, removal, or deployment request is evaluated",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ICDFF.RESOLVE_CURRENT_DEFINITION",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ICDFF.ENFORCE_DESIGN",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ICDFF.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid request needs the current item-class DFF definition",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ICDFF.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "ICDFF.ALL_GOOD",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ICDFF.RESOLVE_CURRENT_DEFINITION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The current definition and proposed change are available",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, lookup, design, or test failure occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ICDFF.ALL_GOOD",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ICDFF.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All applicable validation and design-enforcement checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

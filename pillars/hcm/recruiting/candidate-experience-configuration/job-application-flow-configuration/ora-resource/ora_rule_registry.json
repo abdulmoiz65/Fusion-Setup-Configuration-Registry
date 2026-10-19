@@ -1,0 +1,1245 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_APPLY_FLOW_CONFIGURATION",
+      "task_name": "Job Application Flow Configuration",
+      "start_node": "AF.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "AF.VALIDATE_REQUEST",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "AF.VERIFY_TASK_ROUTE",
+            "properties": "AF.REFUSE_PROPERTIES",
+            "flow_lifecycle": "AF.REFUSE_FLOW_LIFECYCLE",
+            "flow_delete": "AF.REFUSE_FLOW_DELETE",
+            "flow_edit": "AF.REFUSE_FLOW_EDIT",
+            "existing_block_edit": "AF.REFUSE_EXISTING_BLOCK_EDIT",
+            "version_activate": "AF.REFUSE_VERSION_ACTIVATE",
+            "version_delete": "AF.REFUSE_VERSION_DELETE",
+            "version_edit": "AF.REFUSE_VERSION_EDIT",
+            "dates": "AF.REFUSE_DATES",
+            "direct_mutation": "AF.REFUSE_DIRECT_MUTATION",
+            "invalid": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "All operations. Validate supported operation and operation-specific inputs; route prohibited requests to the matching refusal node.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VERIFY_TASK_ROUTE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.LOAD_EXPORT_CACHE",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All. Verify task, selected environment, authorization, catalog support, safe destinations and declared export route; failure blocks the selected operation.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.LOAD_EXPORT_CACHE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.RESOLVE_REFERENCES",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.VERIFY_TASK_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All. Obtain immutable task export via the declared route when absent or unsuitable; validate environment and archive evidence.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "AF.ROUTE_OPERATION",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.LOAD_EXPORT_CACHE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All. Make exported roots, versions and local inventories available. Do not derive source-dependent creation defaults yet.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.ROUTE_OPERATION",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "retrieve": "AF.FILTER_RETRIEVE",
+            "design_new": "AF.VALIDATE_TARGET_IDENTITY",
+            "create_from_template": "AF.RESOLVE_SOURCE_FLOW",
+            "create_version": "AF.RESOLVE_PARENT_FLOW",
+            "invalid": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All. Select exactly one operation branch; ordinary create-flow intent includes a new Draft root and initial Draft version, not a root-only operation. Preserve explicit template or existing-parent version intent.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 152
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.FILTER_RETRIEVE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.RETRIEVE_READY",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieve. Return all roots or apply the requested exact supported type filter.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.RETRIEVE_READY",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AF.FILTER_RETRIEVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieve. Return retrieved roots and export evidence.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 151
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_TARGET_IDENTITY",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.VALIDATE_FLOW_TYPE",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "DesignNew. Require new code/name absent from target roots; reject conflicts.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.RESOLVE_SOURCE_FLOW",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "AF.RESOLVE_SOURCE_VERSION",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CreateFromTemplate. Select one exact source AfCode; optional name cross-check; inherit its type.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.RESOLVE_SOURCE_VERSION",
+          "node_type": "decision",
+          "sequence": 100,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "AF.VALIDATE_TEMPLATE_CONFLICTS",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.RESOLVE_SOURCE_FLOW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CreateFromTemplate. Resolve one eligible source version before copying options, layout, translations or blocks. Ask on ambiguity; never infer latest.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_TEMPLATE_CONFLICTS",
+          "node_type": "decision",
+          "sequence": 110,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.COPY_SUPPORTED_TEMPLATE_HIERARCHY",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.RESOLVE_SOURCE_VERSION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CreateFromTemplate. Require a new target code/name; preserve the selected source unchanged.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.COPY_SUPPORTED_TEMPLATE_HIERARCHY",
+          "node_type": "decision",
+          "sequence": 120,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.VALIDATE_FLOW_TYPE",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.VALIDATE_TEMPLATE_CONFLICTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CreateFromTemplate. Copy exactly one source flow/version, its section/page layout, supported options, blocks and translations; rewrite target keys, generate new availability IDs and omit property-child rows. Retain source block membership until Explicit Block Selection and applicability validation; do not silently filter unsupported blocks.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 153
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.RESOLVE_PARENT_FLOW",
+          "node_type": "decision",
+          "sequence": 130,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "AF.VALIDATE_FLOW_TYPE",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CreateVersion. Require one existing parent AfCode; inherit its type and collect all existing version names before defaults. Existing parent code/name is required, not a conflict.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_FLOW_TYPE",
+          "node_type": "decision",
+          "sequence": 140,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "AF.DEFAULT_STATUSES",
+            "unsupported": "AF.REFUSE_UNSUPPORTED_TYPE",
+            "blocked": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation. Validate supplied/inherited type against the four creation types. Execute only after the selected branch succeeded: DesignNew AF.VALIDATE_TARGET_IDENTITY; CreateFromTemplate AF.COPY_SUPPORTED_TEMPLATE_HIERARCHY; CreateVersion AF.RESOLVE_PARENT_FLOW. Never require the other mutually exclusive branches.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.DEFAULT_STATUSES",
+          "node_type": "step",
+          "sequence": 150,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.DEFAULT_VERSION_NAME",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.VALIDATE_FLOW_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation only after selected-branch and type readiness. Apply the Standard Defaults status/Description contract and Default Evaluation Rules; forced new-root/version Draft, copied template Description, unchanged CreateVersion parent.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.DEFAULT_VERSION_NAME",
+          "node_type": "step",
+          "sequence": 160,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.VALIDATE_VERSION_CONFLICT",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.DEFAULT_STATUSES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation. Apply the VersionName default only on omission after resolved parent/source; preserve valid supplied text for conflict validation, freeze the chosen name before preview and never regenerate after approval.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_VERSION_CONFLICT",
+          "node_type": "decision",
+          "sequence": 170,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.RESOLVE_RECRUITING_TYPE",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.DEFAULT_VERSION_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation. Require VersionName unique within exact target AfCode. Do not reject CreateVersion because parent exists.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.RESOLVE_RECRUITING_TYPE",
+          "node_type": "decision",
+          "sequence": 180,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "AF.RESOLVE_VERSION_OPTIONS",
+            "not_supplied": "AF.RESOLVE_VERSION_OPTIONS",
+            "blocked": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.VALIDATE_VERSION_CONFLICT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation; live lookup only for explicit External input. Resolve supplied External meaning, otherwise no lookup. Preserve distinct template associations; reject input for CreateVersion/non-External types.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.RESOLVE_VERSION_OPTIONS",
+          "node_type": "step",
+          "sequence": 190,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.RESOLVE_TRANSLATIONS",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.RESOLVE_RECRUITING_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation. Preserve each explicit applicable Y/N by field presence; default only omitted options from factory or selected template. Reject invalid input, serialize inapplicable fields empty and retain supplied/defaulted/copied provenance for preview.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.RESOLVE_TRANSLATIONS",
+          "node_type": "decision",
+          "sequence": 200,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "AF.RESOLVE_FACTORY_SKELETON",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.RESOLVE_VERSION_OPTIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation. Use US base and distinct exported Language values. New designs seed US text; templates preserve existing supported translations and seed missing rows; explicit overrides affect only selected language/field. Resolve the language plan and explicit per-entity overrides now; materialize against the selected layout and final block instances before package validation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.RESOLVE_FACTORY_SKELETON",
+          "node_type": "decision",
+          "sequence": 210,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.VALIDATE_FIXED_LAYOUT",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.RESOLVE_TRANSLATIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation. Preserve factory or copied sections/pages; apply Explicit Block Selection before block rows. Named blocks replace baseline membership; only omitted block input uses factory/copied blocks.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 154
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_FIXED_LAYOUT",
+          "node_type": "decision",
+          "sequence": 220,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.VALIDATE_BLOCK_APPLICABILITY",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.RESOLVE_FACTORY_SKELETON"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation. Validate against factory baseline for new designs/versions and selected source baseline for template copies. Preserve section/page identity, order and base names; apply only explicit translation overrides.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 155
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_BLOCK_APPLICABILITY",
+          "node_type": "decision",
+          "sequence": 230,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.VALIDATE_BLOCK_REUSE",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.VALIDATE_FIXED_LAYOUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation. Validate every candidate block for support and exact usage tokens through resolve_apply_flow_block. Reject explicit or retained copied instances absent from the supported inventory; no silent removal or replacement and no inventory release gate.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 156
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_BLOCK_REUSE",
+          "node_type": "decision",
+          "sequence": 240,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.VALIDATE_REQUIRED_BLOCKS",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.VALIDATE_BLOCK_APPLICABILITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation. Y permits explicit repeated instances; N once per version; deduplicate implicit repeated requests.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 157
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_REQUIRED_BLOCKS",
+          "node_type": "decision",
+          "sequence": 250,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.VALIDATE_SEQUENCES",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.VALIDATE_BLOCK_REUSE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation. Check required blocks and ordering without auto-adding omitted blocks. A conflicting explicit selection stops for correction. Contact stays on its baseline page and selected sequences are renumbered; External Summary final; Profile Import first only when retained.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 158
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_SEQUENCES",
+          "node_type": "decision",
+          "sequence": 260,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.VALIDATE_PROHIBITED_FIELDS",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.VALIDATE_REQUIRED_BLOCKS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation. Factory section/page sequences stay fixed; template section/page sequences stay copied. Page-block sequences are unique contiguous integers from 1 per page.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_PROHIBITED_FIELDS",
+          "node_type": "decision",
+          "sequence": 270,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "AF.VALIDATE_FIELD_LENGTHS",
+            "properties": "AF.REFUSE_PROPERTIES",
+            "dates": "AF.REFUSE_DATES",
+            "invalid": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.VALIDATE_SEQUENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation. Reject property-child configuration and unsupported dates, not merely absent activation-time properties.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_FIELD_LENGTHS",
+          "node_type": "decision",
+          "sequence": 280,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.ROUTE_CREATION",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.VALIDATE_PROHIBITED_FIELDS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation. Validate 30/240/1000/240 limits without truncation.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.ROUTE_CREATION",
+          "node_type": "decision",
+          "sequence": 290,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "design_new": "AF.BUILD_NEW_FLOW_GUIDANCE",
+            "create_from_template": "AF.VALIDATE_TEMPLATE_PACKAGE",
+            "create_version": "AF.BUILD_NEW_VERSION_GUIDANCE",
+            "invalid": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.VALIDATE_FIELD_LENGTHS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation. Route the fully resolved candidate to its package validation.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 159
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.BUILD_NEW_FLOW_GUIDANCE",
+          "node_type": "decision",
+          "sequence": 300,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.VALIDATE_NEW_FLOW_PACKAGE",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.ROUTE_CREATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "DesignNew. Describe one new Draft root plus initial Draft version and required hierarchy, even when only flow creation was requested; materialize per-instance title defaults and translations for the owning package workflow.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 160
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_NEW_FLOW_PACKAGE",
+          "node_type": "decision",
+          "sequence": 310,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.NEW_FLOW_PREVIEW_READY",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.BUILD_NEW_FLOW_GUIDANCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "DesignNew. Require one new Draft root and one initial Draft version with all required descendants; validate all keys/members, nonblank base/TL block titles and their provenance, translations, header-only property files and checksum evidence. Verify exact selected block membership and preserve explicit checkbox Y/N using input-presence evidence; defaults only for omitted input.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.NEW_FLOW_PREVIEW_READY",
+          "node_type": "terminal",
+          "sequence": 320,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AF.VALIDATE_NEW_FLOW_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "DesignNew. Return new-flow guidance; not import permission. Return the complete Business-first Preview Contract and Preview Handoff Record from this file for the owning runtime; show prepared configuration even if submission is blocked; no import permission.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 152
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_TEMPLATE_PACKAGE",
+          "node_type": "decision",
+          "sequence": 330,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.TEMPLATE_PREVIEW_READY",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.ROUTE_CREATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CreateFromTemplate. Require one new Draft root and initial Draft version; validate one copied hierarchy using source layout, preserved nonblank titles/translations, documented missing-title defaults and explicit overrides; all base/TL block titles nonblank; no property-child rows. Verify exact selected block membership and preserve explicit checkbox Y/N using input-presence evidence; defaults only for omitted input.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.TEMPLATE_PREVIEW_READY",
+          "node_type": "terminal",
+          "sequence": 340,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AF.VALIDATE_TEMPLATE_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CreateFromTemplate. Return template guidance; not import permission. Return the complete Business-first Preview Contract and Preview Handoff Record from this file for the owning runtime; show prepared configuration even if submission is blocked; no import permission.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 153
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.BUILD_NEW_VERSION_GUIDANCE",
+          "node_type": "decision",
+          "sequence": 350,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.VALIDATE_VERSION_PACKAGE",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.ROUTE_CREATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CreateVersion. Describe one new version under existing parent; root/root-TL/availability members header-only.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 161
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_VERSION_PACKAGE",
+          "node_type": "decision",
+          "sequence": 360,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.VERSION_PREVIEW_READY",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "AF.BUILD_NEW_VERSION_GUIDANCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CreateVersion. Validate exactly one unique Draft target version, required descendants, factory layout and nonblank base/TL block titles with default/copy/override evidence; parent root unchanged. Verify exact selected block membership and preserve explicit checkbox Y/N using input-presence evidence; defaults only for omitted input.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VERSION_PREVIEW_READY",
+          "node_type": "terminal",
+          "sequence": 370,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AF.VALIDATE_VERSION_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CreateVersion. Return new-version guidance; not import permission. Return the complete Business-first Preview Contract and Preview Handoff Record from this file for the owning runtime; show prepared configuration even if submission is blocked; no import permission.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 154
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.REFUSE_PROPERTIES",
+          "node_type": "decision",
+          "sequence": 380,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.HANDLE_ISSUES",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Block-property input. Use the Unsupported operation manual handoff in ora_error_handling.md; no mutation. Enter only from the matching failure transition of AF.VALIDATE_REQUEST or AF.VALIDATE_PROHIBITED_FIELDS; the upstream check failed and is not a successful prerequisite.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.REFUSE_FLOW_LIFECYCLE",
+          "node_type": "decision",
+          "sequence": 390,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.HANDLE_ISSUES",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Flow activation/deactivation. Use the Unsupported operation manual handoff in ora_error_handling.md; no mutation. Enter only from the matching failure transition of AF.VALIDATE_REQUEST; the upstream check failed and is not a successful prerequisite.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.REFUSE_FLOW_DELETE",
+          "node_type": "decision",
+          "sequence": 400,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.HANDLE_ISSUES",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Flow deletion. Use the Unsupported operation manual handoff in ora_error_handling.md; no mutation. Enter only from the matching failure transition of AF.VALIDATE_REQUEST; the upstream check failed and is not a successful prerequisite.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.REFUSE_FLOW_EDIT",
+          "node_type": "decision",
+          "sequence": 410,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.HANDLE_ISSUES",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Existing-flow editing. Use the Unsupported operation manual handoff in ora_error_handling.md; no mutation. Enter only from the matching failure transition of AF.VALIDATE_REQUEST; the upstream check failed and is not a successful prerequisite.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.REFUSE_EXISTING_BLOCK_EDIT",
+          "node_type": "decision",
+          "sequence": 420,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.HANDLE_ISSUES",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Add, edit or remove blocks in an existing apply flow/version. Use the Unsupported operation manual handoff in ora_error_handling.md; no mutation. Enter only from the matching failure transition of AF.VALIDATE_REQUEST; the upstream check failed and is not a successful prerequisite.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.REFUSE_VERSION_ACTIVATE",
+          "node_type": "decision",
+          "sequence": 430,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.HANDLE_ISSUES",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Version activation. Use the Unsupported operation manual handoff in ora_error_handling.md; no mutation. Enter only from the matching failure transition of AF.VALIDATE_REQUEST; the upstream check failed and is not a successful prerequisite.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.REFUSE_VERSION_DELETE",
+          "node_type": "decision",
+          "sequence": 440,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.HANDLE_ISSUES",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Version deletion. Use the Unsupported operation manual handoff in ora_error_handling.md; no mutation. Enter only from the matching failure transition of AF.VALIDATE_REQUEST; the upstream check failed and is not a successful prerequisite.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.REFUSE_VERSION_EDIT",
+          "node_type": "decision",
+          "sequence": 450,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.HANDLE_ISSUES",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Existing Draft version editing. Use the Unsupported operation manual handoff in ora_error_handling.md; no mutation. Enter only from the matching failure transition of AF.VALIDATE_REQUEST; the upstream check failed and is not a successful prerequisite.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.REFUSE_UNSUPPORTED_TYPE",
+          "node_type": "decision",
+          "sequence": 460,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.HANDLE_ISSUES",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Unsupported creation type. Explain unsupported request and supported alternative; no mutation. Enter only from the matching failure transition of AF.VALIDATE_FLOW_TYPE; the upstream check failed and is not a successful prerequisite.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.REFUSE_DATES",
+          "node_type": "decision",
+          "sequence": 470,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.HANDLE_ISSUES",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Version Start Date or Start on Activation. Explain unsupported request and supported alternative; no mutation. Enter only from the matching failure transition of AF.VALIDATE_REQUEST or AF.VALIDATE_PROHIBITED_FIELDS; the upstream check failed and is not a successful prerequisite.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.REFUSE_DIRECT_MUTATION",
+          "node_type": "decision",
+          "sequence": 480,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.HANDLE_ISSUES",
+            "failure": "AF.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Direct REST mutation request. Explain unsupported request and supported alternative; no mutation. Enter only from the matching failure transition of AF.VALIDATE_REQUEST; the upstream check failed and is not a successful prerequisite.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.HANDLE_ISSUES",
+          "node_type": "step",
+          "sequence": 490,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "success": "AF.RETURN_ISSUES",
+            "failure": "AF.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any failure/refusal. Return a friendly correction with field/value/candidates and operation stage; retain safe evidence. For any of the eight unsupported operation cases in Error Situations, apply the Unsupported operation manual handoff in Disclosure Rules; explain the current skill limitation and direct the user to log in to the Fusion UI and perform the specific requested action manually.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 155
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 500,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AF.HANDLE_ISSUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Any failure/refusal. Stop current attempt and request only the missing input or correction. For any of the eight unsupported operation cases, return the manual UI handoff without an execution-approval question, skill-extension offer or substitute creation.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 156
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

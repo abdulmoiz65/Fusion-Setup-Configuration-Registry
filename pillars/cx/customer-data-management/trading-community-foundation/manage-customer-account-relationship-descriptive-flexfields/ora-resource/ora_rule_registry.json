@@ -1,0 +1,179 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HZ_CUSTOMER_ACCOUNT_RELATIONSHIP_DESCRIPTIVE_FLEXFIELDS",
+      "task_name": "Manage Customer Account Relationship Descriptive Flexfields",
+      "start_node": "CARDFF.VALIDATE_CONTEXT",
+      "nodes": [
+        {
+          "id": "CARDFF.VALIDATE_CONTEXT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CARDFF.VALIDATE_OPERATION",
+            "invalid": "CARDFF.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before operation review, immutable preview, or status continuation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CARDFF.VALIDATE_OPERATION",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CARDFF.DEPENDENCY_READINESS",
+            "invalid": "CARDFF.ERROR"
+          },
+          "prerequisites": [
+            "CARDFF.VALIDATE_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before operation-specific dependency review",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CARDFF.DEPENDENCY_READINESS",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "CARDFF.DESIGN_GATE",
+            "blocked": "CARDFF.ERROR"
+          },
+          "prerequisites": [
+            "CARDFF.VALIDATE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before operation-specific preview or status continuation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CARDFF.DESIGN_GATE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CARDFF.VALIDATED",
+            "fail": "CARDFF.ERROR"
+          },
+          "prerequisites": [
+            "CARDFF.DEPENDENCY_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before operation-specific preview, adapter release, or complete-success reporting",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CARDFF.ERROR",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CARDFF.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any validation, dependency, design, approval, execution, polling, persistence, or deployment-verification failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CARDFF.VALIDATED",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CARDFF.DESIGN_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The operation-specific contract is ready for immutable preview, approved execution, or status continuation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CARDFF.ISSUES",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "The request has unresolved validation, execution, or deployment-verification issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

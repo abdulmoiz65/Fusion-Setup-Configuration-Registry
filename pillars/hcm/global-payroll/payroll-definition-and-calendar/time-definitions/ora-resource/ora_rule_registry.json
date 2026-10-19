@@ -1,0 +1,884 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_TIME_DEFINITIONS",
+      "task_name": "Time Definitions",
+      "start_node": "TD.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "TD.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TD.BOOTSTRAP_CONTEXT",
+            "invalid": "TD.ERROR_HANDLE",
+            "unsupported": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every PayrollTimeDefinition parent or TimeDefinitionUsage child request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.BOOTSTRAP_CONTEXT",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "TD.LOOKUP_LDG",
+            "blocked": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a matching task context or bootstrap and schema-validate the missing local context before Fusion preflights",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.LOOKUP_LDG",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TD.RESOLVE_IDENTITY",
+            "unresolved": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.BOOTSTRAP_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the selected Legislative Data Group exactly once",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.RESOLVE_IDENTITY",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TD.SELECT_OPERATION",
+            "export_lag_fallback": "TD.SELECT_OPERATION",
+            "blocked": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.LOOKUP_LDG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run the fresh task export and resolve parent, child, base, and period identities with operation-specific cardinality; for a usage operation only, use qualified recent successful HDL evidence when zero export rows are visibility lag",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.SELECT_OPERATION",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "create": "TD.CREATE_DEPENDENCY_READY",
+            "delete": "TD.DELETE_IMPACT_READY",
+            "assign_usage": "TD.USAGE_ASSIGN_READY",
+            "remove_usage": "TD.USAGE_REMOVE_READY",
+            "parent_update": "TD.ERROR_HANDLE",
+            "invalid": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.RESOLVE_IDENTITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select parent create, parent delete, usage assignment, usage removal, or unsupported parent update after identity resolution",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.CREATE_DEPENDENCY_READY",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TD.BUILD_CREATE_DAT",
+            "blocked": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.SELECT_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Parent create: require zero candidates, resolved true references, and safe dependency order",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.DELETE_IMPACT_READY",
+          "node_type": "step",
+          "sequence": 65,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TD.BUILD_DELETE_DAT",
+            "blocked": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.SELECT_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Parent delete: require one natural-key candidate, zero exported base or period dependents, and no explicitly exposed protected marker; record exact usage meanings as cascade-delete impact and unavailable ownership and cross-consumer checks as nonblocking warnings",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.USAGE_ASSIGN_READY",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TD.BUILD_USAGE_ASSIGN_DAT",
+            "already_exists": "TD.ERROR_HANDLE",
+            "blocked": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.SELECT_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Usage assignment: require one parent and zero exact child candidates, or qualified recent-successful-HDL evidence when the fresh export is visibility-lagged",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.USAGE_REMOVE_READY",
+          "node_type": "step",
+          "sequence": 75,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TD.BUILD_USAGE_REMOVE_DAT",
+            "not_found": "TD.ERROR_HANDLE",
+            "blocked": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.SELECT_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Usage removal: require one parent and exactly one child candidate, or qualified recent-successful-HDL evidence when the fresh export is visibility-lagged",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.BUILD_CREATE_DAT",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "built": "TD.VALIDATE_CREATE_SCHEMA",
+            "blocked": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.CREATE_DEPENDENCY_READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Construct parent MERGE from preserved normalized supplied values and continue preflight",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.BUILD_DELETE_DAT",
+          "node_type": "step",
+          "sequence": 85,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "built": "TD.VALIDATE_DELETE_SCHEMA",
+            "blocked": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.DELETE_IMPACT_READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Construct one parent natural-key DELETE without TimeDefinitionId or child DELETE rows and continue preflight",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.BUILD_USAGE_ASSIGN_DAT",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "built": "TD.VALIDATE_USAGE_ASSIGN_SCHEMA",
+            "blocked": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.USAGE_ASSIGN_READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Construct TimeDefinitionUsage MERGE from parent code, LDG, and preserved UsageType meaning",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.BUILD_USAGE_REMOVE_DAT",
+          "node_type": "step",
+          "sequence": 95,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "built": "TD.VALIDATE_USAGE_REMOVE_SCHEMA",
+            "blocked": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.USAGE_REMOVE_READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Construct TimeDefinitionUsage DELETE from parent code, LDG, and preserved UsageType meaning",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.VALIDATE_CREATE_SCHEMA",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "TD.VALIDATE_CREATE_DAT",
+            "invalid": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.BUILD_CREATE_DAT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate exact parent-create DAT against live BO and template without upload",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.VALIDATE_DELETE_SCHEMA",
+          "node_type": "step",
+          "sequence": 105,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "TD.VALIDATE_DELETE_DAT",
+            "invalid": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.BUILD_DELETE_DAT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate exact natural-key parent DELETE DAT without upload",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.VALIDATE_USAGE_ASSIGN_SCHEMA",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "TD.VALIDATE_USAGE_ASSIGN_DAT",
+            "invalid": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.BUILD_USAGE_ASSIGN_DAT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate exact natural-key TimeDefinitionUsage MERGE DAT without upload",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.VALIDATE_USAGE_REMOVE_SCHEMA",
+          "node_type": "step",
+          "sequence": 115,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "TD.VALIDATE_USAGE_REMOVE_DAT",
+            "invalid": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.BUILD_USAGE_REMOVE_DAT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate exact natural-key TimeDefinitionUsage DELETE DAT without upload",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.VALIDATE_CREATE_DAT",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TD.CREATE_PREVIEW",
+            "invalid": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.VALIDATE_CREATE_SCHEMA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate exact parent-create DAT content, preserved values, and fingerprint",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.VALIDATE_DELETE_DAT",
+          "node_type": "step",
+          "sequence": 125,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TD.DELETE_PREVIEW",
+            "invalid": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.VALIDATE_DELETE_SCHEMA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate complete parent deletion contains one parent DELETE with only its natural key and no child DELETE rows",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.VALIDATE_USAGE_ASSIGN_DAT",
+          "node_type": "step",
+          "sequence": 130,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TD.USAGE_ASSIGN_PREVIEW",
+            "invalid": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.VALIDATE_USAGE_ASSIGN_SCHEMA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate exact usage MERGE contains only the child natural key and preserved meaning",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.VALIDATE_USAGE_REMOVE_DAT",
+          "node_type": "step",
+          "sequence": 135,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TD.USAGE_REMOVE_PREVIEW",
+            "invalid": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.VALIDATE_USAGE_REMOVE_SCHEMA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate exact usage DELETE contains only the child natural key and preserved meaning",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 112
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.CREATE_PREVIEW",
+          "node_type": "step",
+          "sequence": 140,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "TD.CREATE_APPROVAL",
+            "blocked": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.VALIDATE_CREATE_DAT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Build immutable parent-create preview and bind fingerprint",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.DELETE_PREVIEW",
+          "node_type": "step",
+          "sequence": 145,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "TD.DELETE_APPROVAL",
+            "blocked": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.VALIDATE_DELETE_DAT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Build immutable parent-delete preview with exact cascade usage meanings, verified blocking impact checks, disclosed nonblocking limitations, and no IDs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.USAGE_ASSIGN_PREVIEW",
+          "node_type": "step",
+          "sequence": 150,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "TD.USAGE_ASSIGN_APPROVAL",
+            "blocked": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.VALIDATE_USAGE_ASSIGN_DAT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Build immutable child-MERGE preview with preserved UsageType meaning and no IDs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.USAGE_REMOVE_PREVIEW",
+          "node_type": "step",
+          "sequence": 155,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "TD.USAGE_REMOVE_APPROVAL",
+            "blocked": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.VALIDATE_USAGE_REMOVE_DAT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Build immutable child-DELETE preview with preserved UsageType meaning and no IDs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.CREATE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 160,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "TD.DONE_CREATE",
+            "declined": "TD.ERROR_HANDLE",
+            "stale": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.CREATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Request fresh approval for exact parent-create preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.DELETE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 165,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "TD.DONE_DELETE",
+            "declined": "TD.ERROR_HANDLE",
+            "stale": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.DELETE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Request fresh approval for exact parent-delete preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.USAGE_ASSIGN_APPROVAL",
+          "node_type": "decision",
+          "sequence": 170,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "TD.DONE_USAGE_ASSIGN",
+            "declined": "TD.ERROR_HANDLE",
+            "stale": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.USAGE_ASSIGN_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Request fresh approval for exact usage-assignment preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.USAGE_REMOVE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 175,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "TD.DONE_USAGE_REMOVE",
+            "declined": "TD.ERROR_HANDLE",
+            "stale": "TD.ERROR_HANDLE"
+          },
+          "prerequisites": [
+            "TD.USAGE_REMOVE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Request fresh approval for exact usage-removal preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.DONE_CREATE",
+          "node_type": "terminal",
+          "sequence": 180,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TD.CREATE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact parent-create DAT is approved for one Data Loader submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.DONE_DELETE",
+          "node_type": "terminal",
+          "sequence": 185,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TD.DELETE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact parent-delete DAT is approved for one Data Loader submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.DONE_USAGE_ASSIGN",
+          "node_type": "terminal",
+          "sequence": 190,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TD.USAGE_ASSIGN_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact usage MERGE DAT is approved for one Data Loader submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.DONE_USAGE_REMOVE",
+          "node_type": "terminal",
+          "sequence": 195,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TD.USAGE_REMOVE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact usage DELETE DAT is approved for one Data Loader submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.ERROR_HANDLE",
+          "node_type": "step",
+          "sequence": 200,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "TD.DONE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any failed, declined, stale, unsupported, unsafe, uncertain, or incomplete result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TD.DONE_ISSUES",
+          "node_type": "terminal",
+          "sequence": 210,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TD.ERROR_HANDLE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Blocking or declined result disclosed and no live submission authorized",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

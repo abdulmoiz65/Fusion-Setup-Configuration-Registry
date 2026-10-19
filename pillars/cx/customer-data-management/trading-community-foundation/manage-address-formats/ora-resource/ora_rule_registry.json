@@ -1,0 +1,155 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HZ_MANAGE_ADDRESS_FORMATS",
+      "task_name": "Manage Address Formats",
+      "start_node": "AF.LOOKUP_SETUP_TASK",
+      "nodes": [
+        {
+          "id": "AF.LOOKUP_SETUP_TASK",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "AF.VALIDATE_CONTEXT",
+            "blocked": "AF.ERROR",
+            "failure": "AF.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Export or import preparation before immutable preview creation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-node",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_CONTEXT",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "AF.VALIDATE_OPERATION",
+            "invalid": "AF.ERROR"
+          },
+          "prerequisites": [
+            "AF.LOOKUP_SETUP_TASK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before operation review or immutable preview creation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATE_OPERATION",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "AF.VALIDATED",
+            "invalid": "AF.ERROR"
+          },
+          "prerequisites": [
+            "AF.VALIDATE_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before an export POST or Data Loader import preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.ERROR",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "AF.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any validation, lookup, approval, authentication, submission, polling, process, or persistence failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.VALIDATED",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AF.VALIDATE_OPERATION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The operation-specific contract is ready for one execution summary",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AF.ISSUES",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "The request has unresolved issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

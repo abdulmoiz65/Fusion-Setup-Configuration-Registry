@@ -1,0 +1,272 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_INV_POLICY_PROFILES",
+      "task_name": "Policy Profiles",
+      "start_node": "PP.CHECK_METADATA",
+      "nodes": [
+        {
+          "id": "PP.CHECK_METADATA",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "available": "PP.SELECT_REQUEST",
+            "unavailable": "PP.STOP_METADATA"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before a Policy Profiles Data Loader operation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PP.SELECT_REQUEST",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "selected": "PP.MAP_POLICY_TYPE",
+            "no_selected_value": "PP.COMPLETE_NOT_APPLICABLE"
+          },
+          "prerequisites": [
+            "PP.CHECK_METADATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before evaluating the supplied PolicyType, MaxCalcMethod, and SsCalcMethod values",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PP.MAP_POLICY_TYPE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "mapped_or_not_supplied": "PP.LOOKUP_MAX_QTY_METHOD",
+            "invalid": "PP.STOP_LOOKUP"
+          },
+          "prerequisites": [
+            "PP.SELECT_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A selected task-local mapping or lookup request is processed",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PP.LOOKUP_MAX_QTY_METHOD",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found_or_not_supplied": "PP.LOOKUP_SAFETY_STOCK_METHOD",
+            "not_found_or_ambiguous": "PP.STOP_LOOKUP"
+          },
+          "prerequisites": [
+            "PP.MAP_POLICY_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A selected task-local mapping or lookup request is processed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PP.LOOKUP_SAFETY_STOCK_METHOD",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found_or_not_supplied": "PP.COMPLETE",
+            "not_found_or_ambiguous": "PP.STOP_LOOKUP"
+          },
+          "prerequisites": [
+            "PP.LOOKUP_MAX_QTY_METHOD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A selected task-local mapping or lookup request is processed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PP.STOP_METADATA",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "PP.BLOCKED_METADATA"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "PP.CHECK_METADATA returns unavailable",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PP.STOP_LOOKUP",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "PP.BLOCKED_LOOKUP"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A PolicyType mapping, MaxCalcMethod lookup, or SsCalcMethod lookup returns invalid, not_found_or_ambiguous",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PP.COMPLETE",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PP.LOOKUP_SAFETY_STOCK_METHOD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supplied selected mapping or lookup succeeds, and omitted fields were explicitly skipped",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PP.COMPLETE_NOT_APPLICABLE",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PP.SELECT_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "PolicyType, MaxCalcMethod, and SsCalcMethod are all absent",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PP.BLOCKED_METADATA",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PP.STOP_METADATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Metadata preflight is unavailable",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PP.BLOCKED_LOOKUP",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PP.STOP_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supplied mapping or lookup value is invalid, missing, or ambiguous",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

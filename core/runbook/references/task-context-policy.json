@@ -1,0 +1,14 @@
+{
+  "$comment": "Controls optional FSCR pillar-skill selection while creating task context. A unique exact task-code-and-name skill is canonical and may be reused across Oracle offering and functional-area contexts; skill_selection records that relationship explicitly. Oracle task matching is unaffected.",
+  "schema_version": "1.0",
+  "include_missing_skill": true,
+  "$comment.include_missing_skill": "When true, keep a catalog-matched task even when no pillar SKILL.md is found; its skill_path is null. When false, omit that task from task context and the Run Book.",
+  "multiple_skill_policy": "SELECT_BY_PRIORITY",
+  "$comment.multiple_skill_policy": "SELECT_BY_PRIORITY first prefers exactly one full offering code/name match. When multiple offering candidates remain, it prefers exactly one normalized full functional-area name match within those candidates. Zero offering matches, or zero/multiple functional-area matches, retain the alphabetical-first full-path fallback across all original candidates. SELECT_LEXICOGRAPHIC_PATH always selects the alphabetically first path.",
+  "priority_order": [
+    "EXACT_TASK_CODE_AND_NAME",
+    "PROJECT_OFFERING_OR_PILLAR",
+    "LEXICOGRAPHIC_PATH"
+  ],
+  "$comment.priority_order": "Existing policy identifiers and fallback order are preserved. PROJECT_OFFERING_OR_PILLAR compares full declared offering identity; only offering ties are refined by full functional-area name. No task discovery, sequence, path-substring, or functional-area alias changes."
+}

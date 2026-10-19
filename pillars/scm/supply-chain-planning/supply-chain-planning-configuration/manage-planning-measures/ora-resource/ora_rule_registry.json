@@ -1,0 +1,1964 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MSC_MANAGE_PLANNING_MEASURES",
+      "task_name": "Manage Planning Measures",
+      "start_node": "CPA.SELECT_LOOKUP_SCOPE",
+      "nodes": [
+        {
+          "id": "CPA.SELECT_LOOKUP_SCOPE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "create_planning_measure": "CPA.VALIDATE_CREATE_EXPRESSIONS",
+            "update_planning_measure": "CPA.LOOKUP_MEASURE_FOR_UPDATE",
+            "verify_planning_measure_update": "CPA.LOOKUP_APPROVED_MEASURE_READBACK",
+            "resolve_measure_levels_from_granularity": "CPA.LOOKUP_GRANULARITY_LEVELS",
+            "find_planning_measure_by_id_or_name": "CPA.LOOKUP_PLANNING_MEASURES",
+            "find_planning_measure_catalog_by_name": "CPA.LOOKUP_MEASURE_CATALOG_BY_NAME",
+            "duplicate_planning_measure": "CPA.LOOKUP_DUPLICATE_MEASURE",
+            "delete_planning_measure": "CPA.LOOKUP_DELETE_MEASURE",
+            "standalone_source_list_load": "CPA.LOOKUP_STANDALONE_SOURCE_LIST_MEASURE",
+            "find_planning_measure_group_by_id_or_name": "CPA.LOOKUP_PLANNING_MEASURE_GROUPS",
+            "list_planning_measures_in_group": "CPA.LOOKUP_GROUP_PLANNING_MEASURES",
+            "unsupported": "CPA.LOOKUP_FAILURE",
+            "missing": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Select one requested Planning Measure, measure catalog, group, granularity, level, or source-list branch and require its inputs; for combined requests invoke branches separately with resolved identities. Complete each read-only lookup without implicitly running other branches. The active project workflow selects the read-only client and environment before a live request; lookup results never authorize a write. Route registered planningMeasures and planningMeasureSourceLists imports through core.data-loader and an approved delete through core.fusion-api.rest-api-client. Stop on unsupported or missing inputs; do not infer a generic catalogs route.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 7
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_CREATE_EXPRESSIONS",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "CPA.SELECT_CREATE_MEASURE_LEVEL_SOURCE",
+            "not_applicable": "CPA.SELECT_CREATE_MEASURE_LEVEL_SOURCE",
+            "invalid": "CPA.EXPRESSION_VALIDATION_FAILURE",
+            "unavailable": "CPA.EXPRESSION_VALIDATION_FAILURE",
+            "failure": "CPA.EXPRESSION_VALIDATION_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "When a measure-create request supplies Expression or EditLockExpr, execute this POST before preparing the create source. This node is the task-specific POST execution contract for this BO even though the shared action catalog labels its Fusion REST route `reference_lookup`. Use the task-specific general REST endpoint against the selected environment's configured `restBaseUrl`; do not infer availability from Data Loader registration. Invoke this BO as a validation POST, never as a GET lookup: use the workflow-selected `core.fusion-api.rest-api-client` to `POST /fscmRestApi/resources/11.13.18.05/planningMeasureValidateExpressions` separately for each supplied Expression and EditLockExpr. Send JSON `MeasureId` null or empty, target `Name`, and exact text in `Expression`; send EditLockExpr text in `Expression` for its call. Inspect the Fusion response body regardless of HTTP status, including an HTTP error body exposed by the client. Read nonempty `o:errorDetails[].detail` strings, or a plain server message when no JSON detail is present; unwrap the client HTTP error prefix before comparing the server message. Pass only when every returned server message is exactly `Expression is valid`, with no conflicting message; skip only when neither field is requested. Display any other returned server message verbatim and stop. A transport failure without a readable server message or an empty or unreadable response blocks submission. Preserve each successful result and exact text for the immutable create payload; do not substitute local syntax checks, archives, or Data Loader source validation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 8
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_PLANNING_MEASURES",
+          "node_type": "decision",
+          "sequence": 23,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_PLANNING_MEASURES",
+            "found": "CPA.DONE_LOOKUP_PLANNING_MEASURES",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A MeasureId or Name is supplied, or planning measures must be reviewed; use find_planning_measure_by_id_or_name",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 10
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_PLANNING_MEASURE_GROUPS",
+          "node_type": "decision",
+          "sequence": 24,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_PLANNING_MEASURE_GROUPS",
+            "found": "CPA.DONE_LOOKUP_PLANNING_MEASURE_GROUPS",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A GroupId or GroupName is supplied, or planning measure groups must be reviewed; use find_planning_measure_group_by_id_or_name",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_GROUP_PLANNING_MEASURES",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_GROUP_PLANNING_MEASURES",
+            "found": "CPA.DONE_LOOKUP_GROUP_PLANNING_MEASURES",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Measures assigned to a selected planning measure group must be reviewed; use list_planning_measures_in_group",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_MEASURE_CATALOG_BY_NAME",
+          "node_type": "decision",
+          "sequence": 26,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CPA.DONE_LOOKUP_MEASURE_CATALOG_BY_NAME",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For find_planning_measure_catalog_by_name, require a nonblank exact catalog Name, GET the declared planningMeasureCatalogs collection through the selected read-only Fusion client, complete all pages, and return CatalogId only for exactly one exact Name match. Missing, ambiguous, malformed, or incomplete results block selection; no write.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 11
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_GRANULARITY_LEVELS",
+          "node_type": "decision",
+          "sequence": 27,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CPA.GRANULARITY_LEVELS_RESOLVED",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "invalid": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_measure_levels_from_granularity on the documented `GET /fscmRestApi/resources/11.13.18.05/granularityLevels` collection with `q=GranularityId%3D{GranularityId}`; require one exact item and ordered level-name/ID pairs. Never send `granularityLevels_Id`.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.SELECT_CREATE_MEASURE_LEVEL_SOURCE",
+          "node_type": "decision",
+          "sequence": 28,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "levels_supplied": "CPA.LOOKUP_CREATE_MEASURE_PLAN_TYPES",
+            "levels_missing": "CPA.RESOLVE_GRANULARITY_LEVELS_FOR_CREATE",
+            "missing": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_CREATE_EXPRESSIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For a create request, use levels_supplied when one or more ordered measure levels are supplied. Otherwise use levels_missing with a supplied positive integer GranularityId, or default GranularityId to 135 when neither input was supplied. An explicitly supplied invalid level list or GranularityId is invalid; do not replace it with 135. For a duplicate-origin create handoff with an authoritative source GranularityId, choose levels_missing with that exact source value so the declared granularity lookup validates the copied dimensionality; supplied copied levels are comparison evidence, not a reason to discard the source granularity. Do not apply the ordinary default to a duplicate. If preservation is unsupported, levels_supplied is allowed only for the separately verified equivalent level-based projection.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.RESOLVE_GRANULARITY_LEVELS_FOR_CREATE",
+          "node_type": "decision",
+          "sequence": 55,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CPA.LOOKUP_CREATE_MEASURE_PLAN_TYPES_FROM_GRANULARITY",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "invalid": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_CREATE_MEASURE_LEVEL_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "When measure levels are absent, use the supplied positive integer GranularityId or the default 135 selected only when both inputs were absent. Resolve it through resolve_measure_levels_from_granularity on the documented `granularityLevels` collection with `q=GranularityId%3D{GranularityId}`. Take MeasureContextId from the same exact item; require 1, 2, or 3 and do not prompt for context. A supplied conflicting context is invalid. Never send `granularityLevels_Id`; HTTP 400 or no response is failure, not not_found. For duplicate origin, resolve the exact authoritative source GranularityId without default substitution. Carry it into the final create source when live schema and selected-adapter support are verified; compare any copied levels/context with the returned definition and block a conflict. Resolution does not authorize clearing the preserved duplicate granularity.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_STANDALONE_SOURCE_LIST_MEASURE",
+          "node_type": "decision",
+          "sequence": 56,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CPA.LOOKUP_STANDALONE_PARENT_DETAILS",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For standalone_source_list_load, use find_planning_measure_by_id_or_name with the supplied MeasureId. Require exactly one exact match across all pages before checking the parent's SourceType.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_MEASURE_FOR_UPDATE",
+          "node_type": "decision",
+          "sequence": 57,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CPA.LOOKUP_MEASURE_UPDATE_BASELINE",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve an existing Measure by exact MeasureId or unique exact Name across all pages. If both are supplied, require they identify the same record. Stop on zero or multiple exact matches.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_MEASURE_UPDATE_BASELINE",
+          "node_type": "decision",
+          "sequence": 58,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CPA.VALIDATE_UPDATE_EXPRESSIONS",
+            "missing_version": "CPA.MEASURE_UPDATE_VALIDATION_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_MEASURE_FOR_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read the resolved Measure item through its returned item link using the selected workflow's read-only Fusion client. Capture every returned parent field, MeasureId, Name, ObjectVersionNumber or other supported concurrency token, and response version metadata. Never place server-managed values in an update source. If no usable concurrency/version evidence is exposed, stop and report the missing contract.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_APPROVED_MEASURE_READBACK",
+          "node_type": "decision",
+          "sequence": 59,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CPA.VERIFY_APPROVED_MEASURE_UPDATE",
+            "not_found": "CPA.MEASURE_UPDATE_VERIFICATION_FAILURE",
+            "ambiguous": "CPA.MEASURE_UPDATE_VERIFICATION_FAILURE",
+            "failure": "CPA.MEASURE_UPDATE_VERIFICATION_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only after the same approved Data Loader job reaches a successful terminal state, read the Measure item by the approved MeasureId through the routed read-only client. Preserve the approved Task Hook envelope, pre-update snapshot, job evidence, and complete post-update parent values for comparison.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_UPDATE_EXPRESSIONS",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "CPA.LOOKUP_UPDATE_MEASURE_PLAN_TYPES",
+            "not_applicable": "CPA.LOOKUP_UPDATE_MEASURE_PLAN_TYPES",
+            "invalid": "CPA.EXPRESSION_VALIDATION_FAILURE",
+            "unavailable": "CPA.EXPRESSION_VALIDATION_FAILURE",
+            "failure": "CPA.EXPRESSION_VALIDATION_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_MEASURE_UPDATE_BASELINE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before update source preparation, invoke this BO as a validation POST, never as a GET lookup: use the workflow-selected `core.fusion-api.rest-api-client` to `POST /fscmRestApi/resources/11.13.18.05/planningMeasureValidateExpressions` separately for each requested Expression and EditLockExpr. Send JSON with the resolved existing `MeasureId`, target `Name`, and exact text in `Expression`; send EditLockExpr text in `Expression` for its call. Inspect the Fusion response body regardless of HTTP status, including an HTTP error body exposed by the client. Read nonempty `o:errorDetails[].detail` strings, or a plain server message when no JSON detail is present; unwrap the client HTTP error prefix before comparing the server message. Pass only when every returned server message is exactly `Expression is valid`, with no conflicting message; skip only when neither field is requested. Display any other returned server message verbatim and stop. A transport failure without a readable server message or an empty or unreadable response blocks submission. Preserve each successful result and exact text for the immutable update payload.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 9
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_STANDALONE_PARENT_DETAILS",
+          "node_type": "decision",
+          "sequence": 62,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CPA.CHECK_STANDALONE_PARENT_SOURCE_TYPE",
+            "not_found": "CPA.STANDALONE_SOURCE_LIST_FAILURE",
+            "invalid": "CPA.STANDALONE_SOURCE_LIST_FAILURE",
+            "failure": "CPA.STANDALONE_SOURCE_LIST_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_STANDALONE_SOURCE_LIST_MEASURE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use read_standalone_source_list_parent through the selected read-only Fusion client to fetch the exact Measure item and current SourceType. Retain MeasureId, Name, SourceType, item identity, and read timestamp. Missing, malformed, or mismatched details block both the parent handoff and child load.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.CHECK_STANDALONE_PARENT_SOURCE_TYPE",
+          "node_type": "decision",
+          "sequence": 63,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "list": "CPA.LOOKUP_EXISTING_SOURCE_LISTS_FOR_CREATE",
+            "update_required": "CPA.STANDALONE_PARENT_UPDATE_REQUIRED",
+            "failed": "CPA.STANDALONE_SOURCE_LIST_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_STANDALONE_PARENT_DETAILS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require exact current parent SourceType 3 before a Source List child is prepared. If SourceType is 1 or 2, return update_required with the current MeasureId, Name, SourceType, and lookup evidence; do not build a child preview or archive. The selected approved update_planning_measure task must change SourceType to 3 and verify readback before this child branch is re-entered. Never silently change the parent.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_EXISTING_SOURCE_LISTS_FOR_CREATE",
+          "node_type": "decision",
+          "sequence": 64,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "empty": "CPA.VALIDATE_STANDALONE_SOURCE_LIST",
+            "found": "CPA.VALIDATE_STANDALONE_SOURCE_LIST",
+            "failure": "CPA.STANDALONE_SOURCE_LIST_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.CHECK_STANDALONE_PARENT_SOURCE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For a current SourceType 3 parent, use list_existing_planning_measure_source_lists to enumerate all children before approving a standalone child create. Preserve the exact returned rows for duplicate-name and default-row reconciliation. An unsupported or incomplete read blocks the child preview.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_UPDATE_MEASURE_PLAN_TYPES",
+          "node_type": "decision",
+          "sequence": 65,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.LOOKUP_UPDATE_MEASURE_SOURCE_TYPES",
+            "not_applicable": "CPA.LOOKUP_UPDATE_MEASURE_SOURCE_TYPES",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_UPDATE_EXPRESSIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "If Plan Types change, use list_measure_plan_types to read the edit's available ORA_MSC_SELECTOR_WORKAREA meanings; skip selections without a declared mapping and require an exact live match for each remaining mapped selection. Retain LookupCode as evidence only; map meanings to bit numbers during validation. If Plan Types do not change, return not_applicable without a live Plan Type request.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_UPDATE_MEASURE_SOURCE_TYPES",
+          "node_type": "decision",
+          "sequence": 66,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.VALIDATE_MEASURE_UPDATE_FIELDS",
+            "not_applicable": "CPA.VALIDATE_MEASURE_UPDATE_FIELDS",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_UPDATE_MEASURE_PLAN_TYPES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "If SourceType changes, use list_measure_source_types to verify the requested live source-mode selection before field validation. If SourceType does not change, return not_applicable without a live source-type request.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_MEASURE_UPDATE_FIELDS",
+          "node_type": "decision",
+          "sequence": 67,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.ENFORCE_UPDATE_EDIT_RANGE",
+            "failed": "CPA.MEASURE_UPDATE_VALIDATION_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_UPDATE_MEASURE_SOURCE_TYPES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require one or more distinct requested changes. Validate every field and value against the live planningMeasures update template, supported editable resource metadata, and all applicable business/dependency rules. If Plan Types change, skip requested meanings or bit numbers without a declared mapping and record them as skipped. A mapped selection absent or ambiguous in the live lookup still blocks validation. If all requested selections are skipped, omit RelevantPlanType from the update change set. Otherwise calculate mapped bit values from selected meanings and preserve existing bits outside the available mapped meaning list with `proposed = (existing & ~availableMask) OR selectedMask`; include current mask, available meanings, selected meanings, preserved bits, and proposed integer in the result. MeasureId is only a match key when the update template requires it; ListId and ObjectVersionNumber are never update values. Reject server-managed, unsupported, invalid, or unapproved child fields and emit a separate result for every proposed field. For a changed Name require nonblank uniqueness outside the target MeasureId; apply the UOM, Currency, and Price List LOV, data-type, seeded/read-only, PRD plus ORG, deduplication, and exact payload-field rules to every requested association change. For every requested Expression or EditLockExpr require its exact successful server-validation evidence and exact proposed text; reject an adapter or template that cannot retain the field. For changed association fields, construct only BaseUOMCode, MeasureUOM.items[].UomCode, BaseCurrencyCode, MeasureCurrency.items[].CurrencyCode, and numeric MeasurePriceList.items[].PricelistId, subject to the verified existing-measure parent batch child-create contract. Candidate child create routes are /planningMeasures/<MeasureId>/child/MeasureUOM with MeasureId and exact validated UomCode, and /planningMeasures/<MeasureId>/child/MeasureCurrency with MeasureId and exact validated CurrencyCode. Verify batch support and the selected adapter before using either candidate; never infer a generic batch endpoint. Determine Editable from the selected Measure Value Type before reading EditRange. For an eligible editable target, use list_measure_edit_ranges and the Standard Defaults rule, then apply the Edit Range contract; preserve the resolved lookup value directly as EditRange and block any adapter or template that drops or transforms it. For a non-editable target omit EditRange without requiring a selection. When Measure Value Type is not changed, derive its effective selection from the authoritative baseline; never interpret an omitted update input as non-editable. Retain unchanged EditRange outside the PATCH change set, and never introduce a default or clear for a seeded or read-only target.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.ENFORCE_UPDATE_EDIT_RANGE",
+          "node_type": "decision",
+          "sequence": 68,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.SUMMARIZE_MEASURE_UPDATE",
+            "blocked": "CPA.MEASURE_UPDATE_VALIDATION_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_MEASURE_UPDATE_FIELDS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply the EditRange design gate before source preparation and again against the final immutable source before submission. For an existing target require authoritative seeded and read-only status; unknown eligibility blocks the change. Never change EditRange for seeded or read-only measures, including defaulting or clearing. Omit EditRange when Measure Value Type does not select Editable. For an eligible editable target carry the input-validation result directly as EditRange with its resolved type; reject a missing, replaced, or transformed value. This node performs no write.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.SUMMARIZE_MEASURE_UPDATE",
+          "node_type": "decision",
+          "sequence": 69,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "CPA.VALIDATE_UPDATE_SOURCE_TYPE",
+            "failed": "CPA.MEASURE_UPDATE_VALIDATION_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.ENFORCE_UPDATE_EDIT_RANGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Build a complete approval-bound change summary for all requested fields: current and proposed values, per-field validation outcomes, resolved MeasureId and Measure Name, full parent baseline, concurrency/version metadata, and exact intended Data Loader update source with the template-required identity key, RestAction=PATCH, and only validated changed attributes. Preserve unchanged source-list rows outside the parent source and compare the source against the validated change set before preview. Recheck the immutable update source against the EditRange design gate and validated lookup evidence; omit retained unchanged EditRange and reject any unapproved EditRange change.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_PLANNING_MEASURES",
+          "node_type": "terminal",
+          "sequence": 113,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_PLANNING_MEASURES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_planning_measure_by_id_or_name lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_PLANNING_MEASURE_GROUPS",
+          "node_type": "terminal",
+          "sequence": 114,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_PLANNING_MEASURE_GROUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_planning_measure_group_by_id_or_name lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_GROUP_PLANNING_MEASURES",
+          "node_type": "terminal",
+          "sequence": 115,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_GROUP_PLANNING_MEASURES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested list_planning_measures_in_group lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_MEASURE_CATALOG_BY_NAME",
+          "node_type": "terminal",
+          "sequence": 116,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_MEASURE_CATALOG_BY_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return the unique exact CatalogId and Name with complete-page lookup evidence; no create, association, or write.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.GRANULARITY_LEVELS_RESOLVED",
+          "node_type": "terminal",
+          "sequence": 122,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_GRANULARITY_LEVELS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return GranularityId, MeasureContextId, ordered LevelName/LevelId pairs, GranLevelIds, and GranDimensions; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_CREATE_MEASURE_PLAN_TYPES",
+          "node_type": "decision",
+          "sequence": 180,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DEFAULT_CREATE_MEASURE",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_CREATE_MEASURE_LEVEL_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use list_measure_plan_types before direct-level measure creation. Skip selections without a declared meaning-to-bit mapping and record the skipped selections. Require at least one remaining mapped selection and one exact live ORA_MSC_SELECTOR_WORKAREA Meaning for every mapped selected Plan Type; retain LookupCode only as lookup evidence for the subsequent bit-number validation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_CREATE_MEASURE_PLAN_TYPES_FROM_GRANULARITY",
+          "node_type": "decision",
+          "sequence": 181,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DEFAULT_CREATE_MEASURE_FROM_GRANULARITY",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.RESOLVE_GRANULARITY_LEVELS_FOR_CREATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use list_measure_plan_types after resolving GranularityId and before creating the measure. Skip selections without a declared meaning-to-bit mapping and record the skipped selections. Require at least one remaining mapped selection and one exact live ORA_MSC_SELECTOR_WORKAREA Meaning for every mapped selected Plan Type; retain LookupCode only as lookup evidence for the subsequent bit-number validation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DEFAULT_CREATE_MEASURE",
+          "node_type": "step",
+          "sequence": 199,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "CPA.VALIDATE_CONDITIONAL_FORMATS",
+            "not_required": "CPA.VALIDATE_CONDITIONAL_FORMATS"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_CREATE_MEASURE_PLAN_TYPES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Build the context-specific list from supplied measure levels, build a retained Default-context LevelsList or Item fallback for contexts 2 and 3, set GranularityId to null for an ordinary create or a verified duplicate level-based fallback, then synchronize dependencies and apply omitted-field defaults. If no source-list rows and no explicit SourceType are supplied, set SourceType to 1 (None) before conditional-format validation. Preserve an explicit source mode; validate any level-source configuration against the resulting mode. Determine whether a Measure Value Type was selected before EditRange defaulting; expression-only creation may leave it unset. Apply the EditRange Standard Default only for an eligible editable target with absent input and confirmed LOV value 2; never default an explicitly blank value or a non-editable, seeded, or read-only target. For a create handoff originating from duplication, preserve the exact copied DisaggrMethodOther before synchronizing dependencies. Selecting Editable or Collected and Refreshed must not replace it with EQUAL; exclude duplicate handoffs from the Allocation Type default. For duplicate origin with verified source-granularity preservation support, retain the exact source GranularityId instead of setting it to null. The duplicate contract takes precedence over ordinary create clearing and granularity defaults. Retain resolved levels/context as validation evidence and include them only as supported by the selected adapter; do not replace the copied granularity during dependency synchronization. An unsupported adapter requires a verified equivalent level-based fallback, otherwise stop.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_CONDITIONAL_FORMATS",
+          "node_type": "decision",
+          "sequence": 200,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.VALIDATE_CREATE_MEASURE",
+            "not_applicable": "CPA.VALIDATE_CREATE_MEASURE",
+            "failed": "CPA.CONDITIONAL_FORMAT_VALIDATION_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.DEFAULT_CREATE_MEASURE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A custom planning-measure create request uses supplied conditional-format rules after the direct-level defaulting path. Validate every supplied rule; an empty rule set is not applicable.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_CREATE_MEASURE",
+          "node_type": "decision",
+          "sequence": 201,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.ENFORCE_CREATE_EDIT_RANGE",
+            "failed": "CPA.INPUT_VALIDATION_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_CONDITIONAL_FORMATS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate the parent planning-measure create fields after conditional-format rules. Skip Plan Type meanings or bit numbers with no declared mapping; retain skipped selections in validation evidence and require at least one mapped, live-validated selection. For the remaining selected Plan Type meanings, OR their mapped `1 << (bitNumber - 1)` values into one integer RelevantPlanType; retain the per-meaning calculation and reject comma-separated codes. Before SourceType classification, require a nonblank unique Name from a complete measure lookup; resolve every supplied UOM, Currency, and Price List through its live LOV; allow BaseUOMCode only for Number and BaseCurrencyCode only for Currency on a non-seeded, non-read-only measure without both PRD and ORG; omit or null inapplicable unsupplied bases and reject explicitly invalid bases. Reject display UOM/currency items for Percent, Date, or Text; deduplicate codes and numeric PricelistId values; construct only Name, BaseUOMCode, MeasureUOM.items[].UomCode, BaseCurrencyCode, MeasureCurrency.items[].CurrencyCode, and numeric MeasurePriceList.items[].PricelistId for this field group; never send display names, PriceListName, or Source List ListId. Omit optional unsupplied fields and set an inapplicable unsupplied base to null only when the selected adapter supports that shape. Require either one supported Measure Value Type selection, Editable (Editable and Persistent) or Collected and Refreshed, or a nonblank Expression. Block creation when both Measure Value Type and Expression are absent. Allow a server-validated Expression without a Measure Value Type selection, and allow an Expression alongside a valid selection; do not invent or default a Measure Value Type for expression-only creation. Editable maps to Editable=1 without requiring StoreResult; Collected and Refreshed maps to StoreResult=1 without requiring Editable. Reject contradictory explicit selections. Then classify SourceType. Require a matching successful server-validation result for every requested Expression and EditLockExpr, and preserve their exact text in the parent create source; block if the adapter or template omits either field. Determine Editable from the selected Measure Value Type before reading EditRange. For an eligible editable target, use list_measure_edit_ranges and the Standard Defaults rule, then apply the Edit Range contract; preserve the resolved lookup value directly as EditRange and block any adapter or template that drops or transforms it. For a non-editable target omit EditRange without requiring a selection. For duplicate origin, enforce the approved granularity strategy: preserved GranularityId must equal the authoritative source value, have matching resolved levels/context, and be retained by the selected create adapter. The ordinary granularity-clearing/default rule is inapplicable to that strategy. A dropped or changed value blocks the create source. A level-based fallback is permitted only with verified equivalent-dimensionality evidence; no preservation or verified fallback blocks submission.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.ENFORCE_CREATE_EDIT_RANGE",
+          "node_type": "decision",
+          "sequence": 202,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.VALIDATE_CREATE_SOURCE_TYPE",
+            "blocked": "CPA.INPUT_VALIDATION_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_CREATE_MEASURE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply the EditRange design gate before source preparation and again against the final immutable source before submission. For an existing target require authoritative seeded and read-only status; unknown eligibility blocks the change. Never change EditRange for seeded or read-only measures, including defaulting or clearing. Omit EditRange when Measure Value Type does not select Editable. For an eligible editable target carry the input-validation result directly as EditRange with its resolved type; reject a missing, replaced, or transformed value. This node performs no write.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.INPUT_VALIDATION_FAILURE",
+          "node_type": "terminal",
+          "sequence": 203,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A create-measure input-validation rule fails.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DEFAULT_CREATE_MEASURE_FROM_GRANULARITY",
+          "node_type": "step",
+          "sequence": 204,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "CPA.VALIDATE_CONDITIONAL_FORMATS_FROM_GRANULARITY",
+            "not_required": "CPA.VALIDATE_CONDITIONAL_FORMATS_FROM_GRANULARITY"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_CREATE_MEASURE_PLAN_TYPES_FROM_GRANULARITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use the exact granularity item's MeasureContextId as the create context without asking the user. Convert resolved ordered GranLevelIds to that context's list, build a retained Default-context LevelsList or Item fallback for contexts 2 and 3, set GranularityId to null for an ordinary create or a verified duplicate level-based fallback, then synchronize dependencies and apply omitted-field defaults. If no source-list rows and no explicit SourceType are supplied, set SourceType to 1 (None) before conditional-format validation. Preserve an explicit source mode; validate any level-source configuration against the resulting mode. Determine whether a Measure Value Type was selected before EditRange defaulting; expression-only creation may leave it unset. Apply the EditRange Standard Default only for an eligible editable target with absent input and confirmed LOV value 2; never default an explicitly blank value or a non-editable, seeded, or read-only target. For a create handoff originating from duplication, preserve the exact copied DisaggrMethodOther before synchronizing dependencies. Selecting Editable or Collected and Refreshed must not replace it with EQUAL; exclude duplicate handoffs from the Allocation Type default. For duplicate origin with verified source-granularity preservation support, retain the exact source GranularityId instead of setting it to null. The duplicate contract takes precedence over ordinary create clearing and granularity defaults. Retain resolved levels/context as validation evidence and include them only as supported by the selected adapter; do not replace the copied granularity during dependency synchronization. An unsupported adapter requires a verified equivalent level-based fallback, otherwise stop.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_CONDITIONAL_FORMATS_FROM_GRANULARITY",
+          "node_type": "decision",
+          "sequence": 205,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.VALIDATE_CREATE_MEASURE_FROM_GRANULARITY",
+            "not_applicable": "CPA.VALIDATE_CREATE_MEASURE_FROM_GRANULARITY",
+            "failed": "CPA.CONDITIONAL_FORMAT_VALIDATION_FAILURE_FROM_GRANULARITY"
+          },
+          "prerequisites": [
+            "CPA.DEFAULT_CREATE_MEASURE_FROM_GRANULARITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A custom planning-measure create request uses supplied conditional-format rules after levels are derived from GranularityId. Validate every supplied rule; an empty rule set is not applicable.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_CREATE_MEASURE_FROM_GRANULARITY",
+          "node_type": "decision",
+          "sequence": 206,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.ENFORCE_GRANULARITY_EDIT_RANGE",
+            "failed": "CPA.INPUT_VALIDATION_FAILURE_FROM_GRANULARITY"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_CONDITIONAL_FORMATS_FROM_GRANULARITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate a parent planning-measure create request after levels are derived from GranularityId. Skip Plan Type meanings or bit numbers with no declared mapping; retain skipped selections in validation evidence and require at least one mapped, live-validated selection. For the remaining selected Plan Type meanings, OR their mapped `1 << (bitNumber - 1)` values into one integer RelevantPlanType; retain the per-meaning calculation and reject comma-separated codes. Before SourceType classification, require a nonblank unique Name from a complete measure lookup; resolve every supplied UOM, Currency, and Price List through its live LOV; allow BaseUOMCode only for Number and BaseCurrencyCode only for Currency on a non-seeded, non-read-only measure without both PRD and ORG; omit or null inapplicable unsupplied bases and reject explicitly invalid bases. Reject display UOM/currency items for Percent, Date, or Text; deduplicate codes and numeric PricelistId values; construct only Name, BaseUOMCode, MeasureUOM.items[].UomCode, BaseCurrencyCode, MeasureCurrency.items[].CurrencyCode, and numeric MeasurePriceList.items[].PricelistId for this field group; never send display names, PriceListName, or Source List ListId. Omit optional unsupplied fields and set an inapplicable unsupplied base to null only when the selected adapter supports that shape. Require either one supported Measure Value Type selection, Editable (Editable and Persistent) or Collected and Refreshed, or a nonblank Expression. Block creation when both Measure Value Type and Expression are absent. Allow a server-validated Expression without a Measure Value Type selection, and allow an Expression alongside a valid selection; do not invent or default a Measure Value Type for expression-only creation. Editable maps to Editable=1 without requiring StoreResult; Collected and Refreshed maps to StoreResult=1 without requiring Editable. Reject contradictory explicit selections. Then classify SourceType. Require a matching successful server-validation result for every requested Expression and EditLockExpr, and preserve their exact text in the parent create source; block if the adapter or template omits either field. Determine Editable from the selected Measure Value Type before reading EditRange. For an eligible editable target, use list_measure_edit_ranges and the Standard Defaults rule, then apply the Edit Range contract; preserve the resolved lookup value directly as EditRange and block any adapter or template that drops or transforms it. For a non-editable target omit EditRange without requiring a selection. For duplicate origin, enforce the approved granularity strategy: preserved GranularityId must equal the authoritative source value, have matching resolved levels/context, and be retained by the selected create adapter. The ordinary granularity-clearing/default rule is inapplicable to that strategy. A dropped or changed value blocks the create source. A level-based fallback is permitted only with verified equivalent-dimensionality evidence; no preservation or verified fallback blocks submission.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.ENFORCE_GRANULARITY_EDIT_RANGE",
+          "node_type": "decision",
+          "sequence": 207,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.VALIDATE_CREATE_SOURCE_TYPE_FROM_GRANULARITY",
+            "blocked": "CPA.INPUT_VALIDATION_FAILURE_FROM_GRANULARITY"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_CREATE_MEASURE_FROM_GRANULARITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply the EditRange design gate before source preparation and again against the final immutable source before submission. For an existing target require authoritative seeded and read-only status; unknown eligibility blocks the change. Never change EditRange for seeded or read-only measures, including defaulting or clearing. Omit EditRange when Measure Value Type does not select Editable. For an eligible editable target carry the input-validation result directly as EditRange with its resolved type; reject a missing, replaced, or transformed value. This node performs no write.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_CREATE_SOURCE_TYPE_FROM_GRANULARITY",
+          "node_type": "decision",
+          "sequence": 208,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "none": "CPA.CREATE_MEASURE_FROM_GRANULARITY_VALIDATED",
+            "level": "CPA.SOURCE_LEVEL_CONTRACT_GATE",
+            "list": "CPA.GATE_SOURCE_LIST_CREATE_FROM_GRANULARITY",
+            "failed": "CPA.SOURCE_TYPE_FAILURE_FROM_GRANULARITY"
+          },
+          "prerequisites": [
+            "CPA.ENFORCE_GRANULARITY_EDIT_RANGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply the same SourceType 1, 2, and 3 semantics to a granularity-derived parent. No source-list rows and no explicit mode default to 1 (None); reject any contradictory level-source configuration. SourceType 2 needs a supported planning-level source; SourceType 3 needs valid child rows and a parent-first dependency gate.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.CONDITIONAL_FORMAT_VALIDATION_FAILURE",
+          "node_type": "terminal",
+          "sequence": 209,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A supplied conditional-format rule fails validation on the direct-level create path.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.CONDITIONAL_FORMAT_VALIDATION_FAILURE_FROM_GRANULARITY",
+          "node_type": "terminal",
+          "sequence": 210,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A supplied conditional-format rule fails validation after levels are derived from GranularityId.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_CREATE_SOURCE_TYPE",
+          "node_type": "decision",
+          "sequence": 211,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "none": "CPA.CREATE_MEASURE_VALIDATED",
+            "level": "CPA.SOURCE_LEVEL_CONTRACT_GATE",
+            "list": "CPA.GATE_SOURCE_LIST_CREATE",
+            "failed": "CPA.SOURCE_TYPE_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.ENFORCE_CREATE_EDIT_RANGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After create defaults, SourceType must be exactly 1, 2, or 3. No source-list rows and no explicit mode default to 1 (None); reject any contradictory level-source configuration. For 2 require a supported planning-level source and no child rows; for 3 validate requested child names and default selection before the parent-first dependency gate.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.GATE_SOURCE_LIST_CREATE",
+          "node_type": "decision",
+          "sequence": 212,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPA.CREATE_MEASURE_VALIDATED",
+            "blocked": "CPA.SOURCE_LIST_GATE_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_CREATE_SOURCE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For SourceType 3, confirm core.data-loader can select and validate both parent and child import routes, preserve the parent-first sequence and returned MeasureId, and use planningMeasureSourceLists/batch only through its selected adapter when that contract is confirmed. The child body contains only MeasureId, Name, and IsDefault. No child request is prepared before the parent response; no live write occurs in this rule.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.GATE_SOURCE_LIST_CREATE_FROM_GRANULARITY",
+          "node_type": "decision",
+          "sequence": 213,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPA.CREATE_MEASURE_FROM_GRANULARITY_VALIDATED",
+            "blocked": "CPA.SOURCE_LIST_GATE_FAILURE_FROM_GRANULARITY"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_CREATE_SOURCE_TYPE_FROM_GRANULARITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply the same SourceType 3 parent-response and core.data-loader child import contract after granularity-derived parent validation. No live write occurs in this rule.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.CREATE_MEASURE_VALIDATED",
+          "node_type": "terminal",
+          "sequence": 214,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.VALIDATE_CREATE_SOURCE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Parent create values and SourceType are validated. SourceType 1 has no source configuration; SourceType 3 may proceed only through the parent-first Source List gate. The Run Book coordinates approved parent and child steps; core.data-loader executes each import using the returned MeasureId for the child. Before the selected workflow requests approval, require the exact immutable parent create payload, target environment and Name, and each requested expression with its matching `Expression is valid` server result. Stop if the payload differs or omits a requested expression.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.SOURCE_LIST_GATE_FAILURE",
+          "node_type": "terminal",
+          "sequence": 215,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The direct-level SourceType 3 child contract or parent-response handoff is unconfirmed; stop before parent submission.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.CREATE_MEASURE_FROM_GRANULARITY_VALIDATED",
+          "node_type": "terminal",
+          "sequence": 216,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.VALIDATE_CREATE_SOURCE_TYPE_FROM_GRANULARITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Granularity-derived parent create values and SourceType are validated. SourceType 1 has no source configuration; SourceType 3 may proceed only through the parent-first Source List gate. The Run Book coordinates approved parent and child steps; core.data-loader executes each import using the returned MeasureId for the child. Before the selected workflow requests approval, require the exact immutable parent create payload, target environment and Name, and each requested expression with its matching `Expression is valid` server result. Stop if the payload differs or omits a requested expression.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.SOURCE_LIST_GATE_FAILURE_FROM_GRANULARITY",
+          "node_type": "terminal",
+          "sequence": 217,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The granularity-derived SourceType 3 child contract or parent-response handoff is unconfirmed; stop before parent submission.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_STANDALONE_SOURCE_LIST",
+          "node_type": "decision",
+          "sequence": 218,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.GATE_STANDALONE_SOURCE_LIST_PREVIEW",
+            "failed": "CPA.STANDALONE_SOURCE_LIST_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_EXISTING_SOURCE_LISTS_FOR_CREATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require a nonblank Name and integer IsDefault equal to 1 or 2. Compare the requested row against the complete existing-child set: block duplicate Name, and block IsDefault 1 if another row is already default unless a separately approved reconciliation action is declared. The requested source row contains only the exact looked-up MeasureId, Name, and IsDefault; omit ListId and ObjectVersionNumber. Require the parent detail evidence to show SourceType 3 and the final Data Loader ZIP to match its validated preflight SHA-256 before Task Hook preview.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.INPUT_VALIDATION_FAILURE_FROM_GRANULARITY",
+          "node_type": "terminal",
+          "sequence": 220,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A create-measure input-validation rule fails after levels were derived from GranularityId.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_UPDATE_SOURCE_TYPE",
+          "node_type": "decision",
+          "sequence": 221,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "unchanged": "CPA.GATE_MEASURE_UPDATE_PREVIEW",
+            "none": "CPA.GATE_SOURCE_MODE_UPDATE",
+            "level": "CPA.UPDATE_SOURCE_TYPE_FAILURE",
+            "list": "CPA.LOOKUP_EXISTING_SOURCE_LISTS_FOR_UPDATE",
+            "failed": "CPA.UPDATE_SOURCE_TYPE_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SUMMARIZE_MEASURE_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "If SourceType and all source details remain unchanged, retain existing Source List rows and continue without any child action, including when the current SourceType is 3. For an explicitly requested change, interpret SourceType 1 as None, 2 as Level, and 3 as List; apply the source-mode gates. A SourceType 3 change must enumerate existing child rows before its update gate. A SourceType 2 change blocks until the parent level-source update field and approval branch are confirmed. Block child mutations without an explicit approved child list and confirmed reconciliation policy.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_EXISTING_SOURCE_LISTS_FOR_UPDATE",
+          "node_type": "decision",
+          "sequence": 222,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "empty": "CPA.GATE_SOURCE_MODE_UPDATE",
+            "found": "CPA.GATE_SOURCE_MODE_UPDATE",
+            "failure": "CPA.UPDATE_SOURCE_TYPE_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_UPDATE_SOURCE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For an explicit SourceType 3 parent update, use list_existing_planning_measure_source_lists to enumerate all existing children for the exact MeasureId. An empty, fully paginated collection is evidence for a parent-only update before a separately approved child create. Existing rows require an explicit reconciliation policy and separate child-action approval. An unsupported or incomplete read blocks the update.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.GATE_SOURCE_MODE_UPDATE",
+          "node_type": "decision",
+          "sequence": 223,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPA.GATE_MEASURE_UPDATE_PREVIEW",
+            "blocked": "CPA.UPDATE_SOURCE_TYPE_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_UPDATE_SOURCE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For an explicit SourceType 1 change, require an approved disposition for previous source configuration and no new source request. For an explicit SourceType 3 parent-only change, allow an evidenced empty existing child set before a later, separately approved Source List create, or preserve an exact previously loaded row when its MeasureId, content, and successful load are evidenced and no child action is requested. Exclude every child section from the parent archive. A SourceType 2 to 3 change also requires a confirmed disposition of the former level source. Otherwise require a confirmed child reconciliation policy and separate approval for every child action. Block when the applicable evidence or contract is absent.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.UPDATE_SOURCE_TYPE_FAILURE",
+          "node_type": "terminal",
+          "sequence": 226,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "An update SourceType, source-level contract, existing-child policy, or parent-response dependency failed; stop before submission or child mutation.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.SOURCE_TYPE_FAILURE",
+          "node_type": "terminal",
+          "sequence": 227,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The direct-level create SourceType or selected source details are invalid; do not prepare a parent or child write.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.SOURCE_TYPE_FAILURE_FROM_GRANULARITY",
+          "node_type": "terminal",
+          "sequence": 228,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The granularity-derived create SourceType or selected source details are invalid; do not prepare a parent or child write.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.SOURCE_LEVEL_CONTRACT_GATE",
+          "node_type": "decision",
+          "sequence": 240,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPA.SOURCE_LEVEL_VALIDATED",
+            "blocked": "CPA.SOURCE_LEVEL_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For SourceType 2, require a confirmed live parent field for the planning-level source and validated planning-level identity. Do not create planningMeasureSourceLists children or invent the source-level field.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.SOURCE_LEVEL_VALIDATED",
+          "node_type": "terminal",
+          "sequence": 241,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.SOURCE_LEVEL_CONTRACT_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "SourceType 2 uses a supported planning-level source on the parent; the Run Book coordinates any approved parent create or update through core.data-loader. For a create carrying Expression or EditLockExpr, require the exact validated texts and server results in the immutable parent payload before approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.SOURCE_LEVEL_FAILURE",
+          "node_type": "terminal",
+          "sequence": 242,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The SourceType 2 planning-level contract or identity is unresolved; stop before parent submission.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.GATE_MEASURE_UPDATE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 243,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPA.MEASURE_UPDATE_PREVIEW_READY",
+            "blocked": "CPA.MEASURE_UPDATE_APPROVAL_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_UPDATE_SOURCE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require a supported planningMeasures update operation, a single update source containing only the validated change set plus a required identity key, live Data Loader template/preflight evidence, immutable ZIP and SHA-256, and complete ordered ruleResults covering lookup, baseline/version, every field validation, change summary, source-mode result, and all failures. Require finalData.updateApprovalRecord with MeasureId, Measure Name, every current/proposed value, all validation results, exact intended update payload, baseline/version evidence, and finalData.archiveSha256. Block if any input to Task Hook build-data-load-preview is missing. For every requested Expression or EditLockExpr, require the matching `Expression is valid` server result, exact validated text in the immutable update source, and target MeasureId and Name. A changed archive or omitted expression blocks approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.MEASURE_UPDATE_PREVIEW_READY",
+          "node_type": "terminal",
+          "sequence": 244,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.GATE_MEASURE_UPDATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return the validated update source, immutable ZIP and SHA-256, complete ordered ruleResults, finalData.updateApprovalRecord, task identity, environment, and exact proposed changes as a Task Hook preview handoff. The caller's selected core.data-loader.task-hook data-load workflow owns build-data-load-preview, explicit approval, approve-data-load-preview, and verify-approved-data-load-archive. Only its unchanged verified taskValidationEnvelope may be passed to core.data-loader for one approved update. This terminal performs no preview, approval, upload, job initiation, or readback; return that workflow handoff as the next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.MEASURE_UPDATE_VALIDATION_FAILURE",
+          "node_type": "terminal",
+          "sequence": 245,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Identity, full baseline, version metadata, requested field, business rule, or complete change summary failed. Return all validation findings and do not request approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.MEASURE_UPDATE_APPROVAL_FAILURE",
+          "node_type": "terminal",
+          "sequence": 246,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The update source, ZIP digest, preview record, explicit approval, or verified Task Hook envelope is missing or inconsistent. Stop before upload or initiation and report the missing workflow step.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VERIFY_APPROVED_MEASURE_UPDATE",
+          "node_type": "decision",
+          "sequence": 247,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "CPA.MEASURE_UPDATE_VERIFIED",
+            "failed": "CPA.MEASURE_UPDATE_VERIFICATION_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_APPROVED_MEASURE_READBACK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require successful terminal status for the approved Data Loader job and the unchanged approved Task Hook envelope. Compare every approved parent attribute with its proposed value and every unapproved editable parent attribute in the complete pre-update baseline with the readback. Do not classify server-managed version/audit changes as unapproved edits; report them separately. Fail on any mismatch or missing field. Source List rows remain untouched unless individually approved, validated, and verified by a separate child branch.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.MEASURE_UPDATE_VERIFIED",
+          "node_type": "terminal",
+          "sequence": 248,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.VERIFY_APPROVED_MEASURE_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return a per-field verification table with approved current/proposed/readback values, confirmation that unapproved editable parent fields retain baseline values, job evidence, and approved envelope reference.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.MEASURE_UPDATE_VERIFICATION_FAILURE",
+          "node_type": "terminal",
+          "sequence": 249,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return each approved-value or unapproved-field mismatch, missing readback or job evidence, and the next investigation step; do not retry the update automatically.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.STANDALONE_PARENT_UPDATE_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 250,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.CHECK_STANDALONE_PARENT_SOURCE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return the exact MeasureId, Name, current SourceType 1 or 2, and lookup evidence as a parent-update handoff. Stop this child route without a preview or upload. The caller's workflow may select the existing update_planning_measure route as a separate run to propose SourceType 3; that run requires its own validation, Task Hook preview, explicit Data Loader approval, one approved parent update, successful job status, and readback before a fresh standalone child lookup. This terminal does not start that route. If any step is unavailable, report the blocker and do not create a child.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.GATE_STANDALONE_SOURCE_LIST_PREVIEW",
+          "node_type": "decision",
+          "sequence": 251,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPA.STANDALONE_SOURCE_LIST_VALIDATED",
+            "blocked": "CPA.STANDALONE_SOURCE_LIST_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_STANDALONE_SOURCE_LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require core.data-loader to validate and persist the planningMeasureSourceLists ZIP and preflight. Verify its SHA-256 and exact three-field source row. Require complete ordered ruleResults and finalData containing taskContextPath, taskName, positive sequence, exact row, current SourceType 3 lookup evidence, any approved parent-update readback reference, business object, and archiveSha256. A failed lookup, invalid row, missing rule plan, or archive mismatch blocks Task Hook preview.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.STANDALONE_SOURCE_LIST_VALIDATED",
+          "node_type": "terminal",
+          "sequence": 252,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.GATE_STANDALONE_SOURCE_LIST_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return the validated three-field child row, exact parent SourceType 3 evidence, immutable ZIP and SHA-256, complete ordered ruleResults and finalData, task identity, environment, and operation as a Task Hook preview handoff. The caller's selected core.data-loader.task-hook data-load workflow owns build-data-load-preview, explicit approval, approve-data-load-preview, and verify-approved-data-load-archive. Only its unchanged verified taskValidationEnvelope may be passed to core.data-loader for the approved child load. This terminal performs no preview, approval, upload, job initiation, or direct planningMeasureSourceLists write; return that workflow handoff as the next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.STANDALONE_SOURCE_LIST_FAILURE",
+          "node_type": "terminal",
+          "sequence": 253,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The standalone Source List row, rule plan, or final validated archive failed validation; report all findings and do not request Data Loader approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_DUPLICATE_MEASURE",
+          "node_type": "decision",
+          "sequence": 254,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CPA.VALIDATE_DUPLICATE_MEASURE",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For duplicate_planning_measure, use find_planning_measure_by_id_or_name across all pages, then read the exact parent and child settings for plan types, groups, catalogs, dimensionality, aggregation, value type, expressions, UOMs, currencies, price lists, conditional formats, and source lists. Require one complete source definition and a verified create mapping for each copied setting, except unmapped plan-type flags, which are skipped and recorded under the Plan-type bit mapping rule; missing child evidence blocks the duplicate preview. The lookup is read-only. Capture the exact source DisaggrMethodOther and its allocation basis fields from the authoritative parent definition before any defaults or dependency synchronization. Distinguish a returned blank/null from a missing field; missing allocation evidence blocks duplication. Carry source allocation evidence with the new-create projection. Capture the authoritative source GranularityId with its levels and context. For a positive source GranularityId, resolve the exact granularity record and verify that the selected live create schema and adapter accept the field and its exact value. Carry this evidence and duplicate origin into the new-create projection. Missing or unsupported preservation requires a verified equivalent level-based mapping; without either mapping, stop before duplicate preview.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 12
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_DUPLICATE_MEASURE",
+          "node_type": "decision",
+          "sequence": 255,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.ENFORCE_DUPLICATE_MEASURE",
+            "failed": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_DUPLICATE_MEASURE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require one complete source, an unused supplied or generated Copy of name, and valid copied settings. For copied RelevantPlanType, retain only flags with a declared meaning-to-bit mapping and a unique live meaning; omit unmapped flags from the new create projection and record them as skipped rather than blocking duplication. Require at least one remaining mapped, live-validated Plan Type. Preserve the source mask as evidence and never modify the source measure. Clear source MeasureId, source IsSeeded, seeded catalog links, SeededExpression, SeededEditLockExpr, and source ListIds. Do not force IsSeeded to 2; omit it unless the live create schema requires an explicit value and the non-seeded code is verified. Validate and force copied Expression and EditLockExpr into the new parent create source. Validate copied UOM/currency codes and Price List names through their live LOVs, enforce base-field and display-association data-type/granularity restrictions, and carry only numeric PricelistId values. The new parent payload uses the unique Name and exact validated Expression and EditLockExpr; map copied UOM and currency associations to MeasureUOM.items[].UomCode and MeasureCurrency.items[].CurrencyCode, and copied Price Lists to numeric MeasurePriceList.items[].PricelistId. Fresh source-list rows wait for the returned new MeasureId. A copied expression or archived source payload is not validator evidence: carry both exact texts into a fresh create_planning_measure run and block its submission unless that run validates each through the configured validation service. Copy the exact source Allocation Type into DisaggrMethodOther and retain its applicable allocation basis fields. Validate a nonblank copied code through list_measure_allocation_types without substituting another code. Preserve a returned blank/null only when the verified create contract permits it; otherwise block with the allocation contract issue, never default to EQUAL. Missing source allocation evidence blocks duplication. Carry duplicate origin and the exact source allocation value into the fresh create run so both defaulting paths preserve it. Validate the authoritative source GranularityId against the exact resolved granularity and selected live create schema and adapter. When accepted, carry that exact field/value with duplicate origin into the fresh create run. Preserve its resolved dimensionality and context as comparison evidence. If preservation is unsupported or unavailable, require a verified equivalent level-based projection before continuing; do not silently clear or default a duplicate's granularity.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.ENFORCE_DUPLICATE_MEASURE",
+          "node_type": "decision",
+          "sequence": 256,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.DUPLICATE_CREATE_HANDOFF",
+            "blocked": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_DUPLICATE_MEASURE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require Maintain Measure Definition privilege and a complete valid new-create projection. Return the projection for a fresh Planning Measure create validation run and Data Loader handoff; never update the source or reuse its ListIds. If copied associations cannot be mapped by the selected create adapter, stop. A copied or archived Expression or EditLockExpr is not proof of validity; the fresh create run must pass the configured server validator before any create approval or submission. Require the projected DisaggrMethodOther to equal the captured source Allocation Type, including any supported blank/null state, and retain duplicate origin for the fresh create run. A missing source value, an unsupported allocation contract, or replacement with EQUAL blocks the handoff; Measure Value Type selection does not authorize changing the source allocation. Require a supported granularity strategy. For verified preservation support, the projection and final create source must retain the exact authoritative source GranularityId through defaulting and dependency synchronization. The fresh create run must check that the selected adapter does not drop or transform it. Otherwise require a verified equivalent level-based mapping; absent evidence blocks the handoff. Success readback must confirm the approved granularity and copied dimensionality.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_DELETE_MEASURE",
+          "node_type": "decision",
+          "sequence": 257,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CPA.VALIDATE_DELETE_MEASURE",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For delete_planning_measure, use find_planning_measure_by_id_or_name across all pages, then read_measure_delete_dependencies for that exact MeasureId. Require one exact target, complete association pages, and seeded state. After an approved successful delete, a fresh complete measure lookup must confirm the exact MeasureId is absent.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 13
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_DELETE_MEASURE",
+          "node_type": "decision",
+          "sequence": 258,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.ENFORCE_DELETE_MEASURE",
+            "failed": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_DELETE_MEASURE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require an explicit delete request with one exact MeasureId and Name, selected environment, complete association pagination, explicit user confirmation of the signed-in account's `MSC_DELETE_MEASURE_DEFINITION_PRIV` in that environment, and the declared deletion route. No DELETE request is prepared when any required input is missing.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.ENFORCE_DELETE_MEASURE",
+          "node_type": "decision",
+          "sequence": 259,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.DELETE_MEASURE_HANDOFF",
+            "blocked": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.VALIDATE_DELETE_MEASURE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require the user's explicit same-environment confirmation that the signed-in account has `MSC_DELETE_MEASURE_DEFINITION_PRIV`, a non-seeded target, complete association pages with no `Manual` row, and the declared standard Fusion REST adapter for DELETE /fscmRestApi/resources/11.13.18.05/planningMeasures/{MeasureId}, with no body and no authentication retry. Verify the configured restBaseUrl matches the active Run Book server origin. Disclose `Automatic` rows as impacts. Prepare the environment, MeasureId, name, impacts, and operation for approval; do not execute here.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DELETE_MEASURE_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 260,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.ENFORCE_DELETE_MEASURE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Persist an immutable preview with environment origin, signed-in account context, exact MeasureId and Name, association impacts, privilege confirmation and lookup references, and selected `DELETE` path with no body; return its hash for explicit approval immediately before the owning workflow's single attempt. Changed inputs or evidence require a new preview and approval. Expect 204 and verify exact MeasureId absence by complete readback. This terminal performs no DELETE.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DUPLICATE_CREATE_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 261,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.ENFORCE_DUPLICATE_MEASURE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return the new non-seeded parent projection checked for identity and copied settings, unique name, source identity, copied-setting evidence, and child rows without ListIds; copied expressions still require fresh server validation. The caller starts a fresh create_planning_measure task validation with these exact values and uses its declared Data Loader route and approval. Fresh source-list rows require the newly returned MeasureId. This terminal performs no POST. Copied Expression and EditLockExpr remain candidates until the fresh create_planning_measure run invokes the configured server-side validator separately for each and carries the exact validated text into its create payload. Return duplicate origin, authoritative source Allocation Type evidence, and the exact copied DisaggrMethodOther with applicable basis fields. The fresh create run must preserve this value through defaulting, dependency synchronization, and the immutable Data Loader source; block a dropped or changed allocation rather than falling back to EQUAL. Return the selected granularity strategy, duplicate origin, authoritative source granularity and resolved dimensionality evidence, and live schema/adapter support evidence. The fresh create run must preserve the source GranularityId when supported instead of applying ordinary clearing/defaulting. A level-based alternative requires verified equivalent mapping. Block a dropped or changed preserved value; compare the saved duplicate's granularity, context, and levels with the approved definition before reporting complete duplication.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.EXPRESSION_VALIDATION_FAILURE",
+          "node_type": "terminal",
+          "sequence": 264,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Classify the Fusion validation message independently of HTTP status. If Fusion returned a readable `o:errorDetails[].detail` or plain server message other than `Expression is valid`, display that server message verbatim and stop before measure submission. An HTTP 400 carrying only the exact `Expression is valid` message follows the valid transition, not this failure node. If the configured `POST` validator cannot be resolved or invoked, its request fails without a readable server message, or the response is empty or unreadable, return exactly `Expression validation is unavailable through the configured Planning Measure validator. The expression was not submitted.` Do not drop Expression or EditLockExpr, prepare a create/update payload, request approval, or submit a measure. Persist the classified failure without sensitive expression text.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_FAILURE",
+          "node_type": "terminal",
+          "sequence": 999,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return missing, unsupported, invalid, ambiguous, failed or blocked details and the corrective action; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

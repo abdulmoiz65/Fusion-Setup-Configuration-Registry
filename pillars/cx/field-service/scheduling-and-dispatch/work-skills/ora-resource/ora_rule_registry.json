@@ -1,0 +1,307 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_FFS_TS_WORK_SKILLS",
+      "task_name": "Work Skills",
+      "start_node": "WS.WORKBOOK_STRUCTURE",
+      "nodes": [
+        {
+          "id": "WS.WORKBOOK_STRUCTURE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "WS.QUALIFICATION_MODEL",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WS.QUALIFICATION_MODEL",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "WS.CONDITION_SOURCE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WS.WORKBOOK_STRUCTURE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Work Skill is created or changed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WS.CONDITION_SOURCE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "WS.CONDITION_LOGIC",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WS.QUALIFICATION_MODEL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Work-skill conditions are configured",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WS.CONDITION_LOGIC",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "WS.REQUIRED_AND_PREFERRED_LEVELS",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WS.CONDITION_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Multiple work-skill conditions apply",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WS.REQUIRED_AND_PREFERRED_LEVELS",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "WS.ROUTING_ELIGIBILITY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WS.CONDITION_LOGIC"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Required or preferable skill levels are configured",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WS.ROUTING_ELIGIBILITY",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "WS.ACTIVE_AND_ASSIGNED",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WS.REQUIRED_AND_PREFERRED_LEVELS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An Activity Type requires multiple skills",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WS.ACTIVE_AND_ASSIGNED",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "WS.TEAMWORK_SHARING",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WS.ROUTING_ELIGIBILITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Skills are enabled for routing or assigned during onboarding",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WS.TEAMWORK_SHARING",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "WS.GROUPS_AND_CAPACITY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WS.ACTIVE_AND_ASSIGNED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Teamwork skill sharing is configured",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WS.GROUPS_AND_CAPACITY",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "WS.ADVANCED_VALIDATION",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WS.TEAMWORK_SHARING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Work-skill groups are used",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WS.ADVANCED_VALIDATION",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RETURN_READY_FOR_PREVIEW",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WS.GROUPS_AND_CAPACITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Skills support certifications, crews, vehicles, or advanced capacity design",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation rule blocks or required workbook input is invalid",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_READY_FOR_PREVIEW",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WS.ADVANCED_VALIDATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All applicable design rules pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

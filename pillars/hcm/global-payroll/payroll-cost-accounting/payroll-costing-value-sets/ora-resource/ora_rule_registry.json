@@ -1,0 +1,157 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PAY_PAYROLL_COSTING_VALUE_SETS",
+      "task_name": "Payroll Costing Value Sets",
+      "start_node": "PCVS.VALIDATE_PACKAGE",
+      "nodes": [
+        {
+          "id": "PCVS.VALIDATE_PACKAGE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "PCVS.CHECK_DEPENDENCIES",
+            "failed": "PCVS.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every task-level CSV package, authoring, import, or verification request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCVS.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PCVS.ENFORCE_TASK_BOUNDARY",
+            "blocked": "PCVS.FAILED"
+          },
+          "prerequisites": [
+            "PCVS.VALIDATE_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every task-level CSV package, authoring, import, or verification request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCVS.ENFORCE_TASK_BOUNDARY",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "PCVS.HANDOFF_GATE",
+            "failed": "PCVS.FAILED"
+          },
+          "prerequisites": [
+            "PCVS.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every task-level CSV package, authoring, import, or verification request",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCVS.HANDOFF_GATE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PCVS.DONE",
+            "blocked": "PCVS.FAILED"
+          },
+          "prerequisites": [
+            "PCVS.ENFORCE_TASK_BOUNDARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before handoff to the declared shared task-level FSM CSV workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCVS.DONE",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCVS.HANDOFF_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Task-specific package validation and readiness handoff completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCVS.FAILED",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any task-specific stop condition",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

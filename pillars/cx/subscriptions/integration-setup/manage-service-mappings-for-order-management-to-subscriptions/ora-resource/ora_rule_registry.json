@@ -1,0 +1,182 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_SERVICE_MAPPINGS_FOR_ORDER_MANAGEMENT_TO_SUBSCRIPTIONS",
+      "task_name": "Manage Service Mappings for Order Management to Subscriptions",
+      "start_node": "OMSUBMAP.VALIDATE.REQUEST",
+      "nodes": [
+        {
+          "id": "OMSUBMAP.VALIDATE.REQUEST",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "OMSUBMAP.DESCRIBE.METADATA",
+            "missing-or-invalid": "OMSUBMAP.RETURN.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Service Mappings request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMSUBMAP.DESCRIBE.METADATA",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "confirmed-or-not-required": "OMSUBMAP.RESOLVE.DEPENDENCIES",
+            "unavailable-or-ambiguous": "OMSUBMAP.RETURN.ISSUES"
+          },
+          "prerequisites": [
+            "OMSUBMAP.VALIDATE.REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mapping assessment needs documented source discovery, Subscription target or correlation confirmation, describe-backed standard-product-field exposure, grouping metadata, child-resource branch discovery, or compatibility confirmation; skip only when validated XML evidence settles every applicable item",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMSUBMAP.RESOLVE.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "OMSUBMAP.ENFORCE.DESIGN",
+            "blocked": "OMSUBMAP.RETURN.ISSUES"
+          },
+          "prerequisites": [
+            "OMSUBMAP.DESCRIBE.METADATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "XML mapping outcome and every required describe lookup passed",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMSUBMAP.ENFORCE.DESIGN",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "OMSUBMAP.ADVISORY.GATE",
+            "blocked": "OMSUBMAP.RETURN.ISSUES"
+          },
+          "prerequisites": [
+            "OMSUBMAP.RESOLVE.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependency readiness is satisfied",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMSUBMAP.ADVISORY.GATE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "assessment-ready": "OMSUBMAP.RETURN.ASSESSMENT",
+            "out-of-scope": "OMSUBMAP.RETURN.ISSUES"
+          },
+          "prerequisites": [
+            "OMSUBMAP.ENFORCE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The design is valid and the requested outcome is a read-only assessment",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMSUBMAP.RETURN.ASSESSMENT",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OMSUBMAP.ADVISORY.GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated service_mapping_assessment is ready for return",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OMSUBMAP.RETURN.ISSUES",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any blocking validation, lookup, dependency, design, or scope outcome occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

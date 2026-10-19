@@ -1,0 +1,156 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_INVENTORY_DOCUMENT_OUTPUT_PREFERENCES",
+      "task_name": "Inventory Document Output Preferences",
+      "start_node": "IDOP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "IDOP.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "IDOP.RESOLVE_LOOKUPS",
+            "invalid": "IDOP.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before Data Loader preparation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IDOP.RESOLVE_LOOKUPS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "IDOP.APPLY_DEFAULT",
+            "not_required": "IDOP.APPLY_DEFAULT",
+            "blocked": "IDOP.HANDLE_ERROR",
+            "failure": "IDOP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "IDOP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve each supplied LOV value using its declared resolver",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IDOP.APPLY_DEFAULT",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "IDOP.COMPLETE",
+            "not_required": "IDOP.COMPLETE"
+          },
+          "prerequisites": [
+            "IDOP.RESOLVE_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "AttachShippingDocumentFlag is blank or supplied",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 13
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IDOP.HANDLE_ERROR",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "IDOP.STOP"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, lookup, Data Loader, or Fusion error occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IDOP.COMPLETE",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IDOP.APPLY_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input and applicable lookups/defaults completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IDOP.STOP",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking error occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

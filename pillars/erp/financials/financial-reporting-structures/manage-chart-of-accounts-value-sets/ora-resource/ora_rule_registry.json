@@ -1,0 +1,228 @@
+{
+  "schema_version": "2.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "GL_MANAGE_CHART_OF_ACCOUNTS_VALUE_SETS",
+      "task_name": "Manage Chart of Accounts Value Sets",
+      "start_node": "COAVS.COLLECT",
+      "nodes": [
+        {
+          "id": "COAVS.COLLECT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "collect_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COAVS.VALIDATE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_intake.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAVS.VALIDATE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COAVS.READY"
+          },
+          "prerequisites": [
+            "COAVS.COLLECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAVS.READY",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "COAVS.LOOKUP"
+          },
+          "prerequisites": [
+            "COAVS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAVS.LOOKUP",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "absent": "COAVS.DEFAULT",
+            "match": "COAVS.DONE_MATCH"
+          },
+          "prerequisites": [
+            "COAVS.READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 13
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAVS.DEFAULT",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "COAVS.BULK"
+          },
+          "prerequisites": [
+            "COAVS.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Object absent",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAVS.BULK",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "process_bulk",
+          "execution_route": "fsm-task-csv-import",
+          "transitions": {
+            "ready": "COAVS.GATE"
+          },
+          "prerequisites": [
+            "COAVS.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Object absent",
+          "source": {
+            "file": "ora_bulk_intake.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAVS.GATE",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "COAVS.READY_IMPORT"
+          },
+          "prerequisites": [
+            "COAVS.BULK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Object absent",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAVS.READY_IMPORT",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COAVS.GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Readiness record passes",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAVS.DONE_MATCH",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COAVS.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing definition matches",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

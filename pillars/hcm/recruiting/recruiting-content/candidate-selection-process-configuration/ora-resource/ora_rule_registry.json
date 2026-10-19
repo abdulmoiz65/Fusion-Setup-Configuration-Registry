@@ -1,0 +1,504 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_CANDIDATE_SELECTION_PROCESS_CONFIGURATION",
+      "task_name": "Candidate Selection Process Configuration",
+      "start_node": "CSP.VALIDATE_INPUTS",
+      "nodes": [
+        {
+          "id": "CSP.VALIDATE_INPUTS",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CSP.CLASSIFY_REQUEST",
+            "invalid": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every create-authoring or verification request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.CLASSIFY_REQUEST",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "authoring": "CSP.EXPORT_BASELINE",
+            "verification": "CSP.VERIFY_RESULT",
+            "unsupported": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.VALIDATE_INPUTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After input validation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.EXPORT_BASELINE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "exported_and_classified": "CSP.CHECK_BASELINE",
+            "export_failed_or_incomplete": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.CLASSIFY_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every authoring create request before code uniqueness, custom collision checks, package generation, or import",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.CHECK_BASELINE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CSP.CHECK_SUBPROCESS_PATTERN",
+            "blocked": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.EXPORT_BASELINE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The completed export must supply current target identity, package schema, and raw code dictionaries",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.CHECK_SUBPROCESS_PATTERN",
+          "node_type": "decision",
+          "sequence": 45,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "pattern_proven": "CSP.CHECK_SETTING_IDENTIFIER_PATTERN",
+            "pattern_missing_or_error": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.CHECK_BASELINE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before generating a CSP_SUBPROCESS_CODE for a custom or system subprocess",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.CHECK_SETTING_IDENTIFIER_PATTERN",
+          "node_type": "decision",
+          "sequence": 46,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "pattern_proven": "CSP.APPLY_IDENTIFIER_DEFAULTS",
+            "pattern_missing_or_error": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.CHECK_SUBPROCESS_PATTERN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before generating a SettingCode or SettingItemCode for a required custom, Offer, or HR settings block",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.APPLY_IDENTIFIER_DEFAULTS",
+          "node_type": "step",
+          "sequence": 47,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "identifiers_applied": "CSP.CHECK_CODE",
+            "failure": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.CHECK_SETTING_IDENTIFIER_PATTERN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A process passed baseline validation and subprocess plus setting-identifier patterns are proven",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.CHECK_CODE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "all_unique_and_absent": "CSP.RESOLVE_PHASES",
+            "duplicate_present_or_error": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.APPLY_IDENTIFIER_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before package generation for every process",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.RESOLVE_PHASES",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "all_available": "CSP.RESOLVE_STATES",
+            "collision_or_error": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.CHECK_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more custom phases are supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.RESOLVE_STATES",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "all_available": "CSP.RESOLVE_STATUSES",
+            "collision_or_error": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.RESOLVE_PHASES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more custom states are supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.RESOLVE_STATUSES",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "all_resolved": "CSP.VALIDATE_SOURCE_LANGUAGE",
+            "ambiguous_or_error": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.RESOLVE_STATES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more candidate statuses are supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.VALIDATE_SOURCE_LANGUAGE",
+          "node_type": "decision",
+          "sequence": 85,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid_or_not_applicable": "CSP.APPLY_DEFAULTS",
+            "invalid": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.RESOLVE_STATUSES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new description is supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied_to_all": "CSP.CHECK_DESIGN",
+            "failure": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.VALIDATE_SOURCE_LANGUAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every process in a supported input list",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.CHECK_DESIGN",
+          "node_type": "decision",
+          "sequence": 100,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "all_passed": "CSP.VALIDATE_PACKAGE",
+            "blocked": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The complete supported input list",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.VALIDATE_PACKAGE",
+          "node_type": "decision",
+          "sequence": 110,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CSP.DONE_AUTHORING",
+            "invalid": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.CHECK_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A candidate package for the complete input list has been produced by the routed runbook",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.VERIFY_RESULT",
+          "node_type": "decision",
+          "sequence": 120,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "CSP.DONE_VERIFIED",
+            "failed": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.CLASSIFY_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A post-import export and status evidence are supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.HANDLE_ISSUES",
+          "node_type": "step",
+          "sequence": 130,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CSP.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, dependency, lookup, design, package, catalog, authorization, process, or verification failure occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 140,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.HANDLE_ISSUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An issue was classified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.DONE_AUTHORING",
+          "node_type": "terminal",
+          "sequence": 150,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.VALIDATE_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A package is locally validated and ready for the separate execution workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.DONE_VERIFIED",
+          "node_type": "terminal",
+          "sequence": 160,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.VERIFY_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Supplied post-import evidence reconciles successfully",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

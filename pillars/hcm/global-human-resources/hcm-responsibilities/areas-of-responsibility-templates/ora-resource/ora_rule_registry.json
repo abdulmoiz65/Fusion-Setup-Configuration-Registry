@@ -1,0 +1,289 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_AREAS_OF_RESPONSIBILITY_TEMPLATES",
+      "task_name": "Areas of Responsibility Templates",
+      "start_node": "AORT.VALIDATE",
+      "nodes": [
+        {
+          "id": "AORT.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "AORT.DEPENDENCY",
+            "missing": "AORT.ERROR",
+            "invalid": "AORT.ERROR",
+            "unsupported": "AORT.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Areas of Responsibility Templates request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AORT.DEPENDENCY",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "AORT.READ",
+            "not_required": "AORT.READ",
+            "needs_input": "AORT.ERROR",
+            "unresolved": "AORT.ERROR"
+          },
+          "prerequisites": [
+            "AORT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After input validation and before task-local reference lookups",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AORT.READ",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "AORT.LOOKUPS",
+            "list_returned": "AORT.DEFAULTS",
+            "create_available": "AORT.LOOKUPS",
+            "not_found": "AORT.ERROR",
+            "duplicate": "AORT.ERROR",
+            "ambiguous": "AORT.ERROR",
+            "failed": "AORT.ERROR"
+          },
+          "prerequisites": [
+            "AORT.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read is requested, an exact target is required before edit or delete, or a uniqueness check is required before create",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AORT.LOOKUPS",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "AORT.DEFAULTS",
+            "blocked": "AORT.ERROR"
+          },
+          "prerequisites": [
+            "AORT.READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supplied lookup, System Person Type, Job Function, Country, Job, Location, or worker assignment needs an exact stored value",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AORT.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "AORT.ENFORCE",
+            "preserved": "AORT.ENFORCE",
+            "not_required": "AORT.ENFORCE",
+            "blocked": "AORT.ERROR"
+          },
+          "prerequisites": [
+            "AORT.READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, current-state reads, and required resolvers are complete",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AORT.ENFORCE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "AORT.ROUTE",
+            "not_required": "AORT.ROUTE",
+            "blocked": "AORT.ERROR"
+          },
+          "prerequisites": [
+            "AORT.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, dependencies, lookups, and defaulting are complete",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AORT.ROUTE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read": "AORT.DONE",
+            "create_or_edit_or_delete_ready": "AORT.LOADER_READY",
+            "mutation_blocked": "AORT.ERROR"
+          },
+          "prerequisites": [
+            "AORT.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select read completion or the Core Data Loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AORT.ERROR",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "AORT.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior node returns invalid, missing, ambiguous, blocked, failed, partial, timed-out, uncertain, stale, or unverified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AORT.DONE",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AORT.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AORT.LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AORT.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Mutation rules passed; invoke Core Data Loader and follow it through immutable ZIP preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AORT.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request cannot safely continue without correction or reconciliation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

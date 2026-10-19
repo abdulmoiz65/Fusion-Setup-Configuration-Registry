@@ -1,0 +1,27 @@
+{
+  "$schema": "library-goal.schema.json",
+  "version": "1.0.2",
+  "component": "ContentItem",
+  "context": "GOAL",
+  "routes": ["hdl_generate", "hdl_dat_preflight"],
+  "variants": {"performance_library_goal": "PERFORMANCE", "development_library_goal": "DEVELOPMENT"},
+  "sources": {
+    "oracle-hdl": "https://docs.oracle.com/en/cloud/saas/human-resources/fahbo/examples-of-loading-goals.html",
+    "oracle-content-description": "https://docs.oracle.com/en/cloud/saas/human-resources/oedmh/hrtcontentitemstl-26274.html",
+    "goal-contract": "../goal-setup-field-resolution/ora-resource/ora_field_capability_resolution.md",
+    "scope-contract": "../hdl-source-generation.md",
+    "priority-contract": "../hdl-source-generation.md#priority-on-goal-creates",
+    "oracle-library-goal-source": "library-goal-priority-source.md"
+  },
+  "fields": {
+    "GoalName": {"field": "Name", "type": "string", "required": true, "source": "oracle-hdl"},
+    "Description": {"field": "ItemDescrlong", "type": "string", "source": "oracle-content-description"},
+    "StartDate": {"field": "ItemDate1", "type": "date", "source": "oracle-hdl"},
+    "TargetCompletionDate": {"field": "ItemDate2", "type": "date", "source": "oracle-hdl"},
+    "TypeCode": {"field": "ItemText9", "type": "string", "required": true, "codes": ["PERFORMANCE", "DEVELOPMENT"], "source": "oracle-hdl"},
+    "StatusCode": {"field": "ItemText1", "type": "string", "required": true, "default": "I", "codes": ["I", "A"], "source": "oracle-hdl"},
+    "Visible": {"field": "ItemText10", "type": "string", "required": true, "default": "ALL", "codes": ["ALL"], "source": "goal-contract"},
+    "PriorityCode": {"field": "ItemText2", "type": "string", "required": true, "default": "MEDIUM", "source": "oracle-library-goal-source"},
+    "BusinessUnitId": {"field": "ItemNumber1", "type": "integer", "requiresValueEvidence": true, "source": "scope-contract"}
+  }
+}

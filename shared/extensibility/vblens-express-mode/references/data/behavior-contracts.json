@@ -1,0 +1,306 @@
+{
+  "schemaVersion": 1,
+  "description": "Page-neutral reasoning checklists for Express Mode assessments. They enumerate evidence, scenarios, setup dependencies, and forbidden inferences without classifying capability or evidence sufficiency.",
+  "contracts": [
+    {
+      "id": "shape-dependent-default",
+      "intents": [
+        "default-from-selected-lov",
+        "salary-basis-from-grade"
+      ],
+      "requiredCapabilities": [
+        "source.valueAccessor",
+        "source.shape",
+        "target.valueOperation"
+      ],
+      "setupPolicy": "mapping-required",
+      "codeBranches": [
+        "source unchanged",
+        "source blank",
+        "target already populated",
+        "one active mapping",
+        "no active mapping",
+        "duplicate active mappings",
+        "inactive or out-of-date mapping",
+        "user-entered target preservation",
+        "explicitly authorized overwrite",
+        "runtime value unavailable"
+      ],
+      "forbiddenInferences": [
+        "REST writability proves a Business Rules value operation",
+        "a LOV shape from another page applies to the target operation",
+        "display labels are stable mapping values"
+      ]
+    },
+    {
+      "id": "changed-related-id-validation",
+      "intents": [
+        "changed-related-id-validation",
+        "job-family-change-validation"
+      ],
+      "requiredCapabilities": [
+        "source.valueAccessor",
+        "source.initialValueAccessor",
+        "source.shape",
+        "source.stableIdentifier",
+        "source.relatedStableIdentifier",
+        "target.validationOperation"
+      ],
+      "setupPolicy": "none",
+      "codeBranches": [
+        "selection unchanged",
+        "selection changed with the same related identifier",
+        "selection changed with a different related identifier",
+        "current selection blank",
+        "initial selection blank",
+        "related identifier unavailable"
+      ],
+      "forbiddenInferences": [
+        "a current LOV proves initial nested data is materialized",
+        "a display family name is preferable to a stable family ID",
+        "REST child fields prove Business Rules accessor availability"
+      ]
+    },
+    {
+      "id": "future-history-validation",
+      "intents": [
+        "future-history-validation",
+        "future-assignment-transaction"
+      ],
+      "requiredCapabilities": [
+        "source.valueAccessor",
+        "source.shape",
+        "source.dateField",
+        "transaction.dateField",
+        "target.validationOperation"
+      ],
+      "setupPolicy": "none",
+      "codeBranches": [
+        "history blank",
+        "history object",
+        "history collection",
+        "row before transaction date",
+        "row on transaction date",
+        "row after transaction date",
+        "invalid date value"
+      ],
+      "forbiddenInferences": [
+        "a REST collection has the same shape as its Business Rules accessor",
+        "a date field from another transaction page is reusable"
+      ]
+    },
+    {
+      "id": "date-only-business-day-validation",
+      "intents": [
+        "nth-business-day-validation",
+        "date-only-business-day-validation"
+      ],
+      "requiredCapabilities": [
+        "transaction.dateField",
+        "target.validationOperation"
+      ],
+      "setupPolicy": "calendar-optional",
+      "codeBranches": [
+        "blank date",
+        "invalid date",
+        "Saturday",
+        "Sunday",
+        "weekday before required ordinal",
+        "required weekday ordinal",
+        "weekday after required ordinal",
+        "configured holiday"
+      ],
+      "forbiddenInferences": [
+        "weekday-only logic includes customer holidays",
+        "browser-local date parsing preserves a date-only value"
+      ]
+    },
+    {
+      "id": "percentage-cap-validation",
+      "intents": [
+        "percentage-cap-validation",
+        "salary-increase-cap"
+      ],
+      "requiredCapabilities": [
+        "source.valueAccessor",
+        "source.numericContract",
+        "source.valueScaleContract",
+        "target.validationOperation"
+      ],
+      "setupPolicy": "threshold-required",
+      "codeBranches": [
+        "blank value",
+        "nonnumeric value",
+        "value below cap",
+        "value equal to cap",
+        "value above cap"
+      ],
+      "forbiddenInferences": [
+        "a numeric accessor safely distinguishes blank from zero",
+        "a threshold from an example is a customer policy"
+      ]
+    },
+    {
+      "id": "cross-object-flexfield-validation",
+      "intents": [
+        "cross-object-flexfield-validation",
+        "assignment-dff-position-flexfield-validation"
+      ],
+      "requiredCapabilities": [
+        "source.valueAccessor",
+        "source.shape",
+        "source.segmentExposure",
+        "target.valueAccessor",
+        "target.segmentExposure",
+        "target.validationOperation"
+      ],
+      "setupPolicy": "segment-values-may-be-required",
+      "codeBranches": [
+        "source segment blank",
+        "target segment blank",
+        "segments match",
+        "segments differ",
+        "source context inactive",
+        "target context inactive",
+        "multi-row source unresolved"
+      ],
+      "forbiddenInferences": [
+        "a DFF or EFF path from another page is exposed on this page",
+        "an endpoint proves an active context and segment"
+      ]
+    },
+    {
+      "id": "composite-setup-default",
+      "intents": [
+        "composite-mapping-default",
+        "job-business-unit-legal-employer-default"
+      ],
+      "requiredCapabilities": [
+        "source.valueAccessor",
+        "source.stableIdentifier",
+        "target.valueOperation"
+      ],
+      "setupPolicy": "mapping-required",
+      "codeBranches": [
+        "composite key incomplete",
+        "one active mapping",
+        "no active mapping",
+        "duplicate active mappings",
+        "inactive or out-of-date mapping",
+        "target already populated",
+        "explicitly authorized overwrite",
+        "mapping source unavailable"
+      ],
+      "forbiddenInferences": [
+        "labels are stable composite keys",
+        "the page can read a UDT without exact-page proof",
+        "one target failure authorizes partial silent corruption"
+      ]
+    },
+    {
+      "id": "child-membership-validation",
+      "intents": [
+        "child-membership-validation",
+        "position-valid-grade-validation"
+      ],
+      "requiredCapabilities": [
+        "source.valueAccessor",
+        "source.shape",
+        "source.childCollection",
+        "target.valueAccessor",
+        "target.validationOperation"
+      ],
+      "setupPolicy": "none",
+      "codeBranches": [
+        "parent blank",
+        "selected value blank",
+        "child collection blank",
+        "selected value present in collection",
+        "selected value absent from collection",
+        "child collection unavailable"
+      ],
+      "forbiddenInferences": [
+        "a generated section root is the Business Rules expression root",
+        "an object-shaped child should be looped as a collection"
+      ]
+    },
+    {
+      "id": "change-driven-nondestructive-default",
+      "intents": [
+        "change-driven-default",
+        "job-or-location-assignment-dff-default"
+      ],
+      "requiredCapabilities": [
+        "source.valueAccessor",
+        "source.initialValueAccessor",
+        "target.valueAccessor",
+        "target.valueOperation"
+      ],
+      "setupPolicy": "mapping-may-be-required",
+      "codeBranches": [
+        "source unchanged",
+        "source changed",
+        "target blank",
+        "target populated by the user",
+        "no mapping",
+        "explicitly authorized overwrite",
+        "runtime value unavailable"
+      ],
+      "forbiddenInferences": [
+        "every rule evaluation represents a user change",
+        "a nonempty user-entered target may be overwritten by default"
+      ]
+    },
+    {
+      "id": "field-inventory",
+      "intents": [
+        "field-inventory",
+        "region-field-inventory"
+      ],
+      "requiredCapabilities": [],
+      "setupPolicy": "none",
+      "codeBranches": [],
+      "forbiddenInferences": [
+        "a field in REST is necessarily available to Business Rules",
+        "confidence and runtime-verification status can be omitted"
+      ]
+    },
+    {
+      "id": "advanced-expression-diagnosis",
+      "intents": [
+        "advanced-expression-diagnosis",
+        "diagnose-expression"
+      ],
+      "requiredCapabilities": [],
+      "setupPolicy": "none",
+      "codeBranches": [
+        "exact field paths",
+        "value and initial-value accessors",
+        "runtime shape",
+        "null handling",
+        "validation return semantics",
+        "complete context contract"
+      ],
+      "forbiddenInferences": [
+        "syntactically valid code has valid page paths",
+        "validation true means the record is valid"
+      ]
+    },
+    {
+      "id": "confirmed-rule-documentation",
+      "intents": [
+        "confirmed-rule-documentation",
+        "document-confirmed-rule"
+      ],
+      "requiredCapabilities": [
+        "documentation.testConfirmation"
+      ],
+      "setupPolicy": "none",
+      "codeBranches": [],
+      "forbiddenInferences": [
+        "an unverified candidate can be recorded as confirmed",
+        "setup identifiers are portable constants"
+      ]
+    }
+  ]
+}

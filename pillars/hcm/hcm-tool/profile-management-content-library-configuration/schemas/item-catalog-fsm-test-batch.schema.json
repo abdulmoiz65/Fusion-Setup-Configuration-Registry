@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "item-catalog-fsm-test-batch.schema.json",
+  "title": "Profile Content Library Item Catalog FSM test batch",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_stage",
+    "mode",
+    "batch_id",
+    "target_environment",
+    "environment_classification",
+    "fusion_release",
+    "operation",
+    "source_type",
+    "task_code",
+    "provider_registry_sha256",
+    "authorization",
+    "polling",
+    "state_path",
+    "diagnostic_output_dir",
+    "loads",
+    "authorization_fingerprint"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "manifest_stage": {"enum": ["authorization", "execution"]},
+    "mode": {"const": "test-only-item-catalog-fsm-composite"},
+    "batch_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,79}$"},
+    "target_environment": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{1,63}$",
+      "description": "Exact alias. Runtime validation additionally requires an approved affirmative non-production marker and rejects production markers."
+    },
+    "environment_classification": {"const": "test"},
+    "fusion_release": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._ -]{0,63}$", "description": "Informational provenance only; use unknown when unavailable. Not a compatibility gate."},
+    "operation": {"const": "create"},
+    "source_type": {"const": "FSM"},
+    "task_code": {"const": "ORA_MANAGE_PROFILE_ITEM_CATALOG"},
+    "provider_registry_sha256": {"$ref": "#/$defs/sha256"},
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "auto_approve",
+        "monitor_to_terminal",
+        "domain_verification_required",
+        "fail_fast",
+        "retry_mutations",
+        "auto_correct",
+        "provider_promotion"
+      ],
+      "properties": {
+        "auto_approve": {"const": true},
+        "monitor_to_terminal": {"const": true},
+        "domain_verification_required": {"const": true},
+        "fail_fast": {"const": true},
+        "retry_mutations": {"const": false},
+        "auto_correct": {"const": false},
+        "provider_promotion": {"const": false}
+      }
+    },
+    "polling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["interval_seconds", "load_timeout_seconds", "helper_timeout_seconds"],
+      "properties": {
+        "interval_seconds": {"type": "integer", "minimum": 1, "maximum": 300},
+        "load_timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 86400},
+        "helper_timeout_seconds": {"type": "integer", "minimum": 30, "maximum": 1800}
+      }
+    },
+    "state_path": {"type": "string", "minLength": 1},
+    "diagnostic_output_dir": {"type": "string", "minLength": 1},
+    "loads": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {"$ref": "#/$defs/load"}
+    },
+    "authorization_fingerprint": {"$ref": "#/$defs/sha256"},
+    "execution_fingerprint": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"manifest_stage": {"const": "execution"}}},
+      "then": {
+        "required": ["execution_fingerprint"],
+        "properties": {
+          "loads": {
+            "items": {
+              "required": [
+                "source_path",
+                "source_sha256",
+                "task_validation_envelope_path",
+                "task_validation_envelope_sha256"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "expectedCounts": {
+      "type": "object",
+      "description": "Expected business change for the one-child canary. Fusion FSM ObjectTotalCount and ObjectLoadedCount describe task business objects and are validated separately for nonzero completeness and zero failures.",
+      "additionalProperties": false,
+      "required": ["total", "loaded", "failed"],
+      "properties": {
+        "total": {"const": 1},
+        "loaded": {"const": 1},
+        "failed": {"const": 0}
+      }
+    },
+    "load": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "load_id",
+        "context_name",
+        "proposal_fingerprint",
+        "provider_rows_fingerprint",
+        "expected_counts"
+      ],
+      "properties": {
+        "sequence": {"type": "integer", "minimum": 1},
+        "load_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,79}$"},
+        "context_name": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,63}$"},
+        "proposal_fingerprint": {"$ref": "#/$defs/sha256"},
+        "provider_rows_fingerprint": {"$ref": "#/$defs/sha256"},
+        "expected_counts": {"$ref": "#/$defs/expectedCounts"},
+        "source_path": {"type": "string", "minLength": 1},
+        "source_sha256": {"$ref": "#/$defs/sha256"},
+        "task_validation_envelope_path": {"type": "string", "minLength": 1},
+        "task_validation_envelope_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

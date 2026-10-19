@@ -1,0 +1,329 @@
+{
+  "schema_version": "1.0",
+  "task_code": "ORA_HRA_FEEDBACK_TEMPLATES",
+  "task_name": "Feedback Templates",
+  "route_default": "rest_only",
+  "manager_selection": {
+    "all": {
+      "source_label": "All",
+      "payload_value": "ALL",
+      "lookup_required": false
+    },
+    "specific": {
+      "resolver": "scripts/resolve_questionnaire_compatibility.py:resolve_manager_selection",
+      "path": "/fscmRestApi/resources/11.13.18.05/commonLookupsLOV",
+      "query": {
+        "fields": "LookupCode,Meaning",
+        "finder": "LookupTypeFinder;LookupType=PER_SUPERVISOR_TYPE",
+        "onlyData": "true"
+      },
+      "mapping": "Exact case-insensitive code/meaning match; preserve selection order; comma-separated codes; complete pagination required."
+    }
+  },
+  "questionnaire_selection": {
+    "ORA_GENERAL": {
+      "policy_id": "general-hra-active-latest-v1",
+      "selection": "eligible_subscriber",
+      "subscriber_code": "HRA",
+      "new_questionnaire_supported": true,
+      "applicability": "Apply the declared General Feedback policy to current target-bound Questionnaire provider validation of the proposed design or existing identity. The agent assembles evidence from actual provider checks; no prior ID/association or separate user attestation is required for a new questionnaire. Contrary restrictions block."
+    },
+    "ORA_PERF_GOAL": {
+      "policy_id": "goal-delivered-code-v1",
+      "restriction": "seeded_only",
+      "selection": "fixed_code",
+      "questionnaire_name": "Performance Goal Feedback",
+      "subscriber_code": "HRA",
+      "questionnaire_code": "PERF_GOAL_QSTNR_V1",
+      "new_questionnaire_supported": false,
+      "source_reference": "https://confluence.oraclecorp.com/confluence/pages/viewpage.action?pageId=21643053947",
+      "seed_source_reference": "https://codesearch.oraclecorp.com/source/xref/FUSIONAPPS_PT.V2MIBHCMBRONZE_LINUX.X64/fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileQstnrTop/HcmProfileQstnrLibrary/QuestionnaireSD.xml#2850",
+      "unsupported_message": "Performance Goal Feedback templates require the seeded Performance Goal Feedback questionnaire (PERF_GOAL_QSTNR_V1). Creating or associating a custom questionnaire for this template type is not supported. Custom questionnaire creation and association are available for General Feedback templates in this workflow.",
+      "applicability": "Enforce at intake, planning, creation and association. Resolve the seeded questionnaire by product code in the target; never hardcode its numeric ID. Missing seed data is a prerequisite failure, not permission to create a replacement."
+    }
+  },
+  "questionnaire_compatibility": {
+    "validator": "scripts/validate_questionnaire_compatibility.py",
+    "guidance": "ora_reference_lookups.md#template-type-association-compatibility",
+    "resolver": "resolve_questionnaire_association_compatibility",
+    "resolver_script": "scripts/resolve_questionnaire_compatibility.py",
+    "workflow_script": "scripts/run_feedback_workflow.py",
+    "stages": ["before_questionnaire_creation", "before_association"],
+    "applies_when": "New dependent questionnaire; template POST; questionnaire/type-changing PATCH. Unrelated name/description PATCH retains existing lifecycle checks.",
+    "required_status": "eligible",
+    "request_binding": ["context", "template_type", "candidate.id"],
+    "enforcement": "Task wrapper resolves and evaluates evidence itself before questionnaire handoff or association dispatch. No caller-supplied passed flag is accepted. Generic REST and standalone Questionnaire workflows remain unchanged.",
+    "failure_behavior": "Stop dependent action on ineligible or unresolved. Do not substitute questionnaire/type or probe with a write."
+  },
+  "target_path_source": "Configured target plus declared target-bound Feedback Templates route evidence; resolve capability alternatives and verify with a fresh GET before any write. Never substitute another environment's route.",
+  "route_supportability": {
+    "classification": "tenant-specific REST route",
+    "required_evidence": [
+      "non-secret target environment alias",
+      "Fusion release or REST resource version",
+      "resolved base URL identity, relative path, proposed method, and one accepted capability alternative",
+      "fresh collection GET timestamp, HTTP status, and compatible response-shape summary"
+    ],
+    "failure_behavior": "Fail closed after declared alternatives are exhausted, or explicit restrictions/conflicting evidence remain. A GET alone is insufficient. Do not substitute another target's UUID, version, route or method capability.",
+    "capability_alternatives": [
+      "target_bound_method_contract",
+      "same_target_method_success_and_readback",
+      "matching_owner_confirmation"
+    ],
+    "history_binding_fields": ["resolved_base_url", "relative_path", "resource_version", "method"],
+    "owner_confirmation_required": "Only when explicitly required by applicable project governance; technical capability does not waive policy.",
+    "confirmation_source": "Existing project/onboarding artifact first; request an owner decision only when policy requires it and valid evidence is absent. See ora_reference_lookups.md.",
+    "confirmation_fields": [
+      "target_environment_alias",
+      "collection_relative_path",
+      "resource_version",
+      "owner",
+      "confirmed_at",
+      "supportability_confirmation",
+      "source_reference",
+      "resolved_base_url",
+      "method"
+    ]
+  },
+  "evidence_resolution": {
+    "guidance": "ora_reference_lookups.md",
+    "evaluation": "Explicit blockers take precedence. Require all base facts and every alternative group to have at least one satisfied branch. Unresolved technical facts mean SKILL_LIMITATION, not a customer evidence request. This metadata is evaluated by the agent, not enforced by the generic REST client.",
+    "checks": {
+      "profile_site": {
+        "guidance": "../../ora-resource/ora_request_feedback_goals_profile_option.md",
+        "required": ["exact_profile", "site_enabled", "current_site_read", "valid_requested_value"],
+        "block_if": ["explicit_not_updatable", "authorization_denied", "conflicting_identity"],
+        "alternative_groups": [
+          [["updatable_true"], ["declared_site_patch_contract"]]
+        ]
+      },
+      "manager_type": {
+        "required": ["one_exact_current_lookup"],
+        "block_if": ["explicit_disabled", "expired", "multiple_matches", "authorization_denied", "conflicting_identity"],
+        "alternative_groups": [
+          [["eligible_lov_semantics"], ["enabled_and_effective"], ["matching_verified_history", "no_invalidating_change"]]
+        ]
+      },
+      "questionnaire": {
+        "required": ["one_exact_current_identity", "current_payload_reference", "type_specific_compatibility_eligible"],
+        "block_if": ["explicit_ineligible", "multiple_matches", "authorization_denied", "conflicting_identity"],
+        "alternative_groups": [
+          [["complete_eligible_lov"], ["complete_eligible_provider_read"]]
+        ]
+      },
+      "route_capability": {
+        "customer_decision_when": {
+          "all": ["policy_requires_owner", "existing_owner_evidence_absent"],
+          "unless": ["matching_owner_confirmation"]
+        },
+        "required": ["configured_target", "fresh_compatible_get"],
+        "block_if": ["explicit_method_prohibited", "authorization_denied", "conflicting_identity", "withdrawn_confirmation"],
+        "alternative_groups": [
+          [["target_bound_method_contract"], ["matching_verified_history", "no_invalidating_change"], ["matching_owner_confirmation"]],
+          [["policy_does_not_require_owner"], ["matching_owner_confirmation"]]
+        ]
+      }
+    }
+  },
+  "payload_integrity": {
+    "canonicalization": "RFC 8785 JSON Canonicalization Scheme (JCS)",
+    "encoding": "UTF-8",
+    "digest": "SHA-256 of the JCS-canonicalized request body",
+    "required_preview_evidence": [
+      "canonical_payload_sha256",
+      "canonicalization",
+      "payload",
+      "target environment alias",
+      "operation",
+      "relative path"
+    ],
+    "required_post_write_evidence": [
+      "canonical_payload_sha256",
+      "verification GET timestamp and HTTP status",
+      "sanitized exact-identity response summary"
+    ],
+    "approval_binding_fields": [
+      "target_environment_alias",
+      "resolved_base_url",
+      "method",
+      "relative_path",
+      "query",
+      "conditional_headers",
+      "canonical_payload_sha256"
+    ],
+    "pre_write_check": "Recompute outgoing-body JCS SHA-256 and compare all approval binding fields; any change invalidates approval.",
+    "missing_tooling_behavior": "Stop before preview/write; never invent a JCS digest."
+  },
+  "operations": {
+    "list_templates": {
+      "enabled": true,
+      "method": "GET",
+      "path": "/hcmRestApi/rest/rv:6fbdcd11-6af4-4a43-ba42-5b7909d94625/en/11.13.18.05:9/feedbackTemplates",
+      "payload_fields": {}
+    },
+    "get_template_by_exact_name": {
+      "enabled": true,
+      "method": "GET",
+      "path": "/hcmRestApi/rest/rv:6fbdcd11-6af4-4a43-ba42-5b7909d94625/en/11.13.18.05:9/feedbackTemplates",
+      "query": {
+        "q": "Name='<exact escaped template name>'",
+        "fields": "FeedbackReqTmplId,Name,Comments,StatusCode,TemplateType,QuestionnaireId,QuestionnaireName,ShareWithManagers,GoalAttributeList,GoalAttributeListCount,InUseFlag,IncludeInPerfDocumentFlag"
+      },
+      "response_requirements": {
+        "exact_record_count": 1,
+        "required_fields": [
+          "FeedbackReqTmplId",
+          "Name",
+          "StatusCode",
+          "TemplateType",
+          "QuestionnaireId",
+          "ShareWithManagers",
+          "InUseFlag",
+          "IncludeInPerfDocumentFlag"
+        ],
+        "performance_goal_required_fields": [
+          "GoalAttributeList",
+          "GoalAttributeListCount"
+        ],
+        "etag_location": "@context.headers.ETag"
+      },
+      "payload_fields": {}
+    },
+    "create_general_feedback_template": {
+      "enabled": true,
+      "method": "POST",
+      "path": "/hcmRestApi/rest/rv:6fbdcd11-6af4-4a43-ba42-5b7909d94625/en/11.13.18.05:9/feedbackTemplates",
+      "payload_fields": {
+        "Name": {
+          "required": true,
+          "type": "string"
+        },
+        "Comments": {
+          "required": false,
+          "type": "string"
+        },
+        "StatusCode": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "A",
+            "I"
+          ]
+        },
+        "TemplateType": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "ORA_GENERAL"
+          ]
+        },
+        "QuestionnaireId": {
+          "required": true,
+          "type": "string"
+        },
+        "ShareWithManagers": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "create_performance_goal_feedback_template": {
+      "enabled": true,
+      "method": "POST",
+      "path": "/hcmRestApi/rest/rv:6fbdcd11-6af4-4a43-ba42-5b7909d94625/en/11.13.18.05:9/feedbackTemplates",
+      "payload_fields": {
+        "Name": {
+          "required": true,
+          "type": "string"
+        },
+        "Comments": {
+          "required": false,
+          "type": "string"
+        },
+        "StatusCode": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "A",
+            "I"
+          ]
+        },
+        "TemplateType": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "ORA_PERF_GOAL"
+          ]
+        },
+        "QuestionnaireId": {
+          "required": true,
+          "type": "string"
+        },
+        "GoalAttributeList": {
+          "required": true,
+          "type": "string"
+        },
+        "ShareWithManagers": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "patch_feedback_template": {
+      "enabled": true,
+      "method": "PATCH",
+      "path": "/hcmRestApi/rest/rv:6fbdcd11-6af4-4a43-ba42-5b7909d94625/en/11.13.18.05:9/feedbackTemplates/{freshCanonicalItemPath}",
+      "payload_fields": {
+        "Name": {
+          "required": false,
+          "type": "string"
+        },
+        "Comments": {
+          "required": false,
+          "type": "string"
+        },
+        "StatusCode": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "A",
+            "I"
+          ]
+        },
+        "TemplateType": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "ORA_GENERAL",
+            "ORA_PERF_GOAL"
+          ]
+        },
+        "QuestionnaireId": {
+          "required": false,
+          "type": "string"
+        },
+        "GoalAttributeList": {
+          "required": false,
+          "type": "string"
+        },
+        "ShareWithManagers": {
+          "required": false,
+          "type": "string"
+        }
+      }
+    }
+  },
+  "supported_template_types": [
+    "ORA_GENERAL",
+    "ORA_PERF_GOAL"
+  ],
+  "unsupported_execution_channels": [
+    "FSM",
+    "CSV_IMPORT",
+    "CSV_EXPORT",
+    "HDL",
+    "HSDL",
+    "DATA_LOADER"
+  ],
+  "unsupported_channel_result": "UNSUPPORTED_EXECUTION_CHANNEL"
+}

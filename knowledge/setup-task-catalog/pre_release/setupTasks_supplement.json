@@ -1,0 +1,185 @@
+{
+  "count": 25,
+  "totalResults": 25,
+  "removals": [],
+  "items": [
+    {
+      "TaskCode": "ORA_FMK_CONFIGURE_EMAIL_DOMAINS",
+      "TaskName": "Configure Marketing Domains",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "N",
+      "CSVExportImportSupportedFlag": "N"
+    },
+    {
+      "TaskCode": "ORA_FFS_TS_TRANSLATIONS",
+      "TaskName": "Translations",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_FFS_TS_INVENTORY_TYPES",
+      "TaskName": "Inventory Types",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_FFS_TS_RESOURCE_TYPES",
+      "TaskName": "Resource Types",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_FFS_TS_WORK_SKILLS",
+      "TaskName": "Work Skills",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_FFS_TS_WORK_ZONES",
+      "TaskName": "Work Zones",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_FFS_TS_TIME_SLOTS",
+      "TaskName": "Time Slots",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_FFS_TS_ACTIVITY_TYPES",
+      "TaskName": "Activity Types",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_FFS_TS_SHIFTS_AND_SCHEDULES",
+      "TaskName": "Shifts and Schedules",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_FFS_TS_LINK_TEMPLATES",
+      "TaskName": "Link Templates",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_FFS_TS_ORGANIZATIONS",
+      "TaskName": "Organizations",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_FFS_FIELD_RESOURCES",
+      "TaskName": "Field Resources",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_FFS_TS_FILTERS",
+      "TaskName": "Filters",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "SUPPLEMENTAL_PAYROLL_COMPONENTS",
+      "TaskName": "Payroll Components",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_GTG_ASSIGN_DEFAULT_PROCESS_OWNERS",
+      "TaskName": "Assign Default Process Owners",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_GTG_ASSIGN_RISK_POWER_USER_ROLE",
+      "TaskName": "Assign Risk Power User Role",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_GTG_ACTIVATE_AUDIT_POLICIES",
+      "TaskName": "Activate Audit Policies",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_GTG_ACTIVATE_ALGORITHMS",
+      "TaskName": "Activate Algorithms",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_GTG_ADD_EPM_DATA_SOURCES",
+      "TaskName": "Add EPM Data Sources",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_GTG_ADD_OTHER_DATA_SOURCES",
+      "TaskName": "Add Other Data Sources",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_IRC_MANAGE_NOTIFICATION_LIBRARY",
+      "TaskName": "Recruiting Notification Library",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "UNKNOWN",
+      "CSVExportImportSupportedFlag": "UNKNOWN"
+    },
+    {
+      "TaskCode": "ORA_HRT_MANAGE_FEEDBACK_VISIBILITY",
+      "TaskName": "Manage Feedback Visibility",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "Y",
+      "CSVExportImportSupportedFlag": "Y"
+    },
+    {
+      "TaskCode": "ORA_MANAGE_PROFILE_ITEM_CATALOG",
+      "TaskName": "Item Catalogs",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "Y",
+      "CSVExportImportSupportedFlag": "Y"
+    },
+    {
+      "TaskCode": "ORA_OSS_MANAGE_TIME_UNIT_MAPPINGS",
+      "TaskName": "Manage Subscription Time Unit Mappings",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "Y",
+      "CSVExportImportSupportedFlag": "Y"
+    },
+    {
+      "TaskCode": "ORA_PER_MANAGE_ASSIGNMENT_FLEXFIELD_MAPPING",
+      "TaskName": "Manage Assignment Flexfield Mapping",
+      "AvailableFlag": "Y",
+      "ExportImportSupportedFlag": "Y",
+      "CSVExportImportSupportedFlag": "Y"
+    }
+  ],
+  "resource": "setupTasks",
+  "duplicateTaskCodeCount": 0,
+  "duplicateTaskCodes": []
+}

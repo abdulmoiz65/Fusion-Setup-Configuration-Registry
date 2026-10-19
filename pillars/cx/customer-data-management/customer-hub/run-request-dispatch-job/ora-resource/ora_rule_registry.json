@@ -1,0 +1,229 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ZCH_RUN_REQUEST_DISPATCH_JOB",
+      "task_name": "Run Request Dispatch Job",
+      "start_node": "RDJ.VALIDATE",
+      "nodes": [
+        {
+          "id": "RDJ.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "tracking": "RDJ.STATUS_LOOKUP",
+            "submission": "RDJ.DEFAULTS",
+            "invalid": "RDJ.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Normalize intent and validate the applicable input group.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RDJ.STATUS_LOOKUP",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "RDJ.STATUS_DONE",
+            "not_found_or_failed": "RDJ.ERROR"
+          },
+          "prerequisites": [
+            "RDJ.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read status for an explicitly supplied existing requestId.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RDJ.DEFAULTS",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "RDJ.DEPENDENCIES",
+            "failure": "RDJ.ERROR"
+          },
+          "prerequisites": [
+            "RDJ.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply safe submission and retry defaults.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RDJ.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "RDJ.ENFORCE",
+            "blocked": "RDJ.ERROR"
+          },
+          "prerequisites": [
+            "RDJ.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve all new-submission dependencies.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RDJ.ENFORCE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "RDJ.READY",
+            "fail": "RDJ.ERROR"
+          },
+          "prerequisites": [
+            "RDJ.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before presenting a submission as execution-ready.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RDJ.ERROR",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RDJ.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any blocked validation, lookup, dependency, enforcement, execution, or tracking result.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RDJ.STATUS_DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RDJ.STATUS_LOOKUP"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Existing request status returned without a new submission.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RDJ.READY",
+          "node_type": "terminal",
+          "sequence": 91,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RDJ.ENFORCE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validated and ready for the owning ESS executor after approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RDJ.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RDJ.ERROR"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Classified issues returned without a new side effect.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

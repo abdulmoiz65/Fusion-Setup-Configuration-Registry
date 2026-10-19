@@ -1,0 +1,279 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_LEGISLATIVE_DATA_GROUP_SECURITY_PROFILE",
+      "task_name": "Manage Legislative Data Group Security Profile",
+      "start_node": "LDGSP.VALIDATE",
+      "nodes": [
+        {
+          "id": "LDGSP.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "new_profile": "LDGSP.VERIFY_PROFILE_NAME",
+            "existing_or_renamed_profile": "LDGSP.FIND_PROFILE",
+            "invalid": "LDGSP.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A profile request is supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LDGSP.FIND_PROFILE",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found_unchanged": "LDGSP.RESOLVE_LDG",
+            "found_rename": "LDGSP.VERIFY_PROFILE_NAME",
+            "not_found_or_ambiguous": "LDGSP.ERROR"
+          },
+          "prerequisites": [
+            "LDGSP.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An existing profile or rename target is requested; verify the supplied current ID for a rename",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LDGSP.VERIFY_PROFILE_NAME",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "create_available": "LDGSP.RESOLVE_LDG",
+            "rename_available": "LDGSP.RENAME_CSV_GATE",
+            "unavailable_or_ambiguous": "LDGSP.ERROR"
+          },
+          "prerequisites": [
+            "LDGSP.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new Name is checked only after the old target is verified for a rename",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LDGSP.RENAME_CSV_GATE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "mapping_unverified": "LDGSP.ERROR"
+          },
+          "prerequisites": [
+            "LDGSP.VERIFY_PROFILE_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A genuine rename has an available new Name; block with rename CSV identity mapping unverified before preview or import",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LDGSP.RESOLVE_LDG",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LDGSP.DEFAULT",
+            "not_found_or_ambiguous": "LDGSP.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A legislative data group association is required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LDGSP.DEFAULT",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "LDGSP.READINESS",
+            "not_needed": "LDGSP.READINESS"
+          },
+          "prerequisites": [
+            "LDGSP.RESOLVE_LDG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Valid lookup results are available",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LDGSP.READINESS",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LDGSP.ENFORCE",
+            "blocked": "LDGSP.ERROR"
+          },
+          "prerequisites": [
+            "LDGSP.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated values are ready for the task-local execution contract",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LDGSP.ENFORCE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "LDGSP.READY",
+            "blocked": "LDGSP.ERROR"
+          },
+          "prerequisites": [
+            "LDGSP.READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A legislative data group security profile create or update is being prepared for preview or import",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LDGSP.READY",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LDGSP.ENFORCE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "All task-local validation, dependency, and design checks are ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LDGSP.ERROR",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "LDGSP.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any task-local validation, lookup, or readiness gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LDGSP.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request is blocked after diagnostics",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

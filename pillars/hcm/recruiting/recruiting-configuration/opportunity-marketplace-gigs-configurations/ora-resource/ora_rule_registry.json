@@ -1,0 +1,211 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_MP_SITE_GIG_CONFIGURATION",
+      "task_name": "Opportunity Marketplace Gigs Configurations",
+      "start_node": "GC.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "GC.VALIDATE_REQUEST",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "GC.EXPORT_CURRENT",
+            "invalid": "GC.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Gig Configuration request is supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GC.EXPORT_CURRENT",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "exported": "GC.VALIDATE_REFERENCES",
+            "unavailable": "GC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GC.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new Gig Configuration passed input validation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GC.VALIDATE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "GC.VALIDATE_IDENTITY",
+            "not_applicable": "GC.VALIDATE_IDENTITY",
+            "invalid": "GC.RETURN_ISSUES",
+            "ambiguous": "GC.RETURN_ISSUES",
+            "unavailable": "GC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GC.EXPORT_CURRENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new Gig Configuration has a fresh export and supplied reference values",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GC.VALIDATE_IDENTITY",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "GC.GENERATE_PACKAGE",
+            "invalid": "GC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GC.VALIDATE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new Gig Configuration has passed reference validation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GC.GENERATE_PACKAGE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "GC.PREVIEW_IMPORT",
+            "blocked": "GC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GC.VALIDATE_IDENTITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new Gig Configuration passed identity validation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GC.PREVIEW_IMPORT",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready_for_approval": "GC.IMPORT_READY",
+            "preflight_failed": "GC.RETURN_ISSUES",
+            "approval_missing": "GC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GC.GENERATE_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A candidate Gig Configuration archive passed design enforcement and its submitted rows are presented in clear tables",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GC.IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GC.PREVIEW_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An immutable tabular preview is valid and the task is awaiting explicit import approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GC.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, dependency, lookup, design, preflight, or approval blocker occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

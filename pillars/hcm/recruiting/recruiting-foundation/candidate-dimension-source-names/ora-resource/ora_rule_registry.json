@@ -1,0 +1,229 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_MANAGE_CANDIDATE_DIMENSION_SOURCE_NAMES",
+      "task_name": "Candidate Dimension Source Names",
+      "start_node": "CDSN.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "CDSN.VALIDATE_REQUEST",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CDSN.CHECK_DEPENDENCIES",
+            "invalid": "CDSN.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every supported request; internal validate_import is read-only",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDSN.CHECK_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CDSN.RESOLVE_EXPORT",
+            "blocked": "CDSN.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CDSN.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Check the dependencies applicable to the operation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDSN.RESOLVE_EXPORT",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CDSN.APPLY_DEFAULTS",
+            "blocked": "CDSN.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CDSN.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read the existing verified artifact; translation guidance uses verified UI evidence and performs no export lookup",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDSN.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "preserved": "CDSN.ENFORCE_DESIGN",
+            "blocked": "CDSN.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CDSN.RESOLVE_EXPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Add Row defaults only; preserve existing values otherwise",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDSN.ENFORCE_DESIGN",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "enforced": "CDSN.READINESS_GATE",
+            "blocked": "CDSN.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CDSN.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply operation-specific preservation rules; validate_import compares the existing final archive",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDSN.READINESS_GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CDSN.DONE_VALIDATED",
+            "blocked": "CDSN.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CDSN.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return retrieval or validation findings; require the core Data Loader preview/approval lifecycle before mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDSN.HANDLE_ISSUES",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "CDSN.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A request, dependency, lookup, preservation, approval or process issue occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDSN.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue is disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDSN.DONE_VALIDATED",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CDSN.READINESS_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return findings to the caller; this terminal never submits a load",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

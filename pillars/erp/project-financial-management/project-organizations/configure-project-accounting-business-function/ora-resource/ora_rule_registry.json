@@ -1,0 +1,511 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PJF_CONFIGURE_PROJECT_ACCOUNTING_BUSINESS_FUNCTION",
+      "task_name": "Configure Project Accounting Business Function",
+      "start_node": "BUFUNC.RESOLVE_COLUMN_INTENT",
+      "nodes": [
+        {
+          "id": "BUFUNC.RESOLVE_COLUMN_INTENT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "BUFUNC.VALIDATE_INPUT",
+            "invalid": "BUFUNC.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before input validation or any reference lookup for a supplied CSV value",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "BUFUNC.APPLY_DEFAULTS",
+            "invalid": "BUFUNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUFUNC.RESOLVE_COLUMN_INTENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every Configure Project Accounting Business Function request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "BUFUNC.FIND_BUSINESS_UNIT",
+            "failure": "BUFUNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUFUNC.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Valid business-function input",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.FIND_BUSINESS_UNIT",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "BUFUNC.FIND_BASELINE",
+            "invalid": "BUFUNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUFUNC.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require one active BU with Project Accounting enabled and match its Name in the fresh task export",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.FIND_BASELINE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "BUFUNC.RESOLVE_OPTIONS",
+            "invalid": "BUFUNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUFUNC.FIND_BUSINESS_UNIT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the current implementation row from the fresh task export",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.RESOLVE_OPTIONS",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "BUFUNC.RESOLVE_PROJECT_TREE",
+            "failure": "BUFUNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUFUNC.FIND_BASELINE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve applicable organization, calendar, costing, relationship, cross-charge, and documented lookup values; defer tree codes and version-name checks to the following dedicated hierarchy REST nodes after CSV column intent is identified; preserve unrelated groups from the fresh baseline for relationship-only additions",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 128
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.RESOLVE_PROJECT_TREE",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "BUFUNC.VALIDATE_PROJECT_TREE_VERSION",
+            "not_applicable": "BUFUNC.VALIDATE_PROJECT_TREE_VERSION",
+            "failure": "BUFUNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUFUNC.RESOLVE_OPTIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "resolve_project_tree: for a supplied project hierarchy, resolve Project Tree Name first; otherwise record not_applicable and preserve the baseline",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 129
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.VALIDATE_PROJECT_TREE_VERSION",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "BUFUNC.RESOLVE_EXPENDITURE_TREE",
+            "not_applicable": "BUFUNC.RESOLVE_EXPENDITURE_TREE",
+            "failure": "BUFUNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUFUNC.RESOLVE_PROJECT_TREE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "validate_project_tree_version: after successful project tree resolution, validate the supplied Project Tree Version Name under returned ProjTreeCode, requiring one exact ACTIVE match effective on the current configuration date; record not_applicable only when the project hierarchy is omitted",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 130
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.RESOLVE_EXPENDITURE_TREE",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "BUFUNC.VALIDATE_EXPENDITURE_TREE_VERSION",
+            "not_applicable": "BUFUNC.VALIDATE_EXPENDITURE_TREE_VERSION",
+            "failure": "BUFUNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUFUNC.VALIDATE_PROJECT_TREE_VERSION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "resolve_expenditure_tree: for a supplied expenditure hierarchy, resolve Expenditure Tree Name separately when it differs; reuse the verified project tree response only for identical names in the same target. Record not_applicable and preserve the baseline only when the expenditure hierarchy is omitted",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 131
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.VALIDATE_EXPENDITURE_TREE_VERSION",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "BUFUNC.RESOLVE_PROJECT_START_ORGANIZATION",
+            "not_applicable": "BUFUNC.RESOLVE_PROJECT_START_ORGANIZATION",
+            "failure": "BUFUNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUFUNC.RESOLVE_EXPENDITURE_TREE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "validate_expenditure_tree_version: after successful expenditure tree resolution, validate the supplied Expenditure Tree Version Name under returned ExpTreeCode, requiring one exact ACTIVE match effective on the current configuration date; reuse the verified version response only for the same resolved tree/version/target/configuration date; record not_applicable only when the expenditure hierarchy is omitted",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 132
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.RESOLVE_PROJECT_START_ORGANIZATION",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "BUFUNC.RESOLVE_EXPENDITURE_START_ORGANIZATION",
+            "not_applicable": "BUFUNC.RESOLVE_EXPENDITURE_START_ORGANIZATION",
+            "failure": "BUFUNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUFUNC.VALIDATE_EXPENDITURE_TREE_VERSION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "resolve_project_start_organization: validate ProjStartOrgName using exact fully paginated projectOrganizationsLOV results and PROJECTS; not_applicable only when the project hierarchy is omitted",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 133
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.RESOLVE_EXPENDITURE_START_ORGANIZATION",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "BUFUNC.ROUTE_OPERATION",
+            "not_applicable": "BUFUNC.ROUTE_OPERATION",
+            "failure": "BUFUNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUFUNC.RESOLVE_PROJECT_START_ORGANIZATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "resolve_expenditure_start_organization: validate ExpStartOrgName and EXPENDITURES; reuse a complete response only for identical names in the same target/effective date; not_applicable only when the expenditure hierarchy is omitted",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 134
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.ROUTE_OPERATION",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "supported": "BUFUNC.RESOLVE_DEPENDENCIES",
+            "unsupported": "BUFUNC.RETURN_REFUSAL",
+            "invalid": "BUFUNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUFUNC.RESOLVE_EXPENDITURE_START_ORGANIZATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After business-unit, option, and applicable hierarchy REST resolution",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "BUFUNC.ENFORCE_DESIGN",
+            "missing": "BUFUNC.RETURN_ISSUES",
+            "conflict": "BUFUNC.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "BUFUNC.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before validation or import preview completes",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "BUFUNC.NORMALIZE_EXPORT_ONLY_EFFECTIVE_DATES",
+            "blocked": "BUFUNC.RETURN_REFUSAL",
+            "failure": "BUFUNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUFUNC.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before final package sanitization and import approval; membership warnings do not block the pass outcome, but all other blocking controls remain mandatory",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.NORMALIZE_EXPORT_ONLY_EFFECTIVE_DATES",
+          "node_type": "step",
+          "sequence": 16,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "normalized": "BUFUNC.EXECUTION_GATE"
+          },
+          "prerequisites": [
+            "BUFUNC.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final package sanitization before package validation, preview, or import",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 17,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "BUFUNC.RETURN_SUCCESS",
+            "not_ready": "BUFUNC.RETURN_ISSUES",
+            "declined": "BUFUNC.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "BUFUNC.NORMALIZE_EXPORT_ONLY_EFFECTIVE_DATES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return completed task validation/preparation to the loader's own approval workflow; no submission or status call is authorized by this gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BUFUNC.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validation/preparation complete; not evidence of submission or verified import completion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 19,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Correctable issue blocks progress",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUFUNC.RETURN_REFUSAL",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Unsupported/protected action or declined approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,237 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_CONFIGURE_FEATURE_PREFERENCES",
+      "task_name": "Configure Benefits Feature Preferences",
+      "start_node": "BEN_PREF.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "BEN_PREF.VALIDATE_REQUEST",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "BEN_PREF.LOOKUP_FEATURE_TYPE",
+            "invalid": "BEN_PREF.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate the requested operation and operation-specific HDL object; require a preflighted immutable artifact for either load while rejecting user-supplied create preference values",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_PREF.LOOKUP_FEATURE_TYPE",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "core.fusion-api.rest-api-client",
+          "transitions": {
+            "matched": "BEN_PREF.LOOKUP_STATUS",
+            "skipped": "BEN_PREF.LOOKUP_STATUS",
+            "forbidden": "BEN_PREF.LOOKUP_STATUS",
+            "invalid": "BEN_PREF.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_PREF.VALIDATE_REQUEST"
+          ],
+          "on_failure": "continue",
+          "applies_when": "For Update only, validate supplied FeatureTypeMeaning through ORA_BEN_FP_FEATURE_TYPE; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_PREF.LOOKUP_STATUS",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "reference_lookup",
+          "execution_route": "core.fusion-api.rest-api-client",
+          "transitions": {
+            "matched": "BEN_PREF.LOOKUP_APPLICABILITY",
+            "skipped": "BEN_PREF.LOOKUP_APPLICABILITY",
+            "forbidden": "BEN_PREF.LOOKUP_APPLICABILITY",
+            "invalid": "BEN_PREF.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_PREF.LOOKUP_FEATURE_TYPE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "For Update only, validate supplied PreferenceStatusMeaning through ORA_BEN_FP_PREF_STATUS; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_PREF.LOOKUP_APPLICABILITY",
+          "node_type": "decision",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "core.fusion-api.rest-api-client",
+          "transitions": {
+            "matched": "BEN_PREF.LOOKUP_LEGISLATION",
+            "skipped": "BEN_PREF.LOOKUP_LEGISLATION",
+            "forbidden": "BEN_PREF.LOOKUP_LEGISLATION",
+            "invalid": "BEN_PREF.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_PREF.LOOKUP_STATUS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "For Update only, validate supplied ApplicabilityMeaning through ORA_BEN_FP_APPLICABILITY; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_PREF.LOOKUP_LEGISLATION",
+          "node_type": "decision",
+          "sequence": 18,
+          "action_type": "reference_lookup",
+          "execution_route": "core.fusion-api.rest-api-client",
+          "transitions": {
+            "matched": "BEN_PREF.GATE_EXECUTION",
+            "skipped": "BEN_PREF.GATE_EXECUTION",
+            "forbidden": "BEN_PREF.GATE_EXECUTION",
+            "invalid": "BEN_PREF.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_PREF.LOOKUP_APPLICABILITY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "For Update only, validate supplied Legislation against territoriesLOV TerritoryShortName; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_PREF.GATE_EXECUTION",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "BEN_PREF.READY_FOR_EXECUTION",
+            "blocked": "BEN_PREF.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_PREF.LOOKUP_LEGISLATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm approval is bound to the target, operation, mapped HDL object, and its preflighted immutable load artifact; unverified_forbidden must be authoritatively resolved before live load",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_PREF.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "BEN_PREF.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, metadata, preflight, approval, or load failure blocks progress",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_PREF.READY_FOR_EXECUTION",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BEN_PREF.GATE_EXECUTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every documented gate passed; ready for the selected core.data-loader workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_PREF.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was safely disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

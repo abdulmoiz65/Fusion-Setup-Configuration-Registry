@@ -1,0 +1,132 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_MSC_LOAD_PLANNING_DATA_FROM_FLAT_FILES",
+      "task_name": "Load Planning Data from Files",
+      "start_node": "CHECK_SUPPORTED_ENTITIES",
+      "nodes": [
+        {
+          "id": "CHECK_SUPPORTED_ENTITIES",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "supported": "VALIDATE_FBDI_ARCHIVE",
+            "unsupported": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Core Task Hook evaluates the selected Planning package",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VALIDATE_FBDI_ARCHIVE",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CHECK_LOAD_READINESS",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CHECK_SUPPORTED_ENTITIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Core Task Hook evaluates immutable preparation evidence",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CHECK_LOAD_READINESS",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RETURN_READY",
+            "missing": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "VALIDATE_FBDI_ARCHIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Core Task Hook before Core's approval preview",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_READY",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CHECK_LOAD_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Task rules passed; return evidence to Core for approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input, policy or readiness blocks the Core preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

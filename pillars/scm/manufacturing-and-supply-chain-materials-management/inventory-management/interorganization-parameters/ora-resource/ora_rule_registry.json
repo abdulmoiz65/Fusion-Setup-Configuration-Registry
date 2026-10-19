@@ -1,0 +1,285 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_INTERORGANIZATION_PARAMETERS",
+      "task_name": "Interorganization Parameters",
+      "start_node": "IOP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "IOP.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "IOP.CHECK_READINESS",
+            "invalid": "IOP.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before read-only lookup resolution or Data Loader preparation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IOP.CHECK_READINESS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "IOP.RESOLVE_TRANSFER_TYPE",
+            "blocked": "IOP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "IOP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After input validation, perform the current run's read-only Data Loader metadata preflight for interOrganizationParameters before lookup resolution or Data Loader handoff",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IOP.RESOLVE_TRANSFER_TYPE",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "IOP.RESOLVE_INVENTORY_RECEIPT_ROUTING",
+            "skipped": "IOP.RESOLVE_INVENTORY_RECEIPT_ROUTING",
+            "blocked": "IOP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "IOP.CHECK_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Transfer Type code or friendly value is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IOP.RESOLVE_INVENTORY_RECEIPT_ROUTING",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "IOP.RESOLVE_INVENTORY_CANCEL_BACKORDERS",
+            "skipped": "IOP.RESOLVE_INVENTORY_CANCEL_BACKORDERS",
+            "blocked": "IOP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "IOP.RESOLVE_TRANSFER_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An inventory Receipt Routing code or friendly value is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IOP.RESOLVE_INVENTORY_CANCEL_BACKORDERS",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "IOP.RESOLVE_EXPENSE_RECEIPT_ROUTING",
+            "skipped": "IOP.RESOLVE_EXPENSE_RECEIPT_ROUTING",
+            "blocked": "IOP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "IOP.RESOLVE_INVENTORY_RECEIPT_ROUTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An inventory Cancel Backorders code or friendly value is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IOP.RESOLVE_EXPENSE_RECEIPT_ROUTING",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "IOP.RESOLVE_EXPENSE_CANCEL_BACKORDERS",
+            "skipped": "IOP.RESOLVE_EXPENSE_CANCEL_BACKORDERS",
+            "blocked": "IOP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "IOP.RESOLVE_INVENTORY_CANCEL_BACKORDERS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An expense Receipt Routing code or friendly value is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IOP.RESOLVE_EXPENSE_CANCEL_BACKORDERS",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "IOP.DATA_LOADER_HANDOFF",
+            "skipped": "IOP.DATA_LOADER_HANDOFF",
+            "blocked": "IOP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "IOP.RESOLVE_EXPENSE_RECEIPT_ROUTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An expense Cancel Backorders code or friendly value is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IOP.DATA_LOADER_HANDOFF",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "IOP.DONE",
+            "blocked": "IOP.HANDLE_ERROR",
+            "failure": "IOP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "IOP.RESOLVE_EXPENSE_CANCEL_BACKORDERS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before handing validated data to core.data-loader for interOrganizationParameters",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IOP.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "IOP.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any approved lookup, readiness, or Data Loader issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IOP.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IOP.DONE",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IOP.DATA_LOADER_HANDOFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Local rules passed; Data Loader owns final validation and execution",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

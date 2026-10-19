@@ -1,0 +1,1088 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_POSITION_COSTING",
+      "task_name": "Costing of Positions",
+      "start_node": "PCP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "PCP.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PCP.SEARCH_LDG",
+            "invalid": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Extract and validate the operation and user-facing criteria locally before lookups. Default an omitted search/as-of date to today's active-session calendar date without confirmation. For End Date, valid still requires a Position identity clue, an LDG clue, an explicit allocation effective date, and a separate explicit requested EffectiveEndDate. If any is missing or ambiguous, take the invalid path before authentication, token refresh, lookup, REST or Data Loader calls, template or metadata checks, or history, future-record, account, or interval validation. Resolve PositionCode and LDG ID internally; do not ask for or display them.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.SEARCH_LDG",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "selected": "PCP.CONFIRM_LDG",
+            "id_supplied": "PCP.CONFIRM_LDG",
+            "not_required": "PCP.CONFIRM_LDG",
+            "selection_required": "PCP.WAIT_LDG_SELECTION",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run resolve_legislative_data_group for user-facing LDG Name text; an already resolved or volunteered internal ID skips discovery. Lists without LDG scope may skip LDG. Never ask for or show the ID.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.WAIT_LDG_SELECTION",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCP.SEARCH_LDG"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Show returned LDG Names and request one choice. Resume through validation with that candidate, not downstream without selection.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.CONFIRM_LDG",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "confirmed": "PCP.RESOLVE_POSITION_TYPE",
+            "not_required": "PCP.RESOLVE_POSITION_TYPE",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.SEARCH_LDG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run confirm_legislative_data_group for the selected candidate's internal ID; skip only for lists without LDG detail. For Create/Add, a null or blank CostAllocationIdFlexNumber takes failed->PCP.HANDLE_ERROR with the exact LDG-specific cost-structure message before Position discovery. Never ask for or show the ID or flex number.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.RESOLVE_POSITION_TYPE",
+          "node_type": "decision",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PCP.SEARCH_POSITION",
+            "not_required": "PCP.SEARCH_POSITION",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.CONFIRM_LDG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run resolve_position_type when a Position Type meaning is supplied; validate an optional Active/Inactive status locally through resolve_position_status before Main Search. Keep resolved codes internal.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.SEARCH_POSITION",
+          "node_type": "decision",
+          "sequence": 18,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PCP.RESOLVE_REFERENCES",
+            "list_ready": "PCP.RESOLVE_REFERENCES",
+            "selection_required": "PCP.WAIT_POSITION_SELECTION",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.RESOLVE_POSITION_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run search_position_costing_by_criteria, then resolve_position_source for detail/HDL. Zero/many terminal rows are valid lists; ambiguous source selection requests input.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.WAIT_POSITION_SELECTION",
+          "node_type": "terminal",
+          "sequence": 19,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCP.SEARCH_POSITION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Show Position names, types, statuses and LDG names when returned; retain codes and IDs internally. Request one choice and resume through validation with the selected returned identity.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "standard_resolved": "PCP.CHECK_DEPENDENCIES",
+            "correct_delete_state_resolved": "PCP.CHECK_DEPENDENCIES",
+            "correct_merge_requested": "PCP.RESOLVE_CORRECT_SEQUENCE",
+            "history_required": "PCP.RESOLVE_HISTORY",
+            "blocked": "PCP.HANDLE_ERROR",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.SEARCH_POSITION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve required account metadata/current state. Lists may reuse one Position Type lookup to display current meanings but skip BU/KFF/account/history fan-out. HDL requires BU, detail Query does not. Create verifies date-specific absence even when its search row has no costing. Read-only history Query uses query_position_costing_history here without destructive fan-out. Resolve the HDL-only Position Business Unit through resolve_position_business_unit stage 1, then its resolve_business_unit stage 2; complete both in the same environment with sealed source/date evidence. Any stage failure blocks this dependency and reports its actual resolver; no partial HDL context or prior-QA evidence is accepted.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.RESOLVE_HISTORY",
+          "node_type": "decision",
+          "sequence": 21,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "history_resolved": "PCP.RESOLVE_HISTORY_DETAILS",
+            "blocked": "PCP.HANDLE_ERROR",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use query_position_costing_history for complete effective history required by End Date or Zap.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.RESOLVE_HISTORY_DETAILS",
+          "node_type": "decision",
+          "sequence": 22,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "details_resolved_end_date": "PCP.CHECK_DEPENDENCIES",
+            "details_resolved_zap": "PCP.CHECK_DEPENDENCIES",
+            "blocked": "PCP.HANDLE_ERROR",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.RESOLVE_HISTORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use query_position_costing_history_details for every sealed history pair and validate parent-bound physical child identities/layout.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.RESOLVE_CORRECT_SEQUENCE",
+          "node_type": "decision",
+          "sequence": 23,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "sequence_resolved": "PCP.CHECK_DEPENDENCIES",
+            "blocked": "PCP.HANDLE_ERROR",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For Correct MERGE use REST-resolved positive sequence or request the exact positive HDL value; never infer it.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PCP.APPLY_DEFAULTS",
+            "blocked": "PCP.HANDLE_ERROR",
+            "unsupported": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate only dependencies of the selected Query or HDL operation; a read-only list does not require HDL BU, template or approval.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "PCP.ENFORCE_DESIGN",
+            "skipped": "PCP.ENFORCE_DESIGN",
+            "invalid": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate discovery defaults already used during input/search; apply HDL defaults only to mutation preparation. Query never acquires HDL-only dependencies.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "query_only": "PCP.VERIFY_QUERY",
+            "ready_create": "PCP.HDL_GATE_CREATE",
+            "ready_update": "PCP.HDL_GATE_UPDATE",
+            "ready_correct_merge": "PCP.HDL_GATE_CORRECT_DELETE",
+            "ready_correct_delete": "PCP.HDL_GATE_CORRECT_DELETE",
+            "ready_end_date": "PCP.HDL_GATE_END_DATE",
+            "ready_zap": "PCP.HDL_GATE_ZAP",
+            "blocked": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select exactly one query, Create, Update, one-action Correct MERGE or physical DELETE, End Date, or Zap branch before package handoff. Missing Correct MERGE sequence input takes the blocked path and requests the value from the user.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.VERIFY_QUERY",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "PCP.DONE_QUERY",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return the matching complete list, detail or history without mutation or unrelated HDL prerequisites.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.DONE_QUERY",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCP.VERIFY_QUERY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The read-only query result is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.HDL_GATE_CREATE",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "initiated": "PCP.RESULT_CREATE",
+            "blocked": "PCP.HANDLE_ERROR",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable Create archive passed source/schema and Task Hook validation, has fresh approval, and is handed once to core.data-loader.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.RESULT_CREATE",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "initiated_or_pending": "PCP.PENDING_CREATE",
+            "terminal_succeeded": "PCP.VERIFY_CREATE",
+            "terminal_failed": "PCP.HANDLE_ERROR",
+            "timed_out": "PCP.HANDLE_ERROR",
+            "unknown": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.HDL_GATE_CREATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return pending after accepted Create initiation. Evaluate a terminal loader result only after the user explicitly requests a status check.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.PENDING_CREATE",
+          "node_type": "terminal",
+          "sequence": 95,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCP.RESULT_CREATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Create initiation was accepted. Return pending and resume at PCP.RESULT_CREATE only when the user explicitly requests status.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.VERIFY_CREATE",
+          "node_type": "decision",
+          "sequence": 100,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "PCP.DONE_CREATE",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.RESULT_CREATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify exact Create effect only after user-requested terminal-successful loader status.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.DONE_CREATE",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCP.VERIFY_CREATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The verified Create effect is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.HDL_GATE_UPDATE",
+          "node_type": "decision",
+          "sequence": 120,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "initiated": "PCP.RESULT_UPDATE",
+            "blocked": "PCP.HANDLE_ERROR",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable Update archive passed source/schema and Task Hook validation, has fresh approval, and is handed once to core.data-loader.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.RESULT_UPDATE",
+          "node_type": "decision",
+          "sequence": 130,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "initiated_or_pending": "PCP.PENDING_UPDATE",
+            "terminal_succeeded": "PCP.VERIFY_UPDATE",
+            "terminal_failed": "PCP.HANDLE_ERROR",
+            "timed_out": "PCP.HANDLE_ERROR",
+            "unknown": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.HDL_GATE_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return pending after accepted Update initiation. Evaluate a terminal loader result only after the user explicitly requests a status check.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.PENDING_UPDATE",
+          "node_type": "terminal",
+          "sequence": 135,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCP.RESULT_UPDATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Update initiation was accepted. Return pending and resume at PCP.RESULT_UPDATE only when the user explicitly requests status.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.VERIFY_UPDATE",
+          "node_type": "decision",
+          "sequence": 140,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "PCP.DONE_UPDATE",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.RESULT_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify exact Update effect only after user-requested terminal-successful loader status.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.DONE_UPDATE",
+          "node_type": "terminal",
+          "sequence": 150,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCP.VERIFY_UPDATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The verified Update effect is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.HDL_GATE_CORRECT_DELETE",
+          "node_type": "decision",
+          "sequence": 160,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "initiated": "PCP.RESULT_CORRECT_DELETE",
+            "blocked": "PCP.HANDLE_ERROR",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable one-action Correct MERGE or child DELETE archive passed source/schema and Task Hook validation, has fresh approval, and is handed once to core.data-loader. A MERGE has an explicit positive SubTypeSequence; a DELETE remains sealed to current state.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.RESULT_CORRECT_DELETE",
+          "node_type": "decision",
+          "sequence": 170,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "initiated_or_pending": "PCP.PENDING_CORRECT_DELETE",
+            "terminal_succeeded": "PCP.VERIFY_CORRECT_DELETE",
+            "terminal_failed": "PCP.HANDLE_ERROR",
+            "timed_out": "PCP.HANDLE_ERROR",
+            "unknown": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.HDL_GATE_CORRECT_DELETE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return pending after accepted one-action Correct MERGE or child DELETE initiation. Evaluate a terminal loader result only after the user explicitly requests a status check.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.PENDING_CORRECT_DELETE",
+          "node_type": "terminal",
+          "sequence": 175,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCP.RESULT_CORRECT_DELETE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Correct initiation was accepted. Return pending and resume at PCP.RESULT_CORRECT_DELETE only when the user explicitly requests status.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.VERIFY_CORRECT_DELETE",
+          "node_type": "decision",
+          "sequence": 180,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "PCP.DONE_CORRECT_DELETE",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.RESULT_CORRECT_DELETE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify exact one-action Correct MERGE or child DELETE only after user-requested terminal-successful loader status.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.DONE_CORRECT_DELETE",
+          "node_type": "terminal",
+          "sequence": 190,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCP.VERIFY_CORRECT_DELETE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The verified Correct child action is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.HDL_GATE_END_DATE",
+          "node_type": "decision",
+          "sequence": 200,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "initiated": "PCP.RESULT_END_DATE",
+            "blocked": "PCP.HANDLE_ERROR",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable End Date archive passed source/schema and Task Hook validation, has fresh approval, and is handed once to core.data-loader.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.RESULT_END_DATE",
+          "node_type": "decision",
+          "sequence": 210,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "initiated_or_pending": "PCP.PENDING_END_DATE",
+            "terminal_succeeded": "PCP.VERIFY_END_DATE",
+            "terminal_failed": "PCP.HANDLE_ERROR",
+            "timed_out": "PCP.HANDLE_ERROR",
+            "unknown": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.HDL_GATE_END_DATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return pending after accepted End Date initiation. Evaluate a terminal loader result only after the user explicitly requests a status check.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.PENDING_END_DATE",
+          "node_type": "terminal",
+          "sequence": 215,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCP.RESULT_END_DATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "End Date initiation was accepted. Return pending and resume at PCP.RESULT_END_DATE only when the user explicitly requests status.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.VERIFY_END_DATE",
+          "node_type": "decision",
+          "sequence": 220,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "PCP.DONE_END_DATE",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.RESULT_END_DATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify exact End Date effect only after user-requested terminal-successful loader status.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.DONE_END_DATE",
+          "node_type": "terminal",
+          "sequence": 230,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCP.VERIFY_END_DATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The verified End Date effect is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.HDL_GATE_ZAP",
+          "node_type": "decision",
+          "sequence": 240,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "initiated": "PCP.RESULT_ZAP",
+            "blocked": "PCP.HANDLE_ERROR",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable Zap archive passed source/schema and Task Hook validation, has fresh approval, and is handed once to core.data-loader.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.RESULT_ZAP",
+          "node_type": "decision",
+          "sequence": 250,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "initiated_or_pending": "PCP.PENDING_ZAP",
+            "terminal_succeeded": "PCP.VERIFY_ZAP",
+            "terminal_failed": "PCP.HANDLE_ERROR",
+            "timed_out": "PCP.HANDLE_ERROR",
+            "unknown": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.HDL_GATE_ZAP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return pending after accepted Zap initiation. Evaluate a terminal loader result only after the user explicitly requests a status check.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.PENDING_ZAP",
+          "node_type": "terminal",
+          "sequence": 255,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCP.RESULT_ZAP"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Zap initiation was accepted. Return pending and resume at PCP.RESULT_ZAP only when the user explicitly requests status.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.VERIFY_ZAP",
+          "node_type": "decision",
+          "sequence": 260,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "PCP.DONE_ZAP",
+            "failed": "PCP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PCP.RESULT_ZAP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify exact Zap effect only after user-requested terminal-successful loader status.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.DONE_ZAP",
+          "node_type": "terminal",
+          "sequence": 270,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCP.VERIFY_ZAP"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The verified Zap effect is persisted with redacted facts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 280,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "PCP.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any lookup, validation, package, loader, verification, or persistence failure.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCP.FAILED",
+          "node_type": "terminal",
+          "sequence": 290,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCP.HANDLE_ERROR"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The request stopped with a classified redacted diagnostic and safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

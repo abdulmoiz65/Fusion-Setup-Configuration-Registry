@@ -1,0 +1,158 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_FOM_REVISION_PREFERENCES_FOR_SALES_ORDERS",
+      "task_name": "Revision Preferences for Sales Orders",
+      "start_node": "REVISION_PREFERENCES.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "REVISION_PREFERENCES.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "REVISION_PREFERENCES.DISCOVER_ATTRIBUTES",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before preparing a Revision Preferences change preview.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVISION_PREFERENCES.DISCOVER_ATTRIBUTES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "REVISION_PREFERENCES.ENFORCE_GROUPS",
+            "unresolved": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "REVISION_PREFERENCES.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Revision Preferences request has passed input validation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVISION_PREFERENCES.ENFORCE_GROUPS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "groups-consistent": "REVISION_PREFERENCES.APPROVAL_GATE",
+            "group-conflict-or-incomplete": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "REVISION_PREFERENCES.DISCOVER_ATTRIBUTES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A requested attribute belongs to an atomic Revision Preferences group.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVISION_PREFERENCES.APPROVAL_GATE",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "preview-ready": "RETURN_SUCCESS",
+            "preview-missing-or-changed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "REVISION_PREFERENCES.ENFORCE_GROUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The pre-upload approval preview has passed input, discovery, group-enforcement, and approval validation.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "REVISION_PREFERENCES.APPROVAL_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The validated change is ready for separate explicit Data Loader submission approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A validation, lookup, group-enforcement, preview, or approval gate failed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

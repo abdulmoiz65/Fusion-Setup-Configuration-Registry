@@ -1,0 +1,702 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_REDWOOD_MANUFACTURING_WORK_CENTERS",
+      "task_name": "Manufacturing Work Centers",
+      "start_node": "WC.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "WC.VALIDATE_REQUEST",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "WC.SELECT_OPERATION_SCOPE",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manufacturing Work Centers request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.SELECT_OPERATION_SCOPE",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "work_center": "WC.VALIDATE_WORK_CENTER",
+            "calendar_association": "WC.VALIDATE_CALENDAR_ASSOCIATION",
+            "calendar_resource": "WC.VALIDATE_CALENDAR_RESOURCE",
+            "artifact_review": "WC.VALIDATE_ARTIFACT",
+            "create_reconciliation": "WC.VALIDATE_RECONCILIATION",
+            "unsupported": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated request has one normalized operation scope",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.VALIDATE_WORK_CENTER",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "WC.LOOKUP_WORK_CENTER",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.SELECT_OPERATION_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is work_center",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.LOOKUP_WORK_CENTER",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WC.VALIDATE_WORK_CENTER_DATA_LOADER_ATTRIBUTE",
+            "blocked": "WC.CLASSIFY_FAILURE",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.VALIDATE_WORK_CENTER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is work_center; for create, resolve OrganizationCode and business-supplied WorkAreaCode to WorkAreaId and WorkAreaName; resolve every new named WorkCenterResource through resolve_active_production_resource_by_name before source preparation; when server-managed create reconciliation is selected also run describe_work_center_create_contract",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 128
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.VALIDATE_WORK_CENTER_DATA_LOADER_ATTRIBUTE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "WC.DEPENDENCIES_WORK_CENTER",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.LOOKUP_WORK_CENTER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is work_center; after a create work-area resolution, verify the source retains WorkAreaCode with the resolved WorkAreaId and WorkAreaName; validate New resource source mapping for each new association; for every WorkCenterResource row, require any supplied Available24HoursFlag to be the exact lowercase text true or false; then inspect the exact live Data Loader template and component attribute before retaining a supplied WorkCenterSubInvType",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.DEPENDENCIES_WORK_CENTER",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "WC.DESIGN_WORK_CENTER",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.VALIDATE_WORK_CENTER_DATA_LOADER_ATTRIBUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is work_center",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.DESIGN_WORK_CENTER",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "WC.DONE_WORK_CENTER",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.DEPENDENCIES_WORK_CENTER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is work_center",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 134
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.DONE_WORK_CENTER",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WC.DESIGN_WORK_CENTER"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Work-center branch validation, dependency, Data Loader attribute validation, and design checks pass; for server-managed create reconciliation, this completes source-stage validation only and retains immutable post-load expectations until GET verification succeeds",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.VALIDATE_CALENDAR_ASSOCIATION",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "WC.LOOKUP_CALENDAR_ASSOCIATION",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.SELECT_OPERATION_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is calendar_association; accept a standalone override-calendar association with no resource action and retain and disclose an original resource-shift request only when this source is an intermediate prerequisite",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.LOOKUP_CALENDAR_ASSOCIATION",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WC.DEPENDENCIES_CALENDAR_ASSOCIATION",
+            "blocked": "WC.CLASSIFY_FAILURE",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.VALIDATE_CALENDAR_ASSOCIATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is calendar_association; require complete resolve_calendar_association_context and resolve_plant_manufacturing_calendar evidence for every mutation, including direct prompts with numeric IDs, and resolve_manufacturing_schedule_by_name for target identity when needed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 129
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.DEPENDENCIES_CALENDAR_ASSOCIATION",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "WC.DESIGN_CALENDAR_ASSOCIATION",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.LOOKUP_CALENDAR_ASSOCIATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is calendar_association",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.DESIGN_CALENDAR_ASSOCIATION",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "WC.DONE_CALENDAR_ASSOCIATION",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.DEPENDENCIES_CALENDAR_ASSOCIATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is calendar_association; apply WC.CALENDAR.PLANT_IMMUTABLE and WC.CALENDAR.SERVER_DATES, and WC.CALENDAR.EXISTING_OVERRIDE_PATCH for an existing override update. Apply WC.CALENDAR.EXPORT, WC.CALENDAR.PLANT_HISTORY and WC.CALENDAR.ROUTE_CHANGE only for FSM export input; preserve requested nonplant intent and any applicable plant-exclusion evidence; source preview is not server business-date acceptance",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 135
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.DONE_CALENDAR_ASSOCIATION",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WC.DESIGN_CALENDAR_ASSOCIATION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Calendar-association source shape, identity, dependency and design checks pass; this completes source-stage validation only. Fusion business-date acceptance and task completion remain pending until the approved load succeeds and exact readback passes; when a resource-shift outcome remains, return an intermediate stage",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.VALIDATE_CALENDAR_RESOURCE",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "WC.LOOKUP_CALENDAR_RESOURCE",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.SELECT_OPERATION_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is calendar_resource; distinguish new WorkCenterResource numeric or name-based input from existing-association name/code input; defer resolver-derived new-resource source checks until lookup succeeds, then enforce them before approval; validate supplied Boolean serialization and operation-specific final child-record coverage; verification needs no stage, units, or artifact",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.LOOKUP_CALENDAR_RESOURCE",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WC.DEPENDENCIES_CALENDAR_RESOURCE",
+            "blocked": "WC.CLASSIFY_FAILURE",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.VALIDATE_CALENDAR_RESOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is calendar_resource; resolve new named WorkCenterResource associations through resolve_active_production_resource_by_name in the resolved parent's organization; use the complete resource-wide assignment scan for an override-resource update or conversion setting Available24HoursFlag=true",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 130
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.DEPENDENCIES_CALENDAR_RESOURCE",
+          "node_type": "step",
+          "sequence": 16,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "WC.DESIGN_CALENDAR_RESOURCE",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.LOOKUP_CALENDAR_RESOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is calendar_resource; after any required create-time name resolution, confirm New resource source mapping from ora_input_validation.md before design enforcement",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.DESIGN_CALENDAR_RESOURCE",
+          "node_type": "step",
+          "sequence": 17,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "WC.DONE_CALENDAR_RESOURCE",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.DEPENDENCIES_CALENDAR_RESOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is calendar_resource; apply WC.CALENDAR.RESOURCE_CREATE and WC.CALENDAR.RESOURCE_CREATE_BATCH to new associations and WC.CALENDAR.GENERATED_PLANT_SHIFTS when its conditions hold, regardless of input source; require fresh persisted shift-based availability for final resourceShifts create/update, apply the operation-specific completion policy, and require fresh complete empty assignment evidence before an override-resource update or conversion sets Available24HoursFlag=true",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 136
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.DONE_CALENDAR_RESOURCE",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WC.DESIGN_CALENDAR_RESOURCE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Calendar-resource branch validation, dependency, and design checks pass; a prerequisite conversion remains intermediate; final create/update/delete requires operation-specific coverage, create/update also requires fresh persisted shift-based availability, and verification returns observed state only",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.VALIDATE_ARTIFACT",
+          "node_type": "step",
+          "sequence": 19,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "WC.DEPENDENCIES_ARTIFACT",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.SELECT_OPERATION_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is artifact_review",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.DEPENDENCIES_ARTIFACT",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "WC.DESIGN_ARTIFACT",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.VALIDATE_ARTIFACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is artifact_review",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.DESIGN_ARTIFACT",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "WC.DONE_ARTIFACT",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.DEPENDENCIES_ARTIFACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is artifact_review",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 137
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.DONE_ARTIFACT",
+          "node_type": "terminal",
+          "sequence": 22,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WC.DESIGN_ARTIFACT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Artifact-review branch validation, dependency, and design checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.VALIDATE_RECONCILIATION",
+          "node_type": "step",
+          "sequence": 23,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "WC.LOOKUP_RECONCILIATION",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.SELECT_OPERATION_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is create_reconciliation; require the successful bound request and unchanged WC.RECON.BINDING artifacts before GET-only verification.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.LOOKUP_RECONCILIATION",
+          "node_type": "step",
+          "sequence": 24,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WC.DESIGN_RECONCILIATION",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.VALIDATE_RECONCILIATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is create_reconciliation; run verify_created_work_center and each applicable plant, effective-calendar, complete default-shift and subinventory resolver named in this file, against the immutable expectations; never submit a write.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 131
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.DESIGN_RECONCILIATION",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "WC.DONE_RECONCILIATION",
+            "failure": "WC.CLASSIFY_FAILURE"
+          },
+          "prerequisites": [
+            "WC.LOOKUP_RECONCILIATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation scope is create_reconciliation; require every WC.RECON.READBACK check against the unchanged WC.RECON.BINDING expectations, preserving accepted loads under WC.RECON.RESUME.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 138
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.DONE_RECONCILIATION",
+          "node_type": "terminal",
+          "sequence": 26,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WC.DESIGN_RECONCILIATION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Every bound expected outcome is verified by complete fresh GET results; only now report this create synchronized.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 113
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.CLASSIFY_FAILURE",
+          "node_type": "step",
+          "sequence": 27,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "classified": "WC.FAILED",
+            "fallback": "WC.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior node emits a failure, blocked, or unsupported result; fallback is catalog_or_metadata_mismatch",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WC.FAILED",
+          "node_type": "terminal",
+          "sequence": 28,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WC.CLASSIFY_FAILURE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A classified failure contains the canonical category, sanitized evidence, and safe next action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 112
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

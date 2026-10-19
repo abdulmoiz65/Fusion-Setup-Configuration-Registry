@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fscr.example/schemas/express-mode-exploration.schema.json",
+  "$comment": "Fail-closed evidence contract for Oracle Fusion VBCS Express Mode exploration.",
+  "title": "Express Mode Exploration Result",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "status",
+    "target",
+    "gates",
+    "fieldCandidates",
+    "missingEvidence",
+    "proposalAllowed",
+    "implementationSuggestion",
+    "nextAction"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "status": { "enum": ["explored", "blocked", "login_required"] },
+    "target": { "type": ["object", "null"] },
+    "gates": {
+      "type": "object",
+      "required": ["page", "dynamicForm", "businessRules", "restSchema", "valueContract", "provenance"],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status", "evidence"],
+        "properties": {
+          "status": { "enum": ["passed", "failed", "missing", "not_run"] },
+          "evidence": { "type": "array" },
+          "reason": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "fieldCandidates": { "type": "array" },
+    "existingExtensionOverlays": { "type": "array", "items": { "type": "string" } },
+    "missingEvidence": { "type": "array" },
+    "proposalAllowed": { "const": false },
+    "implementationSuggestion": { "type": "null" },
+    "nextAction": { "type": "string" }
+  },
+  "additionalProperties": true
+}

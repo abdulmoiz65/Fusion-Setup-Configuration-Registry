@@ -1,0 +1,349 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HRT_MANAGE_EDUCATIONAL_ESTABLISHMENTS",
+      "task_name": "Educational Establishments",
+      "start_node": "EE.CAPTURE_CONFIGURATION",
+      "nodes": [
+        {
+          "id": "EE.CAPTURE_CONFIGURATION",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "EE.CHECK_DEPENDENCIES",
+            "ambiguous": "EE.RETURN_QUESTION",
+            "unsupported": "EE.RETURN_UNSUPPORTED",
+            "invalid": "EE.RETURN_BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Educational Establishments request, with supplied configuration values or explicit task scope",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EE.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "EE.CHECK_EXACT_EXISTING",
+            "proposal_only": "EE.ENFORCE_DESIGN",
+            "import_ready": "EE.VALIDATE_FSM_IMPORT",
+            "evidence_unavailable": "EE.RETURN_BLOCKED",
+            "source_unapproved": "EE.RETURN_BLOCKED",
+            "unsupported_mutation": "EE.RETURN_UNSUPPORTED",
+            "blocked": "EE.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "EE.CAPTURE_CONFIGURATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supplied-configuration Educational Establishments proposal, exact review, or create-only import request is being resolved",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EE.CHECK_EXACT_EXISTING",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "exact": "EE.RETURN_EXACT_DUPLICATE",
+            "not_found": "EE.ENFORCE_DESIGN",
+            "multiple_exact": "EE.RETURN_BLOCKED",
+            "evidence_unavailable": "EE.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "EE.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Complete target-bound current-state evidence is available for proposal review",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EE.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "EE.BUILD_REVIEW_PROPOSAL",
+            "blocked": "EE.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "EE.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A preliminary or configuration-ready supplied-configuration review proposal is being prepared",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EE.BUILD_REVIEW_PROPOSAL",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "EE.RETURN_PROPOSAL",
+            "confirmation_or_execution_requested": "EE.RETURN_UNSUPPORTED",
+            "blocked": "EE.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "EE.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A compliant review-only Educational Establishments proposal is ready to fingerprint",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EE.RETURN_PROPOSAL",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EE.BUILD_REVIEW_PROPOSAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A fingerprinted review-only proposal is returned with no package or execution authorization",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EE.RETURN_EXACT_DUPLICATE",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EE.CHECK_EXACT_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An exact establishment blocks creation; display its matched identifier",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EE.RETURN_QUESTION",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EE.CAPTURE_CONFIGURATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One concise technical-scope clarification is required",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EE.RETURN_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input, evidence, exactness, dependency, design, or persistence is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EE.RETURN_UNSUPPORTED",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request is out of scope, uses an unsupported mutation, or bypasses the approved create-only route",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EE.VALIDATE_FSM_IMPORT",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "EE.ENFORCE_FSM_IMPORT",
+            "invalid": "EE.RETURN_IMPORT_BLOCKED",
+            "changed": "EE.RETURN_IMPORT_BLOCKED"
+          },
+          "prerequisites": [
+            "EE.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create-only Educational Establishments package is presented to Task Hook for core.data-loader preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EE.ENFORCE_FSM_IMPORT",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "EE.RETURN_IMPORT_READY",
+            "blocked": "EE.RETURN_IMPORT_BLOCKED"
+          },
+          "prerequisites": [
+            "EE.VALIDATE_FSM_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact create-only Educational Establishments FSM package is being validated immediately before the Core Data Loader preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EE.RETURN_IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EE.ENFORCE_FSM_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Task validation returns the exact create-only package evidence to core.data-loader for immutable preview; no upload is authorized",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EE.RETURN_IMPORT_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The create-only package or Data Loader handoff contract is invalid, stale, changed, or incomplete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

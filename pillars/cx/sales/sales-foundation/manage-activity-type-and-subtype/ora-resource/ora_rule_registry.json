@@ -1,0 +1,311 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_ZMM_MANAGE_ACTIVITY_TYPE_SUBTYPE",
+      "task_name": "Manage Activity Type and Subtype",
+      "start_node": "ACTIVITY.VALIDATE",
+      "nodes": [
+        {
+          "id": "ACTIVITY.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ACTIVITY.DEFAULT_TAG",
+            "invalid": "ACTIVITY.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before any lookup, preview, or guided setup for an activity type and subtype mapping.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY.DEFAULT_TAG",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "ACTIVITY.DEPENDENCY",
+            "not_applicable": "ACTIVITY.DEPENDENCY",
+            "invalid": "ACTIVITY.BLOCKED"
+          },
+          "prerequisites": [
+            "ACTIVITY.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before resolving existing relationships or preparing a new activity type.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY.DEPENDENCY",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ACTIVITY.LOOKUP_TYPE",
+            "blocked": "ACTIVITY.BLOCKED"
+          },
+          "prerequisites": [
+            "ACTIVITY.DEFAULT_TAG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before guided setup, CSV preview, or import routing in the Sales Foundation task.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY.LOOKUP_TYPE",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "ACTIVITY.LOOKUP_SUBTYPE",
+            "not_found": "ACTIVITY.LOOKUP_SUBTYPE",
+            "not_applicable": "ACTIVITY.LOOKUP_SUBTYPE",
+            "ambiguous": "ACTIVITY.BLOCKED",
+            "failure": "ACTIVITY.FAILED"
+          },
+          "prerequisites": [
+            "ACTIVITY.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before mapping the selected activity type to a function or subtype. It is not applicable to a subtype-only CSV import with no activity-function change.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY.LOOKUP_SUBTYPE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "ACTIVITY.ENFORCE",
+            "not_found": "ACTIVITY.ENFORCE",
+            "not_applicable": "ACTIVITY.ENFORCE",
+            "ambiguous": "ACTIVITY.BLOCKED",
+            "failure": "ACTIVITY.FAILED"
+          },
+          "prerequisites": [
+            "ACTIVITY.LOOKUP_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before adding or reviewing a subtype for the selected activity type.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY.ENFORCE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "ACTIVITY.VERIFY_CSV_SOURCE",
+            "fail": "ACTIVITY.BLOCKED"
+          },
+          "prerequisites": [
+            "ACTIVITY.LOOKUP_SUBTYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before any attempt to create or change activity type or subtype setup.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY.VERIFY_CSV_SOURCE",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "ready": "ACTIVITY.EXECUTION_GATE",
+            "pending": "ACTIVITY.BLOCKED",
+            "not_applicable": "ACTIVITY.EXECUTION_GATE",
+            "failure": "ACTIVITY.FAILED"
+          },
+          "prerequisites": [
+            "ACTIVITY.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a requested CSV setup import is previewed, using either the local data-export-package check or the template-export status lookup.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "csv_import_candidate": "ACTIVITY.IMPORT_READY",
+            "ui_guidance": "ACTIVITY.UI_GUIDANCE_READY",
+            "default_data_loader": "ACTIVITY.IMPORT_READY",
+            "ui_required_for_unsupported_scope": "ACTIVITY.BLOCKED",
+            "direct_rest_requested": "ACTIVITY.BLOCKED"
+          },
+          "prerequisites": [
+            "ACTIVITY.VERIFY_CSV_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation: default supported subtype mutations to Data Loader/FSM import; manual UI is explicit or required when the subtype-only package cannot represent the requested scope.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY.IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ACTIVITY.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A verified task CSV source package for a supported subtype change is ready for the default Core Data Loader import adapter.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY.UI_GUIDANCE_READY",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ACTIVITY.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The requester explicitly selected manual UI and the documented procedure is ready for an authorized user; no Fusion side effect has been performed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Input, task access, lookup, source-package, design, preview, approval, or direct-CRM-write gate blocks the requested work.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY.FAILED",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A documented read-only lookup, source-package validation, or template-status call fails.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

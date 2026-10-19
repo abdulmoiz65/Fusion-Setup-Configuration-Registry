@@ -1,0 +1,870 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HRG_MANAGE_REVIEW_PERIODS",
+      "task_name": "Review Periods",
+      "start_node": "REVIEW_PERIODS.INTAKE",
+      "nodes": [
+        {
+          "id": "REVIEW_PERIODS.INTAKE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "REVIEW_PERIODS.VALIDATE",
+            "missing": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Review Period request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.VALIDATE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "entry_context": "REVIEW_PERIODS.ENTRY_CONTEXT",
+            "read_item": "REVIEW_PERIODS.READ",
+            "read_search": "REVIEW_PERIODS.SEARCH",
+            "csv": "REVIEW_PERIODS.CSV_READY",
+            "write": "REVIEW_PERIODS.DEPENDENCIES",
+            "invalid": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.INTAKE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Intake is complete and one operation is selected",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.ENTRY_CONTEXT",
+          "node_type": "step",
+          "sequence": 24,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "ready": "REVIEW_PERIODS.DONE_ENTRY_CONTEXT",
+            "partial": "REVIEW_PERIODS.DONE_ENTRY_CONTEXT",
+            "unavailable": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "initialize_entry_context is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.READ",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "REVIEW_PERIODS.DONE_READ",
+            "missing": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "get is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 185
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.SEARCH",
+          "node_type": "step",
+          "sequence": 26,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "REVIEW_PERIODS.DONE_SEARCH",
+            "empty": "REVIEW_PERIODS.DONE_SEARCH",
+            "unavailable": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "list/search is selected, including creation-time filters",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "REVIEW_PERIODS.LOOKUPS",
+            "missing": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Review Period mutation is requested",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.LOOKUPS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "REVIEW_PERIODS.DEFAULTS",
+            "unresolved": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Mutation dependencies require identity or usage resolution",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.DEFAULTS",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "REVIEW_PERIODS.DESIGN"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Mutation lookups are resolved",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.DESIGN",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "REVIEW_PERIODS.REST_DESCRIBE",
+            "blocked": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mutation is ready for design checks",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.REST_DESCRIBE",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "ready": "REVIEW_PERIODS.REST_PAYLOAD",
+            "unavailable": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A REST mutation is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 186
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.REST_PAYLOAD",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "mapped": "REVIEW_PERIODS.WRITE_ROUTE",
+            "rejected": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.REST_DESCRIBE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Current management metadata is available",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 187
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.WRITE_ROUTE",
+          "node_type": "decision",
+          "sequence": 95,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "create": "REVIEW_PERIODS.CREATE_PREVIEW",
+            "update": "REVIEW_PERIODS.UPDATE_PREVIEW",
+            "inactivate": "REVIEW_PERIODS.INACTIVATE_PREVIEW",
+            "delete": "REVIEW_PERIODS.DELETE_PREVIEW",
+            "no_change": "REVIEW_PERIODS.NO_CHANGE",
+            "unsupported": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.REST_PAYLOAD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mapped write contract exists",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.CREATE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 100,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "REVIEW_PERIODS.CREATE_APPROVAL",
+            "blocked": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.REST_PAYLOAD",
+            "REVIEW_PERIODS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "create is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 188
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.CREATE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 110,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "REVIEW_PERIODS.CREATE",
+            "declined": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.CREATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final create preview is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 189
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.CREATE",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "REVIEW_PERIODS.DONE_CREATED",
+            "ambiguous": "REVIEW_PERIODS.UNKNOWN",
+            "failed": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.CREATE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved create is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 190
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.UPDATE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 130,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "REVIEW_PERIODS.UPDATE_APPROVAL",
+            "blocked": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.REST_PAYLOAD",
+            "REVIEW_PERIODS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "update is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 191
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.UPDATE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 140,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "REVIEW_PERIODS.UPDATE",
+            "declined": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.UPDATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final update preview is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 192
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.UPDATE",
+          "node_type": "step",
+          "sequence": 150,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "REVIEW_PERIODS.DONE_UPDATED",
+            "ambiguous": "REVIEW_PERIODS.UNKNOWN",
+            "failed": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.UPDATE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved current-metadata update action is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 193
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.INACTIVATE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 160,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "REVIEW_PERIODS.INACTIVATE_APPROVAL",
+            "blocked": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.REST_PAYLOAD",
+            "REVIEW_PERIODS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "inactivate is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 194
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.INACTIVATE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 170,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "REVIEW_PERIODS.INACTIVATE",
+            "declined": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.INACTIVATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final inactivation preview is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 195
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.INACTIVATE",
+          "node_type": "step",
+          "sequence": 180,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "REVIEW_PERIODS.DONE_INACTIVATED",
+            "ambiguous": "REVIEW_PERIODS.UNKNOWN",
+            "failed": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.INACTIVATE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved current-metadata inactivation action is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 196
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.DELETE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 190,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "REVIEW_PERIODS.DELETE_APPROVAL",
+            "blocked": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.REST_PAYLOAD",
+            "REVIEW_PERIODS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "delete is selected and zero usage is proven",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 197
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.DELETE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 200,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "REVIEW_PERIODS.DELETE",
+            "declined": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.DELETE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final delete preview is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 198
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.DELETE",
+          "node_type": "step",
+          "sequence": 210,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "REVIEW_PERIODS.DONE_DELETED",
+            "ambiguous": "REVIEW_PERIODS.UNKNOWN",
+            "failed": "REVIEW_PERIODS.BLOCKED"
+          },
+          "prerequisites": [
+            "REVIEW_PERIODS.DELETE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved guarded delete is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 199
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.CSV_READY",
+          "node_type": "terminal",
+          "sequence": 220,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "REVIEW_PERIODS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CSV export or validated import handoff is ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.NO_CHANGE",
+          "node_type": "terminal",
+          "sequence": 230,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "REVIEW_PERIODS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Fresh values already match",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.DONE_ENTRY_CONTEXT",
+          "node_type": "terminal",
+          "sequence": 239,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "REVIEW_PERIODS.ENTRY_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Status LOV and any available caller context were read",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.DONE_READ",
+          "node_type": "terminal",
+          "sequence": 240,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "REVIEW_PERIODS.READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.DONE_SEARCH",
+          "node_type": "terminal",
+          "sequence": 241,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "REVIEW_PERIODS.SEARCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Bounded search completed, including an empty result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.DONE_CREATED",
+          "node_type": "terminal",
+          "sequence": 250,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "REVIEW_PERIODS.CREATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.DONE_UPDATED",
+          "node_type": "terminal",
+          "sequence": 260,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "REVIEW_PERIODS.UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Update verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.DONE_INACTIVATED",
+          "node_type": "terminal",
+          "sequence": 270,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "REVIEW_PERIODS.INACTIVATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Inactivation verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.DONE_DELETED",
+          "node_type": "terminal",
+          "sequence": 280,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "REVIEW_PERIODS.DELETE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Delete verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.UNKNOWN",
+          "node_type": "terminal",
+          "sequence": 290,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A submitted mutation has an ambiguous outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REVIEW_PERIODS.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 300,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prerequisite, approval, or contract blocks the request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,283 @@
+{
+  "schema_version": "1.0",
+  "provider": "CATALOG_REST",
+  "resource_name": "talentContentItemCatalogs",
+  "parent_resource": "/hcmRestApi/resources/11.13.18.05/talentContentItemCatalogs",
+  "api_version_candidates": [
+    {
+      "api_version": "11.13.18.05",
+      "parent_resource": "/hcmRestApi/resources/11.13.18.05/talentContentItemCatalogs",
+      "capability_query": {
+        "limit": "1",
+        "offset": "0",
+        "onlyData": "true"
+      },
+      "source_reference": "Existing registered Talent Content Item Catalog provider path and controlled read-only evidence"
+    }
+  ],
+  "source_fusion_releases": [
+    "26C"
+  ],
+  "page_size": 100,
+  "identity_field": "ContentItemCode",
+  "common_comparable_fields": [
+    "ContentItemCode",
+    "Name",
+    "DateFrom",
+    "DateTo",
+    "ContentSupplierCode",
+    "RatingModelCode"
+  ],
+  "contexts": [
+    {
+      "context_name": "BEHAVIOR",
+      "child_relation": "behaviorContentItems",
+      "catalog_selector": {
+        "status": "registered",
+        "template_id": 132,
+        "template_name": null
+      },
+      "read_certification": {
+        "status": "read-only",
+        "release": "26C",
+        "reason": "The registered child and complete exact not-found path are verified. ContentItemCode was null on the bounded live sample, so code-based lookup cannot address every Behavior row."
+      },
+      "hdl_create_certification": {
+        "status": "verified",
+        "release": "26C",
+        "reason": "Historical evidence only; not a current GROW-8154 V1 execution route. The enhanced-profile 26C BEHAVIOR provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "ownership_restrictions": [
+        "Current GROW-8154 V1: this registry selects read evidence only. Historical HDL certification does not authorize HDL/HSDL execution or an FSM fallback.",
+        "Do not infer competency-to-behavior relationships from Behavior item evidence.",
+        "Historical ContentItem V2 HDL scope was one catalog-bound item under its lifecycle contract; it is inactive in current V1. Relationships and Content Section changes remain separate."
+      ]
+    },
+    {
+      "context_name": "CERTIFICATION",
+      "child_relation": "certificationContentItems",
+      "catalog_selector": {
+        "status": "registered",
+        "template_id": 103,
+        "template_name": null
+      },
+      "read_certification": {
+        "status": "read-only",
+        "release": "26C",
+        "reason": "The registered child, bounded field contract, one exact existing-code match, and complete exact not-found path are verified; independent product-source comparison remains outstanding."
+      },
+      "hdl_create_certification": {
+        "status": "verified",
+        "release": "26C",
+        "reason": "Historical evidence only; not a current GROW-8154 V1 execution route. The enhanced-profile 26C CERTIFICATION provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "ownership_restrictions": [
+        "Current GROW-8154 V1: this registry selects read evidence only. Historical HDL certification does not authorize HDL/HSDL execution or an FSM fallback."
+      ]
+    },
+    {
+      "context_name": "COMPETENCY",
+      "child_relation": "competencyContentItems",
+      "catalog_selector": {
+        "status": "registered",
+        "template_id": 104,
+        "template_name": null
+      },
+      "read_certification": {
+        "status": "verified",
+        "release": "26C",
+        "reason": "The registered child, exact existing AI_PROMPT_ENGINEERING readback, exact not-found path, and prior controlled ContentItem V2 create/readback evidence are verified."
+      },
+      "hdl_create_certification": {
+        "status": "verified",
+        "release": "26C",
+        "reason": "Historical evidence only; not a current GROW-8154 V1 execution route. The existing ContentItem V2 competency package, load, exact child readback, and duplicate lock were verified."
+      },
+      "ownership_restrictions": [
+        "Current GROW-8154 V1: this registry selects read evidence only. Historical HDL certification does not authorize HDL/HSDL execution or an FSM fallback.",
+        "A standard request may select CVS_COMPETENCY_104 and Competencies only when that exact pair exists in the live response."
+      ]
+    },
+    {
+      "context_name": "DEGREE",
+      "child_relation": "educationContentItems",
+      "catalog_selector": {
+        "status": "registered",
+        "template_id": 106,
+        "template_name": null
+      },
+      "read_certification": {
+        "status": "read-only",
+        "release": "26C",
+        "reason": "The TemplateId 106 catalog mapping to educationContentItems, bounded Degree field contract, one exact existing-code match, and complete exact not-found path are verified; independent product-source comparison remains outstanding."
+      },
+      "hdl_create_certification": {
+        "status": "verified",
+        "release": "26C",
+        "reason": "Historical evidence only; not a current GROW-8154 V1 execution route. The enhanced-profile 26C DEGREE provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "ownership_restrictions": [
+        "Current GROW-8154 V1: this registry selects read evidence only. Historical HDL certification does not authorize HDL/HSDL execution or an FSM fallback.",
+        "Do not infer Education Level or Educational Establishment ownership from the Degree educationContentItems child name."
+      ]
+    },
+    {
+      "context_name": "EDUCATION_LEVEL",
+      "child_relation": "educationLevelContentItems",
+      "catalog_selector": {
+        "status": "registered",
+        "template_id": 107,
+        "template_name": null
+      },
+      "read_certification": {
+        "status": "read-only",
+        "release": "26C",
+        "reason": "The registered child, bounded field contract, one exact existing-code match, and complete exact not-found path are verified; independent product-source comparison remains outstanding."
+      },
+      "hdl_create_certification": {
+        "status": "verified",
+        "release": "26C",
+        "reason": "Historical evidence only; not a current GROW-8154 V1 execution route. The enhanced-profile 26C EDUCATION_LEVEL provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "ownership_restrictions": [
+        "Current GROW-8154 V1: this registry selects read evidence only. Historical HDL certification does not authorize HDL/HSDL execution or an FSM fallback."
+      ]
+    },
+    {
+      "context_name": "EDUCATIONAL_ESTABLISHMENT",
+      "child_relation": "establishmentContentItems",
+      "catalog_selector": {
+        "status": "registered",
+        "template_id": 135,
+        "template_name": null
+      },
+      "read_certification": {
+        "status": "read-only",
+        "release": "26C",
+        "reason": "The registered child and complete exact not-found path are verified. ContentItemCode was null on the bounded live sample and the Educational Establishments ownership boundary remains unresolved."
+      },
+      "hdl_create_certification": {
+        "status": "blocked",
+        "release": "26C",
+        "reason": "Historical evidence only; not a current GROW-8154 V1 execution route. The boundary with HRT_MANAGE_EDUCATIONAL_ESTABLISHMENTS and its FSM provider is unresolved for ContentItem V2."
+      },
+      "ownership_restrictions": [
+        "Current GROW-8154 V1: this registry selects read evidence only. Historical HDL certification does not authorize HDL/HSDL execution or an FSM fallback.",
+        "Read evidence must not be treated as authority to create or replace an Educational Establishment.",
+        "Creation remains owned by the Educational Establishments task until a reviewed boundary contract says otherwise."
+      ]
+    },
+    {
+      "context_name": "HONOR",
+      "child_relation": "honorContentItems",
+      "catalog_selector": {
+        "status": "registered",
+        "template_id": 108,
+        "template_name": null
+      },
+      "read_certification": {
+        "status": "read-only",
+        "release": "26C",
+        "reason": "The registered child, bounded field contract, one exact existing-code match, and complete exact not-found path are verified; independent product-source comparison remains outstanding."
+      },
+      "hdl_create_certification": {
+        "status": "verified",
+        "release": "26C",
+        "reason": "Historical evidence only; not a current GROW-8154 V1 execution route. The enhanced-profile 26C HONOR provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "ownership_restrictions": [
+        "Current GROW-8154 V1: this registry selects read evidence only. Historical HDL certification does not authorize HDL/HSDL execution or an FSM fallback."
+      ]
+    },
+    {
+      "context_name": "LANGUAGE",
+      "child_relation": "languageContentItems",
+      "catalog_selector": {
+        "status": "registered",
+        "template_id": 109,
+        "template_name": null
+      },
+      "read_certification": {
+        "status": "verified",
+        "release": "26C",
+        "reason": "The registered child, bounded field contract, exact LU match, complete exact not-found path, and comparison to the release-bound seeded catalog are verified; Oracle-seeded ownership still blocks create certification."
+      },
+      "hdl_create_certification": {
+        "status": "verified",
+        "release": "26C",
+        "reason": "Historical evidence only; not a current GROW-8154 V1 execution route. The enhanced-profile 26C LANGUAGE provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "ownership_restrictions": [
+        "Current GROW-8154 V1: this registry selects read evidence only. Historical HDL certification does not authorize HDL/HSDL execution or an FSM fallback.",
+        "Do not create a replacement for an Oracle-seeded language code."
+      ]
+    },
+    {
+      "context_name": "MEMBERSHIP",
+      "child_relation": "membershipContentItems",
+      "catalog_selector": {
+        "status": "registered",
+        "template_id": 110,
+        "template_name": null
+      },
+      "read_certification": {
+        "status": "read-only",
+        "release": "26C",
+        "reason": "The registered child, bounded field contract, one exact existing-code match, and complete exact not-found path are verified; independent product-source comparison remains outstanding."
+      },
+      "hdl_create_certification": {
+        "status": "verified",
+        "release": "26C",
+        "reason": "Historical evidence only; not a current GROW-8154 V1 execution route. The enhanced-profile 26C MEMBERSHIP provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "ownership_restrictions": [
+        "Current GROW-8154 V1: this registry selects read evidence only. Historical HDL certification does not authorize HDL/HSDL execution or an FSM fallback."
+      ]
+    },
+    {
+      "context_name": "SKILL",
+      "child_relation": "skillContentItems",
+      "catalog_selector": {
+        "status": "registered",
+        "template_id": 134,
+        "template_name": null
+      },
+      "read_certification": {
+        "status": "read-only",
+        "release": "26C",
+        "reason": "The registered child and complete exact not-found path are verified. All owning catalogs were empty, so a positive match and live field contract could not be certified."
+      },
+      "hdl_create_certification": {
+        "status": "blocked",
+        "release": "26C",
+        "reason": "Historical HDL evidence only: live HDL metadata, controlled HDL create, readback, and duplicate-rerun proof are not certified. This does not block the separate certification-only Item Catalog new-set FSM route for SKILL; its runtime acceptance remains unverified."
+      },
+      "ownership_restrictions": [
+        "Current GROW-8154 V1: this registry selects read evidence only. Historical HDL certification does not authorize HDL/HSDL execution or an FSM fallback.",
+        "SKILL catalog/item creation may use the separately approved non-production Item Catalog new-set FSM contract. Do not infer Skills Center configuration, catalog subscription, or runtime certification from a skillContentItems read."
+      ]
+    },
+    {
+      "context_name": "PROJECT",
+      "child_relation": "specialProjectContentItems",
+      "catalog_selector": {
+        "status": "registered",
+        "template_id": 136,
+        "template_name": null
+      },
+      "read_certification": {
+        "status": "read-only",
+        "release": "26C",
+        "reason": "The registered child and complete exact not-found path are verified. ContentItemCode was null on the bounded live sample, so provider-certification must retain the separate exact Name check."
+      },
+      "hdl_create_certification": {
+        "status": "verified",
+        "release": "26C",
+        "reason": "Historical evidence only; not a current GROW-8154 V1 execution route. The enhanced-profile 26C PROJECT provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "ownership_restrictions": [
+        "Current GROW-8154 V1: this registry selects read evidence only. Historical HDL certification does not authorize HDL/HSDL execution or an FSM fallback."
+      ]
+    }
+  ]
+}

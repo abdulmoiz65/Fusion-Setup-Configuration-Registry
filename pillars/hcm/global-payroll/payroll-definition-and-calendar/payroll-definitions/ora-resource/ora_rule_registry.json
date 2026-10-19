@@ -1,0 +1,279 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_PAYROLL_DEFINITIONS",
+      "task_name": "Payroll Definitions",
+      "start_node": "PD.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "PD.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PD.RESOLVE_DEPENDENCIES",
+            "invalid": "PD.HANDLE_ERROR",
+            "unsupported": "PD.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PD.RESOLVE_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PD.RESOLVE_REFERENCES",
+            "blocked": "PD.HANDLE_ERROR",
+            "unsupported": "PD.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PD.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated Payroll Definitions request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PD.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PD.APPLY_DEFAULTS",
+            "not_required": "PD.APPLY_DEFAULTS",
+            "blocked": "PD.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PD.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A reference or LOV-style input requires validation or resolution",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PD.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "PD.ENFORCE_DESIGN",
+            "skipped": "PD.ENFORCE_DESIGN",
+            "invalid": "PD.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PD.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "PlannedSubmissionFixedDate needs start-of-day defaulting, or ConsolidationSetCode or OrganizationPaymentMethodCode is absent while its documented name alias is supplied",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PD.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "PD.EXECUTION_GATE",
+            "blocked": "PD.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PD.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Any Payroll Definitions request",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PD.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "hdl_preparation_ready": "PD.DONE_HDL_PREPARATION",
+            "validation_ready": "PD.DONE_VALIDATION",
+            "guidance_ready": "PD.DONE_GUIDANCE",
+            "blocked": "PD.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PD.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation, dependency, lookup, defaulting, and design checks completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PD.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A prior node reports invalid, blocked, unsupported, unauthorized, ambiguous, not-found, failed, or uncertain",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PD.DONE_HDL_PREPARATION",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PD.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The HDL contract is validated for handoff to a separately authorized loader workflow; no Fusion write is authorized by this terminal",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PD.DONE_VALIDATION",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PD.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The requested validation result is ready for return; no Fusion write occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PD.DONE_GUIDANCE",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PD.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Source-backed Payroll Definitions guidance is ready for return; no Fusion write occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Blocking, unsupported, or failure details are safely classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

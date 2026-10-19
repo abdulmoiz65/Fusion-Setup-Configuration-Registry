@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fdos.oracle.example/hcm/profile-management-data-set.schema.json",
+  "title": "Sanitized Profile Management Data Set",
+  "type": "object",
+  "required": ["target_environment", "requested_operation", "root_record_type", "records", "target_check"],
+  "properties": {
+    "target_environment": {"type": "string", "minLength": 1},
+    "requested_operation": {"enum": ["create", "update", "migration", "mass-maintenance", "translation", "attachment-processing", "synchronization", "validation"]},
+    "root_record_type": {"enum": ["person-profile", "model-profile", "content-library"]},
+    "records": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["object", "identifier", "values"], "properties": {"object": {"type": "string"}, "identifier": {"type": "string", "minLength": 1}, "parent_identifier": {"type": "string"}, "language": {"type": "string"}, "values": {"type": "object"}}}},
+    "target_check": {"type": "object", "required": ["status"], "properties": {"status": {"enum": ["not-found", "exactly-one", "multiple-exact", "evidence-unavailable"]}}},
+    "final_preview_approved": {"type": "boolean"}
+  }
+}

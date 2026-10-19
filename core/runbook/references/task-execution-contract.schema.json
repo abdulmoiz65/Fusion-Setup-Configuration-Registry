@@ -1,0 +1,275 @@
+{
+    "$schema":  "https://json-schema.org/draft/2020-12/schema",
+    "$id":  "https://fdos.oracle.example/schemas/runbook-task-execution-contract.schema.json",
+    "title":  "Run Book Task Execution Contracts",
+    "oneOf":  [
+                  {
+                      "$ref":  "#/$defs/previewInput"
+                  },
+                  {
+                      "$ref":  "#/$defs/preview"
+                  },
+                  {
+                      "$ref":  "#/$defs/approval"
+                  },
+                  {
+                      "$ref":  "#/$defs/approvedLoaderPayload"
+                  }
+              ],
+    "$defs":  {
+                  "sha256":  {
+                                 "type":  "string",
+                                 "pattern":  "^[0-9a-f]{64}$"
+                             },
+                  "change":  {
+                                 "type":  "object",
+                                 "additionalProperties":  true,
+                                 "required":  [
+                                                  "path",
+                                                  "before",
+                                                  "after",
+                                                  "reason"
+                                              ],
+                                 "properties":  {
+                                                    "path":  {
+                                                                 "type":  "string",
+                                                                 "minLength":  1
+                                                             },
+                                                    "before":  true,
+                                                    "after":  true,
+                                                    "reason":  {
+                                                                   "type":  "string",
+                                                                   "minLength":  1
+                                                               }
+                                                }
+                             },
+                  "issue":  {
+                                "type":  "object",
+                                "additionalProperties":  true,
+                                "required":  [
+                                                 "message"
+                                             ],
+                                "properties":  {
+                                                   "code":  {
+                                                                "type":  "string"
+                                                            },
+                                                   "severity":  {
+                                                                    "type":  "string",
+                                                                    "enum":  [
+                                                                                 "error",
+                                                                                 "warning",
+                                                                                 "info"
+                                                                             ]
+                                                                },
+                                                   "message":  {
+                                                                   "type":  "string",
+                                                                   "minLength":  1
+                                                               },
+                                                   "path":  {
+                                                                "type":  "string"
+                                                            },
+                                                   "recommendedAction":  {
+                                                                             "type":  "string"
+                                                                         }
+                                               }
+                            },
+                  "ruleResult":  {
+                                     "type":  "object",
+                                     "additionalProperties":  false,
+                                     "required":  [
+                                                      "source",
+                                                      "status",
+                                                      "issues",
+                                                      "changes"
+                                                  ],
+                                     "properties":  {
+                                                        "source":  {
+                                                                       "type":  "string",
+                                                                       "pattern":  "^ora_[a-z0-9_]+\\.md$"
+                                                                   },
+                                                        "status":  {
+                                                                       "type":  "string",
+                                                                       "enum":  [
+                                                                                    "passed",
+                                                                                    "blocked",
+                                                                                    "overridden",
+                                                                                    "not_applicable"
+                                                                                ]
+                                                                   },
+                                                        "issues":  {
+                                                                       "type":  "array",
+                                                                       "items":  {
+                                                                                     "$ref":  "#/$defs/issue"
+                                                                                 }
+                                                                   },
+                                                        "changes":  {
+                                                                        "type":  "array",
+                                                                        "items":  {
+                                                                                      "$ref":  "#/$defs/change"
+                                                                                  }
+                                                                    }
+                                                    }
+                                 },
+                  "previewInput":  {
+                                       "type":  "object",
+                                       "additionalProperties":  false,
+                                       "required":  [
+                                                        "skillPath",
+                                                        "taskName",
+                                                        "environment",
+                                                        "finalData",
+                                                        "ruleResults"
+                                                    ],
+                                       "properties":  {
+                                                          "skillPath":  {
+                                                                            "type":  "string",
+                                                                            "minLength":  1
+                                                                        },
+                                                          "taskName":  {
+                                                                           "type":  "string",
+                                                                           "minLength":  1
+                                                                       },
+                                                          "environment":  {
+                                                                              "type":  "string",
+                                                                              "minLength":  1
+                                                                          },
+                                                          "finalData":  true,
+                                                          "ruleResults":  {
+                                                                              "type":  "array",
+                                                                              "items":  {
+                                                                                            "$ref":  "#/$defs/ruleResult"
+                                                                                        },
+                                                                              "minItems":  1
+                                                                          }
+                                                      }
+                                   },
+                  "preview":  {
+                                  "type":  "object",
+                                  "additionalProperties":  false,
+                                  "required":  [
+                                                   "schemaVersion",
+                                                   "taskCode",
+                                                   "taskName",
+                                                   "skillPath",
+                                                   "environment",
+                                                   "executionRoute",
+                                                   "generatedAt",
+                                                   "ruleResults",
+                                                   "finalData"
+                                               ],
+                                  "properties":  {
+                                                     "schemaVersion":  {
+                                                                           "const":  "1.0"
+                                                                       },
+                                                     "taskCode":  {
+                                                                      "type":  "string",
+                                                                      "minLength":  1
+                                                                  },
+                                                     "taskName":  {
+                                                                      "type":  "string",
+                                                                      "minLength":  1
+                                                                  },
+                                                     "skillPath":  {
+                                                                       "type":  "string",
+                                                                       "minLength":  1
+                                                                   },
+                                                     "environment":  {
+                                                                         "type":  "string",
+                                                                         "minLength":  1
+                                                                     },
+                                                     "executionRoute":  {
+                                                                            "const":  "data-loader"
+                                                                        },
+                                                     "generatedAt":  {
+                                                                         "type":  "string",
+                                                                         "format":  "date-time"
+                                                                     },
+                                                     "ruleResults":  {
+                                                                         "type":  "array",
+                                                                         "items":  {
+                                                                                       "$ref":  "#/$defs/ruleResult"
+                                                                                   },
+                                                                         "minItems":  1
+                                                                     },
+                                                     "finalData":  true
+                                                 }
+                              },
+                  "approval":  {
+                                   "type":  "object",
+                                   "additionalProperties":  false,
+                                   "required":  [
+                                                    "schemaVersion",
+                                                    "approved",
+                                                    "approvedAt",
+                                                    "taskCode",
+                                                    "environment",
+                                                    "executionRoute"
+                                                ],
+                                   "properties":  {
+                                                      "schemaVersion":  {
+                                                                            "const":  "1.0"
+                                                                        },
+                                                      "approved":  {
+                                                                       "const":  true
+                                                                   },
+                                                      "approvedAt":  {
+                                                                         "type":  "string",
+                                                                         "format":  "date-time"
+                                                                     },
+                                                      "taskCode":  {
+                                                                       "type":  "string",
+                                                                       "minLength":  1
+                                                                   },
+                                                      "environment":  {
+                                                                          "type":  "string",
+                                                                          "minLength":  1
+                                                                      },
+                                                      "executionRoute":  {
+                                                                             "const":  "data-loader"
+                                                                         }
+                                                  }
+                               },
+                  "approvedLoaderPayload":  {
+                                                "type":  "object",
+                                                "additionalProperties":  false,
+                                                "required":  [
+                                                                 "schemaVersion",
+                                                                 "approved",
+                                                                 "taskCode",
+                                                                 "taskName",
+                                                                 "skillPath",
+                                                                 "environment",
+                                                                 "executionRoute",
+                                                                 "finalData"
+                                                             ],
+                                                "properties":  {
+                                                                   "schemaVersion":  {
+                                                                                         "const":  "1.0"
+                                                                                     },
+                                                                   "approved":  {
+                                                                                    "const":  true
+                                                                                },
+                                                                   "taskCode":  {
+                                                                                    "type":  "string",
+                                                                                    "minLength":  1
+                                                                                },
+                                                                   "taskName":  {
+                                                                                    "type":  "string",
+                                                                                    "minLength":  1
+                                                                                },
+                                                                   "skillPath":  {
+                                                                                     "type":  "string",
+                                                                                     "minLength":  1
+                                                                                 },
+                                                                   "environment":  {
+                                                                                       "type":  "string",
+                                                                                       "minLength":  1
+                                                                                   },
+                                                                   "executionRoute":  {
+                                                                                          "const":  "data-loader"
+                                                                                      },
+                                                                   "finalData":  true
+                                                               }
+                                            }
+              }
+}

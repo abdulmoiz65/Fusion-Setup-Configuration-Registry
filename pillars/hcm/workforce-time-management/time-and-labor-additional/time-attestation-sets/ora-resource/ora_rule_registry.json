@@ -1,0 +1,182 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HWM_MANAGE_ATTESTATION_SETS",
+      "task_name": "Time Attestation Sets",
+      "start_node": "TAS_VALIDATE_FIELDS",
+      "nodes": [
+        {
+          "id": "TAS_VALIDATE_FIELDS",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TAS_DEFAULT_EVENTS",
+            "missing_or_invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Time Attestation Set create or edit is prepared",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TAS_DEFAULT_EVENTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied_or_not_needed": "TAS_VALIDATE_LOVS",
+            "cannot_apply": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "TAS_VALIDATE_FIELDS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new attestation row is prepared",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TAS_VALIDATE_LOVS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved_or_not_needed": "TAS_ENFORCE_FIELDS",
+            "incomplete_or_unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "TAS_DEFAULT_EVENTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Questionnaire or Time Category is supplied in an attestation row",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TAS_ENFORCE_FIELDS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "TAS_CORE_DATA_LOADER_HANDOFF",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "TAS_VALIDATE_LOVS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation, lookup resolution, defaulting, task-specific package enforcement, Complete Business Summary, Defaults Applied, and validated ZIP disclosure have completed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TAS_CORE_DATA_LOADER_HANDOFF",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "handed_off": "TAS_INPUT_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "TAS_ENFORCE_FIELDS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact validated FSM ZIP is handed to Core Data Loader, which owns immutable preview, approval, and submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TAS_INPUT_READY",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TAS_CORE_DATA_LOADER_HANDOFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Task-local validation completed; Core Data Loader owns the remaining import lifecycle",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation, lookup, defaulting, package enforcement, or Core Data Loader handoff cannot proceed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

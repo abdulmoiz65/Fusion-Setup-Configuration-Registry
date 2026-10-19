@@ -1,0 +1,602 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HWM_MANAGE_RULE_TEMPLATES",
+      "task_name": "Time Rule Templates",
+      "start_node": "TIMETMPLT.VALIDATE_REQUIREMENTS",
+      "nodes": [
+        {
+          "id": "TIMETMPLT.VALIDATE_REQUIREMENTS",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TIMETMPLT.FIND_MATCH",
+            "invalid": "TIMETMPLT.INPUT_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.FIND_MATCH",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "fully_compatible": "TIMETMPLT.EXISTING_READY",
+            "fully_compatible_create_confirmed": "TIMETMPLT.PROPOSAL_GATE",
+            "multiple_fully_compatible": "TIMETMPLT.SELECTION_REQUIRED",
+            "update_requested": "TIMETMPLT.PROPOSAL_GATE",
+            "partial_matches": "TIMETMPLT.SELECTION_REQUIRED",
+            "no_match": "TIMETMPLT.PROPOSAL_GATE",
+            "lookup_failure": "TIMETMPLT.LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "TIMETMPLT.VALIDATE_REQUIREMENTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After normalized create or update input is valid",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.PROPOSAL_GATE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "proposal_complete": "TIMETMPLT.CREATE_DEPENDENCY",
+            "proposal_incomplete": "TIMETMPLT.PROPOSAL_ERROR"
+          },
+          "prerequisites": [
+            "TIMETMPLT.FIND_MATCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A user-confirmed exact-match create, no fully compatible template, or an existing template update is requested",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.CREATE_DEPENDENCY",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TIMETMPLT.COMPLETE_SUMMARY",
+            "blocked": "TIMETMPLT.DEPENDENCY_ERROR"
+          },
+          "prerequisites": [
+            "TIMETMPLT.PROPOSAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A complete create or update proposal exists and its immutable FSM CSV ZIP must be validated and previewed through core.data-loader",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.COMPLETE_SUMMARY",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "summary_ready": "TIMETMPLT.PRESENT_VALIDATED_PACKAGE",
+            "summary_incomplete": "TIMETMPLT.DEPENDENCY_ERROR"
+          },
+          "prerequisites": [
+            "TIMETMPLT.CREATE_DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The validated configuration must be shown in a business-only Complete Summary and Defaults Applied section before package linking or approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.PRESENT_VALIDATED_PACKAGE",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "package_linked": "TIMETMPLT.APPROVAL_GATE",
+            "package_missing": "TIMETMPLT.DEPENDENCY_ERROR"
+          },
+          "prerequisites": [
+            "TIMETMPLT.COMPLETE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact validated FSM ZIP must be linked outside the business summary before approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "TIMETMPLT.IMPORT_HANDOFF_READY",
+            "missing": "TIMETMPLT.APPROVAL_REQUIRED",
+            "rejected": "TIMETMPLT.APPROVAL_DECLINED",
+            "changed": "TIMETMPLT.APPROVAL_STALE"
+          },
+          "prerequisites": [
+            "TIMETMPLT.PRESENT_VALIDATED_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The complete proposal, business-only Complete Summary and Defaults Applied details, and immutable core.data-loader preview, including archive SHA-256 and create or update operation, have been displayed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.IMPORT_HANDOFF_READY",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMETMPLT.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact core.data-loader preview is approved; invoke core.data-loader to upload, initiate, monitor, retrieve the terminal result, and then refresh the authoritative export for verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.INPUT_ERROR",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMETMPLT.VALIDATE_REQUIREMENTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.LOOKUP_ERROR",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMETMPLT.FIND_MATCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Current export lookup fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.PROPOSAL_ERROR",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMETMPLT.PROPOSAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The template proposal or dependent Time Rule relationship is incomplete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.APPROVAL_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMETMPLT.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit approval for the exact proposal is missing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.APPROVAL_DECLINED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMETMPLT.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The user rejected the proposal",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.APPROVAL_STALE",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMETMPLT.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The proposal or target environment changed after approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.DEPENDENCY_ERROR",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMETMPLT.CREATE_DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Package, import handoff, process result, or verification readiness is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.EXPORT_MONITOR",
+          "node_type": "step",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "zip_validated": "TIMETMPLT.EXPORT_READY",
+            "failed": "TIMETMPLT.EXPORT_ERROR",
+            "timed_out": "TIMETMPLT.EXPORT_ERROR",
+            "missing_result": "TIMETMPLT.EXPORT_ERROR",
+            "invalid_zip": "TIMETMPLT.EXPORT_ERROR",
+            "partial": "TIMETMPLT.EXPORT_ERROR",
+            "uncertain": "TIMETMPLT.EXPORT_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A task-authorized read-only Time Rule Templates export or authoritative refresh request was accepted",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.EXPORT_READY",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMETMPLT.EXPORT_MONITOR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Terminal export success, persisted result ZIP, and ZIP validation all passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.EXPORT_ERROR",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Export monitoring reached failure, timeout, missing result, unusable ZIP, partial status, or uncertainty",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.FINAL_COMPLETION",
+          "node_type": "step",
+          "sequence": 19,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified_standalone": "TIMETMPLT.FINAL_COMPLETION_SUCCESS",
+            "verified_parent_ready": "TIMETMPLT.FINAL_COMPLETION_PARENT_RESUME",
+            "failed": "TIMETMPLT.FINAL_COMPLETION_ERROR",
+            "timed_out": "TIMETMPLT.FINAL_COMPLETION_ERROR",
+            "partial": "TIMETMPLT.FINAL_COMPLETION_ERROR",
+            "uncertain": "TIMETMPLT.FINAL_COMPLETION_ERROR",
+            "mismatched": "TIMETMPLT.FINAL_COMPLETION_ERROR",
+            "parent_context_ambiguous": "TIMETMPLT.PARENT_CONTEXT_REQUIRED"
+          },
+          "prerequisites": [
+            "TIMETMPLT.CREATE_DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An approved asynchronous Time Rule Templates create, update, import, load, or documented dependent submission was accepted",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.FINAL_COMPLETION_ERROR",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Task-authorized status monitoring reached failure, timeout, partial success, uncertainty, or read-back mismatch",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.FINAL_COMPLETION_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 21,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMETMPLT.FINAL_COMPLETION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Terminal success status and authoritative read-back verification passed for a standalone Time Rule Templates flow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.FINAL_COMPLETION_PARENT_RESUME",
+          "node_type": "terminal",
+          "sequence": 22,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMETMPLT.FINAL_COMPLETION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The prerequisite is verified and ready to resume exactly one active documented parent workflow; present the resume prompt and do not start the parent",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.PARENT_CONTEXT_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 23,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMETMPLT.FINAL_COMPLETION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Parent workflow context is multiple, conflicting, stale, incomplete, or undocumented",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.EXISTING_READY",
+          "node_type": "terminal",
+          "sequence": 24,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMETMPLT.FIND_MATCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact matches were disclosed and the user selected reuse or has not confirmed a create",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMETMPLT.SELECTION_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 25,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Multiple exact matches need a reuse decision, or partial-only candidates require user direction",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

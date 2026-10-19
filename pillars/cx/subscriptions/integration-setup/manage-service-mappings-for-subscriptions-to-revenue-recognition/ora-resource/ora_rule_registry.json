@@ -1,0 +1,276 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_SERVICE_MAPPINGS_FOR_SUBSCRIPTIONS_TO_REVENUE_RECOGNITION",
+      "task_name": "Manage Service Mappings for Subscriptions to Revenue Recognition",
+      "start_node": "RMCSSM.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "RMCSSM.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RMCSSM.RESOLVE_EVIDENCE",
+            "invalid": "RMCSSM.REPORT_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate current-phase input shape using supplied current files and local choices.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RMCSSM.RESOLVE_EVIDENCE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "no_lookup": "RMCSSM.CHECK_DEPENDENCIES",
+            "needs_describe": "RMCSSM.DESCRIBE_METADATA",
+            "unresolved": "RMCSSM.REPORT_ISSUES"
+          },
+          "prerequisites": [
+            "RMCSSM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate applicable local evidence; choose a live branch only for the documented analysis-phase missing metadata question.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 126
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RMCSSM.DESCRIBE_METADATA",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RMCSSM.CHECK_DEPENDENCIES",
+            "unresolved": "RMCSSM.REPORT_ISSUES"
+          },
+          "prerequisites": [
+            "RMCSSM.RESOLVE_EVIDENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Execute only the selected describe GET contract after all live prerequisites; never a general GET or write.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 127
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RMCSSM.CHECK_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RMCSSM.ENFORCE_DESIGN",
+            "blocked": "RMCSSM.REPORT_ISSUES"
+          },
+          "prerequisites": [
+            "RMCSSM.RESOLVE_EVIDENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Check current-phase record dependencies after local resolution or optional describe; pending business decisions are structured outcomes, not publication success.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RMCSSM.ENFORCE_DESIGN",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RMCSSM.CHECK_EXECUTION_CONTRACT",
+            "blocked": "RMCSSM.REPORT_ISSUES"
+          },
+          "prerequisites": [
+            "RMCSSM.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Check current-phase claims against canonical source policies and applicable physical restrictions; execute no mapping or algorithm change.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RMCSSM.CHECK_EXECUTION_CONTRACT",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RMCSSM.EVALUATE_CHECKPOINT",
+            "blocked": "RMCSSM.REPORT_ISSUES",
+            "unsupported": "RMCSSM.RETURN_UNSUPPORTED"
+          },
+          "prerequisites": [
+            "RMCSSM.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Check assisted phase and operation boundary only; perform no mutation and grant no deployment approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RMCSSM.EVALUATE_CHECKPOINT",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RMCSSM.RETURN_RULE_RESULTS",
+            "invalid": "RMCSSM.REPORT_ISSUES"
+          },
+          "prerequisites": [
+            "RMCSSM.CHECK_EXECUTION_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate completed applicable checks and structured outcome; valid means checkpoint completion only, not accepted source or deployed mapping.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RMCSSM.RETURN_RULE_RESULTS",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RMCSSM.EVALUATE_CHECKPOINT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return completed checkpoint checks and actual structured outcome; no source acceptance or publication is implied.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RMCSSM.REPORT_ISSUES",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "reported": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Classify and disclose checkpoint issues with evidence and a safe next action; no retry or automatic source substitution.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return failed or missing checkpoint status and exact correction.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RMCSSM.RETURN_UNSUPPORTED",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return unsupported operation and required separate contract without invoking another task or live action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

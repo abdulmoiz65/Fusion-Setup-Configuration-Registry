@@ -1,0 +1,29 @@
+# Manage Channel Claim Reasons Reference Lookups
+
+## Live Lookups
+
+| Resolver | Runs When | Source Values | Request Path or URL | Requested Fields | Match Rule | Values to Fill | If No Match or Many Matches |
+|---|---|---|---|---|---|---|---|
+| resolve_reference_data_set | Create or update identity supplies SetId, SetCode or SetName | SetId; SetCode; SetName | With SetId: GET /fscmRestApi/resources/11.13.18.05/setIdSets using finder=PrimaryKey;SetId={validated-integer}, fields=SetId,SetCode,SetName and onlyData=true; then confirm returned code/name via setIdSetsLOV queried by the returned exact SetCode. Without SetId: GET /fscmRestApi/resources/11.13.18.05/setIdSetsLOV with q=SetCode='{escaped-code}' when code is supplied, otherwise q=SetName='{escaped-name}', onlyData=true and no fields projection. Follow all pages on either path | SetId; SetCode; SetName from ID lookup; SetCode and SetName from LOV | Exactly one matching set; ID must equal supplied ID, including 0, and all nonblank supplied code/name values must agree with returned values. ID path requires both returned code/name and exactly one agreeing LOV tuple. Code/name-only path does not require ID. Conflicts, failed ID lookup or missing fields block with no fallback or guessed values; update resolved set must match existing target | Verified SetCode and SetName for prepared loader source; verified SetId retained as evidence only when supplied. Never put SetId into unsupported loader metadata | No match, multiple matches, conflicting identity, missing fields, inaccessible endpoint or incomplete paging blocks preview |
+| find_claim_reason_by_code | The reference data set is resolved for an explicit create or update request | ClaimReasonCode; resolved SetCode; optional supplied ClaimReasonId | /fscmRestApi/resources/11.13.18.05/channelClaimReasons?q=ClaimReasonCode='{escapedClaimReasonCode}'&fields=ClaimReasonId,ClaimReason,ClaimReasonCode,SetCode,SetName,SetId,Description,StartDate,EndDate,ChargebackReason,ChargebackReasonCode,CreditMemoReason,CreditMemoReasonCode,WriteoffAdjustmentReason,WriteoffAdjustmentReasonCode,BuySideFlag,SellSideFlag,LastUpdateDate&onlyData=true | ClaimReasonId; ClaimReason; ClaimReasonCode; SetCode; SetName; SetId; all ten update fields; BuySideFlag; SellSideFlag; LastUpdateDate | Escape the Fusion string literal and URL-encode query parameters through the shared client; follow all pages, then require an exact ClaimReasonCode and resolved SetCode match. If ClaimReasonId was supplied, it must equal the returned identity | Server-returned identity and current values for the before/after comparison; absent fields are not assumed null | No match permits create only for explicit create intent and blocks update as NOT_FOUND; one match permits update validation only for update intent and blocks create as DUPLICATE; multiple matches or conflicting ID block both |
+
+## Lookup Execution Rules
+
+Run these declared GETs only through the selected FSCR Run Book workflow and shared core/fusion-api/rest-api-client with REST-Framework-Version: 9. Escape Fusion string literals, URL-encode query parameters, follow all pages and reject off-host links. Resolve identifiers before final immutable preparation. When SetId is supplied on update, require the existing reason's returned SetId to agree as well as its resolved code/name; missing evidence blocks rather than becoming null.
+
+Set ID lookup source: Oracle [ADF set ID sets GET](https://docs.oracle.com/en/cloud/saas/applications-common/25c/farca/op-http-servername-fscmrestapi-resources-11.13.18.05-setidsets-get.html) documents the PrimaryKey finder and SetId/SetCode/SetName response. The equivalent 26C ADF page was unavailable at authoring; [26C set ID sets documentation](https://docs.oracle.com/en/cloud/saas/applications-common/26c/farca/op-https-servername-api-boss-data-objects-ora-commonappsinfra-objects-v1-setidsets-get.html) describes a different BOSS route, not an automatic fallback. Verify the declared ADF lookup in the selected instance during preparation; fail closed if unavailable. Never infer a set ID from a BusinessUnitId or digits in a code/name.
+
+| Situation | What Happens |
+|---|---|
+| Reference data set lookup | Run resolve_reference_data_set through the FSCR Run Book before preparing the channelClaimReasons Data Loader preview. |
+| Claim-reason identity lookup returns zero records | Let core.data-loader prepare a create preview only for create intent. An update returns NOT_FOUND; never fall back to create or upsert. |
+| Claim-reason identity lookup returns exactly one exact code/set match | A create request returns DUPLICATE. An update continues to CJMCR.VALIDATE_UPDATE using the current record and server-issued identity. |
+| Current values are incomplete or identity conflicts | Stop before approval; do not invent missing values, use a different set, or treat a missing value as null. |
+| A Data Loader-authorized write has an uncertain outcome | Reconcile through the FSCR Run Book using fresh read-only evidence; never repeat the mutation automatically. |
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| CJMCR.FIND_REFERENCE_DATA_SET | decision | 3 | reference_lookup | found->CJMCR.APPLY_DOCUMENTED_DEFAULTS;not_found->RETURN_ISSUES;ambiguous->RETURN_ISSUES | CJMCR.RESOLVE_REFERENCE_DATA_SET | stop | Resolve one reference data set before the channel claim reason is prepared for Data Loader preview |
+| CJMCR.FIND_BY_CODE | decision | 5 | reference_lookup | found->CJMCR.VALIDATE_UPDATE;not_found->CJMCR.CONFIRM_CREATE_GATE;ambiguous->RETURN_ISSUES | CJMCR.APPLY_DOCUMENTED_DEFAULTS | stop | Run find_claim_reason_by_code for the exact code and set; preserve explicit operation intent and reject conflicting supplied IDs |

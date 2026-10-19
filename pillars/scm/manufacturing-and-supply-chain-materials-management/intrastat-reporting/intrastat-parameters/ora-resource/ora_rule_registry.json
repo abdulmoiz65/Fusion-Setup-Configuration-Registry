@@ -1,0 +1,110 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_INTRASTAT_PARAMETERS",
+      "task_name": "Intrastat Parameters",
+      "start_node": "INTRASTAT_PARAMETERS.NORMALIZE_UI_LABELS",
+      "nodes": [
+        {
+          "id": "INTRASTAT_PARAMETERS.NORMALIZE_UI_LABELS",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "INTRASTAT_PARAMETERS.RESOLVE_EXCLUSIONS",
+            "blocked": "INTRASTAT_PARAMETERS.RETURN_ISSUES",
+            "failure": "INTRASTAT_PARAMETERS.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Apply approved UI aliases and preserve values; verify canonical input is unchanged when normalization already ran before Data Loader Mapping stage.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INTRASTAT_PARAMETERS.RESOLVE_EXCLUSIONS",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "INTRASTAT_PARAMETERS.RETURN_SUCCESS",
+            "not_required": "INTRASTAT_PARAMETERS.RETURN_SUCCESS",
+            "blocked": "INTRASTAT_PARAMETERS.RETURN_ISSUES",
+            "failure": "INTRASTAT_PARAMETERS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "INTRASTAT_PARAMETERS.NORMALIZE_UI_LABELS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate both declared exclusion resolvers for each source row; skip each blank pair and return not_required when neither pair is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INTRASTAT_PARAMETERS.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "INTRASTAT_PARAMETERS.RESOLVE_EXCLUSIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exclusion lookup step returns resolved or not_required; return lookup results to the invoking workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INTRASTAT_PARAMETERS.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input mapping or the exclusion lookup step returns blocked or failure; return issues and stop Data Loader handoff.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

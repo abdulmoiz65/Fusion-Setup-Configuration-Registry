@@ -1,0 +1,393 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PER_MANAGE_HCM_POSITION_HIERARCHY",
+      "task_name": "Manage HCM Position Hierarchy",
+      "start_node": "POSH.INPUT",
+      "nodes": [
+        {
+          "id": "POSH.INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "POSH.DEFAULTS",
+            "invalid": "POSH.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate operation, Position selectors, effective context, move mode, key provenance, and combined Position plus Position Hierarchy source requirements",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POSH.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "POSH.POSITION_ROUTE",
+            "preserved": "POSH.POSITION_ROUTE",
+            "not_required": "POSH.POSITION_ROUTE",
+            "blocked": "POSH.ERROR"
+          },
+          "prerequisites": [
+            "POSH.INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, current-state reads, and required resolvers are complete",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POSH.POSITION_ROUTE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "position_only": "POSH.DONE_POSITION",
+            "hierarchy_required": "POSH.ANCESTOR",
+            "blocked": "POSH.ERROR"
+          },
+          "prerequisites": [
+            "POSH.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Delegate a Position create or edit without a parent relationship add or change to Manage Positions; otherwise continue hierarchy processing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POSH.ANCESTOR",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "POSH.DESCENDANTS",
+            "missing": "POSH.ERROR",
+            "ambiguous": "POSH.ERROR",
+            "failed": "POSH.ERROR"
+          },
+          "prerequisites": [
+            "POSH.POSITION_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve one ancestor or parent reference through find_position_hierarchy_ancestor",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POSH.DESCENDANTS",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "POSH.MEMBERS",
+            "not_applicable": "POSH.MEMBERS",
+            "invalid_graph": "POSH.ERROR",
+            "incomplete": "POSH.ERROR",
+            "failed": "POSH.ERROR"
+          },
+          "prerequisites": [
+            "POSH.ANCESTOR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read the complete graph only when read_position_hierarchy_descendants applies",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POSH.MEMBERS",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "POSH.LOADER_CONTRACT",
+            "not_applicable": "POSH.LOADER_CONTRACT",
+            "missing": "POSH.ERROR",
+            "ambiguous": "POSH.ERROR",
+            "out_of_range": "POSH.ERROR",
+            "failed": "POSH.ERROR"
+          },
+          "prerequisites": [
+            "POSH.DESCENDANTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve every operation-specific Position and relationship through resolve_position_hierarchy_members",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POSH.LOADER_CONTRACT",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "POSH.DEPENDENCIES",
+            "not_applicable": "POSH.DEPENDENCIES",
+            "missing": "POSH.ERROR",
+            "ambiguous": "POSH.ERROR",
+            "stale": "POSH.ERROR",
+            "failed": "POSH.ERROR"
+          },
+          "prerequisites": [
+            "POSH.MEMBERS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve live Position Hierarchy metadata through inspect_position_hierarchy_loader_contract for a mutation; skip only for a read",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POSH.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "POSH.DESIGN",
+            "not_required": "POSH.DESIGN",
+            "needs_input": "POSH.ERROR",
+            "unresolved": "POSH.ERROR"
+          },
+          "prerequisites": [
+            "POSH.LOADER_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After applicable hierarchy reference lookups and before design enforcement",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POSH.DESIGN",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "POSH.ROUTE",
+            "not_required": "POSH.ROUTE",
+            "blocked": "POSH.ERROR"
+          },
+          "prerequisites": [
+            "POSH.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, dependencies, lookups, and defaulting are complete",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POSH.ROUTE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read_complete": "POSH.DONE_READ",
+            "loader_ready": "POSH.DONE_LOADER",
+            "blocked": "POSH.ERROR"
+          },
+          "prerequisites": [
+            "POSH.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select read completion or the declared Core Data Loader stage and enforce preview, approval, and verification boundaries",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POSH.ERROR",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "POSH.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior node returns invalid, missing, ambiguous, blocked, failed, partial, timed-out, uncertain, stale, or unverified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POSH.DONE_READ",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "POSH.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A complete validated hierarchy was rendered from the selected ancestor",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POSH.DONE_LOADER",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "POSH.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The exact mutation plan is ready for its declared Core Data Loader stage or completed with fresh verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POSH.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request cannot safely continue without corrected input, access, metadata, source, approval, or reconciliation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POSH.DONE_POSITION",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "POSH.POSITION_ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Manage Positions owns the create or edit with no parent relationship change",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

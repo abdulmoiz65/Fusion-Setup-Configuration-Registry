@@ -1,0 +1,284 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_ELEMENTS",
+      "task_name": "Elements",
+      "start_node": "ELE.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "ELE.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ELE.APPLY_DEFAULTS",
+            "missing": "ELE.HANDLE_ERROR",
+            "invalid": "ELE.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate create request identity, LDG, primary classification, category and effective date.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ELE.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "ELE.CHECK_DEPENDENCIES",
+            "unchanged": "ELE.CHECK_DEPENDENCIES"
+          },
+          "prerequisites": [
+            "ELE.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Normalize omitted optional secondary classification to empty without changing a supplied value.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ELE.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ELE.RESOLVE_LDG",
+            "blocked": "ELE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ELE.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm LDG input and active project route permit the declared lookup; defer live DAT schema validation to core.data-loader.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ELE.RESOLVE_LDG",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "unique": "ELE.FIND_QUESTIONNAIRE",
+            "missing": "ELE.HANDLE_ERROR",
+            "ambiguous": "ELE.HANDLE_ERROR",
+            "failed": "ELE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ELE.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run find_ldg_by_exact_name through the routed read-only lookup step; retain one exact LDG, ID and legislation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ELE.FIND_QUESTIONNAIRE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "unique": "ELE.VALIDATE_RESPONSES",
+            "missing": "ELE.HANDLE_ERROR",
+            "ambiguous": "ELE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ELE.RESOLVE_LDG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run find_element_questionnaire and show every matching question in order for user answer and confirmation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ELE.VALIDATE_RESPONSES",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "confirmed": "ELE.CHECK_DESIGN",
+            "missing": "ELE.HANDLE_ERROR",
+            "invalid": "ELE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ELE.FIND_QUESTIONNAIRE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Show all selected questions and require one confirmed response for each; preserve those values for the loader.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ELE.CHECK_DESIGN",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "ELE.HDL_GATE",
+            "blocked": "ELE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ELE.VALIDATE_RESPONSES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require a questionnaire match for the resolved legislation and exact confirmed question rows; reserve live DAT metadata checks for core.data-loader.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ELE.HDL_GATE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ELE.RETURN_PREPARED",
+            "blocked": "ELE.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ELE.CHECK_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require confirmed answers and active Run Book, then hand off to core.data-loader for live metadata preflight and exact-artifact approval. This gate does not submit HDL.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ELE.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "reported": "ELE.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Classify missing input, no-match, ambiguity, auth/transport, metadata and approval blockers with redacted guidance.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ELE.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return blocking issue and one safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ELE.RETURN_PREPARED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ELE.HDL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return a validated handoff to core.data-loader; only that workflow may approve and submit HDL.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

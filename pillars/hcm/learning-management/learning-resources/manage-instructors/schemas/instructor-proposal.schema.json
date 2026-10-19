@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Private instructor draft, never a loader approval envelope",
+  "type": "object", "additionalProperties": false,
+  "required": ["taskCode", "businessObject", "operation", "version", "environment", "requestFingerprint", "rows", "readiness", "fingerprint"],
+  "properties": {
+    "taskCode": {"const": "CUSTOM_MANAGE_INSTRUCTORS"},
+    "businessObject": {"const": "learningInstructors"},
+    "operation": {"const": "create"},
+    "version": {"type": "integer", "minimum": 1},
+    "environment": {"type": "object", "minProperties": 1},
+    "requestFingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "readiness": {"const": "draft_not_load_approval"},
+    "rows": {
+      "type": "array", "minItems": 1, "maxItems": 20,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["row_id", "person", "action", "inputs", "trainingSupplier"],
+        "properties": {
+          "row_id": {"type": "string"}, "person": {"type": "object"},
+          "action": {"const": "create"}, "trainingSupplier": {"type": "null"},
+          "inputs": {
+            "type": "object", "additionalProperties": false, "required": ["personId"],
+            "properties": {"personId": {"type": "string", "pattern": "^[0-9]+$"}}
+          }
+        }
+      }
+    }
+  }
+}

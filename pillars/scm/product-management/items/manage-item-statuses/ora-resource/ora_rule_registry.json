@@ -1,0 +1,380 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "EGP_MANAGE_ITEM_STATUSES",
+      "task_name": "Manage Item Statuses",
+      "start_node": "IST.DERIVE_CREATE_STATUS_CODE",
+      "nodes": [
+        {
+          "id": "IST.DERIVE_CREATE_STATUS_CODE",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "derived": "IST.VERIFY_DERIVED_CREATE_STATUS_CODE",
+            "not_applicable": "IST.RESOLVE_ITEM_STATUS_IDENTITY",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "An explicit create request supplies Status Name and omits Status Code",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "standard-defaults"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IST.VERIFY_DERIVED_CREATE_STATUS_CODE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "available": "IST.CONFIRM_DERIVED_STATUS_CODE",
+            "code_collision": "IST.DERIVE_UNIQUE_STATUS_CODE",
+            "name_collision": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IST.DERIVE_CREATE_STATUS_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create Status Code was derived from Status Name",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "live-lookups"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IST.DERIVE_UNIQUE_STATUS_CODE",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "candidate": "IST.VERIFY_DERIVED_CREATE_STATUS_CODE",
+            "exhausted": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IST.VERIFY_DERIVED_CREATE_STATUS_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The initially derived Status Code collides but the Status Name is available",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "standard-defaults"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IST.RESOLVE_ITEM_STATUS_IDENTITY",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "IST.VALIDATE-INPUT",
+            "missing": "IST.VALIDATE-INPUT",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Status Code, Status Name, or both are supplied before input validation when create-code derivation does not apply",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IST.CONFIRM_DERIVED_STATUS_CODE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "require_confirmation",
+          "execution_route": "local",
+          "transitions": {
+            "confirmed": "IST.REVERIFY_CONFIRMED_STATUS_CODE",
+            "rejected": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IST.VERIFY_DERIVED_CREATE_STATUS_CODE",
+            "user_confirmation"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An available derived or numbered Status Code is ready for user confirmation",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IST.REVERIFY_CONFIRMED_STATUS_CODE",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "available": "IST.VALIDATE-INPUT",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IST.CONFIRM_DERIVED_STATUS_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The user confirmed an available derived or numbered Status Code",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "live-lookups"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IST.VALIDATE-INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "IST.VALIDATE_INVENTORY_PREREQUISITE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Manage Item Statuses record is supplied for validation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IST.VALIDATE_INVENTORY_PREREQUISITE",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "IST.DEFAULT_STATUS_CONTROL",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IST.VALIDATE-INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Stocked or Build in WIP is set to Y",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IST.DEFAULT_STATUS_CONTROL",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "IST.DETERMINE_OPERATIONAL_ATTRIBUTE_LOOKUP",
+            "provided": "IST.RESOLVE_STATUS_CONTROL"
+          },
+          "prerequisites": [
+            "IST.VALIDATE-INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A StatusAttributeValue child resource is supplied after input validation",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IST.RESOLVE_STATUS_CONTROL",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "IST.DETERMINE_OPERATIONAL_ATTRIBUTE_LOOKUP",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IST.DEFAULT_STATUS_CONTROL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "StatusControl is provided in the StatusAttributeValue child resource",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IST.DETERMINE_OPERATIONAL_ATTRIBUTE_LOOKUP",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "lookup_required": "IST.RESOLVE_ITEM_OPERATIONAL_ATTRIBUTE",
+            "not_required": "IST.RETURN_SUCCESS_NO_OPERATIONAL_ATTRIBUTE"
+          },
+          "prerequisites": [
+            "IST.DEFAULT_STATUS_CONTROL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation and optional StatusControl handling have completed; select lookup_required only when one or more operational attributes are provided",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IST.RESOLVE_ITEM_OPERATIONAL_ATTRIBUTE",
+          "node_type": "step",
+          "sequence": 45,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "IST.RETURN_SUCCESS_OPERATIONAL_ATTRIBUTE",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IST.DETERMINE_OPERATIONAL_ATTRIBUTE_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more operational attributes are provided for update or lookup",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IST.RETURN_SUCCESS_NO_OPERATIONAL_ATTRIBUTE",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IST.DETERMINE_OPERATIONAL_ATTRIBUTE_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All required validation and optional StatusControl handling rules pass, and no operational attributes are provided",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IST.RETURN_SUCCESS_OPERATIONAL_ATTRIBUTE",
+          "node_type": "terminal",
+          "sequence": 55,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IST.RESOLVE_ITEM_OPERATIONAL_ATTRIBUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All required validation and optional StatusControl handling rules pass, and the requested operational-attribute lookup resolves exactly",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Manage Item Statuses validation, StatusControl lookup, or operational-attribute lookup identifies a missing or invalid value",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

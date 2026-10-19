@@ -1,0 +1,434 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_CPQ_SETUP_ASSISTANT",
+      "task_name": "CPQ Setup Assistant",
+      "start_node": "CPQ.REQUEST_SELECTION",
+      "nodes": [
+        {
+          "id": "CPQ.REQUEST_SELECTION",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "initialization": "CPQ.INITIALIZATION_PREFLIGHT",
+            "configuration": "CPQ.CONFIGURATION_PREFLIGHT",
+            "status_read": "CPQ.READ_STATUS_ONLY",
+            "invalid": "CPQ.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Select exactly one path: initialization readiness, configuration readiness, or an explicit read-only status request. Validate the target and required path inputs without performing a mutation.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.INITIALIZATION_PREFLIGHT",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CPQ.PREINITIALIZATION_STATUS_LOOKUP",
+            "invalid": "CPQ.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CPQ.REQUEST_SELECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require sanitized evidence that the credential-free CPQ deployment lookup was performed for the target environment and did not return the documented not-deployed outcome. This registry node does not invoke that lookup.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.CONFIGURATION_PREFLIGHT",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CPQ.CONFIGURATION_DISCOVERY_LOOKUP",
+            "invalid": "CPQ.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CPQ.REQUEST_SELECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate the target and configuration-read scope before authenticated read-only discovery. Do not collect or authorize mutations in this registry path.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.PREINITIALIZATION_STATUS_LOOKUP",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "setup_not_done": "CPQ.INITIALIZATION_READINESS",
+            "in_progress": "CPQ.RETURN_ISSUES",
+            "error": "CPQ.RETURN_ISSUES",
+            "completed": "CPQ.RETURN_ISSUES",
+            "unknown": "CPQ.RETURN_ISSUES",
+            "failure": "CPQ.FAILED"
+          },
+          "prerequisites": [
+            "CPQ.INITIALIZATION_PREFLIGHT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use the standard authenticated read-only client to read status once after the separate runtime deployment preflight. Only `SETUP_NOT_DONE` proceeds to initialization readiness; this node never initializes CPQ.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.CONFIGURATION_DISCOVERY_LOOKUP",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "ready": "CPQ.CONFIGURATION_READINESS",
+            "in_progress": "CPQ.RETURN_ISSUES",
+            "error": "CPQ.RETURN_ISSUES",
+            "completed": "CPQ.RETURN_ISSUES",
+            "unknown": "CPQ.RETURN_ISSUES",
+            "failure": "CPQ.FAILED"
+          },
+          "prerequisites": [
+            "CPQ.CONFIGURATION_PREFLIGHT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use the standard authenticated read-only client to discover the assistant, Company Profile, CPQ Users, role mappings, starter data, progress, and LOV values. Core Data Loader performs initialization and mutations; this node only supplies current discovery evidence.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.READ_STATUS_ONLY",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reported": "CPQ.STATUS_REPORTED",
+            "indeterminate": "CPQ.RETURN_ISSUES",
+            "failure": "CPQ.FAILED"
+          },
+          "prerequisites": [
+            "CPQ.REQUEST_SELECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use the standard authenticated read-only client for exactly one explicit status request with the documented 30-second timeout and no retry. Do not initialize, collect configuration, mutate, poll, or enter a readiness handoff.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.INITIALIZATION_READINESS",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPQ.INITIALIZATION_BINDING_READINESS",
+            "blocked": "CPQ.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CPQ.PREINITIALIZATION_STATUS_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm the selected environment, the `SETUP_NOT_DONE` pre-initialization state and validated immutable initialization artifact. Current-stage approval remains pending and does not block preview readiness. Do not check role assignments or authorize execution.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.CONFIGURATION_READINESS",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPQ.CONFIGURATION_BINDING_READINESS",
+            "blocked": "CPQ.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CPQ.CONFIGURATION_DISCOVERY_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm the selected environment, current authenticated discovery evidence, state-applicable proposal, validated immutable artifact and required prior-stage completion/reconciliation. Current-stage approval remains pending and does not block preview readiness. Do not check role assignments or authorize execution.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.INITIALIZATION_BINDING_READINESS",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPQ.INITIALIZATION_EXECUTION_GATE",
+            "blocked": "CPQ.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CPQ.INITIALIZATION_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm the durable CPQ guard is available and the exact immutable artifact, current registration and target can be bound by its preview. Approval may remain pending; do not require a current-stage manifest, approval record, reviewed binding, actor, expiry or nonce before preview creation. The guard enforces explicit approval, attribution, binding, expiry and atomic nonce consumption at approve/execute. This node cannot approve or execute a mutation.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.CONFIGURATION_BINDING_READINESS",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPQ.CONFIGURATION_EXECUTION_GATE",
+            "blocked": "CPQ.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CPQ.CONFIGURATION_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm the durable guard and write-boundary adapter are available and ordered operations, administrator set, Run Book, metadata and state can be bound by the preview. Require applicable prior-stage completion and reconciliation, including the documented verified existing-state route when no child write occurred. Current-stage approval remains pending until the preview is built and presented; enforce it only at approve/execute. Retain uncertain-submission locks. This node cannot approve or execute a mutation.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.INITIALIZATION_EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPQ.INITIALIZATION_READY",
+            "blocked": "CPQ.RETURN_ISSUES",
+            "failure": "CPQ.FAILED"
+          },
+          "prerequisites": [
+            "CPQ.INITIALIZATION_BINDING_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm the initialization readiness record is complete for Task Hook preview and CPQ guard manifest construction with approval pending. Missing current-stage approval alone is not a readiness failure; it blocks guard execution. This gate does not invoke or authorize initialization.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.CONFIGURATION_EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPQ.CONFIGURATION_READY",
+            "blocked": "CPQ.RETURN_ISSUES",
+            "failure": "CPQ.FAILED"
+          },
+          "prerequisites": [
+            "CPQ.CONFIGURATION_BINDING_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm the configuration readiness record and required prior-stage reconciliation are complete for Task Hook preview and CPQ guard manifest construction with approval pending. Missing current-stage approval alone is not a readiness failure; it blocks guard execution. This gate does not invoke or authorize a Company Profile update, administrator creation, or submission.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.STATUS_REPORTED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPQ.READ_STATUS_ONLY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A user-requested, single authenticated read-only status response was reported; no configuration action or runtime handoff is authorized.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.INITIALIZATION_READY",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPQ.INITIALIZATION_EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Initialization readiness was handed off as a redacted immutable record to Core Data Loader. The terminal does not execute or authorize initialization.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.CONFIGURATION_READY",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPQ.CONFIGURATION_EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Configuration readiness was handed off as a redacted immutable record to Core Data Loader. The terminal does not execute or authorize Company Profile, administrator, or submission mutations.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Preflight, authenticated read-only discovery, dependency readiness, approval, or handoff evidence is blocked.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPQ.FAILED",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "An authenticated read-only API request or verification step fails.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,256 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HRT_MANAGE_INSTANCE_QUALIFIERS",
+      "task_name": "Instance Qualifiers",
+      "start_node": "IQ.CAPTURE_CONFIGURATION",
+      "nodes": [
+        {
+          "id": "IQ.CAPTURE_CONFIGURATION",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "IQ.CHECK_DEPENDENCIES",
+            "ambiguous": "IQ.RETURN_QUESTION",
+            "unsupported": "IQ.RETURN_UNSUPPORTED",
+            "invalid": "IQ.RETURN_BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Instance Qualifiers request, with supplied configuration values or explicit task scope",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IQ.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "IQ.CHECK_EXACT_EXISTING",
+            "proposal_only": "IQ.ENFORCE_DESIGN",
+            "field_contract_unavailable": "IQ.RETURN_BLOCKED",
+            "standalone_provider_unavailable": "IQ.RETURN_BLOCKED",
+            "evidence_unavailable": "IQ.RETURN_BLOCKED",
+            "mutation_requested": "IQ.RETURN_UNSUPPORTED",
+            "blocked": "IQ.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "IQ.CAPTURE_CONFIGURATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supplied-configuration Instance Qualifiers proposal or exact review is being resolved",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IQ.CHECK_EXACT_EXISTING",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "exact": "IQ.RETURN_EXACT_DUPLICATE",
+            "not_found": "IQ.ENFORCE_DESIGN",
+            "multiple_exact": "IQ.RETURN_BLOCKED",
+            "evidence_unavailable": "IQ.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "IQ.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A source-backed field contract and complete target-bound evidence are available",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IQ.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "IQ.BUILD_REVIEW_PROPOSAL",
+            "blocked": "IQ.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "IQ.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A complete supplied-configuration review proposal is being prepared",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IQ.BUILD_REVIEW_PROPOSAL",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "IQ.RETURN_PROPOSAL",
+            "confirmation_or_execution_requested": "IQ.RETURN_UNSUPPORTED",
+            "blocked": "IQ.RETURN_BLOCKED"
+          },
+          "prerequisites": [
+            "IQ.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A compliant review-only Instance Qualifiers proposal is ready to fingerprint",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IQ.RETURN_PROPOSAL",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IQ.BUILD_REVIEW_PROPOSAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A fingerprinted review-only proposal is returned with no execution authorization",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IQ.RETURN_EXACT_DUPLICATE",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IQ.CHECK_EXACT_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An exact qualifier set blocks creation; display its matched identifier",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IQ.RETURN_QUESTION",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IQ.CAPTURE_CONFIGURATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One concise technical-scope clarification is required",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IQ.RETURN_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input, source contract, evidence, dependency, design, or persistence is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IQ.RETURN_UNSUPPORTED",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request is out of scope or attempts execution in proposal-only V1",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "GL_MANAGE_REPORTING_CURRENCIES",
+      "task_name": "Manage Reporting Currencies",
+      "start_node": "MRC-010-VALIDATE-INPUT",
+      "nodes": [
+        {
+          "id": "MRC-010-VALIDATE-INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MRC-020-RESOLVE-REFERENCES",
+            "invalid": "MRC-070-HANDLE-ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 195
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRC-020-RESOLVE-REFERENCES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MRC-030-RESOLVE-DEPENDENCIES",
+            "unresolved": "MRC-070-HANDLE-ERROR"
+          },
+          "prerequisites": [
+            "MRC-010-VALIDATE-INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRC-030-RESOLVE-DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MRC-040-APPLY-DEFAULTS",
+            "blocked": "MRC-070-HANDLE-ERROR"
+          },
+          "prerequisites": [
+            "MRC-020-RESOLVE-REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRC-040-APPLY-DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "MRC-050-ENFORCE-DESIGN",
+            "failed": "MRC-070-HANDLE-ERROR"
+          },
+          "prerequisites": [
+            "MRC-030-RESOLVE-DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRC-050-ENFORCE-DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MRC-060-EXECUTION-GATE",
+            "blocked": "MRC-070-HANDLE-ERROR"
+          },
+          "prerequisites": [
+            "MRC-040-APPLY-DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 136
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRC-060-EXECUTION-GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MRC-080-RETURN-READY",
+            "blocked": "MRC-070-HANDLE-ERROR",
+            "failed": "MRC-070-HANDLE-ERROR"
+          },
+          "prerequisites": [
+            "MRC-050-ENFORCE-DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRC-070-HANDLE-ERROR",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "MRC-090-RETURN-ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior node returns an invalid, unresolved, blocked, or failed outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRC-080-RETURN-READY",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MRC-060-EXECUTION-GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Candidate is immutable, validated, and ready for core.data-loader preview and approval; or same-scope re-export proves the approved import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRC-090-RETURN-ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MRC-070-HANDLE-ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Error handling has produced an actionable stop record",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

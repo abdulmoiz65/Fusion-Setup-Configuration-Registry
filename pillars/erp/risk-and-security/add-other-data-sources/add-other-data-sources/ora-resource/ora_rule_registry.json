@@ -1,0 +1,258 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_GTG_ADD_OTHER_DATA_SOURCES",
+      "task_name": "Add Other Data Sources",
+      "start_node": "CDS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "CDS.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CDS.VALIDATE_RESPONSE_SCHEMA",
+            "invalid": "CDS.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before configuration preview or task handoff",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDS.VALIDATE_RESPONSE_SCHEMA",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CDS.RESOLVE_SOURCE_TYPE",
+            "invalid": "CDS.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CDS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After OpenAPI generation and before REST-operation extraction or approval-artifact preparation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDS.RESOLVE_SOURCE_TYPE",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "CDS.CHECK_DEPENDENCIES",
+            "invalid": "CDS.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CDS.VALIDATE_RESPONSE_SCHEMA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After connector type and OpenAPI response schema validation and before dependency evaluation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDS.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "oci": "CDS.VERIFY_OCI_SEEDED",
+            "user_defined": "CDS.ENFORCE_DESIGN",
+            "blocked": "CDS.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CDS.RESOLVE_SOURCE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After input validation and source-type resolution",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDS.VERIFY_OCI_SEEDED",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "seeded": "CDS.ENFORCE_DESIGN",
+            "empty": "CDS.HANDLE_ISSUE",
+            "incomplete": "CDS.HANDLE_ISSUE",
+            "unauthorized": "CDS.HANDLE_ISSUE",
+            "failed": "CDS.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CDS.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolved source type is OCI",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDS.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CDS.READINESS_GATE",
+            "blocked": "CDS.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CDS.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After contract dependency evaluation and any required OCI verification",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDS.READINESS_GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CDS.DONE_VALIDATED",
+            "blocked": "CDS.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CDS.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, dependency, design, and any required OCI verification checks and before task handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDS.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CDS.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any blocking issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDS.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was classified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CDS.DONE_VALIDATED",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CDS.READINESS_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All documented resource-authoring gates are satisfied",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

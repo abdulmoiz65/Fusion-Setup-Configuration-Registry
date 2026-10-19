@@ -1,0 +1,70 @@
+# Input Validation
+
+## Source
+
+| Source | Location | Used For |
+|---|---|---|
+| Oracle Implementing Cost Accounting | https://docs.oracle.com/en/cloud/saas/supply-chain-and-manufacturing/26c/faims/overview-of-cost-accounting.html | Cost Accounting implementation context |
+| Oracle Create Cost Organization Relationships | https://docs.oracle.com/en/cloud/saas/supply-chain-and-manufacturing/26c/faims/create-cost-organization-relationships.html | Required relationship inputs and association attributes |
+| Oracle Cost Organization Relationship | https://docs.oracle.com/en/cloud/saas/supply-chain-and-manufacturing/26c/faims/cost-organization-relationship.html | Relationship constraints and cost-book requirements |
+| CostOrgParameterId behavior | CostOrgParameterId is the primary key and is not available before a new Cost Organization Relationship is created | New-record primary-key handling |
+| Reference Data Set Object and Legal Entity LOV REST examples | /fscmRestApi/resources/11.13.18.05/referenceDataSetObjectsLOV; /fscmRestApi/resources/11.13.18.05/legalEntitiesLOV?q=LegalEntityId = &lt;legal-entity-id&gt; | Reference-data-set-object values and Legal Entity identity validation |
+| Developer-validated Fusion date requirement | Fusion rejects a Cost Book association FromDate unless it is formatted as YYYY-MM-DD | Cost Book association date validation |
+| Developer-validated Cost Book PATCH identifier behavior | A costOrgCostBooks PATCH accepts the component CostOrgId and CostBookId identifiers; a comma-delimited composite value in CustomSurrogateId is rejected because that attribute accepts only a whole number | Existing Cost Book association update identity |
+| Cost Organization Book Relationships Period End Validations operation policy | This Business Object supports update or PATCH only; creation and deletion are not allowed | Period End Validations operation validation |
+| Period Validation State LOV REST example, verified by read-only GET | /fscmRestApi/resources/11.13.18.05/standardLookupsLOV?finder=LookupTypeFinder;LookupType=CST_PERIOD_VALIDATION_ACTIONS | Period End Validations State validation |
+| Period Validation Type LOV REST example, verified by read-only GET | /fscmRestApi/resources/11.13.18.05/standardLookupsLOV?finder=LookupTypeFinder;LookupType=CST_PERIOD_VALIDATION_TYPES | Period End Validations ValidationType validation |
+| Cost Organization Book Period End Validations REST example, verified by read-only GET | /fscmRestApi/resources/11.13.18.05/costOrgBookPeriodEndValidations?q=CostBookId=&lt;CostBookId&gt; and CostOrgId=&lt;CostOrgId&gt; | Existing Period End Validations update eligibility and field-control validation |
+| Developer-validated Period End Validations PATCH user-key behavior | Live Data Loader metadata declares CostOrgId, CostBookId, and ValidationType as UserKeyAttrNames for PeriodEndValSurrogateId; leave PeriodEndValSurrogateId blank and supply all three component attributes | Period End Validations PATCH identity validation |
+
+## Required Groups
+
+| Requirement Group | Accepted Fields | If Missing | How to Resolve | Applies When | Resolver |
+|---|---|---|---|---|---|
+| Cost organization relationship header | One declared exact Cost Organization Name or one declared exact Cost Organization Code | Stop | Provide one exact Cost Organization identifier and declare whether it is a name or code | Always | resolve_cost_organization_exact |
+| Item validation organization | One declared exact Organization Name or one declared exact Organization Code | Stop | Provide one exact Item Validation Organization identifier, declare whether it is a name or code, and require that it resolves with ClassificationCode INV | Always | resolve_item_validation_organization_exact |
+| Set assignment | Exact Set ID, Set Code, or Set Name | Stop | Provide one exact Set identifier; the resolved SetId populates SetAssignmentId | Always | resolve_set_exact |
+| Inventory organization association | Exact Organization Name or Organization Code and Effective Start Date | Stop | Provide one exact Inventory Organization identifier and one association row for each inventory organization to be costed | Creating or updating an inventory organization association | resolve_inventory_organization_exact |
+| Cost book association | Exact Cost Book ID or Cost Book Code, Effective Start Date, First Opened Period, Maximum Open Periods, Conversion Rate Type, and either an exact Ledger ID or Ledger Name or ledger-less Currency and an Accounting Calendar declared as PeriodSetName or UserPeriodSetName | Stop | Provide one exact Cost Book identifier and the association inputs. For a ledger-less association, provide Currency and Accounting Calendar with its identifier type; validate the existing primary Cost Book automatically. | Creating or updating a cost-book association | resolve_cost_book_exact |
+| Existing Cost Book association update identity | CostOrgId, CostBookId, and CostBookCode; CustomSurrogateId remains blank | Stop | Resolve the current association, populate its component identifiers, and do not put a composite identifier in CustomSurrogateId | Updating an existing cost-book association | resolve_cost_book_exact |
+| Period-end validation configuration | ValidationType, validation timing, and State | Stop only for the selected validation | Select an authoritative ValidationType and the applicable close timing and State for each chosen validation; State must resolve to ERROR or IGNORE and defaults to ERROR | Configuring period-end validations after the Cost Book association is created | resolve_period_validation_type |
+| Existing period-end validation update identity | Blank PeriodEndValSurrogateId, CostOrgId, CostBookId, and one existing ValidationType | Stop | Confirm the live Data Loader metadata declares CostOrgId, CostBookId, and ValidationType as UserKeyAttrNames for PeriodEndValSurrogateId; then select only a ValidationType returned for that Cost Organization and Cost Book | Updating Cost Organization Book Relationships Period End Validations | resolve_period_end_validation_patch_user_key |
+
+## Dependency-Aware Validation
+
+| Applies When | Result | Next Action | Resolver |
+|---|---|---|---|
+| A Cost Organization Name or Cost Organization Code is provided | Resolve the Cost Organization by the supplied exact CostOrgName or exact CostOrgCode | Continue to Item Validation Organization lookup | resolve_cost_organization_exact |
+| An Item Validation Organization Name or Item Validation Organization Code is provided | Resolve the Item Validation Organization by the supplied exact OrganizationName or exact OrganizationCode with ClassificationCode INV; use its OrganizationId, MasterOrganizationId, BusinessUnitId, and LegalEntityId for the relationship. | Continue to Legal Entity lookup | resolve_item_validation_organization_exact |
+| A Cost Organization or Item Validation Organization LegalEntityId is resolved, or a Legal Entity Name is provided | Resolve the Legal Entity by exact LegalEntityId or exact Name. Confirm the Cost Organization and Item Validation Organization LegalEntityId values match before using the returned Name. | Continue to Inventory Organization lookup or dependency readiness | resolve_legal_entity_exact |
+| A Set ID, Set Code, or Set Name is provided | Resolve the Set by the supplied exact SetId, SetCode, or SetName. Populate SetAssignmentId from the returned SetId. | Continue to Inventory Organization lookup or dependency readiness | resolve_set_exact |
+| A Cost Book ID or Cost Book Code is provided | Resolve the Cost Book by the supplied exact CostBookId or exact CostBookCode. Populate CostBookIdentifier from CostBookId and PeriodicAverageFlag from PeriodicAverageCostBook. | Continue to Inventory Organization lookup or dependency readiness | resolve_cost_book_exact |
+| A Ledger ID or Ledger Name is provided | Resolve the Ledger by the supplied exact LedgerId or exact Name. Populate LedgerIdentifier from LedgerId and use PeriodSetName as the accounting-calendar name. | Continue to Inventory Organization lookup or dependency readiness | resolve_ledger_exact |
+| An Accounting Calendar is provided, or the Ledger lookup returns PeriodSetName | Resolve the Accounting Calendar by the user-declared exact PeriodSetName or UserPeriodSetName. Populate CalendarIdentifier from CalendarId. | Continue to Inventory Organization lookup or dependency readiness | resolve_accounting_calendar_exact |
+| An Inventory Organization Name or Inventory Organization Code is provided | Resolve the Inventory Organization by the supplied exact OrganizationName or exact OrganizationCode; use OrganizationId for InvOrgId, OrganizationId, and InvOrgParametersOrganizationId; use BusinessUnitId and ProfitCenterBusinessUnitId for the corresponding template fields; compare its LegalEntityId, which is the legal entity associated with the Inventory Organization, with the resolved Cost Organization LegalEntityId; then confirm the item master organization and Cost Organization assignment constraints | Continue to dependency readiness | resolve_inventory_organization_exact |
+| A ledger-less Cost Book association is provided | Resolve the existing Cost Books for the Cost Organization and confirm that one is marked as the primary Cost Book | Continue to dependency readiness when a primary Cost Book exists; otherwise report the missing association | resolve_primary_cost_book_by_cost_organization |
+| Period-end validation configuration selects Pending Period Close for a periodic average cost enabled Cost Book | Confirm that Pending Period Close is used only for the selected validations that support it | Continue to dependency readiness | |
+
+## Field Validation
+
+| Check | What Happens | Applies When | Resolver |
+|---|---|---|---|
+| At least one Cost Book is associated to the Cost Organization | Reject the relationship as incomplete | Always | |
+| Inventory Organization Effective Start Date defines the first date transactions are costed | Reject a missing effective start date | Creating or updating an inventory organization association | |
+| Primary Cost Book is associated to the primary ledger of the Cost Organization legal entity | Resolve existing associations automatically for a ledger-less Cost Book; reject only when no primary Cost Book is found | Creating or updating a ledger-less cost-book association | resolve_primary_cost_book_by_cost_organization |
+| Currency and Accounting Calendar are populated when no Ledger is selected | Reject an incomplete ledger-less cost-book association | Creating or updating a ledger-less cost-book association | |
+| Cost Book association FromDate is YYYY-MM-DD text | Reject another date representation before preview or submission | Creating or updating a Cost Book association | |
+| Cost Book association PATCH uses component identifiers | Reject a nonblank comma-delimited CustomSurrogateId; identify the association with CostOrgId, CostBookId, and CostBookCode | Updating an existing Cost Book association | resolve_cost_book_exact |
+| Cost Organization Book Relationships Period End Validations uses PATCH only | Reject a create, POST, delete, or DELETE operation; retain only the existing-record PATCH update | Updating Cost Organization Book Relationships Period End Validations | |
+| Period-end validation ValidationType is an authoritative lookup code | Reject a ValidationType that does not resolve exactly through CST_PERIOD_VALIDATION_TYPES; use its returned LookupCode | Updating Cost Organization Book Relationships Period End Validations | resolve_period_validation_type |
+| Period-end validation State is an authoritative action code | Reject a State that does not resolve exactly through CST_PERIOD_VALIDATION_ACTIONS; set ValidationActionCode from its LookupCode | Updating Cost Organization Book Relationships Period End Validations | resolve_period_validation_state |
+| Requested period-end ValidationType exists for the Cost Organization and Cost Book | Reject a ValidationType not returned by costOrgBookPeriodEndValidations for the resolved CostOrgId and CostBookId | Updating Cost Organization Book Relationships Period End Validations | resolve_existing_period_end_validations |
+| Period-end validation PATCH uses the metadata-declared component user key | Reject a populated PeriodEndValSurrogateId, a missing CostOrgId, CostBookId, or ValidationType, or live metadata that does not declare the exact three component UserKeyAttrNames | Updating Cost Organization Book Relationships Period End Validations | resolve_period_end_validation_patch_user_key |
+| CostOrgParameterId is blank | Reject a supplied CostOrgParameterId; Fusion generates this primary key when the new Cost Organization Relationship is created | Creating a new Cost Organization Relationship | |
+| Period-end validation timing and action are absent | Do not block creation of a Cost Book association; defer the configuration to the Cost Book close process | Creating or updating a Cost Book association without configuring period-end validations | |
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| COR.VALIDATE_INPUT | decision | 1 | validate_input | valid->COR.RESOLVE_COST_ORGANIZATION;invalid->COR.HANDLE_ISSUE | none | stop | Creating or updating Cost Organization Relationships |

@@ -1,0 +1,53 @@
+# Recruiting Content Library Input Validation
+
+## Required Groups
+
+| Requirement Group | Accepted Fields | If Missing | How to Resolve | Applies When | Resolver |
+|---|---|---|---|---|---|
+| Description record identity | DescriptionCode | Stop the CSV request. | Provide one unique DescriptionCode, no longer than 30 characters; trim leading and trailing whitespace before comparison. | Importing a description record or locating a description in a full export baseline. | |
+| CSV import package acceptance | CSV File Package; displayed Name, Description, Task, and Version Date | Stop before Submit. | Provide a task-native package that the import page accepts and whose displayed task is Recruiting Content Library. | Importing content. | |
+| Import artifact | Full task-native export package, or a reduced package that preserves archive structure and non-data files | Stop the import request. | Use the reviewed full export package as-is. Preserve archive structure and all non-data files unchanged when using a reduced package, and retain the requested DescriptionCode records with related version and translation records. | Preparing an import. | |
+| CSV member encoding | Every CSV member in the import archive | Stop before approval or import. | Encode every CSV member as UTF-8 without a byte-order mark. Inspect the raw leading bytes of every CSV member and reject any EF BB BF prefix. For ORA_IRC_ORGANIZATION_DESCRIPTION.csv, require the file to begin directly with "DescriptionCode". | Preparing or approving an import artifact. | |
+| Description record fields | DescriptionTypeCode, VisibilityCode, StatusCode, Name, CaptureInteraction | Stop the CSV request. | Provide every required field within its documented length limit. | Importing a description record. | resolve_active_recruiting_content_lookup |
+| Description-version fields | DescriptionCode, VersionStartDate or an immediate-start request, StatusCode | Stop the CSV request. | Provide the parent DescriptionCode and version StatusCode. The serialized import value must be yyyy/MM/dd HH:mm:ss with an optional .fffffffff fractional-second suffix. Accept yyyy/MM/dd HH:mm as user input only and append :00 once. For an immediate start, explicitly format the current timestamp at immutable-artifact preparation time as yyyy/MM/dd HH:mm:ss before writing either version CSV. | Importing a description version. | resolve_active_recruiting_content_lookup |
+| Description translation fields | DescriptionCode, Language, SourceLang, Name | Stop the CSV request. | Provide the parent DescriptionCode and all required translation fields; require each language value to resolve to an exact LanguageCode. | Importing a description translation. | resolve_recruiting_content_language |
+| Description-version translation fields | DescriptionCode, VersionStartDate, Language, SourceLang | Stop the CSV request. | Provide the parent description and version identifiers and both language fields; require each language value to resolve to an exact LanguageCode. | Importing a description-version translation. | resolve_recruiting_content_language |
+
+## Dependency-Aware Validation
+
+| Applies When | Result | Next Action | Resolver |
+|---|---|---|---|
+| An import or export request reaches field validation. | Continue only after the request uses the Recruiting Content Library CSV task flow and all required groups pass. | Evaluate task capability, access, artifact, and approval readiness. | |
+| A CSV File Package is uploaded for import. | Continue only when the page accepts the package and displays Recruiting Content Library package details. | Stop before Submit if the package is rejected or the displayed task details do not identify Recruiting Content Library. | |
+| A required lookup-coded field must be verified as active. | Resolve the exact LookupCode through the documented active-only lookup contract. | Stop if there is no exact active LookupCode match. | resolve_active_recruiting_content_lookup |
+
+## Field Validation
+
+| Check | What Happens | Applies When | Resolver |
+|---|---|---|---|
+| DescriptionCode uniqueness and length | Require a unique alternate key of no more than 30 characters. For baseline discovery, locate the exact DescriptionCode in the full export with its related version and translation rows. | Importing a description or reviewing a full export baseline. | |
+| DescriptionCode comparison normalization | Trim leading and trailing whitespace from a user-provided DescriptionCode before comparing it with existing data or a full export baseline. | Importing a description or reviewing a full export baseline. | |
+| Description terminology | Treat description, content item, content library item, and item as aliases for a Recruiting Content Library description. For a notification-category description, also accept notification. Require the normalized DescriptionCode as the unambiguous identifier; do not infer a record from a display name alone. | Identifying a Recruiting Content Library description. | |
+| Description-version terminology | Treat description version, version, item version, content item version, content library item version, and notification version as aliases for a Recruiting Content Library description version. Require the normalized parent DescriptionCode together with VersionStartDate as the unambiguous version identifier; do not infer a version from display text alone. | Identifying a Recruiting Content Library description version. | |
+| Export baseline | Require a full task-native export for v1 baseline discovery. | Exporting content before a targeted update. | |
+| DescriptionTypeCode | Treat category and description type as DescriptionTypeCode. Require no more than 30 characters. Inspect every page of active ORA_IRC_DESCRIPTION_TYPE values before deciding that a match is absent. Accept an exact active LookupCode; when the supplied value is not a LookupCode, resolve one exact active Meaning only to obtain the validated LookupCode for the import CSV. | Importing a description record. | resolve_active_recruiting_content_description_type |
+| VisibilityCode | Require no more than 30 characters and an exact active LookupCode in ORA_IRC_DESC_VISIBILITY. | Importing a description record. | resolve_active_recruiting_content_lookup |
+| Description StatusCode | Require no more than 30 characters and an exact active LookupCode in ORA_IRC_DESCRIPTION_STATUS. | Importing a description record. | resolve_active_recruiting_content_lookup |
+| Description name and interaction flag | Require Name no longer than 240 characters and CaptureInteraction no longer than 1 character. | Importing a description record. | |
+| Description translation fields | Require Language and SourceLang no longer than 4 characters each, Name no longer than 240 characters, and each language field to exactly match a returned LanguageCode. | Importing a description translation. | resolve_recruiting_content_language |
+| VersionStartDate | Require every serialized import value to exactly match yyyy/MM/dd HH:mm:ss[.fffffffff]: four-digit year, two-digit month, two-digit day, a space, and two-digit hour, minute, and second separated by colons, optionally followed by a period and fractional seconds. Accept yyyy/MM/dd HH:mm as user input only and append :00 once. Reject date-only values, hyphenated or ISO timestamps, timezone suffixes, malformed fractional seconds, non-zero-padded components, and all other formats. For an immediate start, explicitly format the current timestamp as yyyy/MM/dd HH:mm:ss before writing either version CSV, then treat it as an opaque string without parsing, coercing, or re-serializing it. Before approval, inspect the final ZIP and require every VersionStartDate in both version CSVs to exactly match the canonical format and require each description-version translation row to use the identical value of its parent description-version row. Reject any format or cross-file mismatch. | Importing a description version or version translation. | |
+| Description-version StatusCode | Require no more than 30 characters and an exact active LookupCode in ORA_IRC_DESC_VERSION_STATUS. | Importing a description version. | resolve_active_recruiting_content_lookup |
+| Description-version translation fields | Require Language and SourceLang no longer than 4 characters each and each language field to exactly match a returned LanguageCode. | Importing a description-version translation. | resolve_recruiting_content_language |
+| Optional target references | When a message-design reference is present, DesignTypeCode must be ORA_HTML_TEMPLATE_USER and MessageDesignCode must resolve through the documented message-design resolver. WabaTemplateName must resolve through the documented WhatsApp-template resolver when present. | Importing a version with either optional reference. | |
+| DesignTypeCode | Require the constant ORA_HTML_TEMPLATE_USER when a message-design reference is present. | Importing a version with MessageDesignCode. | |
+| MessageDesignCode | Require an exact active value returned by the documented Recruiting Message Designs resolver. | Importing a version with MessageDesignCode. | resolve_active_recruiting_message_design |
+| WabaTemplateName | Require an exact active value returned by the documented Recruiting UI WhatsApp Templates resolver. | Importing a version with WabaTemplateName. | resolve_active_whatsapp_template |
+| CSV import package | Require a task-native package accepted by the import page. If rejected before Submit as not in CSV format, stop and correct the package through the approved task flow. | Importing content. | |
+| Import artifact selection | Require a reviewed full task-native export baseline. A full export may be re-imported; when a reduced package is used, preserve archive structure and all non-data files unchanged and retain the requested DescriptionCode records with related version and translation records. | Preparing an import. | |
+| CSV member encoding | Require every CSV member in the final import archive to be UTF-8 without BOM. Inspect raw leading bytes and reject EF BB BF before every CSV header. For ORA_IRC_ORGANIZATION_DESCRIPTION.csv, require the first header text to be "DescriptionCode" with no preceding bytes. | Preparing or approving an import artifact. | |
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| RCL.VALIDATE | decision | 10 | validate_input | valid->RCL.LOOKUP;invalid->RCL.BLOCKED | none | stop | Every Recruiting Content Library CSV import or export request. |

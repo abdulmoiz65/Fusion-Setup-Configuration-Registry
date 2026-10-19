@@ -1,0 +1,259 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "GL_ASSIGN_LEGAL_ENTITIES",
+      "task_name": "Assign Legal Entities",
+      "start_node": "ALE.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "ALE.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ALE.RESOLVE_PRIMARY_LEDGER",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before any read-only lookup, scoped-export submission or selection, package inspection, delta authoring, preview, approval, or import handoff.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALE.RESOLVE_PRIMARY_LEDGER",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ALE.ACQUIRE_SCOPED_EXPORT",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ALE.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run resolve_primary_ledger first; do not submit or select any Assign Legal Entities export until exactly one PRIMARY ledger of type L is proven.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALE.ACQUIRE_SCOPED_EXPORT",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ALE.RESOLVE_SCOPED_EVIDENCE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ALE.RESOLVE_PRIMARY_LEDGER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After the primary-ledger gate passes, use core.fusion-api.rest-api-client for exactly one GL_ASSIGN_LEGAL_ENTITIES create request in the current explicitly requested run. A prior no-ProcessId failure is audit history only and must not replace or block this fresh attempt after the FDoS contract was corrected. Keep SetupTaskCSVExportCriteria and SetupTaskCSVExportProcess as sibling arrays at the request root, put TaskCode GL_ASSIGN_LEGAL_ENTITIES in the root and each child row, and set the criterion to BusinessObjectCode GL_PRIMARY_LEDGER, AttributeSet Set1, AttributeName PRIMARY_LEDGER_ID, and AttributeValue equal to the resolved LedgerId. Use only its returned ProcessId with shared.setup-export.fsm-csv-export for polling and download; never submit a second POST in the same run, nest the criteria inside the process row, call the unscoped task-level-export CLI, or use the ledger Name as AttributeValue.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALE.RESOLVE_SCOPED_EVIDENCE",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ALE.CHECK_DEPENDENCIES",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ALE.ACQUIRE_SCOPED_EXPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select and validate the returned primary-ledger-scoped Assign export, match its one parent to REST identity, resolve each requested legal entity, and derive all remaining assignment and ledger-readiness evidence from that scoped package.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALE.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ALE.APPLY_DEFAULTS",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ALE.RESOLVE_SCOPED_EVIDENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After the scoped package, exact parent, legal-entity identities, scoped duplicate proof, and retained-earnings evidence resolve and before any proposed package delta is populated.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALE.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "ALE.ENFORCE_DESIGN",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ALE.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Build the smallest proposed direct-row delta only from validated user values, authoritative resolver output, documented constants, intentional blanks, and preserved scoped-baseline values.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALE.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "ALE.PREVIEW_GATE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ALE.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preview or import handoff, enforce REST-first ledger validation, exact primary-ledger export scope, source authority, retained-earnings readiness, nullable-field policy, smallest delta, and preservation boundaries.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALE.PREVIEW_GATE",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "ALE.READY_FOR_IMPORT",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ALE.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm exact target environment, validated REST primary, fresh exact-scoped Assign package, complete dependency and retained-earnings readiness, smallest semantic delta, immutable artifact fingerprint, and explicit approval bound to the declared Data Loader import handoff; do not execute the import here.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALE.READY_FOR_IMPORT",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ALE.PREVIEW_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The task is fully ready for the separately declared core.data-loader import step and all normal live-operation gates still apply.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, scoped-export, dependency, defaulting, design, preview, approval, import, or verification blocker requires a safe stop.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

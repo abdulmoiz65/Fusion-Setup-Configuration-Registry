@@ -1,0 +1,28 @@
+# Profile Rating Models Dependency Readiness
+
+## Dependency Rules
+
+| Task Code | Task Name | Dependency ID | Dependency | Mandatory | Applies When | Status | Value Source | Resolver | Why | User Guidance | Values to Fill |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| HRT_MANAGE_PROFILE_RATING_MODELS | Profile Rating Models | environment_identity | Exact authenticated Fusion environment | Conditional | Any live read, preview, import or read-back | Verify | Active core authentication and project environment context; trusted core or supported target metadata may add a quarterly release value and its source when already available |  | Prevents cross-pod lookup or creation without turning optional release metadata into user input | Resolve and display one exact environment from the active core context. Do not ask the user to restate the host or provide a quarterly release; a typed value, browser address bar, or screenshot is not sufficient evidence | Environment alias and base identity; release and release source when available |
+| HRT_MANAGE_PROFILE_RATING_MODELS | Profile Rating Models | rest_read_contract | Current unlisted talentRatingModels read contract, target capability and effective read access | Conditional | Discovery, exact lookup or read-back | Verify | Source-backed REST API version and path plus the first successful bounded request through core.fusion-api.rest-api-client; an authorized role-access result may supplement but never be inferred from UI access |  | Prevents guessed or unauthorized reads while separating REST API version from the quarterly application release | Prove the source-backed REST API version, path, fields and child coverage with the declared bounded request. Do not request a quarterly release, screenshot or browser navigation. A successful read proves capability and effective access only for that call; it does not prove the quarterly release, role membership or write access | REST API version, path, fields, child coverage, request result, effective read-access result and independently available role evidence |
+| HRT_MANAGE_PROFILE_RATING_MODELS | Profile Rating Models | task_catalog | Current Profile Rating Models task import contract | Conditional | No exact model exists and creation is proposed | Verify | setup-task catalog plus core.data-loader metadata |  | Prevents guessed FSM task/package payloads | Confirm one current FSM package route | Task code, package identity, supported source and fingerprint |
+| HRT_MANAGE_PROFILE_RATING_MODELS | Profile Rating Models | rating_model_hdl | Current Rating Model hierarchy and attributes | Conditional | HDL is proposed instead of the verified FSM package | Verify | core.data-loader View Business Objects metadata |  | Prevents guessed DAT components and attributes | Prove every blueprint component in current metadata | Root/child hierarchy, fields, keys, operations and metadata fingerprint |
+| HRT_MANAGE_PROFILE_RATING_MODELS | Profile Rating Models | specialist_approval | Standalone approval for the exact immutable core.data-loader preview | Conditional | Immediately before one creation import | Needs Input | core.data-loader approval record |  | Binds authorization to target, payload and digest | Obtain approval only after all earlier gates pass | Environment, route, operation, artifact digest, assertions and approver |
+| HRT_MANAGE_PROFILE_RATING_MODELS | Profile Rating Models | downstream_owners | Owning skill or team for every consumer handoff | Yes | Every completion | Verify | Selected-consumer requirements and the project task plan for Profile Management Talent Ratings templates, Performance template sections, Talent Review meeting-template axes, Compensation, and Skills Center content sections |  | Prevents this skill from configuring consumers implicitly or treating their settings as rating-model fields | For each selected consumer, resolve the owner and association point, prerequisites, verification tests, and documented association constraints without executing downstream work | Owner; association point; prerequisites; tests; Performance calculation, precision, rounding, mapping and Target Ratings Distribution ownership; Talent Review X or Y axis and category requirement; Skills Center content section and rating-model association lock; Profile Management Talent Ratings template association; Compensation direct-distribution ownership |
+
+## Dependency Classification
+
+| Task Code | Task Name | Result Category | When Used | Can Continue? |
+|---|---|---|---|---|
+| HRT_MANAGE_PROFILE_RATING_MODELS | Profile Rating Models | Satisfied | Exact authoritative evidence exists | Yes |
+| HRT_MANAGE_PROFILE_RATING_MODELS | Profile Rating Models | Verify | Existing current evidence must be checked | Read-only check only |
+| HRT_MANAGE_PROFILE_RATING_MODELS | Profile Rating Models | Needs Input | Selector, metadata, privilege or approval is missing | No |
+| HRT_MANAGE_PROFILE_RATING_MODELS | Profile Rating Models | Unresolved | Evidence is absent, ambiguous, incomplete or incompatible | No |
+| HRT_MANAGE_PROFILE_RATING_MODELS | Profile Rating Models | Not Applicable | Condition is false, including loader readiness for exact reuse | Yes |
+
+## Task Nodes
+
+| Task Code | Task Name | Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|---|---|
+| HRT_MANAGE_PROFILE_RATING_MODELS | Profile Rating Models | PRM.DEPENDENCIES | decision | 7 | resolve_dependency | ready->PRM.DESIGN;not_required->PRM.DESIGN;needs_input->PRM.ERROR;unresolved->PRM.ERROR | PRM.EXISTING | stop | Prove read readiness and, for a confirmed create proposal, exactly one current FSM or HDL Data Loader contract |

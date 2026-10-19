@@ -1,0 +1,181 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_MANAGE_ORGANIZATION_DESCRIPTION_LIBRARY",
+      "task_name": "Recruiting Content Library",
+      "start_node": "RCL.VALIDATE",
+      "nodes": [
+        {
+          "id": "RCL.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RCL.LOOKUP",
+            "invalid": "RCL.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Recruiting Content Library CSV import or export request.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCL.LOOKUP",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RCL.READINESS",
+            "not_resolved": "RCL.BLOCKED"
+          },
+          "prerequisites": [
+            "RCL.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated description, description-version, or translation request includes a documented lookup-coded value.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCL.READINESS",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RCL.DEFAULT",
+            "not_ready": "RCL.BLOCKED"
+          },
+          "prerequisites": [
+            "RCL.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated CSV request needs capability, access, artifact, approval, or result-review evidence.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCL.DEFAULT",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "RCL.DESIGN"
+          },
+          "prerequisites": [
+            "RCL.READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated description record uses the documented CaptureInteraction default, a user supplies a minute-precision VersionStartDate, a requester asks for an immediate version start, or IsFileBased is derived from DescriptionTypeCode.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCL.DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "RCL.DONE",
+            "blocked": "RCL.BLOCKED"
+          },
+          "prerequisites": [
+            "RCL.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A CSV request contains scoped, lifecycle-sensitive, optional-reference, or notification content.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCL.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RCL.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All applicable validation, readiness, defaulting, and design checks pass.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCL.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, readiness, design, authorization, or process failure occurs.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

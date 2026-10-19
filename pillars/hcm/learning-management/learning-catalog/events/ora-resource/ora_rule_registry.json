@@ -1,0 +1,261 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_EVENTS",
+      "task_name": "Manage Events",
+      "start_node": "EVT.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "EVT.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "EVT.CHECK_DEPENDENCIES",
+            "invalid": "EVT.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "One or more event rows are normalized",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVT.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "EVT.RESOLVE_REFERENCE",
+            "draft_gaps": "EVT.RESOLVE_REFERENCE",
+            "not_required": "EVT.RESOLVE_REFERENCE",
+            "blocked": "EVT.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "EVT.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After row inputs and the selected operation are validated",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVT.RESOLVE_REFERENCE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "EVT.APPLY_DEFAULTS",
+            "not_required": "EVT.APPLY_DEFAULTS",
+            "blocked": "EVT.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "EVT.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Current event, course linkage, lifecycle values, resource availability, provider validation, enrollment, or readback evidence is required for a row",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVT.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "EVT.ENFORCE_DESIGN",
+            "preserved": "EVT.ENFORCE_DESIGN",
+            "blocked": "EVT.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "EVT.RESOLVE_REFERENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated row omits only a documented safe default",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVT.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "EVT.EXECUTION_GATE",
+            "blocked": "EVT.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "EVT.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After applicable inputs, dependencies, lookups, and defaults are evaluated per row",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVT.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "authorized": "EVT.EVALUATE_RESULT",
+            "validation_only": "EVT.EVALUATE_RESULT",
+            "blocked": "EVT.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "EVT.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A row has complete validation-only evidence or an immutable approved mutation preview and fresh fingerprint",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVT.EVALUATE_RESULT",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "EVT.RETURN_SUCCESS",
+            "issues": "EVT.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "EVT.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Row-scoped validation-only evidence or mutation readback is reconciled with the approved preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVT.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "EVT.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A row is blocked, stale, unsupported, failed, partial, or indeterminate at any stage",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVT.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EVT.EVALUATE_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The requested validation-only or mutation result is verified for all completed rows",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVT.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EVT.HANDLE_ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more row-scoped issues require disclosure or follow-up",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

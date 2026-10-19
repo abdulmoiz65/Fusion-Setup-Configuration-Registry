@@ -1,0 +1,9 @@
+{
+  "datasourceType": "Oracle EPM ARCS REST API",
+  "Rest API documentation": [
+    "https://docs.oracle.com/en/cloud/saas/enterprise-performance-management-common/prest/lcm_list_users.html",
+    "https://docs.oracle.com/en/cloud/saas/enterprise-performance-management-common/prest/lcm_get_available_roles.html",
+    "https://docs.oracle.com/en/cloud/saas/enterprise-performance-management-common/prest/lcm_role_assignment_report_for_users.html"
+  ],
+  "Security Documentation": "https://docs.oracle.com/en/cloud/saas/enterprise-performance-management-common/prest/authentication_oath.html"
+}

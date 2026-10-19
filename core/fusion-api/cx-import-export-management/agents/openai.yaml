@@ -1,0 +1,4 @@
+interface:
+  display_name: "CX Import Export Management"
+  short_description: "Submit and monitor CX import/export jobs."
+  default_prompt: "Use $cx-import-export-management to submit a CX Import Management or Export Management job."

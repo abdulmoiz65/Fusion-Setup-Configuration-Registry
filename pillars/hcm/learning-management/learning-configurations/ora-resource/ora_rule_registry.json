@@ -1,0 +1,1349 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_CONFIGURE_BACKGROUND_PROCESSING",
+      "task_name": "Configure Background Processing",
+      "start_node": "LC.BACKGROUND.INPUT",
+      "nodes": [
+        {
+          "id": "LC.BACKGROUND.INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "LC.BACKGROUND.LOOKUP",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Selected task; unresolved authority or contract prevents executable readiness",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_input_validation.md",
+                "line": 13,
+                "column": "How to Resolve",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_input_validation.md",
+                "line": 30,
+                "column": "What Happens",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "LC.BACKGROUND.LOOKUP",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "pass": "LC.BACKGROUND.DEPENDENCY",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LC.BACKGROUND.INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Selected task; evaluate only applicable resolver rows; no mutation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 18,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 18,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 18,
+                "column": "Requested Fields",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 18,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 19,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 19,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 19,
+                "column": "Requested Fields",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 19,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 20,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 20,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 20,
+                "column": "Requested Fields",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 20,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "LC.BACKGROUND.DEPENDENCY",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "LC.BACKGROUND.DEFAULT",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LC.BACKGROUND.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Selected task; unresolved authority or contract prevents executable readiness",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 23,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 23,
+                "column": "Value Source",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 24,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 24,
+                "column": "Value Source",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 25,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 25,
+                "column": "Value Source",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "LC.BACKGROUND.DEFAULT",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "LC.BACKGROUND.DESIGN",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LC.BACKGROUND.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Selected task; unresolved authority or contract prevents executable readiness",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_defaulting_rules.md",
+                "line": 14,
+                "column": "Applies When",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_defaulting_rules.md",
+                "line": 15,
+                "column": "Applies When",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_defaulting_rules.md",
+                "line": 16,
+                "column": "Applies When",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "LC.BACKGROUND.DESIGN",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "LC.BACKGROUND.GATE",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LC.BACKGROUND.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Selected task; unresolved authority or contract prevents executable readiness",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 37,
+                "column": "Values Needed",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 38,
+                "column": "Values Needed",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 39,
+                "column": "Values Needed",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "LC.BACKGROUND.GATE",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "LC.BACKGROUND.DONE",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LC.BACKGROUND.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return contract validation results; not permission to mutate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_error_handling.md",
+                "line": 15,
+                "column": "What Should Happen",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "LC.BACKGROUND.DONE",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LC.BACKGROUND.GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return validated task-rule evidence only; never claim a completed configuration mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_error_handling.md",
+                "line": 15,
+                "column": "What Should Happen",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Report affected input/contract, impact, owner and one safe next action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_error_handling.md",
+                "line": 15,
+                "column": "What Should Happen",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        }
+      ],
+      "readiness": {
+        "status": "incomplete",
+        "blocking_reasons": [
+          {
+            "node_id": "LC.BACKGROUND.INPUT",
+            "file": "ora_input_validation.md",
+            "line": 13,
+            "column": "How to Resolve",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.INPUT",
+            "file": "ora_input_validation.md",
+            "line": 30,
+            "column": "What Happens",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 18,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 18,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 18,
+            "column": "Requested Fields",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 18,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 19,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 19,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 19,
+            "column": "Requested Fields",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 19,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 20,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 20,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 20,
+            "column": "Requested Fields",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 20,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 23,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 23,
+            "column": "Value Source",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 24,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 24,
+            "column": "Value Source",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 25,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 25,
+            "column": "Value Source",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.DEFAULT",
+            "file": "ora_defaulting_rules.md",
+            "line": 14,
+            "column": "Applies When",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.DEFAULT",
+            "file": "ora_defaulting_rules.md",
+            "line": 15,
+            "column": "Applies When",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.DEFAULT",
+            "file": "ora_defaulting_rules.md",
+            "line": 16,
+            "column": "Applies When",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 37,
+            "column": "Values Needed",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 38,
+            "column": "Values Needed",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 39,
+            "column": "Values Needed",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.GATE",
+            "file": "ora_error_handling.md",
+            "line": 15,
+            "column": "What Should Happen",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.BACKGROUND.DONE",
+            "file": "ora_error_handling.md",
+            "line": 15,
+            "column": "What Should Happen",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "RETURN_ISSUES",
+            "file": "ora_error_handling.md",
+            "line": 15,
+            "column": "What Should Happen",
+            "message": "Value is TBD"
+          }
+        ]
+      }
+    },
+    {
+      "task_code": "CUSTOM_CONFIGURE_LEARNING_DEFAULTS",
+      "task_name": "Configure Learning Defaults",
+      "start_node": "LC.DEFAULTS.INPUT",
+      "nodes": [
+        {
+          "id": "LC.DEFAULTS.INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "LC.DEFAULTS.LOOKUP",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Selected task; unresolved authority or contract prevents executable readiness",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_input_validation.md",
+                "line": 12,
+                "column": "How to Resolve",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_input_validation.md",
+                "line": 21,
+                "column": "What Happens",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_input_validation.md",
+                "line": 24,
+                "column": "What Happens",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "LC.DEFAULTS.LOOKUP",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "pass": "LC.DEFAULTS.DEPENDENCY",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LC.DEFAULTS.INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Selected task; evaluate only applicable resolver rows; no mutation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 13,
+                "column": "Requested Fields",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 13,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 13,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 13,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 14,
+                "column": "Requested Fields",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 14,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 14,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 14,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 15,
+                "column": "Requested Fields",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 15,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 15,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 15,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 16,
+                "column": "Requested Fields",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 16,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 16,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 16,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 17,
+                "column": "Requested Fields",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 17,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 17,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 17,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "LC.DEFAULTS.DEPENDENCY",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "LC.DEFAULTS.DEFAULT",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LC.DEFAULTS.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Selected task; unresolved authority or contract prevents executable readiness",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 18,
+                "column": "Value Source",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 18,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 19,
+                "column": "Value Source",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 19,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 20,
+                "column": "Value Source",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 20,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 21,
+                "column": "Value Source",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 21,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 22,
+                "column": "Value Source",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 22,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "LC.DEFAULTS.DEFAULT",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "LC.DEFAULTS.DESIGN",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LC.DEFAULTS.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Selected task; unresolved authority or contract prevents executable readiness",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_defaulting_rules.md",
+                "line": 13,
+                "column": "Default Value",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "LC.DEFAULTS.DESIGN",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "LC.DEFAULTS.GATE",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LC.DEFAULTS.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Selected task; unresolved authority or contract prevents executable readiness",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 32,
+                "column": "Values Needed",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 33,
+                "column": "Values Needed",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 34,
+                "column": "Values Needed",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 35,
+                "column": "Values Needed",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 36,
+                "column": "Values Needed",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "LC.DEFAULTS.GATE",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "LC.DEFAULTS.DONE",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LC.DEFAULTS.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return contract validation results; not permission to mutate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_error_handling.md",
+                "line": 12,
+                "column": "What Should Happen",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "LC.DEFAULTS.DONE",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LC.DEFAULTS.GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return validated task-rule evidence only; never claim a completed configuration mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_error_handling.md",
+                "line": 12,
+                "column": "What Should Happen",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Report affected input/contract, impact, owner and one safe next action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_error_handling.md",
+                "line": 12,
+                "column": "What Should Happen",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        }
+      ],
+      "readiness": {
+        "status": "incomplete",
+        "blocking_reasons": [
+          {
+            "node_id": "LC.DEFAULTS.INPUT",
+            "file": "ora_input_validation.md",
+            "line": 12,
+            "column": "How to Resolve",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.INPUT",
+            "file": "ora_input_validation.md",
+            "line": 21,
+            "column": "What Happens",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.INPUT",
+            "file": "ora_input_validation.md",
+            "line": 24,
+            "column": "What Happens",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 13,
+            "column": "Requested Fields",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 13,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 13,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 13,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 14,
+            "column": "Requested Fields",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 14,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 14,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 14,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 15,
+            "column": "Requested Fields",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 15,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 15,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 15,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 16,
+            "column": "Requested Fields",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 16,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 16,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 16,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 17,
+            "column": "Requested Fields",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 17,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 17,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.LOOKUP",
+            "file": "ora_reference_lookups.md",
+            "line": 17,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 18,
+            "column": "Value Source",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 18,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 19,
+            "column": "Value Source",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 19,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 20,
+            "column": "Value Source",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 20,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 21,
+            "column": "Value Source",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 21,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 22,
+            "column": "Value Source",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DEPENDENCY",
+            "file": "ora_dependency_readiness.md",
+            "line": 22,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DEFAULT",
+            "file": "ora_defaulting_rules.md",
+            "line": 13,
+            "column": "Default Value",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 32,
+            "column": "Values Needed",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 33,
+            "column": "Values Needed",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 34,
+            "column": "Values Needed",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 35,
+            "column": "Values Needed",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 36,
+            "column": "Values Needed",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.GATE",
+            "file": "ora_error_handling.md",
+            "line": 12,
+            "column": "What Should Happen",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "LC.DEFAULTS.DONE",
+            "file": "ora_error_handling.md",
+            "line": 12,
+            "column": "What Should Happen",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "RETURN_ISSUES",
+            "file": "ora_error_handling.md",
+            "line": 12,
+            "column": "What Should Happen",
+            "message": "Value is TBD"
+          }
+        ]
+      }
+    }
+  ]
+}

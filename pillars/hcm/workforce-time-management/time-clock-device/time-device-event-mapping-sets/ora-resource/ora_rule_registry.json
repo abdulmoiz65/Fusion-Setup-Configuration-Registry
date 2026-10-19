@@ -1,0 +1,485 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HWM_MANAGE_TIME_DEVICE_EVENT_MAPPING_SETS",
+      "task_name": "Time Device Event Mapping Sets",
+      "start_node": "TDEMSET_VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "TDEMSET_VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TDEMSET_SEARCH_MAPPING_SETS",
+            "invalid": "TDEMSET_INPUT_BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_SEARCH_MAPPING_SETS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "selected": "TDEMSET_RESOLVE_EXISTING_PARENT",
+            "no_equivalent": "TDEMSET_RESOLVE_EXISTING_PARENT",
+            "multiple_matches": "TDEMSET_SEARCH_MULTIPLE_MATCHES",
+            "no_matches": "TDEMSET_SEARCH_NO_MATCHES",
+            "awaiting_create_choice": "TDEMSET_AWAIT_DUPLICATE_CHOICE",
+            "blocked": "TDEMSET_SEARCH_BLOCKED"
+          },
+          "prerequisites": [
+            "TDEMSET_VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A criteria search, update, or create duplicate check is prepared",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_RESOLVE_EXISTING_PARENT",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TDEMSET_VALIDATE_PARENT_CHILD_IDS",
+            "not_applicable": "TDEMSET_VALIDATE_PARENT_CHILD_IDS",
+            "not_resolved": "TDEMSET_PARENT_BLOCKED"
+          },
+          "prerequisites": [
+            "TDEMSET_SEARCH_MAPPING_SETS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An update targets an existing Mapping Set; not applicable to create",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_VALIDATE_PARENT_CHILD_IDS",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TDEMSET_RESOLVE_MAPPING_IDS",
+            "blocked": "TDEMSET_RELATION_BLOCKED"
+          },
+          "prerequisites": [
+            "TDEMSET_RESOLVE_EXISTING_PARENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create or update with child mappings",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_RESOLVE_MAPPING_IDS",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TDEMSET_APPLY_DEFAULTS",
+            "not_resolved": "TDEMSET_MAPPING_BLOCKED"
+          },
+          "prerequisites": [
+            "TDEMSET_VALIDATE_PARENT_CHILD_IDS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Parent-child ID validation passed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "TDEMSET_ENFORCE_SUMMARY",
+            "not_applicable": "TDEMSET_ENFORCE_SUMMARY",
+            "blocked": "TDEMSET_DEFAULTS_BLOCKED"
+          },
+          "prerequisites": [
+            "TDEMSET_RESOLVE_MAPPING_IDS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A request passed input, criteria search, parent-child, and Event Mapping validation",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_ENFORCE_SUMMARY",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "TDEMSET_PROVIDER_APPROVAL",
+            "blocked": "TDEMSET_SUMMARY_BLOCKED"
+          },
+          "prerequisites": [
+            "TDEMSET_APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation, criteria search, lookup resolution, defaulting or preservation, and Complete Summary generation have completed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_PROVIDER_APPROVAL",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TDEMSET_READY",
+            "blocked": "TDEMSET_APPROVAL_BLOCKED"
+          },
+          "prerequisites": [
+            "TDEMSET_ENFORCE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid business-only Complete Summary and Defaults Applied are displayed; provider execution and approval ownership remain unchanged",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_READY",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEMSET_PROVIDER_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input, criteria search, parent-child relationship, Event Mappings, defaults, and Complete Summary passed for handoff to the provider-owned approval process",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_INPUT_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEMSET_VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_SEARCH_MULTIPLE_MATCHES",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEMSET_SEARCH_MAPPING_SETS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Multiple matching Mapping Sets were shown for user selection",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_SEARCH_NO_MATCHES",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEMSET_SEARCH_MAPPING_SETS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "No Mapping Set met every supplied search criterion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_AWAIT_DUPLICATE_CHOICE",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEMSET_SEARCH_MAPPING_SETS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create request has a matching Mapping Set and awaits the user's use-existing or create-new choice",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_SEARCH_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEMSET_SEARCH_MAPPING_SETS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Criteria search is incomplete, unavailable, or ambiguous",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_PARENT_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEMSET_RESOLVE_EXISTING_PARENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing Mapping Set could not be resolved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_RELATION_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEMSET_VALIDATE_PARENT_CHILD_IDS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Parent-child IDs are invalid or unresolved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_MAPPING_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEMSET_RESOLVE_MAPPING_IDS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Event Mapping lookup did not resolve",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_DEFAULTS_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEMSET_APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Defaulting could not complete safely",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_SUMMARY_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 19,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEMSET_ENFORCE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Business-only Complete Summary requirements were not met",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEMSET_APPROVAL_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEMSET_PROVIDER_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Provider approval gate is not ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

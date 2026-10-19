@@ -1,0 +1,310 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "DOO_MANAGE_EXTERNAL_INTERFACE_WEB_SERVICE_DETAILS",
+      "task_name": "Manage External Interface Web Service Details",
+      "start_node": "OM_WEB_SERVICE.VALIDATE_CONNECTOR_DETAILS",
+      "nodes": [
+        {
+          "id": "OM_WEB_SERVICE.VALIDATE_CONNECTOR_DETAILS",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid_details": "OM_WEB_SERVICE.RESOLVE_TARGET_SYSTEM",
+            "invalid_details": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before resolving connector values, reading existing connector definitions, preparing a connector definition, or preparing a REST Data Loader import artifact.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OM_WEB_SERVICE.RESOLVE_TARGET_SYSTEM",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OM_WEB_SERVICE.RESOLVE_RESPONSE_PROCESSING_OPTION",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "OM_WEB_SERVICE.VALIDATE_CONNECTOR_DETAILS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the supplied TargetSystem through omSourceOrderSystemsLOV and map OrigSystemId to TargetSystemId and OrigSystem to TargetSystem.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OM_WEB_SERVICE.RESOLVE_RESPONSE_PROCESSING_OPTION",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OM_WEB_SERVICE.RESOLVE_ORCHESTRATION_APPLICATION_ID",
+            "not_applicable": "OM_WEB_SERVICE.DEFAULT_RESPONSE_PROCESSING_MODE",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "OM_WEB_SERVICE.RESOLVE_TARGET_SYSTEM"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the supplied response processing option through ORA_DOO_RESPONSE_PROCESS_OPTNS lookup codes and map LookupCode to ResponseProcessPartialMode and meaning to ResponseProcessingOption. It is not applicable when no response processing option is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OM_WEB_SERVICE.DEFAULT_RESPONSE_PROCESSING_MODE",
+          "node_type": "step",
+          "sequence": 16,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "OM_WEB_SERVICE.RESOLVE_ORCHESTRATION_APPLICATION_ID"
+          },
+          "prerequisites": [
+            "OM_WEB_SERVICE.RESOLVE_RESPONSE_PROCESSING_OPTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "ResponseProcessingOption is omitted after the target system resolves.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OM_WEB_SERVICE.RESOLVE_ORCHESTRATION_APPLICATION_ID",
+          "node_type": "step",
+          "sequence": 17,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OM_WEB_SERVICE.GET_WEB_SERVICE_DETAILS",
+            "not_applicable": "OM_WEB_SERVICE.DEFAULT_ORCHESTRATION_APPLICATION_ID",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "OM_WEB_SERVICE.RESOLVE_TARGET_SYSTEM"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied Product Code or Product Name through the developer-provided Orchestration Application mapping table and map Orchestration Application Id to OrchestrationApplicationId. It is not applicable when no product or feature is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OM_WEB_SERVICE.DEFAULT_ORCHESTRATION_APPLICATION_ID",
+          "node_type": "step",
+          "sequence": 18,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "OM_WEB_SERVICE.GET_WEB_SERVICE_DETAILS"
+          },
+          "prerequisites": [
+            "OM_WEB_SERVICE.RESOLVE_ORCHESTRATION_APPLICATION_ID"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Product Code and Product Name are both omitted after the target system resolves.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OM_WEB_SERVICE.GET_WEB_SERVICE_DETAILS",
+          "node_type": "step",
+          "sequence": 19,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "retrieved": "OM_WEB_SERVICE.SET_UPDATE_REST_ACTION",
+            "empty": "OM_WEB_SERVICE.SET_UPDATE_REST_ACTION",
+            "ambiguous": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Existing web service details must be reviewed, reconciled, or validated through the omWebServiceDefinitions GET resource after response processing and OrchestrationApplicationId are resolved or defaulted.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OM_WEB_SERVICE.SET_UPDATE_REST_ACTION",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "patched": "OM_WEB_SERVICE.ENFORCE_CONNECTOR_DESIGN",
+            "not_applicable": "OM_WEB_SERVICE.ENFORCE_CONNECTOR_DESIGN"
+          },
+          "prerequisites": [
+            "OM_WEB_SERVICE.GET_WEB_SERVICE_DETAILS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A requested operation changes an existing connector that was reconciled by WebServiceId; set RestAction to PATCH. For a new connector, do not apply this default.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OM_WEB_SERVICE.ENFORCE_CONNECTOR_DESIGN",
+          "node_type": "step",
+          "sequence": 22,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "design_valid": "OM_WEB_SERVICE.GATE_REST_IMPORT",
+            "design_invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "OM_WEB_SERVICE.SET_UPDATE_REST_ACTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After current connector definitions are retrieved and the existing-connector update action is set when applicable, before preparing a REST Data Loader import.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OM_WEB_SERVICE.GATE_REST_IMPORT",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved_input": "RETURN_SUCCESS",
+            "approval_or_input_missing": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "OM_WEB_SERVICE.ENFORCE_CONNECTOR_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After the connector design passes and before any REST Data Loader import.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OM_WEB_SERVICE.GATE_REST_IMPORT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The connector details are valid and the import gate is satisfied.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A connector validation, design, or import gate fails.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

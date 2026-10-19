@@ -1,0 +1,232 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "MKL_MANAGE_SALES_LEAD_QUALIFICATION_TEMPLATE",
+      "task_name": "Manage Sales Lead Qualification Template",
+      "start_node": "LQT.VALIDATE",
+      "nodes": [
+        {
+          "id": "LQT.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LQT.DEPENDENCIES",
+            "invalid": "LQT.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Apply only operation-specific validation: all operations need identity/environment evidence; Create/Copy additionally need design, package, task-context, and archive evidence; Review/Deploy-readiness must not inherit import-package requirements; actual Deploy mutation is invalid",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LQT.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "LQT.LOOKUP_TEMPLATE",
+            "missing": "LQT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LQT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require target-environment and fresh-export readiness for the requested operation; require questionnaire, set-scope, optional associations, and Data Loader handoff only for Create/Copy; never require a package for Review/Deploy-readiness and never authorize Deploy mutation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LQT.LOOKUP_TEMPLATE",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "LQT.ROUTE",
+            "not_found": "LQT.ROUTE",
+            "many": "LQT.RETURN_ISSUES",
+            "failure": "LQT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LQT.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Reconcile the environment-bound exported inventory with the live exact-name Lead lookup",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LQT.ROUTE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "proceed": "LQT.DESIGN",
+            "blocked": "LQT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LQT.LOOKUP_TEMPLATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Proceed only when Create has zero matches in both sources, Copy has one consistent source plus a distinct target name, or Review/Deploy-readiness has one consistent target; block duplicates, disagreement, ambiguity, missing targets, and any actual Deploy mutation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LQT.DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "LQT.EXECUTION_GATE",
+            "fail": "LQT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LQT.ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before final Create/Copy Data Loader handoff or read-only Review/Deploy-readiness output",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LQT.EXECUTION_GATE",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "data_loader_ready": "LQT.READY_DATA_LOADER",
+            "review_ready": "LQT.READY_REVIEW",
+            "blocked": "LQT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LQT.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Route a final validated Create or Copy FSM ZIP to Data Loader, return Review or Deploy-readiness as read-only, and route every actual Deploy mutation or non-Data-Loader mutation request to the refusal terminal",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LQT.READY_DATA_LOADER",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LQT.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The unchanged single-template FSM ZIP, task context, and final archive SHA-256 are ready for core.data-loader Task Hook validation and preview generation; no import approval or execution has occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LQT.READY_REVIEW",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LQT.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Review or deployment-readiness evidence is ready as read-only output; no mutation is authorized",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LQT.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any validation, dependency, export, lookup, design, Data Loader handoff, import, or verification gate fails safely",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

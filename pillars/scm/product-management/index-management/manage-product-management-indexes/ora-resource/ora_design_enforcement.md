@@ -1,0 +1,28 @@
+# Design Enforcement
+
+## Design Rules
+
+| Rule | Required Lookup | Enforcement | When Required | Failure Behavior |
+|---|---|---|---|---|
+| Single-index execution boundary | resolve_product_management_index_code | Accept one requested index per invocation; all addition and removal rows inherit its exact canonical IndexName. Reject a multi-index request or mixed Data Loader artifact before any Fusion mutation. | Every index change or rebuild | Ask the user to select one index; do not split, queue, or advance other indexes within this skill. |
+| Index change-set delta calculation | resolve_seeded_indexed_attributes | Build a de-duplicated ordered union of seeded identities and validated requested-addition identities. For an explicit rebuild without additions/removals, use seeded identities as the complete target set. Subtract exact existing identities before any POST row is prepared. Resolve every explicitly requested removal to one backend ID. Persist `index-attribute-delta.json` for additions, removals, or both; require `index_delta_guard.py --require-data-loader` for every nonempty change set before Data Loader sample generation, source preparation, Task Hook validation, or approval. | Every requested index change or rebuild, including removal-only | Stop when an identity is incomplete, a lookup result is unavailable, the persisted delta is missing or mismatched, or a prospective POST identity cannot be resolved to one exact available attribute. |
+| Removal separation | resolve_existing_product_management_es_indexed_attribute | Prepare DELETE rows only for explicitly requested removals after their exact backend-issued AttributeId is resolved. Do not remove a seeded or existing attribute merely because it is absent from the requested-addition list. | When removals are requested | Stop before DELETE preparation when the requested identity has no unique backend record. |
+| Rebuild submission | resolve_existing_product_management_es_indexed_attributes | For every requested index operation, prepare the immutable ESS payload. When the calculated change set is nonempty, first require a successful Data Loader result for the exact IndexName. When it is empty, record that Data Loader was intentionally skipped. Submit once after fresh approval unless the user explicitly confirms ESS is not required. | After addition/removal delta calculation | Do not submit ESS if a required Data Loader result is pending, failed, or targets another index. Do not skip ESS without the user's explicit not-required confirmation. |
+| Successful-load continuation | resolve_existing_product_management_es_indexed_attributes | A terminal successful user-requested Data Loader status result must transition durable state to `data_load_succeeded`, read back every requested change for the exact canonical IndexName, prepare the immutable ESS payload, then transition to `ess_approval_pending` and request fresh approval in the same reply. | After a successful Data Loader status result for a nonempty delta | Do not end at the status report, omit readback, or submit ESS without the separate approval. |
+
+## Design Lookup Requirements
+
+| Resolver | Value Source | Values Needed | Match Rule | If Unavailable |
+|---|---|---|---|---|
+| resolve_product_management_index_code | ORA_EGP_PM_ES_INDEXES lookup | One exact canonical IndexName for the selected index | One unique LookupCode from exact code-or-meaning match | Stop before any index mutation. |
+| resolve_seeded_indexed_attributes | indexManagementMetadata response | Seeded AttributeCode#GroupCode#ObjectCode identities | Every identity has exactly three nonblank # delimited code segments | Stop before calculating additions. |
+| resolve_existing_product_management_es_indexed_attributes | productManagementESIndexedAttributes response | Existing AttributeCode#GroupCode#ObjectCode identities and record details | Every record matches the verified IndexName and has all three codes | Stop before calculating additions or preparing removals. |
+| resolve_existing_product_management_es_indexed_attribute | productManagementESIndexedAttributes narrow response, or complete index-only fallback after a zero-row narrow response | One backend-issued AttributeId for an explicitly requested removal | One record exactly matches the verified index, attribute, group, and object names; any supplied AttributeId also matches | Stop before preparing the DELETE row if the fallback is incomplete or the exact match is not unique. |
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| PMINDEX.CALCULATE_ATTRIBUTE_DELTA | decision | 86 | design_enforcement | calculated->PMINDEX.DATA_LOADER_GATE;removals->PMINDEX.RESOLVE_REMOVAL_ATTRIBUTE_IDS;empty->PMINDEX.PREPARE_ESS_REBUILD_EMPTY;blocked->PMINDEX.HANDLE_ERROR | PMINDEX.VALIDATE_AVAILABLE_ATTRIBUTE | stop | Every requested index change or rebuild; route removal-only changes through resolved DELETE IDs and the Data Loader gate |
+| PMINDEX.PREPARE_ESS_REBUILD | decision | 140 | design_enforcement | prepared->PMINDEX.REQUEST_ESS_APPROVAL;explicit_skip->PMINDEX.DONE_ESS_SKIP_AFTER_LOAD;blocked->PMINDEX.HANDLE_ERROR | PMINDEX.VERIFY_LOADED_ATTRIBUTES | stop | The nonempty Data Loader delta was read back successfully |
+| PMINDEX.PREPARE_ESS_REBUILD_EMPTY | decision | 141 | design_enforcement | prepared->PMINDEX.REQUEST_ESS_APPROVAL_EMPTY;explicit_skip->PMINDEX.DONE_ESS_SKIP_EMPTY;blocked->PMINDEX.HANDLE_ERROR | PMINDEX.CALCULATE_ATTRIBUTE_DELTA | stop | The calculated POST and DELETE delta is empty; Data Loader is recorded as skipped and the exact canonical-index ESS decision is still required |

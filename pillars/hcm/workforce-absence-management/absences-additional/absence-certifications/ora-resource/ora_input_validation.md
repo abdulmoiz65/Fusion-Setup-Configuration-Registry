@@ -1,0 +1,112 @@
+# Absence Certification Input Validation
+
+The source documents a REST describe contract and two successful Redwood HAR captures. It does not establish universal server defaults or a minimum create payload; validate the target environment before any preview.
+
+Use the [Redwood conversation contract](../references/redwood-workflow.md)
+for staged intake and the [lifecycle contract](../../references/absence-additional-lifecycle.md)
+for required operation evidence. Input checks run in the existing owning nodes;
+business naming and capability/protection policy remain owned by
+ora_design_enforcement.md. Search identity and operation dates are separate
+from fields permitted in a mutation data record.
+
+For maintenance, evaluate conditional completeness against the full resulting
+configuration using the before state for unchanged values. Do not require new
+Classification, Trigger, calculated-date groups, or reason selections for an
+unrelated Description-only Update. Retained context is not copied into immutable
+Update data-record fields; resolve only applicable changes and read-display needs.
+
+## Required Groups
+
+Apply the current [Redwood field and operation matrix](../references/redwood-workflow.md)
+before accepting template fields. Only Documentation/Entitlement and
+Active/Inactive choices are supported. Both Correct and Update retain read-only
+identity and creation configuration; current visible maintenance rules depend
+on the saved Trigger and Absence Record Update Rule. New `uiContext` evidence
+in portable preparation is technical retained context, not new user intake.
+It must come from the selected read/LOV and target UI contracts, and match the
+exact existing identity for conditional maintenance.
+
+| Requirement Group | Accepted Fields | If Missing | How to Resolve | Applies When | Resolver |
+|---|---|---|---|---|---|
+| Operation and target | Requested operation; exact current certification identity for non-create operations | Stop before preparation | Resolve exactly one certificate effective on the lookup as-of date before update, correction, end-date, delete-changes, or ZAP preparation | Every non-create request | find_absence_certification_by_exact_name |
+| Certificate discovery | Exact Name; Legislation and lookup as-of date are optional | Stop an exact lookup on zero or multiple matches | Default only the lookup as-of date to the current system date. Do not default Legislation to US; search across legislation and request Legislation when the exact name is ambiguous. Lookup defaults never provide a mutation effective date | Any read-only certificate search or non-create target-identification request | find_absence_certification_by_exact_name |
+| Certification identity | ClassificationCode, Name, LegislationCode | Block preview | Supply business-approved values | Create | |
+| Certification trigger | TriggerCode or a requester-confirmed Trigger suggestion | Resolve the applicable live options, then block preview until the requester supplies, selects, or confirms one Trigger | Resolve Certification Type first. If business intent clearly identifies exactly one available option, suggest it and require confirmation; otherwise present all available business-facing options and ask the requester to select one. Never default or silently select a value | Create | resolve_absence_certification_trigger |
+| Effective dating | Create start date; explicit Update operation date; selected row's stored Start Date for Correct; chosen End Date; no range date for whole-object ZAP | Default only create and the disclosed End Date candidate to today's business date; never default an Update date. Correct needs the selected stored date, not a new user date | Require YYYY-MM-DD and matching create aliases. Correct derives context from the exact existing slice. Preserve a supplied End Date or disclose the UI current-date candidate in the final immutable preview. Derive effectiveOf only after the selected-operation contract passes; physical start remains blank by default and always blank for Update | Every supported parent mutation and applicable flex edit | refresh_absence_certifications_dataloader_template |
+| Lifecycle status | StatusCode or status meaning, or the documented ACTIVE default candidate | Block preview | Resolve the supplied value or default candidate to exactly one target-environment lookup row | Create | resolve_absence_certification_status |
+| Maintenance evidence | Selected parent/child row and stored dates; requested operation and changes; current field/capability/impact evidence | Stop before preparation | Collect the exact-row and before/after context required by the lifecycle contract; enforce capability and protection checks in ora_design_enforcement.md | Every non-create mutation | read_absence_certification_configuration |
+| Calculated due date or expiration | The corresponding Reference Date, Duration, and Duration UOM as one complete group | Block preview | Collect the complete due-date or expiration group and validate each member under the current registered constraints; reference date and UOM use their separate documented resolvers | Calculate date is selected for either date rule | |
+| Required confirmation or void reasons | At least one reason in the corresponding complete, nonduplicate selection | Block preview | Resolve every selection through its own Confirmation Reasons or Voiding Reasons resolver, retain order, and reject a partially resolved list | Entry required is selected for the corresponding reason rule | |
+
+## Dependency-Aware Validation
+
+| Applies When | Result | Next Action | Resolver |
+|---|---|---|---|
+| An exact certificate is searched | Use the supplied lookup as-of date or default it to the current system date, read every result page, and require exactly one exact-name record effective on that date | Return only business-facing values; retain identifiers and stored codes internally | find_absence_certification_by_exact_name |
+| Search Legislation is omitted | Do not default US; search the exact name across legislation | Continue only for one unambiguous effective record, otherwise request Legislation | find_absence_certification_by_exact_name |
+| A non-create operation is requested | Require one exact resolved certificate identity independently of the explicit operation-specific date | Use the resolved identity for Data Loader preparation; never reuse the lookup-date default as the mutation date | find_absence_certification_by_exact_name |
+| Create supplies Trigger | Resolve Certification Type first, then require exactly one matching option from its applicable live Trigger list; Update rejects a Trigger payload value | Retain the matched new choice only after validation; use saved Trigger context unchanged for unrelated maintenance | resolve_absence_certification_trigger |
+| Create needs Trigger and omitted business intent clearly identifies exactly one available option | Treat the inferred option only as a suggestion | Present its business-facing meaning and require explicit requester confirmation before populating the loader value | resolve_absence_certification_trigger |
+| Create needs Trigger and omitted business intent is unclear | The required value remains unresolved | Present all available business-facing options for the resolved Certification Type and ask the requester to select one | resolve_absence_certification_trigger |
+| Full view or maintenance uses a saved Trigger | Resolve the saved code's display meaning in its saved Classification without proposing a new selection | Preserve stored Trigger as before-state context; do not copy it into an immutable Update field or request create confirmation | resolve_absence_certification_trigger |
+| Full view or maintenance before/after evidence is requested | The identity search summary is insufficient | Read the complete configuration, including Description, Management, Trigger, rules, and requested current-metadata child sections; disclose unavailable evidence separately from blank values | read_absence_certification_configuration |
+| Update is requested | Search Name, resolved stored codes, and stored dates are target-selection context, not payload values | Retain them outside the loader record and validate the Update data-record allowed-field contract below | |
+| Classification, Trigger, or a controlling rule changes in a draft | Prior dependent lookup evidence and hidden values are stale | Re-evaluate applicability, explain incompatible supplied values, and obtain the revised business choice before validation; never carry stale hidden values into preparation | |
+
+## Field Validation
+
+| Check | What Happens | Applies When | Resolver |
+|---|---|---|---|
+| Exact certificate search | Require a nonblank exact Name, read all pages, compare names exactly and case-insensitively, apply supplied Legislation when present, validate the effective range against the lookup as-of date, and require exactly one record | Read-only search or non-create target identification | find_absence_certification_by_exact_name |
+| Search result presentation | Show Certificate Name, Certification Type, Legislation, Status, Effective Start Date, and Effective End Date as an identity search summary only; keep the certificate identifier and stored codes internal. A full view and maintenance before/after evidence require read_absence_certification_configuration | Every successful certificate search | find_absence_certification_by_exact_name |
+| Full configuration evidence | Require the requested parent fields, including Description, Management, Trigger, and rules, plus all requested current-metadata child sections. Distinguish blank, not applicable, and unavailable; an identity summary cannot satisfy this contract | Full view, maintenance before/after review, or exact-record reconciliation | read_absence_certification_configuration |
+| Lookup date isolation | Use the current system date only when the search as-of date is omitted; never treat that search default as an update, correction, end-date, or delete-changes date | Search followed by a non-create request | find_absence_certification_by_exact_name |
+| Name | Require a nonblank value no longer than 240 characters | Create | |
+| Update data-record fields | Reject every nonblank Name, ClassificationCode, LegislationCode, TriggerCode, or physical EffectiveStartDate in an Update data record, even when identical to the saved value. Allow their registered METADATA columns to remain blank; target Name and saved values remain lookup context | Update | |
+| Update operation date | Keep the explicit operation date separate from the stored Effective Start Date and derive effectiveOf only after the requested Update capability is verified; it does not permit populating physical EffectiveStartDate | Update | refresh_absence_certifications_dataloader_template |
+| LegislationCode | Require a nonblank value no longer than 30 characters; do not assume US outside the captured scenario | Create | resolve_legislation_code |
+| Create effective date | Accept EffectiveStartDate or RangeStartDate. When both are omitted, default the normalized business date to the current system date. When both are supplied, require equal YYYY-MM-DD values | Create | |
+| Dated maintenance effective date | Require the explicit Update date; reuse the selected stored slice date for Correct without asking for a new date. Confirm the supplied or disclosed UI-candidate End Date in core preview. Whole-object ZAP requires no mutation range date and rejects one if supplied. Delete Record derives its date from the selected non-first stored slice; require bound configuration and History evidence, complete contiguous History, User-defined protection and current physical-row adapter contract | Every non-create mutation | refresh_absence_certifications_dataloader_template |
+| End Date chronology | Bind the exact selected identity and stored range. Require the chosen End Date to fall inclusively within that range, as required by the current Oracle END_DATE contract; reject a date before the start or after the end before source preparation. This validates the existing End Date action and adds no input or action | End Date with resolved before state | read_absence_certification_configuration |
+| EffectiveEndDate on create | Do not require or synthesize EffectiveEndDate; reject a supplied create end date because Redwood Create does not expose it; retain explicit end-date intent for a separate supported action | Create | refresh_absence_certifications_dataloader_template |
+| Date-effective METADATA | Allow EffectiveStartDate and effectiveOf attribute names to coexist in the registered template and final DAT METADATA; header presence alone is not a populated value | Every Data Loader source section | refresh_absence_certifications_dataloader_template |
+| Default physical start-date value | Require physical EffectiveStartDate to be blank in every populated data record by default and derive effectiveOf from the normalized business date | Every populated effective-dated Data Loader section | refresh_absence_certifications_dataloader_template |
+| Dual-populated start dates | When physical EffectiveStartDate and RangeStartDate inside effectiveOf are both populated, normalize YYYY-MM-DD and YYYY/MM/DD representations and require equal dates. Even equal dates block preview unless current task-, operation-, and section-specific evidence explicitly proves that Fusion supports both populated values. Update is excluded from that exception: physical EffectiveStartDate must always remain blank | Any populated record containing both representations | refresh_absence_certifications_dataloader_template |
+| Conflicting start dates | Block when physical EffectiveStartDate differs from RangeStartDate inside effectiveOf; never select one value, infer precedence, or permit an override | Any populated record containing both representations | refresh_absence_certifications_dataloader_template |
+| Effective context authority | Reject caller-authored effectiveOf. Require derived effectiveOf on every populated effective-dated section; physical EffectiveStartDate without derived effectiveOf is invalid | Every populated effective-dated Data Loader section | refresh_absence_certifications_dataloader_template |
+| ClassificationCode | Resolve only Documentation or Entitlement from ORA_ANC_CERT_CLASS; backend-only choices are unsupported | Create | resolve_absence_certification_classification |
+| StatusCode | Resolve an explicit value or the applicable ACTIVE default candidate to one code from ANC_ABSENCE_CERT_STATUS | Create | resolve_absence_certification_status |
+| AbsenceRecordUpdateRuleCode | Resolve an explicit value or the applicable OTHER default candidate to one code from ANC_ABS_CERT_USE | Create | resolve_absence_record_update_rule |
+| TriggerCode | Require a nonblank Trigger that the requester explicitly supplied, selected, or confirmed. Resolve it only after ClassificationCode, using ANC_ABS_CERT_TRIGGER for ORA_ANC_DOCUMENTATION and ORA_ANC_CERT_TRIGGER for ORA_ANC_PAYMENT_PERCENT. An inferred option remains uncommitted until confirmed | Create | resolve_absence_certification_trigger |
+| Update rule codes | Resolve every applicable explicit value or NONE default candidate to one code from ANC_ABS_CERT_UPDATE | Create | resolve_absence_certification_update_rule |
+| Calculation rule codes | Resolve every applicable explicit value or NONE default candidate to one code from ANC_ABS_CERT_CALC | Create | resolve_absence_certification_calculation_rule |
+| Calculation mode codes | Resolve every applicable explicit value or NONE default candidate to one code from ANC_ABS_CERT_CALC_MODE | Create | resolve_absence_certification_calculation_mode |
+| Due-date and expiration rule codes | Resolve every applicable explicit value or ORA_ANC_NO_DUE_DATE default candidate to one code from ANC_ABS_CERT_DUE_DATE_TYPE | Create | resolve_absence_certification_due_date_rule |
+| Confirmation and void-reason rule codes | Resolve every applicable explicit value or ORA_ANC_NOT_APPLICABLE default candidate to one code from ORA_ANC_CERT_REASON_RULE | Create | resolve_absence_certification_reason_rule |
+| Calculated date completeness | Calculate date requires the corresponding Reference Date, Duration, and Duration UOM together. Block missing or invalid members under current registered constraints and validate each group independently; do not borrow due-date values for expiration | Any operation selecting Calculate date for a visible Due Date or Expiration rule | |
+| Noncalculated date values | Capture date does not require calculated Reference Date, Duration, or Duration UOM. Not applicable omits calculation values; clarify conflicting supplied calculations before clearing or preparing them | Any operation selecting Capture date or Not applicable for a visible date rule | |
+| Required reason completeness | Entry required needs at least one fully resolved reason from the corresponding independent list. Reject duplicates after resolution, incomplete lists, and simultaneous Not applicable plus nonempty reasons; preserve requester order | Any operation selecting a Confirmation or Void Reason Rule | |
+| Entitlement reevaluation inputs | For each visible Entitlement Reevaluation Rule that applies, require the applicable Entitlement Update Rule. Override additionally requires Revised Payment Percentage, validated against current registered constraints; do not invent a percentage range. Not applicable omits dependent values and conflicting supplied values require clarification | Entitlement classification with visible reevaluation controls | |
+| DFF resource contract | When DFF values are supplied, require the current absenceCertifications DFF child, contexts, active segments, and returned bindings. When DFF values are omitted, do not refresh metadata solely to invent a context | Any request that supplies DFF values | refresh_absence_certifications_describe |
+| DFF context and segments | When DFF values are supplied, require exactly one current context and validate every requested segment. When DFF values are omitted, omit the DFF section and do not default a context | Any request that supplies DFF values | resolve_absence_certification_dff_context |
+| Flags and nulls | Preserve strings such as N as strings where the current field contract accepts them; preserve an explicit null only where the validated resolved source requires it. Source validation precedes core's final approval | Create | |
+
+## Additional LOV Field Validation
+
+| Check | What Happens | Applies When | Resolver |
+|---|---|---|---|
+| DueDateReferenceDateCode, ExpirationReferenceDateRuleCode | Resolve every supplied nonempty value through ANC_ABS_CERT_DUE_DATE_REF_DATE; require an exact unambiguous match and preserve validated selections. For reason lists, validate every item and serialize the resolved codes in requester order | Any operation supplying these values | resolve_absence_certification_reference_date |
+| DueDateUOMCode | Resolve every supplied nonempty value through ANC_ABS_CERT_DUE_DATE_UOM; require an exact unambiguous match and preserve validated selections. For reason lists, validate every item and serialize the resolved codes in requester order | Any operation supplying these values | resolve_absence_certification_due_date_uom |
+| ExpirationUOMCode | Resolve every supplied nonempty value through ANC_SETUP_OBJ_UOM_WITHOUT_HRS; require an exact unambiguous match and preserve validated selections. For reason lists, validate every item and serialize the resolved codes in requester order | Any operation supplying these values | resolve_absence_certification_expiration_uom |
+| ConfirmReasonValues | Resolve every supplied nonempty value through ORA_ANC_CERT_COMP_RSN; require an exact unambiguous match and preserve validated selections. For reason lists, validate every item and serialize the resolved codes in requester order | Any operation supplying these values | resolve_absence_certification_confirmation_reasons |
+| VoidReasonValues | Resolve every supplied nonempty value through ORA_ANC_CERT_VOID_RSN; require an exact unambiguous match and preserve validated selections. For reason lists, validate every item and serialize the resolved codes in requester order | Any operation supplying these values | resolve_absence_certification_void_reasons |
+| EligibilityProfileId | Resolve every supplied nonempty value through eligibilityProfilesLOV; require an exact unambiguous match and preserve validated selections. For reason lists, validate every item and serialize the resolved codes in requester order | Any operation supplying these values | resolve_absence_certification_eligibility_profile |
+
+Accept business-facing Eligibility Profile, Due Date Reference Date, Expiration Reference Date, Due Date Unit of Measure, Expiration Unit of Measure, Confirmation Reasons, and Voiding Reasons. Keep their stored codes and identifiers internal. Omitted optional fields do not require selection; explicit clearing is handled separately from nonempty LOV resolution. Null defaults must not replace supplied values. Confirmation and voiding selections use separate lookups; duplicates, unresolved items, and contradictory not-applicable reason rules block preview.
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| ANC_CERT.VALIDATE_INPUT | step | 10 | validate_input | valid->ANC_CERT.NORMALIZE_EFFECTIVE_OF;invalid->ANC_CERT.STOP_EXECUTION | none | stop | A create, update, correction, end-date, delete-changes, or ZAP request is supplied; validate Update data-record fields, exact-row evidence, and conditional date/reason/entitlement input completeness |
+| ANC_CERT.NORMALIZE_EFFECTIVE_OF | step | 20 | validate_input | create_normalized->ANC_CERT.REFRESH_DATALOADER_TEMPLATE;non_create_normalized->ANC_CERT.REFRESH_DATALOADER_TEMPLATE;invalid->ANC_CERT.STOP_EXECUTION | ANC_CERT.VALIDATE_INPUT | stop | Normalize Create and explicit Update dates; derive Correct from the selected stored row; preserve or disclose the UI End Date candidate for core confirmation. Derive Delete Record from its selected stored row only after exact configuration, complete History and physical-row adapter checks; derive only supported controls. ZAP has no range date; preserve lookup dates outside mutation controls |

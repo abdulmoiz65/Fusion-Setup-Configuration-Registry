@@ -1,0 +1,301 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_DOI_MANAGEMENT",
+      "task_name": "Double Opt In Management",
+      "start_node": "DOI.CHECK_READINESS",
+      "nodes": [
+        {
+          "id": "DOI.CHECK_READINESS",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "DOI.RESOLVE_COUNTRY",
+            "blocked": "DOI.HANDLE_ACCESS_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before configuration",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOI.RESOLVE_COUNTRY",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "DOI.VALIDATE_INPUT",
+            "not_applicable": "DOI.VALIDATE_INPUT",
+            "blocked": "DOI.HANDLE_INPUT_ISSUES"
+          },
+          "prerequisites": [
+            "DOI.CHECK_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before validating a regional country selection",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOI.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DOI.ENFORCE_REGION_DESIGN",
+            "invalid": "DOI.HANDLE_INPUT_ISSUES"
+          },
+          "prerequisites": [
+            "DOI.RESOLVE_COUNTRY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before Save and Close",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOI.ENFORCE_REGION_DESIGN",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "DOI.APPLY_MODE_DEFAULT",
+            "blocked": "DOI.HANDLE_DESIGN_ISSUE"
+          },
+          "prerequisites": [
+            "DOI.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before Save and Close",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOI.APPLY_MODE_DEFAULT",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "enabled": "DOI.INFORM_NOTIFICATION_LIBRARY",
+            "disabled": "DOI.RETURN_NO_OPT_IN"
+          },
+          "prerequisites": [
+            "DOI.ENFORCE_REGION_DESIGN"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Before Save and Close",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOI.INFORM_NOTIFICATION_LIBRARY",
+          "node_type": "step",
+          "sequence": 55,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "informed": "DOI.RETURN_SUCCESS"
+          },
+          "prerequisites": [
+            "DOI.APPLY_MODE_DEFAULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A GLOBAL or LIST_OF_REGIONS configuration commits successfully",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOI.HANDLE_ACCESS_ISSUE",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "DOI.CHECK_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "FSM task access is unavailable",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOI.HANDLE_INPUT_ISSUES",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "DOI.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A required country selection is blank or invalid",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOI.HANDLE_DESIGN_ISSUE",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "DOI.ENFORCE_REGION_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A regional design rule blocks Save and Close",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A task gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOI.RETURN_NO_OPT_IN",
+          "node_type": "terminal",
+          "sequence": 115,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DOI.APPLY_MODE_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Save and Close completes with no Double Opt In",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOI.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 120,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DOI.INFORM_NOTIFICATION_LIBRARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Save and Close commits, shows the notification-library reminder for GLOBAL or LIST_OF_REGIONS, and returns to Setup Manager",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

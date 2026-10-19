@@ -1,0 +1,374 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "EXM_MANAGE_EXPENSE_REPORT_TEMPLATES",
+      "task_name": "Manage Expense Report Templates",
+      "start_node": "EXMERT.SELECT_FLOW",
+      "nodes": [
+        {
+          "id": "EXMERT.SELECT_FLOW",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "identified": "EXMERT.REQUIRE_WORKBOOK",
+            "missing": "EXMERT.NEEDS_INPUT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A create or edit template/type request begins",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMERT.REQUIRE_WORKBOOK",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "provided": "EXMERT.PARSE_WORKBOOK",
+            "missing": "EXMERT.NEEDS_INPUT",
+            "wrong_format": "EXMERT.NEEDS_INPUT"
+          },
+          "prerequisites": [
+            "EXMERT.SELECT_FLOW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require the current catalog-conformant workbook",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMERT.PARSE_WORKBOOK",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "EXMERT.COMPLETE_INPUT",
+            "issues": "EXMERT.SELECT_MEDIUM",
+            "unreadable": "EXMERT.NEEDS_CORRECTION"
+          },
+          "prerequisites": [
+            "EXMERT.REQUIRE_WORKBOOK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Parse each identity, validate supplied values, and record missing fields and provenance; defer operation classification to the fresh target export",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMERT.SELECT_MEDIUM",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "chat": "EXMERT.COMPLETE_INPUT",
+            "excel": "EXMERT.COMPLETE_INPUT",
+            "missing": "EXMERT.NEEDS_INPUT"
+          },
+          "prerequisites": [
+            "EXMERT.PARSE_WORKBOOK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Issues remain; offer updated workbook or one-question-at-a-time chat",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMERT.COMPLETE_INPUT",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "EXMERT.RESOLVE_DEPENDENCIES",
+            "partial": "EXMERT.NEEDS_INPUT",
+            "invalid": "EXMERT.NEEDS_CORRECTION"
+          },
+          "prerequisites": [
+            "EXMERT.PARSE_WORKBOOK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Revalidate corrected workbook or chat answer; Template before Type; complete also accepts an initially valid workbook",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 112
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMERT.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "EXMERT.EXPORT_BASELINE",
+            "missing": "EXMERT.NEEDS_CORRECTION"
+          },
+          "prerequisites": [
+            "EXMERT.COMPLETE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Local intake is complete; establish providers, route support, and preparation preflight",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMERT.EXPORT_BASELINE",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "EXMERT.PREPARE_CANDIDATE",
+            "invalid": "EXMERT.NEEDS_CORRECTION",
+            "failed": "EXMERT.BLOCKED"
+          },
+          "prerequisites": [
+            "EXMERT.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Preparation selected the shared task export and preflight passed; verify identities, task schema and preserved values",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMERT.PREPARE_CANDIDATE",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "built_and_reviewable": "EXMERT.VALIDATE_CANDIDATE",
+            "invalid": "EXMERT.NEEDS_CORRECTION",
+            "failed": "EXMERT.BLOCKED"
+          },
+          "prerequisites": [
+            "EXMERT.EXPORT_BASELINE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Build the baseline-bound ZIP and complete CSV review automatically after validating all values and references",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMERT.VALIDATE_CANDIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "EXMERT.REVIEW_APPROVAL",
+            "invalid": "EXMERT.NEEDS_CORRECTION"
+          },
+          "prerequisites": [
+            "EXMERT.PREPARE_CANDIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate the exact archive, allowed delta, CSV review fidelity, and Core Data Loader Task Hook evidence",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 113
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMERT.REVIEW_APPROVAL",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "EXMERT.READY_IMPORT",
+            "modify": "EXMERT.NEEDS_CORRECTION",
+            "pending": "EXMERT.AWAITING_APPROVAL"
+          },
+          "prerequisites": [
+            "EXMERT.VALIDATE_CANDIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All values and exact ZIP passed validation; let implementor review every CSV and approve the immutable import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMERT.READY_IMPORT",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EXMERT.REVIEW_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact approval received; submit once through Data Loader with persisted preflight and verified Task Hook envelope; stop on acceptance; check results only on a later explicit request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMERT.NEEDS_INPUT",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Retain base values, source selections and medium; ask only for missing input",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMERT.NEEDS_CORRECTION",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Retain accepted values, show actionable issues, accept corrections and revalidate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMERT.AWAITING_APPROVAL",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Retain final ZIP and complete CSV review while awaiting exact-artifact import approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EXMERT.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Retain diagnostics for the failed preflight, baseline, route, build, import or verification step",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

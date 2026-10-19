@@ -1,0 +1,318 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_GEO_HRCHY_STRUCTURE",
+      "task_name": "Geography Hierarchy Structure",
+      "start_node": "GHS.VALIDATE",
+      "nodes": [
+        {
+          "id": "GHS.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "GHS.READINESS",
+            "read": "GHS.LABELS",
+            "issues": "GHS.INPUT_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "For a configured-level read, validate the read inputs and choose read; for package preparation or review choose valid only after package checks; missing or ambiguous inputs choose issues",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GHS.LABELS",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "GHS.READ_DONE",
+            "unresolved": "GHS.READ_DONE"
+          },
+          "prerequisites": [
+            "GHS.VALIDATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A configured-level read passed input checks; run resolve_structure_level_labels and return resolved labels or explicit unresolved results",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GHS.READ_DONE",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GHS.LABELS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return the configured mapping with resolved or unresolved POC labels from resolve_structure_level_labels; no package creation or Fusion mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GHS.READINESS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "GHS.DEFAULTS",
+            "blocked": "GHS.DEPENDENCY_ISSUES"
+          },
+          "prerequisites": [
+            "GHS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation passed",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GHS.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "GHS.ENFORCE",
+            "issues": "GHS.DESIGN_ISSUES"
+          },
+          "prerequisites": [
+            "GHS.READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid country structure package is being prepared",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GHS.ENFORCE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "GHS.APPROVAL_GATE",
+            "blocked": "GHS.DESIGN_ISSUES"
+          },
+          "prerequisites": [
+            "GHS.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependency evidence and defaults are complete",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GHS.APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "GHS.READY_IMPORT",
+            "missing": "GHS.APPROVAL_ISSUES"
+          },
+          "prerequisites": [
+            "GHS.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated immutable ZIP is ready for import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GHS.INPUT_ISSUES",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Required structure inputs are missing or invalid",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GHS.DEPENDENCY_ISSUES",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Required country, package, or approval evidence is absent",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GHS.DESIGN_ISSUES",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A structure design or package-representation rule fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GHS.APPROVAL_ISSUES",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Approval is absent, stale, or bound to another ZIP or environment",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GHS.READY_IMPORT",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GHS.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One approved core.data-loader import may be invoked, followed by detailed-log and UI or re-export verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue has been disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

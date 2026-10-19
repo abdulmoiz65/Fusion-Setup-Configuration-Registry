@@ -1,0 +1,86 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_HCM_ROLE_PROVISIONING_RULES",
+      "task_name": "Manage HCM Role Provisioning Rules",
+      "start_node": "HRPR.VALIDATE",
+      "nodes": [
+        {
+          "id": "HRPR.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {"valid": "HRPR.DEPENDENCY", "invalid": "HRPR.BLOCKED"},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before an HCM Role Provisioning Rules import preview.",
+          "source": {"file": "ora_input_validation.md", "anchor": "task-nodes", "line": 25}
+        },
+        {
+          "id": "HRPR.DEPENDENCY",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {"satisfied": "HRPR.DESIGN_GATE", "blocked": "HRPR.BLOCKED"},
+          "prerequisites": ["HRPR.VALIDATE"],
+          "on_failure": "stop",
+          "applies_when": "After archive validation and before an import preview.",
+          "source": {"file": "ora_dependency_readiness.md", "anchor": "task-nodes", "line": 20}
+        },
+        {
+          "id": "HRPR.DESIGN_GATE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {"pass": "HRPR.EXECUTION_GATE", "fail": "HRPR.BLOCKED"},
+          "prerequisites": ["HRPR.DEPENDENCY"],
+          "on_failure": "stop",
+          "applies_when": "Before building the immutable Data Loader import preview.",
+          "source": {"file": "ora_design_enforcement.md", "anchor": "task-nodes", "line": 18}
+        },
+        {
+          "id": "HRPR.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {"ready": "HRPR.READY", "blocked": "HRPR.BLOCKED"},
+          "prerequisites": ["HRPR.DESIGN_GATE"],
+          "on_failure": "stop",
+          "applies_when": "Before returning a Data Loader approval preview.",
+          "source": {"file": "ora_error_handling.md", "anchor": "task-nodes", "line": 20}
+        },
+        {
+          "id": "HRPR.READY",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": ["HRPR.EXECUTION_GATE"],
+          "on_failure": "continue",
+          "applies_when": "Task validation has passed; Core Data Loader owns approval and execution.",
+          "source": {"file": "ora_error_handling.md", "anchor": "task-nodes", "line": 21}
+        },
+        {
+          "id": "HRPR.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Validation, dependency, design, or approval prerequisite is incomplete.",
+          "source": {"file": "ora_error_handling.md", "anchor": "task-nodes", "line": 22}
+        }
+      ],
+      "readiness": {"status": "ready", "blocking_reasons": []}
+    }
+  ]
+}

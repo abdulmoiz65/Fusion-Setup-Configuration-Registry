@@ -1,0 +1,15 @@
+{
+  "parent_skill_path": "pillars/hcm/benefits-configuration/benefits-eligibility/eligibility-profiles",
+  "task_code": "ORA_IRC_MP_ELIGIBILITY_PROFILE",
+  "task_name": "Opportunity Marketplace Eligibility Profiles",
+  "usage_code": "ORA_OPP_MARKET_PLACE",
+  "usage_label": "Opportunity Marketplace",
+  "assignment_code": "APS",
+  "assignment_label": "Specific assignment",
+  "profile_type_code": "PRTP",
+  "profile_type_label": "Participant",
+  "operation": "Opportunity Marketplace Eligibility Plan Copy import",
+  "import_prefix": "OM_ELIG_",
+  "archive_name": "opportunity_marketplace_eligibility.zip",
+  "duplicate_name_message": "The eligibility profile name you entered is already in use. The name must be unique within the enterprise"
+}

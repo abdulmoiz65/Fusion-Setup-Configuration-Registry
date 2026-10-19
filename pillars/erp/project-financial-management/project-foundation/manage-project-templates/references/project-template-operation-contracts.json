@@ -1,0 +1,593 @@
+{
+  "release": "26C",
+  "reviewed_on": "2026-10-14",
+  "operations": {
+    "projectTemplates:POST": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-post.html",
+      "schema": {
+        "required": ["ProjectTemplateName", "ProjectUnitName"],
+        "type": "object",
+        "properties": {
+          "AllowCapitalizedInterestFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "AllowCrossChargeFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "AssetAllocationMethodCode": {"maxLength": 30, "type": "string", "nullable": true},
+          "AutoAssetCreateFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "AutoAssetLineAllocateMode": {"maxLength": 30, "type": "string", "nullable": true},
+          "BurdenScheduleFixedDate": {"type": "string", "format": "date", "nullable": true},
+          "BurdenScheduleId": {"type": "integer", "format": "int64", "nullable": true},
+          "BurdenScheduleName": {"maxLength": 30, "type": "string", "nullable": true},
+          "BusinessUnitId": {"type": "integer", "format": "int64", "nullable": false},
+          "BusinessUnitName": {"maxLength": 240, "type": "string", "nullable": false},
+          "CapitalEventProcessingMethodCode": {"maxLength": 30, "type": "string", "nullable": true},
+          "CapitalizedInterestRateScheduleId": {"type": "integer", "format": "int64", "nullable": true},
+          "CapitalizedInterestRateScheduleName": {"maxLength": 30, "type": "string", "nullable": true},
+          "CapitalizedInterestStopDate": {"type": "string", "format": "date", "nullable": true},
+          "CrossChargeLaborFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "CrossChargeNonLaborFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "CurrencyConvDate": {"type": "string", "format": "date", "nullable": true},
+          "CurrencyConvDateTypeCode": {"maxLength": 1, "type": "string", "nullable": true},
+          "CurrencyConvRateType": {"maxLength": 30, "type": "string", "nullable": true},
+          "EnableBudgetaryControlFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "IncludeNotesInKPINotificationsFlag": {"maxLength": 5, "type": "boolean", "nullable": true},
+          "InitialProjectStatus": {"maxLength": 80, "type": "string", "nullable": true},
+          "InitialProjectStatusCode": {"maxLength": 30, "type": "string", "nullable": true},
+          "KPINotificationEnabledFlag": {"maxLength": 5, "type": "boolean", "nullable": true},
+          "LaborTpFixedDate": {"type": "string", "format": "date", "nullable": true},
+          "LaborTpSchedule": {"maxLength": 50, "type": "string", "nullable": true},
+          "LaborTpScheduleId": {"type": "number", "nullable": true},
+          "LegalEntityId": {"type": "integer", "format": "int64", "nullable": false},
+          "LegalEntityName": {"maxLength": 240, "type": "string", "nullable": false},
+          "NlTransferPriceFixedDate": {"type": "string", "format": "date", "nullable": true},
+          "NlTransferPriceSchedule": {"maxLength": 50, "type": "string", "nullable": true},
+          "NlTransferPriceScheduleId": {"type": "number", "nullable": true},
+          "OwningOrganizationId": {"type": "integer", "format": "int64", "nullable": false},
+          "OwningOrganizationName": {"maxLength": 240, "type": "string", "nullable": false},
+          "PlanningProjectFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "ProjectClassifications": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-ProjectClassifications-item-post-request"}
+          },
+          "ProjectCurrencyCode": {"maxLength": 15, "type": "string", "nullable": false},
+          "ProjectCustomers": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-ProjectCustomers-item-post-request"}
+          },
+          "ProjectEndDate": {"type": "string", "format": "date", "nullable": true},
+          "ProjectManagerEmail": {"type": "string", "nullable": true},
+          "ProjectPlanType": {"type": "string", "nullable": true},
+          "ProjectPlanTypeId": {"type": "integer", "nullable": true},
+          "ProjectPriorityCode": {"maxLength": 30, "type": "string", "nullable": true},
+          "ProjectStartDate": {"type": "string", "format": "date", "nullable": false},
+          "ProjectTeamMembers": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-ProjectTeamMembers-item-post-request"}
+          },
+          "ProjectTemplateDescription": {"maxLength": 2000, "type": "string", "nullable": true},
+          "ProjectTemplateEndDate": {"type": "string", "format": "date", "nullable": true},
+          "ProjectTemplateName": {"maxLength": 240, "type": "string", "nullable": false},
+          "ProjectTemplateNumber": {"maxLength": 25, "type": "string", "nullable": false},
+          "ProjectTemplateStartDate": {"type": "string", "format": "date", "nullable": true},
+          "ProjectTransactionControls": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-ProjectTransactionControls-item-post-request"}
+          },
+          "ProjectTypeId": {"type": "integer", "format": "int64", "nullable": false},
+          "ProjectTypeName": {"maxLength": 240, "type": "string", "nullable": false},
+          "ProjectUnitId": {"type": "integer", "format": "int64", "nullable": false},
+          "ProjectUnitName": {"maxLength": 240, "type": "string", "nullable": false},
+          "ProviderBusinessUnits": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-ProviderBusinessUnits-item-post-request"}
+          },
+          "QuickEntries": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-QuickEntries-item-post-request"}
+          },
+          "ServiceType": {"maxLength": 80, "type": "string", "nullable": true},
+          "ServiceTypeCode": {"maxLength": 30, "type": "string", "nullable": true},
+          "SetupOptions": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-SetupOptions-item-post-request"}
+          },
+          "SourceApplicationCode": {"maxLength": 30, "type": "string", "nullable": true},
+          "SourceReference": {"maxLength": 25, "type": "string", "nullable": true},
+          "Tasks": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-Tasks-item-post-request"}
+          },
+          "TransactionControlFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "WorkType": {"maxLength": 240, "type": "string", "nullable": true},
+          "WorkTypeId": {"type": "integer", "format": "int64", "nullable": true}
+        }
+      }
+    },
+    "ProjectClassifications:POST": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-projectclassifications-post.html",
+      "schema": {"$ref": "#/components/schemas/projectTemplates-ProjectClassifications-item-post-request"}
+    },
+    "ProjectClassifications:DELETE": {"source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-projectclassifications-projectclassificationid-delete.html", "body": false},
+    "ProjectClassifications:PATCH": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-projectclassifications-projectclassificationid-patch.html",
+      "schema": {"$ref": "#/components/schemas/projectTemplates-ProjectClassifications-item-patch-request"}
+    },
+    "ProjectCustomers:POST": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-projectcustomers-post.html",
+      "schema": {"$ref": "#/components/schemas/projectTemplates-ProjectCustomers-item-post-request"}
+    },
+    "ProjectTeamMembers:POST": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-projectteammembers-post.html",
+      "schema": {"$ref": "#/components/schemas/projectTemplates-ProjectTeamMembers-item-post-request"}
+    },
+    "ProjectTeamMembers:DELETE": {"source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-projectteammembers-teammemberid-delete.html", "body": false},
+    "ProjectTeamMembers:PATCH": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-projectteammembers-teammemberid-patch.html",
+      "schema": {"$ref": "#/components/schemas/projectTemplates-ProjectTeamMembers-item-patch-request"}
+    },
+    "ProjectTransactionControls:POST": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-projecttransactioncontrols-post.html",
+      "schema": {"$ref": "#/components/schemas/projectTemplates-ProjectTransactionControls-item-post-request"}
+    },
+    "ProviderBusinessUnits:DELETE": {"source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-providerbusinessunits-businessunitid-delete.html", "body": false},
+    "ProviderBusinessUnits:POST": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-providerbusinessunits-post.html",
+      "schema": {"$ref": "#/components/schemas/projectTemplates-ProviderBusinessUnits-item-post-request"}
+    },
+    "QuickEntries:POST": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-quickentries-post.html",
+      "schema": {"$ref": "#/components/schemas/projectTemplates-QuickEntries-item-post-request"}
+    },
+    "SetupOptions:PATCH": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-setupoptions-optioncode-patch.html",
+      "schema": {"$ref": "#/components/schemas/projectTemplates-SetupOptions-item-patch-request"}
+    },
+    "SetupOptions:POST": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-setupoptions-post.html",
+      "schema": {"$ref": "#/components/schemas/projectTemplates-SetupOptions-item-post-request"}
+    },
+    "Tasks:POST": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-tasks-post.html",
+      "schema": {"$ref": "#/components/schemas/projectTemplates-Tasks-item-post-request"}
+    },
+    "TaskTransactionControls:POST": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-tasks-taskid-child-tasktransactioncontrols-post.html",
+      "schema": {"$ref": "#/components/schemas/projectTemplates-Tasks-TaskTransactionControls-item-post-request"}
+    },
+    "Tasks:DELETE": {"source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-tasks-taskid-delete.html", "body": false},
+    "Tasks:PATCH": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-child-tasks-taskid-patch.html",
+      "schema": {"$ref": "#/components/schemas/projectTemplates-Tasks-item-patch-request"}
+    },
+    "projectTemplates:PATCH": {
+      "source": "https://docs.oracle.com/en/cloud/saas/project-management/26c/fapap/op-projecttemplates-projecttemplatesuniqid-patch.html",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "AllowCapitalizedInterestFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "AllowCrossChargeFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "AssetAllocationMethodCode": {"maxLength": 30, "type": "string", "nullable": true},
+          "AutoAssetCreateFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "AutoAssetLineAllocateMode": {"maxLength": 30, "type": "string", "nullable": true},
+          "BurdenScheduleFixedDate": {"type": "string", "format": "date", "nullable": true},
+          "BurdenScheduleId": {"type": "integer", "format": "int64", "nullable": true},
+          "BurdenScheduleName": {"maxLength": 30, "type": "string", "nullable": true},
+          "CapitalEventProcessingMethodCode": {"maxLength": 30, "type": "string", "nullable": true},
+          "CapitalizedInterestRateScheduleId": {"type": "integer", "format": "int64", "nullable": true},
+          "CapitalizedInterestRateScheduleName": {"maxLength": 30, "type": "string", "nullable": true},
+          "CapitalizedInterestStopDate": {"type": "string", "format": "date", "nullable": true},
+          "CrossChargeLaborFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "CrossChargeNonLaborFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "CurrencyConvDate": {"type": "string", "format": "date", "nullable": true},
+          "CurrencyConvDateTypeCode": {"maxLength": 1, "type": "string", "nullable": true},
+          "CurrencyConvRateType": {"maxLength": 30, "type": "string", "nullable": true},
+          "EnableBudgetaryControlFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "IncludeNotesInKPINotificationsFlag": {"maxLength": 5, "type": "boolean", "nullable": true},
+          "InitialProjectStatus": {"maxLength": 80, "type": "string", "nullable": true},
+          "InitialProjectStatusCode": {"maxLength": 30, "type": "string", "nullable": true},
+          "KPINotificationEnabledFlag": {"maxLength": 5, "type": "boolean", "nullable": true},
+          "LaborTpFixedDate": {"type": "string", "format": "date", "nullable": true},
+          "LaborTpSchedule": {"maxLength": 50, "type": "string", "nullable": true},
+          "LaborTpScheduleId": {"type": "number", "nullable": true},
+          "LegalEntityId": {"type": "integer", "format": "int64", "nullable": false},
+          "LegalEntityName": {"maxLength": 240, "type": "string", "nullable": false},
+          "NlTransferPriceFixedDate": {"type": "string", "format": "date", "nullable": true},
+          "NlTransferPriceSchedule": {"maxLength": 50, "type": "string", "nullable": true},
+          "NlTransferPriceScheduleId": {"type": "number", "nullable": true},
+          "OwningOrganizationId": {"type": "integer", "format": "int64", "nullable": false},
+          "OwningOrganizationName": {"maxLength": 240, "type": "string", "nullable": false},
+          "PlanningProjectFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "ProjectClassifications": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-ProjectClassifications-item-patch-request"}
+          },
+          "ProjectCurrencyCode": {"maxLength": 15, "type": "string", "nullable": false},
+          "ProjectCustomers": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-ProjectCustomers-item-patch-request"}
+          },
+          "ProjectEndDate": {"type": "string", "format": "date", "nullable": true},
+          "ProjectManagerEmail": {"type": "string", "nullable": true},
+          "ProjectPlanType": {"type": "string", "nullable": true},
+          "ProjectPlanTypeId": {"type": "integer", "nullable": true},
+          "ProjectPriorityCode": {"maxLength": 30, "type": "string", "nullable": true},
+          "ProjectStartDate": {"type": "string", "format": "date", "nullable": false},
+          "ProjectTeamMembers": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-ProjectTeamMembers-item-patch-request"}
+          },
+          "ProjectTemplateDescription": {"maxLength": 2000, "type": "string", "nullable": true},
+          "ProjectTemplateEndDate": {"type": "string", "format": "date", "nullable": true},
+          "ProjectTemplateName": {"maxLength": 240, "type": "string", "nullable": false},
+          "ProjectTemplateNumber": {"maxLength": 25, "type": "string", "nullable": false},
+          "ProjectTemplateStartDate": {"type": "string", "format": "date", "nullable": true},
+          "ProjectTransactionControls": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-ProjectTransactionControls-item-patch-request"}
+          },
+          "ProviderBusinessUnits": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-ProviderBusinessUnits-item-patch-request"}
+          },
+          "QuickEntries": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-QuickEntries-item-patch-request"}
+          },
+          "ServiceType": {"maxLength": 80, "type": "string", "nullable": true},
+          "ServiceTypeCode": {"maxLength": 30, "type": "string", "nullable": true},
+          "SetupOptions": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-SetupOptions-item-patch-request"}
+          },
+          "Tasks": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/projectTemplates-Tasks-item-patch-request"}
+          },
+          "TransactionControlFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+          "WorkType": {"maxLength": 240, "type": "string", "nullable": true},
+          "WorkTypeId": {"type": "integer", "format": "int64", "nullable": true}
+        }
+      }
+    }
+  },
+  "schemas": {
+    "projectTemplates-ProjectClassifications-item-post-request": {
+      "type": "object",
+      "properties": {
+        "ClassCategory": {"maxLength": 240, "type": "string", "nullable": false},
+        "ClassCategoryId": {"type": "integer", "format": "int64", "nullable": false},
+        "ClassCode": {"maxLength": 240, "type": "string", "nullable": false},
+        "ClassCodeId": {"type": "integer", "format": "int64", "nullable": false},
+        "CodePercentage": {"type": "number", "nullable": true}
+      }
+    },
+    "projectTemplates-ProjectCustomers-item-post-request": {
+      "type": "object",
+      "properties": {
+        "PartyId": {"type": "integer", "format": "int64", "nullable": true},
+        "PartyName": {"maxLength": 360, "type": "string", "nullable": true},
+        "PartyNumber": {"maxLength": 30, "type": "string", "nullable": true}
+      }
+    },
+    "projectTemplates-ProjectTeamMembers-item-post-request": {
+      "type": "object",
+      "properties": {
+        "AssignmentType": {"type": "string", "nullable": true},
+        "AssignmentTypeCode": {"maxLength": 30, "type": "string", "nullable": true},
+        "BillablePercent": {"type": "integer", "nullable": true},
+        "BillablePercentReason": {"type": "string", "nullable": true},
+        "BillablePercentReasonCode": {"maxLength": 30, "type": "string", "nullable": true},
+        "FinishDate": {"type": "string", "format": "date", "nullable": true},
+        "PersonEmail": {"maxLength": 240, "type": "string", "nullable": true},
+        "PersonId": {"type": "integer", "format": "int64", "nullable": true},
+        "PersonName": {"maxLength": 240, "type": "string", "nullable": true},
+        "ProjectRoleId": {"type": "integer", "format": "int64", "nullable": true},
+        "ProjectRoleName": {"maxLength": 240, "type": "string", "nullable": true},
+        "ResourceAllocationPercentage": {"type": "number", "nullable": true},
+        "ResourceAssignmentEffortInHours": {"type": "number", "nullable": true},
+        "ResourcePlanningBillRate": {"type": "number", "nullable": true},
+        "ResourcePlanningCostRate": {"type": "number", "nullable": true},
+        "StartDate": {"type": "string", "format": "date", "nullable": true},
+        "TrackTimeFlag": {"maxLength": 1, "type": "boolean", "nullable": true}
+      }
+    },
+    "projectTemplates-ProjectTransactionControls-item-post-request": {
+      "type": "object",
+      "properties": {
+        "Billable": {"maxLength": 1, "type": "string", "nullable": false},
+        "BillableHint": {"maxLength": 80, "type": "string", "nullable": false},
+        "Capitalizable": {"maxLength": 1, "type": "string", "nullable": true},
+        "CapitalizableHint": {"maxLength": 80, "type": "string", "nullable": true},
+        "Chargeable": {"maxLength": 1, "type": "string", "nullable": false},
+        "ChargeableHint": {"maxLength": 80, "type": "string", "nullable": false},
+        "EmailAddress": {"maxLength": 240, "type": "string", "nullable": true},
+        "EndDateActive": {"type": "string", "format": "date", "nullable": true},
+        "ExpenditureCategoryId": {"type": "integer", "format": "int64", "nullable": true},
+        "ExpenditureCategoryName": {"maxLength": 240, "type": "string", "nullable": true},
+        "ExpenditureTypeId": {"type": "integer", "format": "int64", "nullable": true},
+        "ExpenditureTypeName": {"maxLength": 240, "type": "string", "nullable": true},
+        "Job": {"maxLength": 240, "type": "string", "nullable": true},
+        "JobId": {"type": "integer", "format": "int64", "nullable": true},
+        "NonLaborResourceId": {"type": "integer", "format": "int64", "nullable": true},
+        "NonLaborResourceName": {"maxLength": 240, "type": "string", "nullable": true},
+        "Organization": {"maxLength": 240, "type": "string", "nullable": true},
+        "OrganizationId": {"type": "integer", "format": "int64", "nullable": true},
+        "PersonId": {"type": "integer", "format": "int64", "nullable": true},
+        "PersonName": {"maxLength": 240, "type": "string", "nullable": true},
+        "PersonNumber": {"maxLength": 30, "type": "string", "nullable": true},
+        "PersonType": {"maxLength": 20, "type": "string", "nullable": true},
+        "PersonTypeHint": {"maxLength": 80, "type": "string", "nullable": true},
+        "StartDateActive": {"type": "string", "format": "date", "nullable": false}
+      }
+    },
+    "projectTemplates-ProviderBusinessUnits-item-post-request": {
+      "type": "object",
+      "properties": {
+        "BusinessUnitId": {"type": "integer", "format": "int64", "nullable": false},
+        "BusinessUnitName": {"maxLength": 255, "type": "string", "nullable": true}
+      }
+    },
+    "projectTemplates-QuickEntries-item-post-request": {
+      "type": "object",
+      "properties": {
+        "FieldCode": {"maxLength": 30, "type": "string", "nullable": false},
+        "MandatoryFlag": {"maxLength": 1, "type": "boolean", "nullable": false},
+        "Prompt": {"maxLength": 80, "type": "string", "nullable": false},
+        "Specification": {"type": "string", "nullable": true}
+      }
+    },
+    "projectTemplates-SetupOptions-item-post-request": {
+      "type": "object",
+      "properties": {
+        "DisplayFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "OptionCode": {"maxLength": 30, "type": "string", "nullable": false},
+        "OptionName": {"maxLength": 80, "type": "string", "nullable": false}
+      }
+    },
+    "projectTemplates-Tasks-item-post-request": {
+      "required": ["CrossChargeLaborFlag", "CrossChargeNonLaborFlag", "TaskName", "TaskOrganizationId"],
+      "type": "object",
+      "properties": {
+        "AllowCapitalInterestFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "AllowCrossChargeTransactionsFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "BillableFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "BurdenSchedule": {"maxLength": 30, "type": "string", "nullable": true},
+        "BurdenScheduleFixedDate": {"type": "string", "format": "date", "nullable": true},
+        "BurdenScheduleId": {"type": "integer", "format": "int64", "nullable": true},
+        "CapitalizableFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "CapitalizeInterestStopDate": {"type": "string", "format": "date", "nullable": true},
+        "ChargeableFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "CriticalFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "CrossChargeLaborFlag": {"maxLength": 1, "type": "boolean", "nullable": false},
+        "CrossChargeNonLaborFlag": {"maxLength": 1, "type": "boolean", "nullable": false},
+        "ExternalParentTaskId": {"maxLength": 100, "type": "string", "nullable": true},
+        "ExternalTaskId": {"maxLength": 100, "type": "string", "nullable": true},
+        "LaborTpFixedDate": {"type": "string", "format": "date", "nullable": true},
+        "LaborTpSchedule": {"maxLength": 50, "type": "string", "nullable": true},
+        "LaborTpScheduleId": {"type": "integer", "format": "int64", "nullable": true},
+        "MilestoneFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "NlTransferPriceFixedDate": {"type": "string", "format": "date", "nullable": true},
+        "NlTransferPriceSchedule": {"maxLength": 50, "type": "string", "nullable": true},
+        "NlTransferPriceScheduleId": {"type": "integer", "format": "int64", "nullable": true},
+        "PartySiteId": {"type": "integer", "format": "int64", "nullable": true},
+        "PercentCompleteCalculationMethodCode": {"maxLength": 30, "type": "string", "nullable": true},
+        "ProgressETCMethodCode": {"maxLength": 30, "type": "string", "nullable": true},
+        "ReceiveProjectInvoiceFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "RetirementCostFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "ServiceType": {"maxLength": 80, "type": "string", "nullable": true},
+        "ServiceTypeCode": {"maxLength": 30, "type": "string", "nullable": true},
+        "SourceApplication": {"maxLength": 30, "type": "string", "nullable": true},
+        "SourceReference": {"maxLength": 100, "type": "string", "nullable": true},
+        "TaskDescription": {"maxLength": 2000, "type": "string", "nullable": true},
+        "TaskFinishDate": {"type": "string", "format": "date", "nullable": true},
+        "TaskId": {"type": "integer", "format": "int64", "nullable": false},
+        "TaskManagerEmail": {"maxLength": 240, "type": "string", "nullable": true},
+        "TaskManagerName": {"maxLength": 240, "type": "string", "nullable": true},
+        "TaskManagerPersonId": {"type": "integer", "format": "int64", "nullable": true},
+        "TaskName": {"maxLength": 255, "type": "string", "nullable": false},
+        "TaskNumber": {"maxLength": 100, "type": "string", "nullable": true},
+        "TaskOrganizationId": {"type": "integer", "format": "int64", "nullable": false},
+        "TaskOrganizationName": {"maxLength": 240, "type": "string", "nullable": false},
+        "TaskStartDate": {"type": "string", "format": "date", "nullable": true},
+        "TaskTransactionControls": {
+          "type": "array",
+          "items": {"$ref": "#/components/schemas/projectTemplates-Tasks-TaskTransactionControls-item-post-request"}
+        },
+        "TransactionCompletionDate": {"type": "string", "format": "date", "nullable": true},
+        "TransactionStartDate": {"type": "string", "format": "date", "nullable": true},
+        "WorkType": {"maxLength": 240, "type": "string", "nullable": true},
+        "WorkTypeId": {"type": "integer", "format": "int64", "nullable": true}
+      }
+    },
+    "projectTemplates-Tasks-TaskTransactionControls-item-post-request": {
+      "type": "object",
+      "properties": {
+        "Billable": {"maxLength": 1, "type": "string", "nullable": false},
+        "BillableHint": {"maxLength": 80, "type": "string", "nullable": false},
+        "Capitalizable": {"maxLength": 1, "type": "string", "nullable": true},
+        "CapitalizableHint": {"maxLength": 80, "type": "string", "nullable": true},
+        "Chargeable": {"maxLength": 1, "type": "string", "nullable": false},
+        "ChargeableHint": {"maxLength": 80, "type": "string", "nullable": false},
+        "EmailAddress": {"maxLength": 240, "type": "string", "nullable": true},
+        "EndDateActive": {"type": "string", "format": "date", "nullable": true},
+        "ExpenditureCategoryId": {"type": "integer", "format": "int64", "nullable": true},
+        "ExpenditureCategoryName": {"maxLength": 240, "type": "string", "nullable": true},
+        "ExpenditureTypeId": {"type": "integer", "format": "int64", "nullable": true},
+        "ExpenditureTypeName": {"maxLength": 240, "type": "string", "nullable": true},
+        "Job": {"maxLength": 240, "type": "string", "nullable": true},
+        "JobId": {"type": "integer", "format": "int64", "nullable": true},
+        "NonLaborResourceId": {"type": "integer", "format": "int64", "nullable": true},
+        "NonLaborResourceName": {"maxLength": 240, "type": "string", "nullable": true},
+        "Organization": {"maxLength": 240, "type": "string", "nullable": true},
+        "OrganizationId": {"type": "integer", "format": "int64", "nullable": true},
+        "PersonId": {"type": "integer", "format": "int64", "nullable": true},
+        "PersonName": {"maxLength": 240, "type": "string", "nullable": true},
+        "PersonNumber": {"maxLength": 30, "type": "string", "nullable": true},
+        "PersonType": {"maxLength": 20, "type": "string", "nullable": true},
+        "PersonTypeHint": {"maxLength": 80, "type": "string", "nullable": true},
+        "StartDateActive": {"type": "string", "format": "date", "nullable": false}
+      }
+    },
+    "projectTemplates-ProjectClassifications-item-patch-request": {
+      "type": "object",
+      "properties": {
+        "ClassCode": {"maxLength": 240, "type": "string", "nullable": false},
+        "ClassCodeId": {"type": "integer", "format": "int64", "nullable": false},
+        "CodePercentage": {"type": "number", "nullable": true}
+      }
+    },
+    "projectTemplates-ProjectTeamMembers-item-patch-request": {
+      "type": "object",
+      "properties": {
+        "AssignmentType": {"type": "string", "nullable": true},
+        "AssignmentTypeCode": {"maxLength": 30, "type": "string", "nullable": true},
+        "BillablePercent": {"type": "integer", "nullable": true},
+        "BillablePercentReason": {"type": "string", "nullable": true},
+        "BillablePercentReasonCode": {"maxLength": 30, "type": "string", "nullable": true},
+        "FinishDate": {"type": "string", "format": "date", "nullable": true},
+        "ResourceAllocationPercentage": {"type": "number", "nullable": true},
+        "ResourceAssignmentEffortInHours": {"type": "number", "nullable": true},
+        "ResourcePlanningBillRate": {"type": "number", "nullable": true},
+        "ResourcePlanningCostRate": {"type": "number", "nullable": true},
+        "StartDate": {"type": "string", "format": "date", "nullable": true},
+        "TrackTimeFlag": {"maxLength": 1, "type": "boolean", "nullable": true}
+      }
+    },
+    "projectTemplates-SetupOptions-item-patch-request": {
+      "type": "object",
+      "properties": {
+        "DisplayFlag": {"maxLength": 1, "type": "boolean", "nullable": true}
+      }
+    },
+    "projectTemplates-Tasks-item-patch-request": {
+      "required": ["CrossChargeLaborFlag", "CrossChargeNonLaborFlag", "TaskName", "TaskOrganizationId"],
+      "type": "object",
+      "properties": {
+        "AllowCapitalInterestFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "AllowCrossChargeTransactionsFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "BillableFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "BurdenSchedule": {"maxLength": 30, "type": "string", "nullable": true},
+        "BurdenScheduleFixedDate": {"type": "string", "format": "date", "nullable": true},
+        "BurdenScheduleId": {"type": "integer", "format": "int64", "nullable": true},
+        "CapitalizableFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "CapitalizeInterestStopDate": {"type": "string", "format": "date", "nullable": true},
+        "ChargeableFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "CriticalFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "CrossChargeLaborFlag": {"maxLength": 1, "type": "boolean", "nullable": false},
+        "CrossChargeNonLaborFlag": {"maxLength": 1, "type": "boolean", "nullable": false},
+        "ExternalParentTaskId": {"maxLength": 100, "type": "string", "nullable": true},
+        "ExternalTaskId": {"maxLength": 100, "type": "string", "nullable": true},
+        "LaborTpFixedDate": {"type": "string", "format": "date", "nullable": true},
+        "LaborTpSchedule": {"maxLength": 50, "type": "string", "nullable": true},
+        "LaborTpScheduleId": {"type": "integer", "format": "int64", "nullable": true},
+        "MilestoneFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "NlTransferPriceFixedDate": {"type": "string", "format": "date", "nullable": true},
+        "NlTransferPriceSchedule": {"maxLength": 50, "type": "string", "nullable": true},
+        "NlTransferPriceScheduleId": {"type": "integer", "format": "int64", "nullable": true},
+        "PartySiteId": {"type": "integer", "format": "int64", "nullable": true},
+        "PercentCompleteCalculationMethodCode": {"maxLength": 30, "type": "string", "nullable": true},
+        "ProgressETCMethodCode": {"maxLength": 30, "type": "string", "nullable": true},
+        "ReceiveProjectInvoiceFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "RetirementCostFlag": {"maxLength": 1, "type": "boolean", "nullable": true},
+        "ServiceType": {"maxLength": 80, "type": "string", "nullable": true},
+        "ServiceTypeCode": {"maxLength": 30, "type": "string", "nullable": true},
+        "SourceApplication": {"maxLength": 30, "type": "string", "nullable": true},
+        "SourceReference": {"maxLength": 100, "type": "string", "nullable": true},
+        "TaskDescription": {"maxLength": 2000, "type": "string", "nullable": true},
+        "TaskFinishDate": {"type": "string", "format": "date", "nullable": true},
+        "TaskId": {"type": "integer", "format": "int64", "nullable": false},
+        "TaskManagerEmail": {"maxLength": 240, "type": "string", "nullable": true},
+        "TaskManagerName": {"maxLength": 240, "type": "string", "nullable": true},
+        "TaskManagerPersonId": {"type": "integer", "format": "int64", "nullable": true},
+        "TaskName": {"maxLength": 255, "type": "string", "nullable": false},
+        "TaskNumber": {"maxLength": 100, "type": "string", "nullable": true},
+        "TaskOrganizationId": {"type": "integer", "format": "int64", "nullable": false},
+        "TaskOrganizationName": {"maxLength": 240, "type": "string", "nullable": false},
+        "TaskStartDate": {"type": "string", "format": "date", "nullable": true},
+        "TaskTransactionControls": {
+          "type": "array",
+          "items": {"$ref": "#/components/schemas/projectTemplates-Tasks-TaskTransactionControls-item-patch-request"}
+        },
+        "TransactionCompletionDate": {"type": "string", "format": "date", "nullable": true},
+        "TransactionStartDate": {"type": "string", "format": "date", "nullable": true},
+        "WorkType": {"maxLength": 240, "type": "string", "nullable": true},
+        "WorkTypeId": {"type": "integer", "format": "int64", "nullable": true}
+      }
+    },
+    "projectTemplates-ProjectCustomers-item-patch-request": {
+      "type": "object",
+      "properties": {}
+    },
+    "projectTemplates-ProjectTransactionControls-item-patch-request": {
+      "type": "object",
+      "properties": {
+        "Billable": {"maxLength": 1, "type": "string", "nullable": false},
+        "BillableHint": {"maxLength": 80, "type": "string", "nullable": false},
+        "Capitalizable": {"maxLength": 1, "type": "string", "nullable": true},
+        "CapitalizableHint": {"maxLength": 80, "type": "string", "nullable": true},
+        "Chargeable": {"maxLength": 1, "type": "string", "nullable": false},
+        "ChargeableHint": {"maxLength": 80, "type": "string", "nullable": false},
+        "EmailAddress": {"maxLength": 240, "type": "string", "nullable": true},
+        "EndDateActive": {"type": "string", "format": "date", "nullable": true},
+        "ExpenditureCategoryId": {"type": "integer", "format": "int64", "nullable": true},
+        "ExpenditureCategoryName": {"maxLength": 240, "type": "string", "nullable": true},
+        "ExpenditureTypeId": {"type": "integer", "format": "int64", "nullable": true},
+        "ExpenditureTypeName": {"maxLength": 240, "type": "string", "nullable": true},
+        "Job": {"maxLength": 240, "type": "string", "nullable": true},
+        "JobId": {"type": "integer", "format": "int64", "nullable": true},
+        "NonLaborResourceId": {"type": "integer", "format": "int64", "nullable": true},
+        "NonLaborResourceName": {"maxLength": 240, "type": "string", "nullable": true},
+        "Organization": {"maxLength": 240, "type": "string", "nullable": true},
+        "OrganizationId": {"type": "integer", "format": "int64", "nullable": true},
+        "PersonId": {"type": "integer", "format": "int64", "nullable": true},
+        "PersonName": {"maxLength": 240, "type": "string", "nullable": true},
+        "PersonNumber": {"maxLength": 30, "type": "string", "nullable": true},
+        "PersonType": {"maxLength": 20, "type": "string", "nullable": true},
+        "PersonTypeHint": {"maxLength": 80, "type": "string", "nullable": true},
+        "StartDateActive": {"type": "string", "format": "date", "nullable": false}
+      }
+    },
+    "projectTemplates-ProviderBusinessUnits-item-patch-request": {
+      "type": "object",
+      "properties": {
+        "BusinessUnitId": {"type": "integer", "format": "int64", "nullable": false},
+        "BusinessUnitName": {"maxLength": 255, "type": "string", "nullable": true}
+      }
+    },
+    "projectTemplates-QuickEntries-item-patch-request": {
+      "type": "object",
+      "properties": {
+        "MandatoryFlag": {"maxLength": 1, "type": "boolean", "nullable": false},
+        "Prompt": {"maxLength": 80, "type": "string", "nullable": false},
+        "Specification": {"type": "string", "nullable": true}
+      }
+    },
+    "projectTemplates-Tasks-TaskTransactionControls-item-patch-request": {
+      "type": "object",
+      "properties": {
+        "Billable": {"maxLength": 1, "type": "string", "nullable": false},
+        "BillableHint": {"maxLength": 80, "type": "string", "nullable": false},
+        "Capitalizable": {"maxLength": 1, "type": "string", "nullable": true},
+        "CapitalizableHint": {"maxLength": 80, "type": "string", "nullable": true},
+        "Chargeable": {"maxLength": 1, "type": "string", "nullable": false},
+        "ChargeableHint": {"maxLength": 80, "type": "string", "nullable": false},
+        "EmailAddress": {"maxLength": 240, "type": "string", "nullable": true},
+        "EndDateActive": {"type": "string", "format": "date", "nullable": true},
+        "ExpenditureCategoryId": {"type": "integer", "format": "int64", "nullable": true},
+        "ExpenditureCategoryName": {"maxLength": 240, "type": "string", "nullable": true},
+        "ExpenditureTypeId": {"type": "integer", "format": "int64", "nullable": true},
+        "ExpenditureTypeName": {"maxLength": 240, "type": "string", "nullable": true},
+        "Job": {"maxLength": 240, "type": "string", "nullable": true},
+        "JobId": {"type": "integer", "format": "int64", "nullable": true},
+        "NonLaborResourceId": {"type": "integer", "format": "int64", "nullable": true},
+        "NonLaborResourceName": {"maxLength": 240, "type": "string", "nullable": true},
+        "Organization": {"maxLength": 240, "type": "string", "nullable": true},
+        "OrganizationId": {"type": "integer", "format": "int64", "nullable": true},
+        "PersonId": {"type": "integer", "format": "int64", "nullable": true},
+        "PersonName": {"maxLength": 240, "type": "string", "nullable": true},
+        "PersonNumber": {"maxLength": 30, "type": "string", "nullable": true},
+        "PersonType": {"maxLength": 20, "type": "string", "nullable": true},
+        "PersonTypeHint": {"maxLength": 80, "type": "string", "nullable": true},
+        "StartDateActive": {"type": "string", "format": "date", "nullable": false}
+      }
+    }
+  }
+}

@@ -1,0 +1,470 @@
+{
+  "count": 48,
+  "totalResults": 48,
+  "items": [
+    {
+      "TaskCode": "HRT_MANAGE_QUESTIONS",
+      "TaskName": "Question Library",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_QUESTIONNAIRE",
+      "FunctionalAreaName": "Questionnaire"
+    },
+    {
+      "TaskCode": "HRT_MANAGE_QUESTIONNAIRE_TEMPLATES",
+      "TaskName": "Questionnaire Templates",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_QUESTIONNAIRE",
+      "FunctionalAreaName": "Questionnaire"
+    },
+    {
+      "TaskCode": "HRT_MANAGE_QUESTIONNAIRES",
+      "TaskName": "Questionnaires",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_QUESTIONNAIRE",
+      "FunctionalAreaName": "Questionnaire"
+    },
+    {
+      "TaskCode": "ORA_PER_MANAGE_APPROVAL_TRANSACTIONS",
+      "TaskName": "Manage Approval Transactions for Human Capital Management",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_APPROVAL_RULES",
+      "FunctionalAreaName": "Approval Rules"
+    },
+    {
+      "TaskCode": "ORA_PER_MANAGE_APPROVAL_TRANSACTIONS",
+      "TaskName": "Manage Approval Transactions for Human Capital Management",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_APPROVAL_TASK",
+      "FunctionalAreaName": "Approval Task"
+    },
+    {
+      "TaskCode": "ORA_HRT_MANAGE_FEEDBACK_VISIBILITY",
+      "TaskName": "Manage Feedback Visibility",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_PERSON_NOTES",
+      "FunctionalAreaName": "Person Notes Visibility"
+    },
+    {
+      "TaskCode": "HRT_MANAGE_PROFILE_RATING_MODELS",
+      "TaskName": "Profile Rating Models",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_PROFILE_RATING_MODEL",
+      "FunctionalAreaName": "Profile Rating Model Configuration"
+    },
+    {
+      "TaskCode": "HRT_MANAGE_PROFILE_CONTENT_TYPES",
+      "TaskName": "Content Types",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_TALENT_PROFILE_CONTENT_LIBRARY",
+      "FunctionalAreaName": "Profile Management Content Library Configuration"
+    },
+    {
+      "TaskCode": "HRT_MANAGE_PROFILE_CONTENT_ITEMS",
+      "TaskName": "Content Items",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_TALENT_PROFILE_CONTENT_LIBRARY",
+      "FunctionalAreaName": "Profile Management Content Library Configuration"
+    },
+    {
+      "TaskCode": "ORA_MANAGE_PROFILE_ITEM_CATALOG",
+      "TaskName": "Item Catalogs",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_TALENT_PROFILE_CONTENT_LIBRARY",
+      "FunctionalAreaName": "Profile Management Content Library Configuration"
+    },
+    {
+      "TaskCode": "HRT_MANAGE_INSTANCE_QUALIFIERS",
+      "TaskName": "Instance Qualifiers",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_TALENT_PROFILE_CONTENT_LIBRARY",
+      "FunctionalAreaName": "Profile Management Content Library Configuration"
+    },
+    {
+      "TaskCode": "HRT_MANAGE_EDUCATIONAL_ESTABLISHMENTS",
+      "TaskName": "Educational Establishments",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_TALENT_PROFILE_CONTENT_LIBRARY",
+      "FunctionalAreaName": "Profile Management Content Library Configuration"
+    },
+    {
+      "TaskCode": "HRT_MANAGE_CONTENT_SUBSCRIBERS",
+      "TaskName": "Content Subscribers",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_PROFILE_TYPES_AND_CONTENT_SECTION",
+      "FunctionalAreaName": "Profile Types and Content Section Configuration"
+    },
+    {
+      "TaskCode": "HRT_MANAGE_PROFILE_TYPES",
+      "TaskName": "Profile Types",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_PROFILE_TYPES_AND_CONTENT_SECTION",
+      "FunctionalAreaName": "Profile Types and Content Section Configuration"
+    },
+    {
+      "TaskCode": "HRT_MANAGE_TALENT_NOTIFICATIONS",
+      "TaskName": "Talent Notifications",
+      "Pillar": "HCM",
+      "OfferingCode": "CUSTOM_HCM_TOOL",
+      "OfferingName": "HCM Tool",
+      "FunctionalAreaCode": "CUSTOM_TALENT_PROFILE_NOTIFICATIONS_AND_ALERTS",
+      "FunctionalAreaName": "Talent Profile Notifications and Alerts Configuration"
+    },
+    {
+      "TaskCode": "ORA_PER_MANAGE_ASSIGNMENT_FLEXFIELD_MAPPING",
+      "TaskName": "Manage Assignment Flexfield Mapping",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_GLOBAL_HUMAN_RESOURCES",
+      "OfferingName": "Global Human Resources",
+      "FunctionalAreaCode": "ORA_POSITIONS",
+      "FunctionalAreaName": "Positions"
+    },
+    {
+      "TaskCode": "XLE_MANAGE_LEGAL_ADDRESSES",
+      "TaskName": "Manage Legal Addresses",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "ORA_SVC_COMPANY_PROFILE",
+      "FunctionalAreaName": "Company Profile",
+      "DisplaySequence": "1"
+    },
+    {
+      "TaskCode": "XLE_SEARCH_LEGAL_ENTITIES",
+      "TaskName": "Search Legal Entities",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "ORA_SVC_COMPANY_PROFILE",
+      "FunctionalAreaName": "Company Profile",
+      "DisplaySequence": "2"
+    },
+    {
+      "TaskCode": "XLE_MANAGE_LEGAL_ENTITY",
+      "TaskName": "Manage Legal Entity",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "ORA_SVC_COMPANY_PROFILE",
+      "FunctionalAreaName": "Company Profile",
+      "DisplaySequence": "3"
+    },
+    {
+      "TaskCode": "FUN_MANAGE_BUSINESS_UNIT",
+      "TaskName": "Manage Business Unit",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "ORA_SVC_COMPANY_PROFILE",
+      "FunctionalAreaName": "Company Profile",
+      "DisplaySequence": "4"
+    },
+    {
+      "TaskCode": "ORA_ZCA_MANAGE_COMMON_CRM_BUSINESS_UNIT_PROFILE_OPTIONS",
+      "TaskName": "Manage Common CRM Business Unit Profile Options",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "ORA_SVC_COMPANY_PROFILE",
+      "FunctionalAreaName": "Company Profile",
+      "DisplaySequence": "5"
+    },
+    {
+      "TaskCode": "ZCA_MANAGE_CALENDAR_PROFILE_OPTION",
+      "TaskName": "Manage Calendar Profile Option",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "ORA_SVC_COMPANY_PROFILE",
+      "FunctionalAreaName": "Company Profile",
+      "DisplaySequence": "6"
+    },
+    {
+      "TaskCode": "ZCA_MANAGE_CURRENCY_PROFILE_OPTIONS",
+      "TaskName": "Manage Currency Profile Options",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "ORA_SVC_COMPANY_PROFILE",
+      "FunctionalAreaName": "Company Profile",
+      "DisplaySequence": "7"
+    },
+    {
+      "TaskCode": "HZ_MANAGE_RESOURCE_ORGANIZATIONS",
+      "TaskName": "Manage Internal Resource Organizations",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "ORA_ASK_USERS_AND_SECURITY",
+      "FunctionalAreaName": "Users and Security",
+      "DisplaySequence": "8"
+    },
+    {
+      "TaskCode": "HZ_MANAGE_RESOURCE_ORGANIZATION_HIERARCHIES",
+      "TaskName": "Manage Resource Organization Hierarchies",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "ORA_ASK_USERS_AND_SECURITY",
+      "FunctionalAreaName": "Users and Security",
+      "DisplaySequence": "9"
+    },
+    {
+      "TaskCode": "PER_MANAGE_USERS",
+      "TaskName": "Manage Users",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "ORA_ASK_USERS_AND_SECURITY",
+      "FunctionalAreaName": "Users and Security",
+      "DisplaySequence": "10"
+    },
+    {
+      "TaskCode": "HZ_MANAGE_RESOURCES",
+      "TaskName": "Manage Resources",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "ORA_ASK_USERS_AND_SECURITY",
+      "FunctionalAreaName": "Users and Security",
+      "DisplaySequence": "11"
+    },
+    {
+      "TaskCode": "ASXS_MANAGE_JOB_ROLES",
+      "TaskName": "Manage Job Roles",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "ORA_ASK_USERS_AND_SECURITY",
+      "FunctionalAreaName": "Users and Security",
+      "DisplaySequence": "12"
+    },
+    {
+      "TaskCode": "ASXS_MANAGE_DATA_SECURITY_POLICIES",
+      "TaskName": "Manage Data Security Policies",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "ORA_ASK_USERS_AND_SECURITY",
+      "FunctionalAreaName": "Users and Security",
+      "DisplaySequence": "13"
+    },
+    {
+      "TaskCode": "ORA_OSS_MANAGE_SUBSCRIPTION_PROFILE_OPTIONS",
+      "TaskName": "Manage Subscription Profile Options",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "CUSTOM_FOUNDATION_SETUP",
+      "FunctionalAreaName": "Foundation Setup",
+      "DisplaySequence": "14"
+    },
+    {
+      "TaskCode": "ORA_OSS_MANAGE_TIME_UNIT_MAPPINGS",
+      "TaskName": "Manage Subscription Time Unit Mappings",
+      "Pillar": "CX",
+      "OfferingCode": "CUSTOM_SUBSCRIPTIONS",
+      "OfferingName": "Subscriptions",
+      "FunctionalAreaCode": "CUSTOM_FOUNDATION_SETUP",
+      "FunctionalAreaName": "Foundation Setup",
+      "DisplaySequence": "15"
+    },
+    {
+      "TaskCode": "FND_MANAGE_PROFILE_OPTIONS",
+      "TaskName": "Manage Profile Options",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_COMMON",
+      "FunctionalAreaName": "Learning Management Common",
+      "DisplaySequence": "1"
+    },
+    {
+      "TaskCode": "FND_MANAGE_ADMINISTRATOR_PROFILE_VALUES",
+      "TaskName": "Manage Administrator Profile Values",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_COMMON",
+      "FunctionalAreaName": "Learning Management Common",
+      "DisplaySequence": "2"
+    },
+    {
+      "TaskCode": "FND_MANAGE_COMMON_LOOKUPS",
+      "TaskName": "Manage Common Lookups",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_COMMON",
+      "FunctionalAreaName": "Learning Management Common",
+      "DisplaySequence": "3"
+    },
+    {
+      "TaskCode": "FND_MANAGE_VALUE_SETS",
+      "TaskName": "Manage Value Sets",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_COMMON",
+      "FunctionalAreaName": "Learning Management Common",
+      "DisplaySequence": "4"
+    },
+    {
+      "TaskCode": "FND_MANAGE_DESCRIPTIVE_FLEXFIELDS",
+      "TaskName": "Manage Descriptive Flexfields",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_COMMON",
+      "FunctionalAreaName": "Learning Management Common",
+      "DisplaySequence": "5"
+    },
+    {
+      "TaskCode": "ORA_FND_GLOBAL_SEARCH_CONFIGURATIONS",
+      "TaskName": "Manage Applications Core Global Search Configurations",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_COMMON",
+      "FunctionalAreaName": "Learning Management Common",
+      "DisplaySequence": "6"
+    },
+    {
+      "TaskCode": "ORA_FND_SUGGESTION_GROUPS",
+      "TaskName": "Manage Applications Core Global Search Suggestion Groups",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_COMMON",
+      "FunctionalAreaName": "Learning Management Common",
+      "DisplaySequence": "7"
+    },
+    {
+      "TaskCode": "ORA_FND_MANAGE_INDEX_CONFIGURATION",
+      "TaskName": "Manage Search Indexes",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_COMMON",
+      "FunctionalAreaName": "Learning Management Common",
+      "DisplaySequence": "8"
+    },
+    {
+      "TaskCode": "FND_MANAGE_AUDIT_POLICIES",
+      "TaskName": "Manage Audit Policies",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_COMMON",
+      "FunctionalAreaName": "Learning Management Common",
+      "DisplaySequence": "9"
+    },
+    {
+      "TaskCode": "ORA_GMS_MANAGE_AUDIT_TYPES",
+      "TaskName": "Manage Audit Types",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_COMMON",
+      "FunctionalAreaName": "Learning Management Common",
+      "DisplaySequence": "10"
+    },
+    {
+      "TaskCode": "PER_MANAGE_PERSON_AND_ASSIGNMENT_SECURITY_PROFILE",
+      "TaskName": "Manage Person Security Profile",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_HCM_SECURITY_PROFILE",
+      "FunctionalAreaName": "Learning Management HCM Security Profile",
+      "DisplaySequence": "11"
+    },
+    {
+      "TaskCode": "ORA_PER_ASSIGN_SECURITY_PROFILES_TO_ROLE",
+      "TaskName": "Assign Security Profiles to Role",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_HCM_SECURITY_PROFILE",
+      "FunctionalAreaName": "Learning Management HCM Security Profile",
+      "DisplaySequence": "12"
+    },
+    {
+      "TaskCode": "HRT_MANAGE_QUESTIONS",
+      "TaskName": "Question Library",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_HCM_TOOL",
+      "FunctionalAreaName": "Learning Management HCM Tool",
+      "DisplaySequence": "13"
+    },
+    {
+      "TaskCode": "HRT_MANAGE_QUESTIONNAIRE_TEMPLATES",
+      "TaskName": "Questionnaire Templates",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_HCM_TOOL",
+      "FunctionalAreaName": "Learning Management HCM Tool",
+      "DisplaySequence": "14"
+    },
+    {
+      "TaskCode": "HRT_MANAGE_QUESTIONNAIRES",
+      "TaskName": "Questionnaires",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_HCM_TOOL",
+      "FunctionalAreaName": "Learning Management HCM Tool",
+      "DisplaySequence": "15"
+    },
+    {
+      "TaskCode": "ORA_PER_MANAGE_APPROVAL_TRANSACTIONS",
+      "TaskName": "Manage Approval Transactions for Human Capital Management",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_HCM_TOOL",
+      "FunctionalAreaName": "Learning Management HCM Tool",
+      "DisplaySequence": "16"
+    },
+    {
+      "TaskCode": "PER_MANAGE_LOCATIONS",
+      "TaskName": "Manage Locations",
+      "Pillar": "HCM",
+      "OfferingCode": "ORA_LEARNING_MANAGEMENT",
+      "OfferingName": "Learning Management",
+      "FunctionalAreaCode": "ORA_LEARNING_MANAGEMENT_LOCATIONS",
+      "FunctionalAreaName": "Learning Management Locations",
+      "DisplaySequence": "17"
+    }
+  ]
+}

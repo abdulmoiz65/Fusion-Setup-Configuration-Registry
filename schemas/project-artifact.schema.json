@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fdos.oracle.example/schemas/project-artifact.schema.json",
+  "title": "Project Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "name",
+    "artifact_type",
+    "skill_id",
+    "location",
+    "version",
+    "status",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_type": {
+      "type": "string",
+      "enum": [
+        "objective",
+        "requirement",
+        "scope",
+        "task_mapping",
+        "setup_task_sequence",
+        "task_context",
+        "runbook_plan",
+        "runbook_dashboard",
+        "runbook_response",
+        "design_decision",
+        "configuration_blueprint",
+        "configuration_export",
+        "configuration_baseline",
+        "validation_result",
+        "report",
+        "skill_run",
+        "token_usage_record",
+        "other"
+      ]
+    },
+    "skill_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$"
+    },
+    "location": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "reviewed", "approved", "superseded"]
+    },
+    "change_type": {
+      "type": "string",
+      "enum": ["initial", "minor", "major"]
+    },
+    "supersedes": {
+      "type": ["string", "null"]
+    },
+    "checksum": {
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "user_confirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "confirmed_by": {
+          "type": ["string", "null"]
+        },
+        "confirmed_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "reason": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,204 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "MOO_MANAGE_SALES_STATUS_CATEGORY_MAPPINGS",
+      "task_name": "Manage Sales Status Category Mappings",
+      "start_node": "OPP.STATUS_MAPPING.VALIDATE",
+      "nodes": [
+        {
+          "id": "OPP.STATUS_MAPPING.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "OPP.STATUS_MAPPING.DESIGN",
+            "missing": "OPP.STATUS_MAPPING.RETURN_MISSING",
+            "invalid": "OPP.STATUS_MAPPING.RETURN_FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every status-category mapping update request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STATUS_MAPPING.DESIGN",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "OPP.STATUS_MAPPING.PACKAGE",
+            "blocked": "OPP.STATUS_MAPPING.RETURN_MISSING"
+          },
+          "prerequisites": [
+            "OPP.STATUS_MAPPING.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before building and validating the fresh-export-derived immutable package for a status-category mapping change",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STATUS_MAPPING.PACKAGE",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "OPP.STATUS_MAPPING.GATE",
+            "missing": "OPP.STATUS_MAPPING.RETURN_MISSING",
+            "blocked": "OPP.STATUS_MAPPING.RETURN_MISSING",
+            "failed": "OPP.STATUS_MAPPING.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STATUS_MAPPING.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify the fresh export, exact task identity and persisted Data Loader task context, export-derived contract, reviewed mapping delta, current-state lock, unrelated-content preservation, and reopened immutable SHA-256 before Data Loader handoff",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STATUS_MAPPING.GATE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "handoff_ready": "OPP.STATUS_MAPPING.RETURN_READY",
+            "accepted_initiation": "OPP.STATUS_MAPPING.RETURN_ACCEPTED",
+            "missing": "OPP.STATUS_MAPPING.RETURN_MISSING",
+            "failed": "OPP.STATUS_MAPPING.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STATUS_MAPPING.PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Hand the package to Core Data Loader only after executable package readiness returns `ready`, without child approval, or route Data Loader's accepted initiation to its terminal result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STATUS_MAPPING.RETURN_READY",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STATUS_MAPPING.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The unchanged immutable package and task identity and persisted Data Loader task context are ready for Core Data Loader Task Hook validation and preview generation; no import approval or execution has occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STATUS_MAPPING.RETURN_ACCEPTED",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STATUS_MAPPING.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Core Data Loader returned accepted initiation; end this request without polling, ProcessLog retrieval, result retrieval, or verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STATUS_MAPPING.RETURN_MISSING",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Required information, baseline evidence, package evidence, or reconciliation is missing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STATUS_MAPPING.RETURN_FAILED",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Validation, package reconciliation, or execution handoff failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

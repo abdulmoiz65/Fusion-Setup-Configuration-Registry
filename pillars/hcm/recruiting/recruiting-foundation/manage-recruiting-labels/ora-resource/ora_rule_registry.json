@@ -1,0 +1,608 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_MANAGE_LABELS",
+      "task_name": "Manage Recruiting Labels",
+      "start_node": "LABELS.VALIDATE_LABEL_INPUTS",
+      "nodes": [
+        {
+          "id": "LABELS.VALIDATE_LABEL_INPUTS",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LABELS.ENSURE_CURRENT_LABEL_EXPORT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every create or update label request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.ENSURE_CURRENT_LABEL_EXPORT",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LABELS.EXPORT_CURRENT_LABELS"
+          },
+          "prerequisites": [
+            "LABELS.VALIDATE_LABEL_INPUTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every create or update label request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.EXPORT_CURRENT_LABELS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "records": "LABELS.ENSURE_SITE_LANGUAGE_CONFIGURATION"
+          },
+          "prerequisites": [
+            "LABELS.ENSURE_CURRENT_LABEL_EXPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every create or update label request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.ENSURE_SITE_LANGUAGE_CONFIGURATION",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LABELS.RESOLVE_SITE_LANGUAGE_CONFIGURATION"
+          },
+          "prerequisites": [
+            "LABELS.EXPORT_CURRENT_LABELS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every create or update label request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.RESOLVE_SITE_LANGUAGE_CONFIGURATION",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LABELS.SELECT_REQUEST_ACTION"
+          },
+          "prerequisites": [
+            "LABELS.ENSURE_SITE_LANGUAGE_CONFIGURATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every create or update label request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.SELECT_REQUEST_ACTION",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "create": "LABELS.CHECK_CREATE_DUPLICATE",
+            "update": "LABELS.MATCH_EXISTING_LABEL",
+            "label-name-update-confirmed": "LABELS.MATCH_EXISTING_LABEL",
+            "label-name-update-confirmation-required": "LABELS.LABEL_NAME_UPDATE_CONFIRMATION_REQUIRED",
+            "label-name-update-declined": "LABELS.LABEL_IDENTITY_CORRECTION_REQUIRED"
+          },
+          "prerequisites": [
+            "LABELS.RESOLVE_SITE_LANGUAGE_CONFIGURATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Current FSM label and language evidence is available, including any supplied LabelCode and LabelName reconciliation outcome",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.CHECK_CREATE_DUPLICATE",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "absent": "LABELS.CHECK_TRANSLATION_INPUT",
+            "exists": "LABELS.DUPLICATE_LABEL"
+          },
+          "prerequisites": [
+            "LABELS.SELECT_REQUEST_ACTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create a label request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.MATCH_EXISTING_LABEL",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "unique": "LABELS.CHECK_UPDATE_TARGET_COLLISION",
+            "missing": "LABELS.LABEL_NOT_FOUND",
+            "multiple": "LABELS.LABEL_AMBIGUOUS"
+          },
+          "prerequisites": [
+            "LABELS.SELECT_REQUEST_ACTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Update a label request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.CHECK_UPDATE_TARGET_COLLISION",
+          "node_type": "decision",
+          "sequence": 85,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "absent": "LABELS.CHECK_TRANSLATION_INPUT",
+            "same-source": "LABELS.CHECK_TRANSLATION_INPUT",
+            "exists": "LABELS.UPDATE_TARGET_LABEL_EXISTS"
+          },
+          "prerequisites": [
+            "LABELS.MATCH_EXISTING_LABEL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Update a label request after the source label resolves uniquely",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.CHECK_TRANSLATION_INPUT",
+          "node_type": "decision",
+          "sequence": 88,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "single-language-create": "LABELS.VALIDATE_CREATE_TRANSLATIONS",
+            "single-language-update": "LABELS.VALIDATE_UPDATE_TRANSLATIONS",
+            "translations-provided-create": "LABELS.VALIDATE_CREATE_TRANSLATIONS",
+            "translations-provided-update": "LABELS.VALIDATE_UPDATE_TRANSLATIONS",
+            "translations-declined-create": "LABELS.VALIDATE_CREATE_TRANSLATIONS",
+            "translations-declined-update": "LABELS.VALIDATE_UPDATE_TRANSLATIONS",
+            "translation-choice-pending": "LABELS.TRANSLATION_INPUT_PENDING"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Create or update request after identity validation and site language resolution",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.VALIDATE_CREATE_TRANSLATIONS",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LABELS.GENERATE_LABEL_CODE",
+            "language-not-enabled": "LABELS.TRANSLATION_LANGUAGE_NOT_ENABLED"
+          },
+          "prerequisites": [
+            "LABELS.CHECK_TRANSLATION_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create a label request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.GENERATE_LABEL_CODE",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "generated": "LABELS.PREPARE_CREATE_TRANSLATIONS"
+          },
+          "prerequisites": [
+            "LABELS.VALIDATE_CREATE_TRANSLATIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create a label request after the new label name is confirmed absent",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.VALIDATE_UPDATE_TRANSLATIONS",
+          "node_type": "decision",
+          "sequence": 110,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LABELS.PREPARE_UPDATE_TRANSLATIONS",
+            "language-not-enabled": "LABELS.TRANSLATION_LANGUAGE_NOT_ENABLED"
+          },
+          "prerequisites": [
+            "LABELS.CHECK_TRANSLATION_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Update a label request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.PREPARE_CREATE_TRANSLATIONS",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "LABELS.CREATE_INTENT_INTERPRETED"
+          },
+          "prerequisites": [
+            "LABELS.GENERATE_LABEL_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create a label request after LabelCode is generated",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.PREPARE_UPDATE_TRANSLATIONS",
+          "node_type": "step",
+          "sequence": 130,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "LABELS.UPDATE_INTENT_INTERPRETED"
+          },
+          "prerequisites": [
+            "LABELS.VALIDATE_UPDATE_TRANSLATIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Update a label request after LabelCode is resolved",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.LABEL_NAME_UPDATE_CONFIRMATION_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 140,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LABELS.SELECT_REQUEST_ACTION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A supplied LabelCode matches an existing environmental label, the supplied LabelName differs from the current LabelName, and explicit update confirmation is absent",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.LABEL_IDENTITY_CORRECTION_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 150,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LABELS.SELECT_REQUEST_ACTION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The user explicitly declines to update the current LabelName associated with the supplied existing LabelCode",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.DUPLICATE_LABEL",
+          "node_type": "terminal",
+          "sequence": 160,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LABELS.CHECK_CREATE_DUPLICATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Create request name exactly matches an existing LabelName",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.LABEL_NOT_FOUND",
+          "node_type": "terminal",
+          "sequence": 170,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LABELS.MATCH_EXISTING_LABEL"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Update request existing label name has no exact existing LabelName match",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.LABEL_AMBIGUOUS",
+          "node_type": "terminal",
+          "sequence": 180,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LABELS.MATCH_EXISTING_LABEL"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Update request existing label name has multiple exact existing LabelName matches",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.UPDATE_TARGET_LABEL_EXISTS",
+          "node_type": "terminal",
+          "sequence": 185,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LABELS.CHECK_UPDATE_TARGET_COLLISION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Update request new label name has a case-sensitive exact existing LabelName match with a different LabelCode",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.TRANSLATION_LANGUAGE_NOT_ENABLED",
+          "node_type": "terminal",
+          "sequence": 190,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A supplied translation language is not enabled",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.TRANSLATION_INPUT_PENDING",
+          "node_type": "terminal",
+          "sequence": 195,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LABELS.CHECK_TRANSLATION_INPUT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "More than one Fusion language is enabled, translations are omitted, and the user has not explicitly declined to provide translations",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.CREATE_INTENT_INTERPRETED",
+          "node_type": "terminal",
+          "sequence": 200,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LABELS.PREPARE_CREATE_TRANSLATIONS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Create request values, defaults, LabelCode, and translations are interpreted and prepared",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LABELS.UPDATE_INTENT_INTERPRETED",
+          "node_type": "terminal",
+          "sequence": 210,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LABELS.PREPARE_UPDATE_TRANSLATIONS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Update request values, resolved LabelCode, and translations are interpreted and prepared",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

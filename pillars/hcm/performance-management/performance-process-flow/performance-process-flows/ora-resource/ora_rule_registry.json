@@ -1,0 +1,246 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HRA_MANAGE_PROCESS_FLOW_DEFINITIONS",
+      "task_name": "Performance Process Flows",
+      "start_node": "PERFORMANCE_PROCESS_FLOWS.VALIDATE",
+      "nodes": [
+        {
+          "id": "PERFORMANCE_PROCESS_FLOWS.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PERFORMANCE_PROCESS_FLOWS.APPLY_DEFAULTS",
+            "invalid": "PERFORMANCE_PROCESS_FLOWS.STOP_INVALID"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A REST create or update request is prepared.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PERFORMANCE_PROCESS_FLOWS.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "PERFORMANCE_PROCESS_FLOWS.DEPENDENCIES"
+          },
+          "prerequisites": [
+            "PERFORMANCE_PROCESS_FLOWS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid REST create request omits a documented defaulted field.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PERFORMANCE_PROCESS_FLOWS.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PERFORMANCE_PROCESS_FLOWS.REFERENCE_LOOKUPS",
+            "missing": "PERFORMANCE_PROCESS_FLOWS.STOP_DEPENDENCY"
+          },
+          "prerequisites": [
+            "PERFORMANCE_PROCESS_FLOWS.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid request has applicable update, feature, template, or child-task dependencies.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PERFORMANCE_PROCESS_FLOWS.REFERENCE_LOOKUPS",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PERFORMANCE_PROCESS_FLOWS.ENFORCE_DEPENDENT_FIELD_INVARIANTS",
+            "not_found": "PERFORMANCE_PROCESS_FLOWS.STOP_DEPENDENCY"
+          },
+          "prerequisites": [
+            "PERFORMANCE_PROCESS_FLOWS.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An update or supported read-only search requires a process-flow lookup.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PERFORMANCE_PROCESS_FLOWS.ENFORCE_DEPENDENT_FIELD_INVARIANTS",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "PERFORMANCE_PROCESS_FLOWS.ENFORCE",
+            "blocked": "PERFORMANCE_PROCESS_FLOWS.STOP_DESIGN"
+          },
+          "prerequisites": [
+            "PERFORMANCE_PROCESS_FLOWS.REFERENCE_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every applicable conditional flag relationship is normalized and compliant.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PERFORMANCE_PROCESS_FLOWS.ENFORCE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "PERFORMANCE_PROCESS_FLOWS.DONE",
+            "blocked": "PERFORMANCE_PROCESS_FLOWS.STOP_DESIGN"
+          },
+          "prerequisites": [
+            "PERFORMANCE_PROCESS_FLOWS.ENFORCE_DEPENDENT_FIELD_INVARIANTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The REST request must satisfy the documented design constraints.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PERFORMANCE_PROCESS_FLOWS.STOP_INVALID",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input validation fails.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PERFORMANCE_PROCESS_FLOWS.STOP_DEPENDENCY",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A required dependency or lookup is unresolved.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PERFORMANCE_PROCESS_FLOWS.STOP_DESIGN",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A documented invariant, design, or route restriction applies.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PERFORMANCE_PROCESS_FLOWS.DONE",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PERFORMANCE_PROCESS_FLOWS.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation, dependencies, lookups, invariant checks, and design checks pass.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

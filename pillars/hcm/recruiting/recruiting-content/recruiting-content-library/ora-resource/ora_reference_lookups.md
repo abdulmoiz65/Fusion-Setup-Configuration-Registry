@@ -1,0 +1,33 @@
+# Recruiting Content Library Reference Lookups
+
+## Live Lookups
+
+| Resolver | Runs When | Source Values | Request Path or URL | Requested Fields | Match Rule | Values to Fill | If No Match or Many Matches |
+|---|---|---|---|---|---|---|---|
+| resolve_active_recruiting_content_lookup | A description or description-version lookup-coded value other than DescriptionTypeCode requires validation. | LookupType and proposed LookupCode. | core.fusion-api.apps-common.lookups using the Common lookup view and shared REST client. | LookupCode | Match the exact LookupType and exact LookupCode among active values returned. | MatchedLookupCode: LookupCode | Stop when there is no exact active LookupCode match; do not infer or substitute a value. |
+| resolve_active_recruiting_content_description_type | A requester supplies a category or description type for DescriptionTypeCode. | LookupType ORA_IRC_DESCRIPTION_TYPE and the proposed value. | core.fusion-api.apps-common.lookups using the Common lookup view and shared REST client. | LookupCode, Meaning | Inspect every page of active values before deciding that a match is absent. First match the proposed value exactly to an active LookupCode. If it is not an active LookupCode, match it exactly to an active Meaning and continue only when that Meaning has one match across the complete result set. | MatchedDescriptionTypeCode: LookupCode | Stop when there is no active LookupCode or unique active Meaning match across the complete result set; do not infer a value or use Meaning in the import CSV. |
+| resolve_recruiting_booster_enabled | A CSV import creates or updates a description whose DescriptionTypeCode is ORA_IS_LOOP_CANC_NOTIFY, ORA_IS_LOOP_INV_NOTIFY, ORA_IS_LOOP_REMIND_NOTIFY, ORA_IS_LOOP_SCHED_NOTIFY, ORA_IS_LOOP_UPDATE_NOTIFY, or ORA_IS_LOOP_RESCHED_NOTIFY. | Caller-supplied REST API version, including caller-supplied latest. | /fscmRestApi/resources/{version}/features/ORA_IRC_ADVANCED_RECRUITING | EnabledFlag | Resolve {version} before the call to the caller-supplied REST API version, including caller-supplied latest. Continue only when EnabledFlag indicates Recruiting Booster is enabled. | RecruitingBoosterEnabled: EnabledFlag | Stop when the version is unresolved or EnabledFlag does not indicate Recruiting Booster is enabled; never send {version} literally or infer feature state. |
+| resolve_active_recruiting_message_design | MessageDesignCode is supplied for a version. | pDesignStatusCode=ORA_ACTIVE; pDesignTypeCode=ORA_HTML_TEMPLATE_USER; applicable pLookupCode. | Recruiting Message Designs REST resource using RowFinder. | MessageDesignCode | Match the exact active result for the supplied lookup code and design type. | MatchedMessageDesignCode: MessageDesignCode | Stop on no match or many matches; do not infer or substitute a code. |
+| resolve_active_whatsapp_template | WabaTemplateName is supplied for a version. | TemplateStatus=ORA_ACTIVE; productContext=HCM_RECRUITING; category=ORA_PROFILE_EMAIL_TEMPLATE. | Recruiting UI WhatsApp Templates REST resource. | WabaTemplateName | Match the exact active result for the supplied product context and category. | MatchedWabaTemplateName: WabaTemplateName | Stop on no match or many matches; do not infer or substitute a value. |
+| resolve_recruiting_content_language | A Language or SourceLang value is supplied for a description translation or description-version translation. | Proposed Language or SourceLang value and the resolved REST API version used by the Applications Common Lookups request in the current workflow. | /fscmRestApi/resources/{version}/languagesLOV | LanguageCode | Resolve {version} before the call to the same REST API version used by the Applications Common Lookups request in the current workflow; then match the exact returned LanguageCode. | MatchedLanguageCode: LanguageCode | Stop when the Common Lookups REST API version is unavailable or there is no exact match; do not send {version} literally or infer or substitute a value. |
+
+## Lookup Execution Rules
+
+| Situation | What Happens |
+|---|---|
+| DescriptionTypeCode is supplied, including when it is called category or description type. | Use LookupType ORA_IRC_DESCRIPTION_TYPE. Inspect every page of active values through resolve_active_recruiting_content_description_type: first exact active LookupCode, then one exact active Meaning only when the supplied value is not a LookupCode. Use only the resulting LookupCode in the import CSV. |
+| A Booster-only DescriptionTypeCode is created or updated through CSV import. | Resolve through resolve_recruiting_booster_enabled. Resolve {version} to the caller-supplied REST API version, including caller-supplied latest, before the REST call; never send {version} literally. Continue only when EnabledFlag indicates Recruiting Booster is enabled. This rule does not apply to export. |
+| VisibilityCode is supplied. | Use LookupType ORA_IRC_DESC_VISIBILITY and compare the proposed value with LookupCode. |
+| Description StatusCode is supplied. | Use LookupType ORA_IRC_DESCRIPTION_STATUS and compare the proposed value with LookupCode. |
+| Description-version StatusCode is supplied. | Use LookupType ORA_IRC_DESC_VERSION_STATUS and compare the proposed value with LookupCode. |
+| MessageDesignCode is supplied. | Use DesignTypeCode ORA_HTML_TEMPLATE_USER and resolve the exact active MessageDesignCode through resolve_active_recruiting_message_design. |
+| WabaTemplateName is supplied. | Resolve the exact active WabaTemplateName through resolve_active_whatsapp_template for HCM_RECRUITING and ORA_PROFILE_EMAIL_TEMPLATE. |
+| The Languages LOV resolver is called. | Resolve {version} before the REST call to the same REST API version used by the Applications Common Lookups request in the current workflow. Stop when that version is unavailable; never send {version} literally or request a separate version solely for Languages LOV. |
+| Description translation Language or SourceLang is supplied. | Resolve each value through resolve_recruiting_content_language and require an exact returned LanguageCode match. |
+| Description-version translation Language or SourceLang is supplied. | Resolve each value through resolve_recruiting_content_language and require an exact returned LanguageCode match. |
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| RCL.LOOKUP | decision | 20 | reference_lookup | resolved->RCL.READINESS;not_resolved->RCL.BLOCKED | RCL.VALIDATE | stop | A validated description, description-version, or translation request includes a documented lookup-coded value. |

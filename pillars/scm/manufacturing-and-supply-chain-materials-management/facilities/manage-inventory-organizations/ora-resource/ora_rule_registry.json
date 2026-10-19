@@ -1,0 +1,109 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "INV_MANAGE_INVENTORY_ORGANIZATIONS",
+      "task_name": "Manage Inventory Organizations",
+      "start_node": "INVORG.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "INVORG.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "INVORG.RESOLVE_EXISTING",
+            "invalid": "INVORG.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before planning an inventory-organization create, copy, or parameter-update request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INVORG.RESOLVE_EXISTING",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "INVORG.READY",
+            "not_required": "INVORG.READY",
+            "blocked": "INVORG.HANDLE_ERROR",
+            "failure": "INVORG.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "INVORG.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a source organization or check exact name/code conflicts when the request supplies an organization identifier",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INVORG.HANDLE_ERROR",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any invalid input or lookup failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INVORG.READY",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "INVORG.RESOLVE_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All documented input and optional lookup checks pass; the request is ready for its separately approved execution workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

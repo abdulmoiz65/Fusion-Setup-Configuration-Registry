@@ -1,0 +1,228 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_ZCH_MANAGE_SOURCE_SYSTEM_CONFIDENCE",
+      "task_name": "Manage Source System Confidence",
+      "start_node": "SSC.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "SSC.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SSC.CHECK_DEPENDENCY",
+            "invalid": "SSC.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before resolving seeded and, when required, custom source-system references",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SSC.CHECK_DEPENDENCY",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "SSC.CLASSIFY_ATTRIBUTE_NAME",
+            "blocked": "SSC.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "SSC.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The confidence CSV and seeded catalog are available; the custom source-system export is required only for unresolved values, and successful resolution continues to object-attribute validation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SSC.CLASSIFY_ATTRIBUTE_NAME",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "standard": "SSC.VALIDATE_OBJECT_ATTRIBUTE",
+            "custom": "SSC.RESOLVE_ATTRIBUTE_NAME_METADATA",
+            "invalid": "SSC.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "SSC.CHECK_DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The source-system dependency passed and nonblank ObjectName and AttributeName must be classified",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SSC.VALIDATE_OBJECT_ATTRIBUTE",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SSC.DONE_STANDARD",
+            "invalid": "SSC.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "SSC.CLASSIFY_ATTRIBUTE_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "AttributeName does not end with _c and the exact object-attribute pair must be evaluated against assets/object-attributes.json",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SSC.RESOLVE_ATTRIBUTE_NAME_METADATA",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SSC.DONE_CUSTOM",
+            "blocked": "SSC.HANDLE_ERROR",
+            "failure": "SSC.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "SSC.CLASSIFY_ATTRIBUTE_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "AttributeName ends with _c and exact ObjectName maps to a supported objectMetadata ObjectCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SSC.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "SSC.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Input validation, source-system dependency validation, or object-attribute validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SSC.ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "The request has unresolved source-system or object-attribute validation issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SSC.DONE_STANDARD",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SSC.VALIDATE_OBJECT_ATTRIBUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "SourceSystem, ObjectName, and standard AttributeName validation passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SSC.DONE_CUSTOM",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SSC.RESOLVE_ATTRIBUTE_NAME_METADATA"
+          ],
+          "on_failure": "continue",
+          "applies_when": "SourceSystem, ObjectName, custom AttributeName, and AttrColumn validation passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

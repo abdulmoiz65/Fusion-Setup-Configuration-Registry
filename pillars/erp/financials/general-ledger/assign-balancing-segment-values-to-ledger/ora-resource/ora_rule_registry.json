@@ -1,0 +1,205 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "GL_ASSIGN_BALANCING_SEGMENT_VALUES_TO_LEDGER",
+      "task_name": "Assign Balancing Segment Values to Ledger",
+      "start_node": "BSVL-010-VALIDATE-INPUT",
+      "nodes": [
+        {
+          "id": "BSVL-010-VALIDATE-INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "BSVL-020-RESOLVE-REFERENCES",
+            "invalid": "BSVL-070-RETURN-ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every ledger context",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BSVL-020-RESOLVE-REFERENCES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "previewed": "BSVL-065-RETURN-PREVIEW",
+            "resolved": "BSVL-030-RESOLVE-DEPENDENCIES",
+            "unresolved": "BSVL-070-RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "BSVL-010-VALIDATE-INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every ledger context; preview when SegmentValue is absent, assignment flow when it is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BSVL-030-RESOLVE-DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "BSVL-040-APPLY-DEFAULTS",
+            "blocked": "BSVL-070-RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "BSVL-020-RESOLVE-REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every assignment request with SegmentValue",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BSVL-040-APPLY-DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "BSVL-050-ENFORCE-DESIGN",
+            "failed": "BSVL-070-RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "BSVL-030-RESOLVE-DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every package",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BSVL-050-ENFORCE-DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "BSVL-060-RETURN-SUCCESS",
+            "blocked": "BSVL-070-RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "BSVL-040-APPLY-DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every package",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BSVL-060-RETURN-SUCCESS",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BSVL-050-ENFORCE-DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All validations and design gates pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BSVL-065-RETURN-PREVIEW",
+          "node_type": "terminal",
+          "sequence": 65,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BSVL-020-RESOLVE-REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Ledger-only Company Value preview is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BSVL-070-RETURN-ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any blocking outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

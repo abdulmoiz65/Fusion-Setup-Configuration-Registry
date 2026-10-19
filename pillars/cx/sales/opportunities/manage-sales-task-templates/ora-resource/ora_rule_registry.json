@@ -1,0 +1,300 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ZBS_MANAGE_SALES_TASK_TEMPLATE",
+      "task_name": "Manage Sales Task Templates",
+      "start_node": "SALES_TASK_TEMPLATE.VALIDATE",
+      "nodes": [
+        {
+          "id": "SALES_TASK_TEMPLATE.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SALES_TASK_TEMPLATE.DEFAULTS",
+            "invalid": "SALES_TASK_TEMPLATE.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before any lookup, package validation, guided setup, export, import handoff, or sales-stage association guidance; require an explicit Common Set confirmation or different exact set and reject malformed, unknown, or conflicting set identity whenever template set is in scope.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_TASK_TEMPLATE.DEFAULTS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "SALES_TASK_TEMPLATE.DEPENDENCY",
+            "not_applicable": "SALES_TASK_TEMPLATE.DEPENDENCY",
+            "invalid": "SALES_TASK_TEMPLATE.BLOCKED"
+          },
+          "prerequisites": [
+            "SALES_TASK_TEMPLATE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before resolving template, reference-data-set, task-detail, sales-stage, or CSV-package dependencies; never default template_set or Common Set.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_TASK_TEMPLATE.DEPENDENCY",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "SALES_TASK_TEMPLATE.LOOKUP_CSV_SOURCE",
+            "blocked": "SALES_TASK_TEMPLATE.BLOCKED"
+          },
+          "prerequisites": [
+            "SALES_TASK_TEMPLATE.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supported Sales Task Templates request. Resolve only dependencies applicable to change_mode; full-task export requires task/target context, not an existing template, template-set selector, mutation ZIP or Data Loader task context. Block when an applicable required template-set choice is not explicit",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_TASK_TEMPLATE.LOOKUP_CSV_SOURCE",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "ready": "SALES_TASK_TEMPLATE.ENFORCE",
+            "pending": "SALES_TASK_TEMPLATE.BLOCKED",
+            "not_applicable": "SALES_TASK_TEMPLATE.ENFORCE",
+            "failure": "SALES_TASK_TEMPLATE.FAILED"
+          },
+          "prerequisites": [
+            "SALES_TASK_TEMPLATE.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before package validation or import handoff, including exact set-choice/source-row reconciliation; not applicable to guided UI, review, export, or downstream sales-stage guidance.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_TASK_TEMPLATE.ENFORCE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SALES_TASK_TEMPLATE.EXECUTION_GATE",
+            "fail": "SALES_TASK_TEMPLATE.BLOCKED"
+          },
+          "prerequisites": [
+            "SALES_TASK_TEMPLATE.LOOKUP_CSV_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supported Sales Task Templates request, including review_template and export_task_csv. Apply only design rules relevant to change_mode; nonmutating review/export does not require mutation approval or an import package. When template set is in scope, reject inferred Common Set and wrong, conflicting or cross-environment identity",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_TASK_TEMPLATE.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "package_validated": "SALES_TASK_TEMPLATE.IMPORT_READY",
+            "default_data_loader": "SALES_TASK_TEMPLATE.IMPORT_READY",
+            "accepted_initiation": "SALES_TASK_TEMPLATE.ACCEPTED",
+            "ui_guidance": "SALES_TASK_TEMPLATE.UI_GUIDANCE_READY",
+            "export_request": "SALES_TASK_TEMPLATE.EXPORT_READY",
+            "direct_rest_requested": "SALES_TASK_TEMPLATE.BLOCKED"
+          },
+          "prerequisites": [
+            "SALES_TASK_TEMPLATE.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated immutable package is handed to Data Loader without child approval; accepted initiation is terminal; manual UI, export, review, or sales-stage guidance remain explicitly selectable.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_TASK_TEMPLATE.IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SALES_TASK_TEMPLATE.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The final immutable task package passed local validation and is ready for Core Data Loader to create the Task Hook-bound preview and later request contextual approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_TASK_TEMPLATE.ACCEPTED",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SALES_TASK_TEMPLATE.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Core Data Loader returned accepted initiation; end this request without polling, ProcessLog retrieval, result inspection, or verification.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_TASK_TEMPLATE.UI_GUIDANCE_READY",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SALES_TASK_TEMPLATE.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The requester explicitly selected manual UI and the documented template or downstream sales-stage procedure is ready for an authorized user; no Fusion side effect has been performed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_TASK_TEMPLATE.EXPORT_READY",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SALES_TASK_TEMPLATE.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The exact task metadata is ready for shared.setup-export.task-level-export; no export has been started by this rule set.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_TASK_TEMPLATE.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Input, access, dependency, selection, design, immutable-package, handoff, Data Loader-owned approval, or direct-write gates block the requested work.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_TASK_TEMPLATE.FAILED",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A documented read-only export-status lookup, local package validation, Data Loader initiation, or later explicitly requested result/verification fails.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

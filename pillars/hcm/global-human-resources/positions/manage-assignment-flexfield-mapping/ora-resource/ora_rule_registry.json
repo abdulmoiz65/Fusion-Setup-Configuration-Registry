@@ -1,0 +1,319 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PER_MANAGE_ASSIGNMENT_FLEXFIELD_MAPPING",
+      "task_name": "Manage Assignment Flexfield Mapping",
+      "start_node": "AFM.INPUT",
+      "nodes": [
+        {
+          "id": "AFM.INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "AFM.MAPPINGS",
+            "missing": "AFM.ERROR",
+            "invalid": "AFM.ERROR",
+            "unsupported": "AFM.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Assignment Flexfield Mapping request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AFM.MAPPINGS",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "AFM.TEMPLATE",
+            "not_found": "AFM.ERROR",
+            "ambiguous": "AFM.ERROR",
+            "duplicate": "AFM.ERROR",
+            "failed": "AFM.ERROR"
+          },
+          "prerequisites": [
+            "AFM.INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Page the current mapping collection through read_assignment_flex_mappings",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AFM.TEMPLATE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "AFM.CONTEXT_SEGMENT",
+            "not_applicable": "AFM.CONTEXT_SEGMENT",
+            "not_found": "AFM.ERROR",
+            "ambiguous": "AFM.ERROR",
+            "failed": "AFM.ERROR"
+          },
+          "prerequisites": [
+            "AFM.MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Fetch the raw registered template through fetch_assignment_flex_mapping_loader_template for every CUD operation; skip read-only operations",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AFM.CONTEXT_SEGMENT",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "AFM.DEPENDENCIES",
+            "not_applicable": "AFM.DEPENDENCIES",
+            "not_found": "AFM.ERROR",
+            "ambiguous": "AFM.ERROR",
+            "incompatible": "AFM.ERROR",
+            "failed": "AFM.ERROR"
+          },
+          "prerequisites": [
+            "AFM.TEMPLATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied source and destination values through resolve_assignment_flex_context_segment",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AFM.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "AFM.DEFAULTS",
+            "not_required": "AFM.DEFAULTS",
+            "needs_input": "AFM.ERROR",
+            "unresolved": "AFM.ERROR"
+          },
+          "prerequisites": [
+            "AFM.CONTEXT_SEGMENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After applicable mapping, template, context, and segment reads",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AFM.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "AFM.DESIGN",
+            "preserved": "AFM.DESIGN",
+            "not_required": "AFM.DESIGN",
+            "blocked": "AFM.ERROR"
+          },
+          "prerequisites": [
+            "AFM.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation and applicable read-only resolution",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AFM.DESIGN",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "AFM.ROUTE",
+            "not_required": "AFM.ROUTE",
+            "blocked": "AFM.ERROR"
+          },
+          "prerequisites": [
+            "AFM.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, dependencies, read-only resolution, and defaulting",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AFM.ROUTE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read": "AFM.DONE_READ",
+            "cud_ready": "AFM.LOADER_READY",
+            "mutation_blocked": "AFM.ERROR"
+          },
+          "prerequisites": [
+            "AFM.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select read completion or the Core Data Loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AFM.ERROR",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "AFM.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior node returns missing, invalid, ambiguous, blocked, failed, partial, timed-out, uncertain, stale, or unverified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AFM.DONE_READ",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AFM.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AFM.LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AFM.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "CUD attributes are validated and ready for core.data-loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AFM.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request cannot safely continue without correction or reconciliation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

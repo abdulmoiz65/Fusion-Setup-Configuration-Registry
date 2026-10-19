@@ -1,0 +1,1192 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HRG_MANAGE_GOAL_LIBRARY",
+      "task_name": "Goal Library",
+      "start_node": "GOAL_LIBRARY.INTAKE",
+      "nodes": [
+        {
+          "id": "GOAL_LIBRARY.INTAKE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "GOAL_LIBRARY.VALIDATE",
+            "missing": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Development Library Goal request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 147
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.VALIDATE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "read_item": "GOAL_LIBRARY.READ",
+            "read_search": "GOAL_LIBRARY.SEARCH",
+            "translation_search": "GOAL_LIBRARY.TRANSLATION_SEARCH",
+            "decimal_policy_read": "GOAL_LIBRARY.DECIMAL_POLICY_READ",
+            "csv": "GOAL_LIBRARY.CSV_READY",
+            "hdl": "GOAL_LIBRARY.HDL_VALIDATE",
+            "write": "GOAL_LIBRARY.DEPENDENCIES",
+            "invalid": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.INTAKE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Intake is complete",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.HDL_VALIDATE",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "GOAL_LIBRARY.HDL_READY",
+            "invalid": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A DAT/ZIP source and explicit HDL intent both exist",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.READ",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "GOAL_LIBRARY.DONE_READ",
+            "missing": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "get is selected and the variant read contract is verified",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 274
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.SEARCH",
+          "node_type": "step",
+          "sequence": 26,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "GOAL_LIBRARY.DONE_SEARCH",
+            "empty": "GOAL_LIBRARY.DONE_SEARCH",
+            "unavailable": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "list/search is selected for one explicit variant",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "GOAL_LIBRARY.LOOKUPS",
+            "missing": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Development Library Goal mutation is requested",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.LOOKUPS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "GOAL_LIBRARY.DEFAULTS",
+            "unresolved": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Variant, identity, references, or usage must be resolved",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DEFAULTS",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "GOAL_LIBRARY.DESIGN"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Lookups are resolved",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DESIGN",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "GOAL_LIBRARY.REST_DESCRIBE",
+            "blocked": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mutation is ready for design checks",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.REST_DESCRIBE",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "ready": "GOAL_LIBRARY.REST_PAYLOAD",
+            "unavailable": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A variant-supported mutation is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 275
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.REST_PAYLOAD",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "mapped": "GOAL_LIBRARY.WRITE_ROUTE",
+            "rejected": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.REST_DESCRIBE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Current variant metadata is available",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 276
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.WRITE_ROUTE",
+          "node_type": "decision",
+          "sequence": 95,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "create": "GOAL_LIBRARY.CREATE_PREVIEW",
+            "update": "GOAL_LIBRARY.UPDATE_PREVIEW",
+            "activate": "GOAL_LIBRARY.ACTIVATE_PREVIEW",
+            "inactivate": "GOAL_LIBRARY.INACTIVATE_PREVIEW",
+            "delete": "GOAL_LIBRARY.DELETE_PREVIEW",
+            "translation_update": "GOAL_LIBRARY.TRANSLATION_PREVIEW",
+            "no_change": "GOAL_LIBRARY.NO_CHANGE",
+            "unsupported": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.REST_PAYLOAD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mapped variant-specific write contract exists",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.CREATE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 100,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_LIBRARY.CREATE_APPROVAL",
+            "blocked": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.REST_PAYLOAD",
+            "GOAL_LIBRARY.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "create is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 277
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.CREATE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 110,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_LIBRARY.CREATE",
+            "declined": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.CREATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final inactive-create preview is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 278
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.CREATE",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "created": "GOAL_LIBRARY.CREATE_VERIFY",
+            "ambiguous": "GOAL_LIBRARY.UNKNOWN",
+            "failed": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.CREATE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved create is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 279
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.CREATE_VERIFY",
+          "node_type": "step",
+          "sequence": 121,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_LIBRARY.DONE_CREATED",
+            "invalid_state": "GOAL_LIBRARY.BLOCKED",
+            "ambiguous": "GOAL_LIBRARY.UNKNOWN"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.CREATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "HTTP 201 returned and the exact created Development Library Goal must pass key-field and audience verification",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 280
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.UPDATE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 130,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_LIBRARY.UPDATE_APPROVAL",
+            "blocked": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.REST_PAYLOAD",
+            "GOAL_LIBRARY.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "update is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 281
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.UPDATE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 140,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_LIBRARY.UPDATE",
+            "declined": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.UPDATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final update preview and child diff are reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 282
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.UPDATE",
+          "node_type": "step",
+          "sequence": 150,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_LIBRARY.DONE_UPDATED",
+            "ambiguous": "GOAL_LIBRARY.UNKNOWN",
+            "failed": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.UPDATE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved update is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 283
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.ACTIVATE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 160,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_LIBRARY.ACTIVATE_APPROVAL",
+            "blocked": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.REST_PAYLOAD",
+            "GOAL_LIBRARY.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "activate is independently selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 284
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.ACTIVATE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 170,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_LIBRARY.ACTIVATE",
+            "declined": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.ACTIVATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final activation preview is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 285
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.ACTIVATE",
+          "node_type": "step",
+          "sequence": 180,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_LIBRARY.DONE_ACTIVATED",
+            "ambiguous": "GOAL_LIBRARY.UNKNOWN",
+            "failed": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.ACTIVATE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved activation is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 286
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.INACTIVATE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 190,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_LIBRARY.INACTIVATE_APPROVAL",
+            "blocked": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.REST_PAYLOAD",
+            "GOAL_LIBRARY.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "inactivate is independently selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 287
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.INACTIVATE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 200,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_LIBRARY.INACTIVATE",
+            "declined": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.INACTIVATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final inactivation preview is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 288
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.INACTIVATE",
+          "node_type": "step",
+          "sequence": 210,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_LIBRARY.DONE_INACTIVATED",
+            "ambiguous": "GOAL_LIBRARY.UNKNOWN",
+            "failed": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.INACTIVATE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved inactivation is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 289
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DELETE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 220,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_LIBRARY.DELETE_APPROVAL",
+            "blocked": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.REST_PAYLOAD",
+            "GOAL_LIBRARY.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "delete is selected and zero references are proven",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 290
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DELETE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 230,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_LIBRARY.DELETE",
+            "declined": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.DELETE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final guarded delete preview is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 291
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DELETE",
+          "node_type": "step",
+          "sequence": 240,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_LIBRARY.DONE_DELETED",
+            "ambiguous": "GOAL_LIBRARY.UNKNOWN",
+            "failed": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.DELETE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved delete is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 292
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.TRANSLATION_SEARCH",
+          "node_type": "step",
+          "sequence": 245,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "GOAL_LIBRARY.DONE_TRANSLATION_READ",
+            "empty": "GOAL_LIBRARY.DONE_TRANSLATION_READ",
+            "unavailable": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Translation list or item read is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 293
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DECIMAL_POLICY_READ",
+          "node_type": "step",
+          "sequence": 246,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "GOAL_LIBRARY.DONE_DECIMAL_POLICY_READ",
+            "unavailable": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Decimal-weight policy read is selected through the owning provider",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 112
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.TRANSLATION_PREVIEW",
+          "node_type": "decision",
+          "sequence": 247,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_LIBRARY.TRANSLATION_APPROVAL",
+            "blocked": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.REST_PAYLOAD",
+            "GOAL_LIBRARY.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One translation update has a verified current contract",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 294
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.TRANSLATION_APPROVAL",
+          "node_type": "decision",
+          "sequence": 248,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_LIBRARY.TRANSLATION_UPDATE",
+            "declined": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.TRANSLATION_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final translation update preview is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 295
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.TRANSLATION_UPDATE",
+          "node_type": "step",
+          "sequence": 249,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_LIBRARY.DONE_TRANSLATION_UPDATED",
+            "ambiguous": "GOAL_LIBRARY.UNKNOWN",
+            "failed": "GOAL_LIBRARY.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_LIBRARY.TRANSLATION_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved translation update is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 296
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.CSV_READY",
+          "node_type": "terminal",
+          "sequence": 250,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_LIBRARY.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CSV route is ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.HDL_READY",
+          "node_type": "terminal",
+          "sequence": 255,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_LIBRARY.HDL_VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Error-free Development HDL task preflight is ready for `core.data-loader` preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.NO_CHANGE",
+          "node_type": "terminal",
+          "sequence": 260,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_LIBRARY.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Fresh values already match",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DONE_READ",
+          "node_type": "terminal",
+          "sequence": 270,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_LIBRARY.READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DONE_SEARCH",
+          "node_type": "terminal",
+          "sequence": 271,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_LIBRARY.SEARCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Bounded variant search completed, including an empty result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DONE_CREATED",
+          "node_type": "terminal",
+          "sequence": 280,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_LIBRARY.CREATE_VERIFY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Inactive create and key-field audience state verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DONE_UPDATED",
+          "node_type": "terminal",
+          "sequence": 290,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_LIBRARY.UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Update verified without forced activation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DONE_ACTIVATED",
+          "node_type": "terminal",
+          "sequence": 300,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_LIBRARY.ACTIVATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Activation verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DONE_INACTIVATED",
+          "node_type": "terminal",
+          "sequence": 310,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_LIBRARY.INACTIVATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Inactivation verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DONE_DELETED",
+          "node_type": "terminal",
+          "sequence": 320,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_LIBRARY.DELETE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Guarded delete verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DONE_TRANSLATION_READ",
+          "node_type": "terminal",
+          "sequence": 321,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_LIBRARY.TRANSLATION_SEARCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Translation read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DONE_DECIMAL_POLICY_READ",
+          "node_type": "terminal",
+          "sequence": 322,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_LIBRARY.DECIMAL_POLICY_READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Decimal-weight policy read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.DONE_TRANSLATION_UPDATED",
+          "node_type": "terminal",
+          "sequence": 323,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_LIBRARY.TRANSLATION_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Translation update verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.UNKNOWN",
+          "node_type": "terminal",
+          "sequence": 330,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A submitted mutation has an ambiguous outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_LIBRARY.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 340,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A variant, dependency, approval, or safety gate blocks the request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

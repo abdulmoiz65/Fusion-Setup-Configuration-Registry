@@ -1,0 +1,157 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PER_MANAGE_TRANSACTION_SECURITY_PROFILE",
+      "task_name": "Manage Transaction Security Profile",
+      "start_node": "TSP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "TSP.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TSP.RESOLVE_CATEGORY_CODE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TSP.RESOLVE_CATEGORY_CODE",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TSP.RESOLVE_SUBCATEGORY_CODE",
+            "not-required": "TSP.DONE_FAMILY_ONLY",
+            "no-match": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "TSP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "View All is not enabled after input validation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 113
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TSP.RESOLVE_SUBCATEGORY_CODE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved-or-not-required": "TSP.DONE_SCOPED",
+            "no-match": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "TSP.RESOLVE_CATEGORY_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "View All is not enabled after Category Code resolution",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 114
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TSP.DONE_FAMILY_ONLY",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TSP.RESOLVE_CATEGORY_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Supported operation and Family-only validation are complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TSP.DONE_SCOPED",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TSP.RESOLVE_SUBCATEGORY_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Supported operation, resolved codes, and scoped validation are complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input validation, value-to-code resolution, or supported-combination validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

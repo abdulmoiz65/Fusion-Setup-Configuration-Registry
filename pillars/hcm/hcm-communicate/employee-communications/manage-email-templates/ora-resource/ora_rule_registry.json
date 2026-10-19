@@ -1,0 +1,157 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_DESIGN_EMP_CAMPAIGN_EMAIL_TEMPLATES",
+      "task_name": "Manage Email Templates",
+      "start_node": "HCMET.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "HCMET.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "HCMET.CHECK_DEPENDENCIES",
+            "invalid": "HCMET.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before task-level FSM export or FSM import preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HCMET.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "HCMET.ENFORCE_DESIGN",
+            "blocked": "HCMET.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "HCMET.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation passed",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HCMET.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "HCMET.EXECUTION_GATE",
+            "blocked": "HCMET.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "HCMET.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Required input and dependency evidence are available",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HCMET.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "HCMET.DONE",
+            "blocked": "HCMET.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "HCMET.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated request is limited to a declared FSM route",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HCMET.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any blocking issue prevents safe completion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HCMET.DONE",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "HCMET.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All required checks pass for the declared route",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

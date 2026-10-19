@@ -1,0 +1,264 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_EXTENDED_LOOKUP_CODE",
+      "task_name": "Manage Extended Lookup Codes",
+      "start_node": "XLOOK.VALIDATE",
+      "nodes": [
+        {
+          "id": "XLOOK.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "XLOOK.DEPENDENCY",
+            "missing": "XLOOK.ERROR",
+            "invalid": "XLOOK.ERROR",
+            "unsupported": "XLOOK.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Extended Lookup Code request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "XLOOK.DEPENDENCY",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "XLOOK.READ",
+            "not_required": "XLOOK.READ",
+            "needs_input": "XLOOK.ERROR",
+            "unresolved": "XLOOK.ERROR"
+          },
+          "prerequisites": [
+            "XLOOK.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After input validation and before task-local reference lookups",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "XLOOK.READ",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "XLOOK.DEFAULTS",
+            "list_returned": "XLOOK.DEFAULTS",
+            "create_available": "XLOOK.DEFAULTS",
+            "not_found": "XLOOK.ERROR",
+            "duplicate": "XLOOK.ERROR",
+            "ambiguous": "XLOOK.ERROR",
+            "failed": "XLOOK.ERROR"
+          },
+          "prerequisites": [
+            "XLOOK.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read is requested, an exact target is required before edit or delete, or a uniqueness check is required before create",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "XLOOK.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "XLOOK.ENFORCE",
+            "preserved": "XLOOK.ENFORCE",
+            "not_required": "XLOOK.ENFORCE",
+            "blocked": "XLOOK.ERROR"
+          },
+          "prerequisites": [
+            "XLOOK.READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, current-state reads, and required resolvers are complete",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "XLOOK.ENFORCE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "XLOOK.ROUTE",
+            "not_required": "XLOOK.ROUTE",
+            "blocked": "XLOOK.ERROR"
+          },
+          "prerequisites": [
+            "XLOOK.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, dependencies, lookups, and defaulting are complete",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "XLOOK.ROUTE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read": "XLOOK.DONE",
+            "create_or_edit_or_delete_ready": "XLOOK.LOADER_READY",
+            "mutation_blocked": "XLOOK.ERROR"
+          },
+          "prerequisites": [
+            "XLOOK.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select read completion or the Core Data Loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "XLOOK.ERROR",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "XLOOK.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior node returns invalid, missing, ambiguous, blocked, failed, partial, timed-out, uncertain, stale, or unverified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "XLOOK.DONE",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "XLOOK.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "XLOOK.LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "XLOOK.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Mutation rules passed; invoke Core Data Loader and follow it through immutable ZIP preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "XLOOK.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request cannot safely continue without correction or reconciliation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,343 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "HRT_MANAGE_PROFILE_RATING_MODELS",
+      "task_name": "Profile Rating Models",
+      "start_node": "PRM.INTENT",
+      "nodes": [
+        {
+          "id": "PRM.INTENT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "sufficient": "PRM.DISCOVER",
+            "needs_business_input": "PRM.ERROR",
+            "unsupported": "PRM.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate one business outcome, workforce or process context, effective date, and one-model V1 scope before read-only discovery; do not require technical completeness",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRM.DISCOVER",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "pattern_found": "PRM.DEFAULTS",
+            "no_pattern": "PRM.DEFAULTS",
+            "ambiguous": "PRM.DEFAULTS",
+            "failed": "PRM.ERROR"
+          },
+          "prerequisites": [
+            "PRM.INTENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Discover and rank current-environment rating-model patterns through discover_rating_model_patterns after the read-only discovery preflight",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRM.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "PRM.PROPOSAL",
+            "preserved": "PRM.PROPOSAL",
+            "proposed": "PRM.PROPOSAL",
+            "not_required": "PRM.PROPOSAL",
+            "business_ambiguity": "PRM.PROPOSAL",
+            "blocked": "PRM.ERROR"
+          },
+          "prerequisites": [
+            "PRM.DISCOVER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Build a provenance-backed review-only proposal after business-intent validation and pattern discovery",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRM.PROPOSAL",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "confirmed": "PRM.INPUT",
+            "needs_business_input": "PRM.ERROR",
+            "blocked": "PRM.ERROR"
+          },
+          "prerequisites": [
+            "PRM.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce business-first interaction, consumer evidence, assumption provenance, genuine-ambiguity-only questions, and proposal-review separation before technical normalization",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRM.INPUT",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PRM.EXISTING",
+            "invalid": "PRM.ERROR"
+          },
+          "prerequisites": [
+            "PRM.PROPOSAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate the confirmed normalized technical request and all resolved-consumer rules after proposal review",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRM.EXISTING",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "exact": "PRM.DEPENDENCIES",
+            "no_exact": "PRM.DEPENDENCIES",
+            "close": "PRM.DEPENDENCIES",
+            "unsuitable": "PRM.DEPENDENCIES",
+            "ambiguous": "PRM.ERROR",
+            "incomplete": "PRM.ERROR",
+            "failed": "PRM.ERROR"
+          },
+          "prerequisites": [
+            "PRM.INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve and fully classify current-environment models through find_rating_model_by_exact_identity after proposal confirmation and technical validation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRM.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PRM.DESIGN",
+            "not_required": "PRM.DESIGN",
+            "needs_input": "PRM.ERROR",
+            "unresolved": "PRM.ERROR"
+          },
+          "prerequisites": [
+            "PRM.EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Prove read readiness and, for a confirmed create proposal, exactly one current FSM or HDL Data Loader contract",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRM.DESIGN",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "exact_reuse_ready": "PRM.ROUTE",
+            "creation_preview_ready": "PRM.ROUTE",
+            "blocked": "PRM.ERROR"
+          },
+          "prerequisites": [
+            "PRM.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce one-model, exact-reuse, component ownership, Performance calculation ownership, Talent Review categories, Skills Center association constraints, optional quarterly release metadata, supported-source, preview, read-only REST and downstream boundaries",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRM.ROUTE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "reuse_complete": "PRM.DONE_REUSE",
+            "loader_ready": "PRM.DONE_LOADER",
+            "blocked": "PRM.ERROR"
+          },
+          "prerequisites": [
+            "PRM.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Complete exact reuse or enter only the declared core.data-loader stage for one immutable creation source",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRM.ERROR",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "PRM.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any prior node returns invalid, missing, ambiguous, incomplete, blocked, failed, stale, partial, timed-out, uncertain or unverified; return a business-language question when business input is the only blocker",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRM.DONE_REUSE",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PRM.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "One exact model is proven and structured handoffs are ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRM.DONE_LOADER",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PRM.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "One creation source is ready for core.data-loader or a later approved run completed with full read-back verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRM.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "One business clarification or corrected requirements, mapping, access, metadata, source, approval or reconciliation is required",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

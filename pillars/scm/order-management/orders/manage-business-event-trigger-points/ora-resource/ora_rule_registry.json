@@ -1,0 +1,396 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_DOO_MANAGE_BUSINESS_EVENT_TRIGGER_POINTS",
+      "task_name": "Manage Business Event Trigger Points",
+      "start_node": "BUSINESS_EVENT_TRIGGER_POINTS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "BUSINESS_EVENT_TRIGGER_POINTS.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "detail-retrieval-ready": "BUSINESS_EVENT_TRIGGER_POINTS.GET_DETAILS",
+            "event-change-input-valid": "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EVENT_CODE",
+            "invalid-or-missing": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before any business event trigger-point detail retrieval, configuration change, or Order Attribute Update trigger-attribute request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUSINESS_EVENT_TRIGGER_POINTS.GET_DETAILS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RETURN_SUCCESS",
+            "unresolved": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUSINESS_EVENT_TRIGGER_POINTS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A business event trigger-point detail retrieval request has passed input validation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EVENT_CODE",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved-with-status": "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_ORDER_STATUS_UPDATE_EVENT_CRITERIA",
+            "resolved-with-attributes": "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_ORDER_ATTRIBUTE_UPDATE_EVENT_CRITERIA",
+            "resolved-activation-without-status": "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EXISTING_EVENT_DETAIL",
+            "resolved-inactivation-without-status": "BUSINESS_EVENT_TRIGGER_POINTS.APPLY_EVENT_CRITERIA_ID",
+            "unresolved": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUSINESS_EVENT_TRIGGER_POINTS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An event activation, inactivation, or Order Attribute Update trigger-attribute request has passed input validation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_ORDER_STATUS_UPDATE_EVENT_CRITERIA",
+          "node_type": "step",
+          "sequence": 35,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved-activation": "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EXISTING_EVENT_DETAIL",
+            "resolved-inactivation": "BUSINESS_EVENT_TRIGGER_POINTS.APPLY_EVENT_CRITERIA_ID",
+            "unresolved": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EVENT_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved event is Order Header Status Update and a status value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_ORDER_ATTRIBUTE_UPDATE_EVENT_CRITERIA",
+          "node_type": "step",
+          "sequence": 36,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved-add-or-readd": "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EXISTING_ORDER_ATTRIBUTE_UPDATE_ATTRIBUTES",
+            "resolved-removal": "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EXISTING_ORDER_ATTRIBUTE_UPDATE_ATTRIBUTES",
+            "resolved-with-explicit-parent-action": "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EXISTING_EVENT_DETAIL",
+            "unresolved": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EVENT_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved event is `ORDER_ATTRIBUTE_UPDATE` and one or more triggering attributes are supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EXISTING_ORDER_ATTRIBUTE_UPDATE_ATTRIBUTES",
+          "node_type": "step",
+          "sequence": 37,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "missing-row": "BUSINESS_EVENT_TRIGGER_POINTS.APPLY_EVENT_ENABLED_FLAG",
+            "removal-ready": "BUSINESS_EVENT_TRIGGER_POINTS.APPLY_EVENT_ENABLED_FLAG",
+            "readd-has-disabled": "BUSINESS_EVENT_TRIGGER_POINTS.APPLY_EVENT_ENABLED_FLAG",
+            "duplicate-enabled": "RETURN_DUPLICATE",
+            "unresolved": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_ORDER_ATTRIBUTE_UPDATE_EVENT_CRITERIA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An `ORDER_ATTRIBUTE_UPDATE` add, removal, or re-add request has exact resolved attribute criteria.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EXISTING_EVENT_DETAIL",
+          "node_type": "step",
+          "sequence": 38,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved-create": "BUSINESS_EVENT_TRIGGER_POINTS.APPLY_CONFIGURATION_ACTION",
+            "resolved-update": "BUSINESS_EVENT_TRIGGER_POINTS.APPLY_CONFIGURATION_ACTION",
+            "unresolved": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EVENT_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An explicit parent-event enable request has resolved EventCode.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUSINESS_EVENT_TRIGGER_POINTS.APPLY_CONFIGURATION_ACTION",
+          "node_type": "step",
+          "sequence": 39,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "default-applied": "BUSINESS_EVENT_TRIGGER_POINTS.APPLY_EVENT_CRITERIA_ID",
+            "invalid-event-detail": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EXISTING_EVENT_DETAIL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An explicit event-enable request has resolved EventDetailId; retain it for update, or leave the explicit parent-event source EventDetailId blank for create.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUSINESS_EVENT_TRIGGER_POINTS.APPLY_EVENT_CRITERIA_ID",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "default-applied": "BUSINESS_EVENT_TRIGGER_POINTS.APPLY_EVENT_ENABLED_FLAG",
+            "not-applicable": "BUSINESS_EVENT_TRIGGER_POINTS.APPLY_EVENT_ENABLED_FLAG"
+          },
+          "prerequisites": [
+            "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EVENT_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "EventCode is `CANCEL_BACKORDERS`, `CHANGE_COMP_COMPLETE`, `FULFILL_LINE_CLOSE`, `FLINE_STATUS_UPDATE`, `HOLD`, `RELEASE_HOLD`, or `SPLIT`.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUSINESS_EVENT_TRIGGER_POINTS.APPLY_EVENT_ENABLED_FLAG",
+          "node_type": "step",
+          "sequence": 41,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "default-applied": "BUSINESS_EVENT_TRIGGER_POINTS.ENFORCE_CONTRACT",
+            "invalid-intent": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EVENT_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Set the `ORDER_ATTRIBUTE_UPDATE` parent-event row only from a supplied explicit activate or inactivate intent. Create a separate attribute row with EventEnabledFlag true when no configured row has the requested EventCriteriaId. Set every re-added disabled attribute row to true. For a removal request, retain every matched attribute row and set EventEnabledFlag false. Report each already-enabled re-add row as a duplicate and do not prepare it.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_SETUP_DATA_BUSINESS_OBJECT",
+          "node_type": "step",
+          "sequence": 45,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "connectors-selected": "BUSINESS_EVENT_TRIGGER_POINTS.ENFORCE_CONTRACT",
+            "event-details-selected": "BUSINESS_EVENT_TRIGGER_POINTS.ENFORCE_CONTRACT"
+          },
+          "prerequisites": [
+            "BUSINESS_EVENT_TRIGGER_POINTS.APPLY_EVENT_ENABLED_FLAG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before source preparation: select `connectors` when a connector or service is specified; otherwise select `eventDetails`.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BUSINESS_EVENT_TRIGGER_POINTS.ENFORCE_CONTRACT",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "contract-ready": "RETURN_SUCCESS",
+            "metadata-mismatch": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_SETUP_DATA_BUSINESS_OBJECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before source preparation or configuration-changing Fusion operation for this task",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BUSINESS_EVENT_TRIGGER_POINTS.GET_DETAILS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The requested business event trigger-point details were retrieved through the documented read-only lookup.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_DUPLICATE",
+          "node_type": "terminal",
+          "sequence": 65,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BUSINESS_EVENT_TRIGGER_POINTS.RESOLVE_EXISTING_ORDER_ATTRIBUTE_UPDATE_ATTRIBUTES"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The exact requested `ORDER_ATTRIBUTE_UPDATE` attribute set is already enabled; no import source was prepared.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A lookup, validation, defaulting, or configuration-contract gate blocked progress.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fdos.oracle.example/schemas/ess-delegation-contract.schema.json",
+  "title": "FSCR ESS Delegation Contract",
+  "description": "Versioned envelope used to delegate an Oracle Fusion ESS request between pillar, Common Security Console, and core layers.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "stage", "task", "fusion_environment_context", "execution_options", "approval"],
+  "properties": {
+    "contract_version": { "const": "1.0" },
+    "stage": { "enum": ["classification_request", "approved_submission"] },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_name", "task_code"],
+      "properties": {
+        "task_name": { "type": "string", "minLength": 1 },
+        "task_code": { "type": "string", "minLength": 1 }
+      }
+    },
+    "fusion_environment_context": { "type": "object", "minProperties": 1 },
+    "requested_payload_overrides": { "type": "object" },
+    "execution_options": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wait_seconds", "poll_interval_seconds"],
+      "properties": {
+        "wait_seconds": { "type": "integer", "minimum": 1 },
+        "poll_interval_seconds": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["explicit_submission_approval"],
+      "properties": {
+        "explicit_submission_approval": { "type": "boolean" },
+        "approved_payload_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "job_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["job_definition_id", "application"],
+      "properties": {
+        "job_definition_id": { "type": "string", "minLength": 1 },
+        "application": { "type": "string", "minLength": 1 }
+      }
+    },
+    "request_payload": { "type": "object", "minProperties": 1 },
+    "audit_context": { "type": "object" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "stage": { "const": "classification_request" } } },
+      "then": { "properties": { "approval": { "properties": { "explicit_submission_approval": { "const": false } } } } }
+    },
+    {
+      "if": { "properties": { "stage": { "const": "approved_submission" } } },
+      "then": {
+        "required": ["job_contract", "request_payload"],
+        "properties": {
+          "approval": {
+            "required": ["approved_payload_sha256"],
+            "properties": { "explicit_submission_approval": { "const": true } }
+          }
+        }
+      }
+    }
+  ]
+}

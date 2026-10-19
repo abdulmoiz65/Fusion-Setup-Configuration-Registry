@@ -1,0 +1,235 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_ANC_MANAGE_ABSENCE_CERTIFICATIONS",
+      "task_name": "Absence Certifications",
+      "start_node": "ANC_CERT.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "ANC_CERT.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ANC_CERT.NORMALIZE_EFFECTIVE_OF",
+            "invalid": "ANC_CERT.STOP_EXECUTION"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A create, update, correction, end-date, delete-changes, or ZAP request is supplied; validate Update data-record fields, exact-row evidence, and conditional date/reason/entitlement input completeness",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ANC_CERT.NORMALIZE_EFFECTIVE_OF",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "create_normalized": "ANC_CERT.REFRESH_DATALOADER_TEMPLATE",
+            "non_create_normalized": "ANC_CERT.REFRESH_DATALOADER_TEMPLATE",
+            "invalid": "ANC_CERT.STOP_EXECUTION"
+          },
+          "prerequisites": [
+            "ANC_CERT.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Normalize Create and explicit Update dates; derive Correct from the selected stored row; preserve or disclose the UI End Date candidate for core confirmation. Derive Delete Record from its selected stored row only after exact configuration, complete History and physical-row adapter checks; derive only supported controls. ZAP has no range date; preserve lookup dates outside mutation controls",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 112
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ANC_CERT.REFRESH_DATALOADER_TEMPLATE",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "contract_ready": "ANC_CERT.VALIDATE_LOOKUPS",
+            "contract_failed": "ANC_CERT.STOP_EXECUTION"
+          },
+          "prerequisites": [
+            "ANC_CERT.NORMALIZE_EFFECTIVE_OF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every date-effective Data Loader preparation; verify effectiveOf and operation support from the registered absenceCertifications template",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 177
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ANC_CERT.VALIDATE_LOOKUPS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ANC_CERT.APPLY_DEFAULTS",
+            "confirmation_required": "ANC_CERT.STOP_EXECUTION",
+            "selection_required": "ANC_CERT.STOP_EXECUTION",
+            "unresolved": "ANC_CERT.STOP_EXECUTION"
+          },
+          "prerequisites": [
+            "ANC_CERT.REFRESH_DATALOADER_TEMPLATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For maintenance first resolve the exact target plus current describe and full before state; for Delete Record read complete History and run the packaged History-only resolver before returning resolved; reuse unchanged saved Classification/Trigger/rules and resolve saved display meanings without new input. Validate supplied changes and applicable create candidates. For Create, after final Name, Legislation and normalized Start Date resolve, run find_absence_certification_by_exact_name in create_preflight mode; require collision_clear for resolved, and return unresolved for any match, failed/incomplete read or ambiguous evidence. Resolve Classification before a required new Trigger; only omitted Create choices need suggestion/selection confirmation. Refresh DFF mutation bindings only when DFF changes are supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 178
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ANC_CERT.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaults_applied": "ANC_CERT.ENFORCE_DESIGN",
+            "override_or_unknown": "ANC_CERT.STOP_EXECUTION"
+          },
+          "prerequisites": [
+            "ANC_CERT.VALIDATE_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Commit only applicable omitted create defaults whose coded candidates were resolved by ANC_CERT.VALIDATE_LOOKUPS; preserve explicit values and omit inapplicable, hidden, or unprofiled fields; never fill incomplete calculated-date, required-reason, or entitlement-Override choices from generic defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ANC_CERT.ENFORCE_DESIGN",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "ANC_CERT.EXECUTION_GATE",
+            "blocked": "ANC_CERT.STOP_EXECUTION"
+          },
+          "prerequisites": [
+            "ANC_CERT.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create, update, correction, end-date, Delete Record, or ZAP is requested; enforce immutable-field intent, visible conditional groups, full before/after evidence, and exact operation/capability/protection/reference-impact gates before preparation or preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 112
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ANC_CERT.EXECUTION_GATE",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "source_ready_for_preview": "ANC_CERT.DONE",
+            "not_ready": "ANC_CERT.STOP_EXECUTION"
+          },
+          "prerequisites": [
+            "ANC_CERT.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Applicable source validation, operation capability, dependencies, defaults and source integrity passed; return readiness for core's immutable preview. Approval is checked by core after preview and immediately before mutation, not as a prerequisite to this validation pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ANC_CERT.DONE",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ANC_CERT.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return source_ready_for_preview and rule evidence to core.data-loader; nothing is approved or submitted by this terminal. Core owns preview, final approval, execution and reconciliation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ANC_CERT.STOP_EXECUTION",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "An applicable input, operation/date contract, lookup, source integrity or Data Loader prerequisite is missing; preserve the draft and exact blocker. Missing mutation approval stops core execution after preview, not this source-validation phase",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

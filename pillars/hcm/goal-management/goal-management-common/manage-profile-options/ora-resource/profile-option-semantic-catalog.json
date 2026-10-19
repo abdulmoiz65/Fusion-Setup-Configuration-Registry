@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Catalog-backed semantic resolution for Goal Management profile-option planning. Tenant metadata remains authoritative before preview or execution.",
+  "profiles": [
+    {
+      "profile_option_name": "HRG_ALLOW_DECIMALS_IN_WEIGHTS",
+      "product_code": "HRG",
+      "product_name": "Goal Management",
+      "intent_aliases": [
+        "decimal values for goal management weights",
+        "decimal values for goal weights",
+        "decimal goal weights",
+        "enable decimal values for goal management weights",
+        "enable decimal values for goal weights",
+        "allow decimal values for goal weights",
+        "allow decimal goal weights",
+        "enable decimal weights"
+      ],
+      "default_level_code": "SITE",
+      "value_mappings": [
+        {
+          "meaning": "enabled",
+          "aliases": ["enable", "enabled", "yes", "true", "on"],
+          "stored_value": "Y"
+        },
+        {
+          "meaning": "disabled",
+          "aliases": ["disable", "disabled", "no", "false", "off"],
+          "stored_value": "N"
+        }
+      ],
+      "source": "Goal Management best-practice reference sections 8 and 15; value mapping requires tenant metadata confirmation before preview."
+    }
+  ]
+}

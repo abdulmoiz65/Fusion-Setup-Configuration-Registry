@@ -1,0 +1,155 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HZ_MANAGE_ADDITIONAL_NAME_TYPES",
+      "task_name": "Manage Additional Name Types",
+      "start_node": "ANT.LOOKUP_SETUP_TASK",
+      "nodes": [
+        {
+          "id": "ANT.LOOKUP_SETUP_TASK",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ANT.VALIDATE_CONTEXT",
+            "blocked": "ANT.ERROR",
+            "failure": "ANT.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Confirm the fixed live setup task and CSV support before validating an export or import operation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ANT.VALIDATE_CONTEXT",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ANT.VALIDATE_OPERATION",
+            "invalid": "ANT.ERROR"
+          },
+          "prerequisites": [
+            "ANT.LOOKUP_SETUP_TASK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before operation review or immutable preview creation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ANT.VALIDATE_OPERATION",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ANT.VALIDATED",
+            "invalid": "ANT.ERROR"
+          },
+          "prerequisites": [
+            "ANT.VALIDATE_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before an export POST or Data Loader import preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ANT.ERROR",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "ANT.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any validation, approval, authentication, submission, polling, process, or persistence stage fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ANT.VALIDATED",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ANT.VALIDATE_OPERATION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The whole-task operation contract is ready for its operation-specific preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ANT.ISSUES",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "The request has unresolved validation, approval, execution, or persistence issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

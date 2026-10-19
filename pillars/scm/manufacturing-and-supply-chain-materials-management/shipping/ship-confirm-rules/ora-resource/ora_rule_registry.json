@@ -1,0 +1,216 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_SHIP_CONFIRM_RULES",
+      "task_name": "Ship Confirm Rules",
+      "start_node": "SCR.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "SCR.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "SCR.RESOLVE_SHIP_WITH",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a Ship Confirm Rule",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SCR.RESOLVE_SHIP_WITH",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SCR.RESOLVE_SHIP_QUANTITY",
+            "not-applicable": "SCR.RESOLVE_SHIP_QUANTITY",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SCR.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A ShipWith display value or code is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SCR.RESOLVE_SHIP_QUANTITY",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SCR.RESOLVE_PACKING_SLIP_STATUS",
+            "not-applicable": "SCR.RESOLVE_PACKING_SLIP_STATUS",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SCR.RESOLVE_SHIP_WITH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "ShipWith is S and a Ship Quantity display value or code is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SCR.RESOLVE_PACKING_SLIP_STATUS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SCR.RESOLVE_SHIPPING_DOCUMENT_JOB_SET",
+            "not-applicable": "SCR.RESOLVE_SHIPPING_DOCUMENT_JOB_SET",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SCR.RESOLVE_SHIP_QUANTITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Packing Slip Status display value or code is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SCR.RESOLVE_SHIPPING_DOCUMENT_JOB_SET",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SCR.VALIDATE_DEPENDENCIES",
+            "not-applicable": "SCR.VALIDATE_DEPENDENCIES",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SCR.RESOLVE_PACKING_SLIP_STATUS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Shipping Document Job Set display value or backend value is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SCR.VALIDATE_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "SCR.DONE",
+            "blocked": "RETURN_ISSUES",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SCR.RESOLVE_SHIPPING_DOCUMENT_JOB_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a Ship Confirm Rule",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SCR.DONE",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SCR.VALIDATE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input and dependency validation passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input or dependency validation failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

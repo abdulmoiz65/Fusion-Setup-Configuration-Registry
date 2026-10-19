@@ -1,0 +1,282 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_ALGORITHMS_FOR_SUBSCRIPTIONS_TO_ACCOUNTS_RECEIVABLES",
+      "task_name": "Manage Algorithms for Subscriptions to Accounts Receivables",
+      "ownership": "primary_algorithm_and_groovy_workflow",
+      "companion_skill": "cx.subscriptions.integration-setup.manage-service-mappings-for-subscriptions-to-accounts-receivables",
+      "mandates": [
+        "Run mandatory preflight before every advisory, mapping, Groovy, validation, source-resolution, target-resolution, or use-case request: require the business requirement, current Algorithm_BO.xml, and current Service Mapping source XML as attachments or explicit file inputs in the same request; do not proceed from chat cache, prior project artifacts, remembered paths, or default assumptions.",
+        "Validate Algorithm_BO.xml name is Subscription Management and Account Receivables Integration, read all versions, and reject unless the absolute highest VersionNum has ActiveFlag Y; do not proceed with advisory, Groovy, or XML editing by choosing an older active version.",
+        "Keep documented both, invoice-only, and credit-memo-only Groovy sections, including an empty line in each section.",
+        "Remove a comment-only delivered sample before new Groovy; ask whether active Groovy is replaced, added above, or formatted.",
+        "Require one concise block comment immediately before each ARInterface.insert block.",
+        "Read each selected-action contain alias and cardinality before drafting. For ZeroOrOne aliases, require null-safe navigation on every direct property access in generated Groovy, including guarded blocks, conditions, expressions, and ARInterface.insert values. A non-null guard does not permit later <alias>.<attribute> dereferences; direct property access is allowed only for confirmed One aliases or local variables assigned from null-safe optional expressions. Do not hardcode entity names.",
+        "When same-name or semantically similar source candidates appear across source families, require a functional-owner decision before Groovy. Prefer the explicitly stated source object, otherwise the business-owning source family; list copied, denormalized, or convenience fields as alternatives and do not choose another object merely to avoid optional cardinality.",
+        "Invoke the Service Mappings advisory for Service Mapping concerns and resume this algorithm workflow after its result.",
+        "Review the current attached Algorithm_BO.xml and current ARInterface Service Mapping source XML in the same run before drafting Groovy.",
+        "After preflight passes, classify every prompt as Input Type 1, 2, 3, 4, or 5 using the Use-Case Resolution reference before source or target recommendations.",
+        "When a business requirement omits a Subscriptions source entity or attribute, or a Receivables target column, inspect the current Algorithm_BO.xml for mapping candidates, then the general Subscription reference, and current official Oracle documentation only if needed. Treat these as discovery evidence, route source candidates through companion describe validation, and require implementer acceptance of a named recommendation before drafting.",
+        "When a source attribute or business term is stated without an object, do not default it to any context entity. Scan current exports, route to the Service Mapping companion for permitted describe checks across relevant source objects, use public Subscription documentation as context only, and require implementer acceptance before Groovy.",
+        "For Type 5 use cases with no source object, read the Subscription general reference first; if it does not identify a likely object and attribute, use current official Oracle documentation or web sources for discovery only, then have the Service Mapping companion run environment describe for every relevant family: subscriptions, SubscriptionProducts, billLines, charges, and coveredLevels/ProductAssociations.",
+        "If required describe cannot run because the runtime environment connection, OAuth/authentication, privileges, transport, or describe endpoint is unavailable, stop and tell the implementer describe is not working; ask whether to fix the runtime environment connection and rerun describe or proceed only with named unconfirmed assumptions for review.",
+        "Draft Groovy only from a companion-confirmed source when the attached mapping XML lacks that attribute.",
+        "Require a source-resolution record for every Groovy source: accepted export attribute, implementer-provided exact source, or explicitly accepted named describe candidate. Do not draft Groovy from assumptions.",
+        "Present the complete proposed Groovy directly in chat and persist an identical project artifact for traceability; do not require the implementer to open the artifact for review.",
+        "Create a local Algorithm_BO.xml only after explicit approval of the exact Groovy presented in chat.",
+        "Use only the confirmed normal AR target-mapping insert contract or the confirmed SkipBillLines control contract; keep all business mappings and conditions request-specific. SkipBillLines must include TransactionType, resolved from the current Service Mapping XML for both invoice and credit memo scope or set through a confirmed invoice-only/credit-memo-only guard and matching transaction type.",
+        "For normal AR mappings, resolve TransactionType from the current Service Mapping XML attribute mapped to viewObjectAttribute TransactionClass; do not assume the Groovy alias is TransactionClass_Custom because it can be any exposed Service Mapping attribute name.",
+        "When the same normal AR mapping applies to both invoice and credit memo lines, emit one insert in the both-scope section with TransactionType set to the resolved transaction-class expression; do not duplicate the same mapping as hardcoded INV and CM inserts.",
+        "When a normal AR mapping is invoice-only or credit-memo-only, guard it with if/else-if using the resolved transaction-class expression from Service Mapping.",
+        "Resolve every Receivables target column from the public Oracle RA_INTERFACE_LINES_ALL reference and its ARInterface.insert context from the current interface contract; do not infer Standard or DFF context from a column name.",
+        "When a scenario omits Receivables target columns, recommend a direct Standard column only when its documented meaning and type match the source value. Otherwise suggest a DFF target by source type from current Service Mapping XML or companion describe: ATTRIBUTE<n> for string/varchar/character and Boolean-as-code, ATTRIBUTE_DATE<n> for date/datetime, and ATTRIBUTE_NUMBER<n> for number/integer/long/decimal; use matching HEADER_ families for header scope. Do not infer numeric solely from names ending in Id; require type evidence or label the type assumption unconfirmed. Scan active-algorithm and current Service Mapping DFF usage in the same type family to start at segment 1 or the next slot after the highest used same-family slot when gaps cannot be proven; require deployed context and implementer acceptance before drafting.",
+        "Treat go-with-assumptions approval as permission to present named evidence-backed recommendations only; it never bypasses XML preflight, source-resolution records, deployed DFF/context confirmation, Groovy approval, or XML approval.",
+        "Resolve each DFF family and segment index n from the current RA catalog. Use TransactionLineDff only for a confirmed ATTRIBUTE<n>, ATTRIBUTE_DATE<n>, or ATTRIBUTE_NUMBER<n> regular line-DFF target; resolve other DFF families independently.",
+        "Before selecting TransactionInterfaceLineDff for INTERFACE_LINE_ATTRIBUTE<n>, confirm origin, flex context, and n. Reject n in 1..4 for Subscription Management Subscriptions Context and n in 1..8 for Order Management ORA_DOO_ORIGIN_SUBSCRIPTIONS; request another deployed target instead.",
+        "For every confirmed Receivables target with physical RA catalog data type DATE, use AttributeValue: toDate(<date_expression>) and keep requested date arithmetic inside the expression, except a complete confirmed now() value maps directly without toDate(...).",
+        "When the current interface contract identifies TransactionInterfaceHeaderDff, resolve the physical HEADER_ATTRIBUTE* column from RA_INTERFACE_LINES_ALL but use the unprefixed ATTRIBUTE* segment name in ARInterface.insert; keep the confirmed transaction-header FlexContext and do not apply this alias to Standard, line-DFF, or header-GDF targets.",
+        "Compare the changed XML action expression with the approved Groovy before handoff and block on differences beyond line endings.",
+        "After approved local Algorithm_BO.xml creation, obtain and persist the companion's Service Mapping configuration handoff with selected sources, aliases, types, access, publication prerequisites, remaining UI configuration, and a table showing source object, source attribute, Service Mapping alias, target RA_INTERFACE_LINES_ALL column, ARInterface AttributeName, AttributeContext, FlexContext, transaction scope, and confirmed-or-assumed status."
+      ],
+      "start_node": "ALG_AR_VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "ALG_AR_VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ALG_AR_ROUTE_SERVICE_MAPPING",
+            "missing": "ALG_AR_MISSING_INPUT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALG_AR_ROUTE_SERVICE_MAPPING",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "companion_handoff",
+          "execution_route": "local",
+          "transitions": {
+            "returned": "ALG_AR_CHECK_DEPENDENCIES",
+            "not_applicable": "ALG_AR_CHECK_DEPENDENCIES"
+          },
+          "prerequisites": [
+            "ALG_AR_VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Service Mapping concern is present",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 7
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALG_AR_CHECK_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ALG_AR_APPLY_DEFAULT",
+            "blocked": "ALG_AR_BLOCKED"
+          },
+          "prerequisites": [
+            "ALG_AR_ROUTE_SERVICE_MAPPING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation and any required companion mapping review are complete",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALG_AR_APPLY_DEFAULT",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "ALG_AR_ENFORCE_DESIGN",
+            "not_applicable": "ALG_AR_ENFORCE_DESIGN"
+          },
+          "prerequisites": [
+            "ALG_AR_CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependencies are ready",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALG_AR_ENFORCE_DESIGN",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "ALG_AR_ADVISORY_GATE",
+            "block": "ALG_AR_BLOCKED"
+          },
+          "prerequisites": [
+            "ALG_AR_APPLY_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Groovy advisory is requested",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALG_AR_ADVISORY_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "advisory_ready": "ALG_AR_RETURN_ADVISORY",
+            "out_of_scope": "ALG_AR_OUT_OF_SCOPE"
+          },
+          "prerequisites": [
+            "ALG_AR_ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Design enforcement passes",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALG_AR_MISSING_INPUT",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Required advisory input is missing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALG_AR_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A dependency or design rule blocks the advisory",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALG_AR_OUT_OF_SCOPE",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request requires Fusion execution or undocumented platform behavior",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALG_AR_RETURN_ADVISORY",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ALG_AR_ADVISORY_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Advisory review is ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

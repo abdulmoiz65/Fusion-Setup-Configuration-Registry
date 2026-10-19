@@ -1,0 +1,6 @@
+{
+  "$schema": "../../../schemas/artifact-index.schema.json",
+  "project_id": "replace-with-project-id",
+  "updated_at": "2026-01-01T00:00:00Z",
+  "artifacts": []
+}

@@ -1,0 +1,121 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_CANDIDATE_POOL_PROCESS_CONFIGURATION",
+      "task_name": "Candidate Pool Management Process Configuration",
+      "start_node": "POOL.VALIDATE_INPUTS",
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      },
+      "nodes": [
+        {
+          "id": "POOL.VALIDATE_INPUTS",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {"valid": "POOL.EXPORT_BASELINE", "invalid": "POOL.HANDLE_ISSUES"},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Pool create-package request",
+          "source": {"file": "ora_input_validation.md", "anchor": "task-nodes", "line": 11},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "POOL.EXPORT_BASELINE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {"exported": "POOL.RESOLVE_IDENTITIES", "failed": "POOL.HANDLE_ISSUES"},
+          "prerequisites": ["POOL.VALIDATE_INPUTS"],
+          "on_failure": "stop",
+          "applies_when": "Before archive construction",
+          "source": {"file": "ora_reference_lookups.md", "anchor": "task-nodes", "line": 12},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "POOL.RESOLVE_IDENTITIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "local",
+          "transitions": {"resolved": "POOL.BUILD_ARCHIVE", "blocked": "POOL.HANDLE_ISSUES"},
+          "prerequisites": ["POOL.EXPORT_BASELINE"],
+          "on_failure": "stop",
+          "applies_when": "Before generating settings or routing rows",
+          "source": {"file": "ora_reference_lookups.md", "anchor": "task-nodes", "line": 13},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "POOL.BUILD_ARCHIVE",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {"built": "POOL.VALIDATE_ARCHIVE", "failed": "POOL.HANDLE_ISSUES"},
+          "prerequisites": ["POOL.RESOLVE_IDENTITIES"],
+          "on_failure": "stop",
+          "applies_when": "A validated Pool graph is ready for assembly",
+          "source": {"file": "SKILL.md", "anchor": "pool-package-authoring-boundary", "line": 130},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "POOL.VALIDATE_ARCHIVE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {"valid": "POOL.HANDOFF", "invalid": "POOL.HANDLE_ISSUES"},
+          "prerequisites": ["POOL.BUILD_ARCHIVE"],
+          "on_failure": "stop",
+          "applies_when": "Before immutable approval preparation",
+          "source": {"file": "ora_design_enforcement.md", "anchor": "archive-invariants", "line": 3},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "POOL.HANDOFF",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "data-loader",
+          "transitions": {"ready": "POOL.DONE", "blocked": "POOL.HANDLE_ISSUES"},
+          "prerequisites": ["POOL.VALIDATE_ARCHIVE"],
+          "on_failure": "stop",
+          "applies_when": "Before Data Loader submission",
+          "source": {"file": "ora_dependency_readiness.md", "anchor": "task-nodes", "line": 10},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "POOL.HANDLE_ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Pool validation, export, identity, archive, or handoff issue must be returned without submission",
+          "source": {"file": "ora_dependency_readiness.md", "anchor": "task-nodes", "line": 15},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "POOL.DONE",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": ["POOL.HANDOFF"],
+          "on_failure": "stop",
+          "applies_when": "The validated Pool package is ready for Core Data Loader handoff",
+          "source": {"file": "ora_dependency_readiness.md", "anchor": "task-nodes", "line": 16},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        }
+      ]
+    }
+  ]
+}

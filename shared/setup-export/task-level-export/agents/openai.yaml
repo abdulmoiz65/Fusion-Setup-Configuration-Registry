@@ -1,0 +1,3 @@
+display_name: Discover Export Setup Task
+short_description: Export Fusion setup task CSV baseline artifacts.
+default_prompt: Export setup data for a Fusion setup task by task name, optionally scoped by Offering and Functional Area, and store exports under project/{project_id}/exports/<offering>/<functional-area>/<task_name>.

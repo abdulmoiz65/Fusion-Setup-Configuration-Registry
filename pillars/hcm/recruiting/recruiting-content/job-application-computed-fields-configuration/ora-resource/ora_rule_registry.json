@@ -1,0 +1,413 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_COMPUTED_FIELDS_CONFIGURATION",
+      "task_name": "Job Application Computed Fields Configuration",
+      "start_node": "JACF.VALIDATE_INTAKE",
+      "nodes": [
+        {
+          "id": "JACF.VALIDATE_INTAKE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "eff_review": "JACF.RESOLVE_EFF",
+            "formula_review": "JACF.RESOLVE_FORMULAS",
+            "mapping": "JACF.RESOLVE_EFF",
+            "issues": "JACF.INPUT_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Job Application computed-field request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.RESOLVE_EFF",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "review": "JACF.FORMAT_REVIEW",
+            "mapping": "JACF.RESOLVE_FORMULAS",
+            "issues": "JACF.DEPENDENCY_ISSUES"
+          },
+          "prerequisites": [
+            "JACF.VALIDATE_INTAKE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Context, segment, or mapping work is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.RESOLVE_FORMULAS",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "review": "JACF.FORMAT_REVIEW",
+            "mapping": "JACF.VALIDATE_MAPPING",
+            "issues": "JACF.DEPENDENCY_ISSUES"
+          },
+          "prerequisites": [
+            "JACF.VALIDATE_INTAKE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Formula list or mapping work is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.FORMAT_REVIEW",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "JACF.DONE_REVIEW"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Context, segment, or eligible-formula review is ready",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.VALIDATE_MAPPING",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "JACF.EXPORT_BASELINE",
+            "issues": "JACF.MAPPING_ISSUES"
+          },
+          "prerequisites": [
+            "JACF.RESOLVE_FORMULAS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A complete mapping proposal is available",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.EXPORT_BASELINE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "clean": "JACF.BUILD_ARTIFACT",
+            "existing_rows": "JACF.MANUAL_CLEANUP",
+            "issues": "JACF.DEPENDENCY_ISSUES"
+          },
+          "prerequisites": [
+            "JACF.VALIDATE_MAPPING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Mapping creation, replacement, or import is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.BUILD_ARTIFACT",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "built": "JACF.TASK_HOOK_PREVIEW",
+            "issues": "JACF.ARTIFACT_ISSUES"
+          },
+          "prerequisites": [
+            "JACF.EXPORT_BASELINE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Fresh baseline contains zero mapping rows",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.TASK_HOOK_PREVIEW",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "JACF.READY_FOR_APPROVAL",
+            "issues": "JACF.TASK_HOOK_ISSUES"
+          },
+          "prerequisites": [
+            "JACF.BUILD_ARTIFACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact immutable ZIP is ready for Task Hook validation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.INPUT_ISSUES",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Business intake is incomplete or ambiguous",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.DEPENDENCY_ISSUES",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "EFF, formula, or export dependency fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.MAPPING_ISSUES",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Mapping validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.MANUAL_CLEANUP",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Current baseline contains mapping rows",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.ARTIFACT_ISSUES",
+          "node_type": "step",
+          "sequence": 13,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Immutable archive validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.TASK_HOOK_ISSUES",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Core Data Loader Task Hook validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.DONE_REVIEW",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JACF.FORMAT_REVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Requested review is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JACF.READY_FOR_APPROVAL",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JACF.TASK_HOOK_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact Task Hook-validated archive is ready for one approval-bound Core Data Loader submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Blocking issue is disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

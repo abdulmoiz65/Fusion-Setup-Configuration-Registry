@@ -1,0 +1,204 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PON_MANAGE_COST_FACTORS",
+      "task_name": "Manage Cost Factors",
+      "start_node": "COST_FACTOR.CLASSIFY_OPERATION",
+      "nodes": [
+        {
+          "id": "COST_FACTOR.CLASSIFY_OPERATION",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "data_load": "COST_FACTOR.VERIFY_DATA_LOADER_RESOURCE",
+            "read_lookup": "COST_FACTOR.LOOKUP_COST_FACTOR",
+            "unsupported": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Manage Cost Factors request is received.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "data-loader-task-node",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COST_FACTOR.VERIFY_DATA_LOADER_RESOURCE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "COST_FACTOR.VALIDATE_DATA_LOADER_INPUT",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Data Loader operation is requested; the separate UI privilege gate applies only to interactive-page work",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COST_FACTOR.LOOKUP_COST_FACTOR",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "COST_FACTOR.RETURN_LOOKUP_RESULT",
+            "not_found": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "COST_FACTOR.CLASSIFY_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The user requests Cost Factor details and supplies a name or code.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COST_FACTOR.VALIDATE_DATA_LOADER_INPUT",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COST_FACTOR.REQUIRE_PREVIEW_READY",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "COST_FACTOR.VERIFY_DATA_LOADER_RESOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Cost Factor source workbook is ready for Data Loader preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "data-loader-task-node",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COST_FACTOR.REQUIRE_PREVIEW_READY",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "COST_FACTOR.RETURN_PREVIEW_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "COST_FACTOR.VALIDATE_DATA_LOADER_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Data Loader Cost Factor archive has passed source validation and is about to enter preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COST_FACTOR.RETURN_PREVIEW_READY",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COST_FACTOR.REQUIRE_PREVIEW_READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable archive is ready for preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COST_FACTOR.RETURN_LOOKUP_RESULT",
+          "node_type": "terminal",
+          "sequence": 45,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COST_FACTOR.LOOKUP_COST_FACTOR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Cost Factor lookup returned exactly one Cost Factor.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A dependency, defaulting, validation, or execution-gate node reports a blocking outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

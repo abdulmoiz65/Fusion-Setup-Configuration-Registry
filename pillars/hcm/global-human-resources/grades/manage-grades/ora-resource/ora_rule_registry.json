@@ -1,0 +1,293 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_GRADE",
+      "task_name": "Manage Grades",
+      "start_node": "GRD.VALIDATE",
+      "nodes": [
+        {
+          "id": "GRD.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "GRD.READ",
+            "missing": "GRD.ERROR",
+            "invalid": "GRD.ERROR",
+            "unsupported": "GRD.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Grades request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GRD.READ",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "GRD.HISTORY",
+            "list_returned": "GRD.HISTORY",
+            "create_available": "GRD.HISTORY",
+            "not_found": "GRD.ERROR",
+            "duplicate": "GRD.ERROR",
+            "ambiguous": "GRD.ERROR",
+            "failed": "GRD.ERROR"
+          },
+          "prerequisites": [
+            "GRD.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read is requested, an exact target is required before edit, inactivate, or delete, or a uniqueness check is required before create",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GRD.HISTORY",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "eligible": "GRD.DEPENDENCIES",
+            "not_required": "GRD.DEPENDENCIES",
+            "first_row": "GRD.ERROR",
+            "missing": "GRD.ERROR",
+            "ambiguous": "GRD.ERROR",
+            "failed": "GRD.ERROR"
+          },
+          "prerequisites": [
+            "GRD.READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An effective-split delete is resolved after the exact Grade is read; zap proceeds as not_required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GRD.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "GRD.DEFAULTS",
+            "not_required": "GRD.DEFAULTS",
+            "needs_input": "GRD.ERROR",
+            "unresolved": "GRD.ERROR"
+          },
+          "prerequisites": [
+            "GRD.HISTORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After target and delete-history resolution and before defaulting",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GRD.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "GRD.DESIGN",
+            "preserved": "GRD.DESIGN",
+            "not_required": "GRD.DESIGN",
+            "blocked": "GRD.ERROR"
+          },
+          "prerequisites": [
+            "GRD.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, current-state reads, and required resolvers are complete",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GRD.DESIGN",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "GRD.ROUTE",
+            "not_required": "GRD.ROUTE",
+            "blocked": "GRD.ERROR"
+          },
+          "prerequisites": [
+            "GRD.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, dependencies, lookups, and defaulting",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GRD.ROUTE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read": "GRD.DONE",
+            "create_or_edit_or_inactivate_or_split_delete_ready": "GRD.LOADER_READY",
+            "mutation_blocked": "GRD.ERROR"
+          },
+          "prerequisites": [
+            "GRD.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select read completion or the Core Data Loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GRD.ERROR",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "GRD.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior node returns invalid, missing, ambiguous, first-row, blocked, failed, partial, timed-out, uncertain, stale, unverified, or unsupported",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GRD.DONE",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GRD.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GRD.LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GRD.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Mutation rules passed; invoke core.data-loader and follow it through immutable ZIP preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GRD.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request cannot safely continue without correction or reconciliation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

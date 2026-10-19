@@ -1,0 +1,342 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_FOS_DEFINE_TRADE_AND_ACCOUNTING_RULES_NEW",
+      "task_name": "Documentation and Accounting Rules",
+      "start_node": "FO.DAR.VALIDATE-INPUTS",
+      "nodes": [
+        {
+          "id": "FO.DAR.VALIDATE-INPUTS",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "create_update_valid": "FO.DAR.VALIDATE-INSERT-RECORD",
+            "delete_valid": "FO.DAR.RESOLVE-DELETE-TARGET",
+            "invalid": "RETURN-ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always; dispatch delete only to the delete-target and usage gates",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FO.DAR.VALIDATE-INSERT-RECORD",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "unsupported": "RETURN-ISSUES",
+            "not_applicable": "FO.DAR.DEFAULT-TRACK-PROFITS"
+          },
+          "prerequisites": [
+            "FO.DAR.VALIDATE-INPUTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always; return unsupported for InsertRecord or an effective-period split, otherwise not_applicable",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FO.DAR.DEFAULT-TRACK-PROFITS",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "FO.DAR.CONFIRM-BO-CONTRACT",
+            "unchanged": "FO.DAR.CONFIRM-BO-CONTRACT",
+            "not_applicable": "FO.DAR.CONFIRM-BO-CONTRACT",
+            "invalid_override": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FO.DAR.VALIDATE-INSERT-RECORD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always; apply create defaults only for creation and preserve existing values for Correct and EndDate",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FO.DAR.CONFIRM-BO-CONTRACT",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "standard_currency": "FO.DAR.RESOLVE-STANDARD-CURRENCY",
+            "other_currency_with_conversion": "FO.DAR.RESOLVE-CONVERSION-TYPE",
+            "other_currency": "FO.DAR.ENFORCE-CURRENCY-POLICY",
+            "incomplete": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FO.DAR.DEFAULT-TRACK-PROFITS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FO.DAR.RESOLVE-STANDARD-CURRENCY",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved_with_conversion": "FO.DAR.RESOLVE-CONVERSION-TYPE",
+            "resolved": "FO.DAR.ENFORCE-CURRENCY-POLICY",
+            "not_found": "RETURN-ISSUES",
+            "ambiguous": "RETURN-ISSUES",
+            "lookup_failed": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FO.DAR.CONFIRM-BO-CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CurrencyOption is ORA_STANDARD_CURRENCY",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FO.DAR.RESOLVE-CONVERSION-TYPE",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FO.DAR.ENFORCE-CURRENCY-POLICY",
+            "not_found": "RETURN-ISSUES",
+            "ambiguous": "RETURN-ISSUES",
+            "lookup_failed": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FO.DAR.CONFIRM-BO-CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "UserConversionType is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FO.DAR.ENFORCE-CURRENCY-POLICY",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RETURN-SUCCESS",
+            "blocked": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FO.DAR.CONFIRM-BO-CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FO.DAR.RESOLVE-DELETE-TARGET",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FO.DAR.CHECK-DELETE-FLOW-USAGE",
+            "not_found": "RETURN-ISSUES",
+            "ambiguous": "RETURN-ISSUES",
+            "lookup_failed": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FO.DAR.VALIDATE-INPUTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A delete request has one validated exact rule name",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FO.DAR.CHECK-DELETE-FLOW-USAGE",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "referenced": "FO.DAR.ENFORCE-DELETE-ELIGIBILITY",
+            "not_referenced": "FO.DAR.ENFORCE-DELETE-ELIGIBILITY",
+            "scan_incomplete": "FO.DAR.ENFORCE-DELETE-ELIGIBILITY"
+          },
+          "prerequisites": [
+            "FO.DAR.RESOLVE-DELETE-TARGET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A single TaRuleSetId has been resolved for deletion",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FO.DAR.ENFORCE-DELETE-ELIGIBILITY",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "eligible": "FO.DAR.DELETE-ELIGIBILITY-PASSED",
+            "blocked": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FO.DAR.CHECK-DELETE-FLOW-USAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Delete is eligible only after a complete usage scan finds no matching FinancialTradeRelation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN-ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any blocking outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN-SUCCESS",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FO.DAR.ENFORCE-CURRENCY-POLICY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated task-plan outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FO.DAR.DELETE-ELIGIBILITY-PASSED",
+          "node_type": "terminal",
+          "sequence": 101,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FO.DAR.ENFORCE-DELETE-ELIGIBILITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Delete preflight only: complete Financial Orchestration Flow scan found no FTR reference; continue with the normal Data Loader delete-preparation and approval workflow, but do not perform the delete here",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

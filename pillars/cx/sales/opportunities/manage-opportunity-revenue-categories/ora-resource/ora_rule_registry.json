@@ -1,0 +1,329 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "MOO_MANAGE_REVENUE_CATEGORIES",
+      "task_name": "Manage Opportunity Revenue Categories",
+      "start_node": "OPP.REVENUE_CATEGORY.VALIDATE",
+      "nodes": [
+        {
+          "id": "OPP.REVENUE_CATEGORY.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "OPP.REVENUE_CATEGORY.DEFAULT",
+            "missing": "OPP.REVENUE_CATEGORY.RETURN_MISSING",
+            "invalid": "OPP.REVENUE_CATEGORY.RETURN_FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every opportunity revenue-category request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.REVENUE_CATEGORY.DEFAULT",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "OPP.REVENUE_CATEGORY.VERIFY_TYPE",
+            "not_applicable": "OPP.REVENUE_CATEGORY.VERIFY_TYPE"
+          },
+          "prerequisites": [
+            "OPP.REVENUE_CATEGORY.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before verifying the fixed MOO_REVN_CATEGORY parent lookup type",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.REVENUE_CATEGORY.VERIFY_TYPE",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OPP.REVENUE_CATEGORY.LOOKUP_CODE",
+            "missing": "OPP.REVENUE_CATEGORY.RETURN_FAILED",
+            "failed": "OPP.REVENUE_CATEGORY.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.REVENUE_CATEGORY.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before checking any MOO_REVN_CATEGORY lookup code",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.REVENUE_CATEGORY.LOOKUP_CODE",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OPP.REVENUE_CATEGORY.VERIFY_PACKAGE",
+            "not_found": "OPP.REVENUE_CATEGORY.VERIFY_PACKAGE",
+            "not_applicable": "OPP.REVENUE_CATEGORY.VERIFY_PACKAGE",
+            "failed": "OPP.REVENUE_CATEGORY.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.REVENUE_CATEGORY.VERIFY_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve SingleLookup state; Package Export or Import continues as not_applicable to package readiness",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.REVENUE_CATEGORY.VERIFY_PACKAGE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "OPP.REVENUE_CATEGORY.DESIGN",
+            "not_applicable": "OPP.REVENUE_CATEGORY.DESIGN",
+            "missing": "OPP.REVENUE_CATEGORY.RETURN_MISSING",
+            "failed": "OPP.REVENUE_CATEGORY.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.REVENUE_CATEGORY.LOOKUP_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate a complete full-task Export baseline, exactly one SingleLookup Create/Update/Disable row, or every changed Package Import row; Read is not_applicable",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.REVENUE_CATEGORY.DESIGN",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "read": "OPP.REVENUE_CATEGORY.RETURN_READ",
+            "export_ready": "OPP.REVENUE_CATEGORY.RETURN_EXPORT_READY",
+            "pass": "OPP.REVENUE_CATEGORY.GATE",
+            "blocked": "OPP.REVENUE_CATEGORY.RETURN_MISSING",
+            "failed": "OPP.REVENUE_CATEGORY.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.REVENUE_CATEGORY.VERIFY_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce request mode, standard-lookup policy, per-row state and impact, immutable package readiness, and FSM-only mutation routing",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.REVENUE_CATEGORY.GATE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "fsm_handoff_ready": "OPP.REVENUE_CATEGORY.RETURN_FSM_READY",
+            "accepted_initiation": "OPP.REVENUE_CATEGORY.RETURN_ACCEPTED",
+            "missing": "OPP.REVENUE_CATEGORY.RETURN_MISSING",
+            "failed": "OPP.REVENUE_CATEGORY.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.REVENUE_CATEGORY.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Hand the validated immutable package to Core Data Loader without child approval, or route Data Loader's accepted initiation to its terminal result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.REVENUE_CATEGORY.RETURN_FSM_READY",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.REVENUE_CATEGORY.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The unchanged immutable MOO_MANAGE_REVENUE_CATEGORIES package, exact task identity and persisted Data Loader task context, reviewed rows, and reopened SHA-256 are ready for Core Data Loader Task Hook validation and preview; no import approval or execution has occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.REVENUE_CATEGORY.RETURN_ACCEPTED",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.REVENUE_CATEGORY.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Core Data Loader returned accepted initiation; end this request without polling, ProcessLog or result retrieval, or exact GET verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.REVENUE_CATEGORY.RETURN_READ",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.REVENUE_CATEGORY.DESIGN"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A SingleLookup Read resolved one exact code and returns sanitized current state without mutation approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.REVENUE_CATEGORY.RETURN_EXPORT_READY",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.REVENUE_CATEGORY.DESIGN"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The completed full-task MOO_MANAGE_REVENUE_CATEGORIES export baseline is validated for review or package authoring without LookupCode scope",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.REVENUE_CATEGORY.RETURN_MISSING",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Required input, lookup evidence, package evidence, task identity and persisted Data Loader task context, state lock, impact, preservation, or current-stage Data Loader evidence is missing; approval is not required before FSM handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.REVENUE_CATEGORY.RETURN_FAILED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Validation, parent/code lookup, package readiness, design, execution handoff, Data Loader initiation, later status/results, or verification failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,565 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_MANAGE_RECRUITING_AND_CANDIDATE_EXPERIENCE_VALUE_SETS",
+      "task_name": "Recruiting and Candidate Experience Value Sets",
+      "start_node": "RVS.VALIDATE",
+      "nodes": [
+        {
+          "id": "RVS.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "list_roots": "RVS.DISCOVER_ROOTS",
+            "exact_root": "RVS.READ_PARENT",
+            "validation": "RVS.READ_PARENT",
+            "children": "RVS.READ_PARENT",
+            "create_child": "RVS.READ_PARENT",
+            "update_child": "RVS.READ_PARENT",
+            "delete_child": "RVS.READ_PARENT",
+            "post_change": "RVS.VERIFY_CHILD",
+            "issues": "RVS.INPUT_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Recruiting and Candidate Experience Value Sets request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.DISCOVER_ROOTS",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "RVS.MATCH_SCOPE",
+            "pagination_blocked": "RVS.LOOKUP_ISSUES",
+            "issues": "RVS.LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "RVS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A complete Recruiting value-set list is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 133
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.READ_PARENT",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "RVS.MATCH_SCOPE",
+            "issues": "RVS.LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "RVS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An exact root or its validation or children are requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 134
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.MATCH_SCOPE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "root_review": "RVS.DONE_ROOT_REVIEW",
+            "validation": "RVS.READ_VALIDATION",
+            "children": "RVS.RESOLVE_CHILD",
+            "create_child": "RVS.RESOLVE_CHILD",
+            "update_child": "RVS.RESOLVE_CHILD",
+            "delete_child": "RVS.RESOLVE_CHILD",
+            "blocked": "RVS.OWNERSHIP_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Current root ModuleId values must be filtered or authorized",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 135
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.READ_VALIDATION",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "RVS.DONE_VALIDATION",
+            "issues": "RVS.LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "RVS.MATCH_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation-table metadata is requested or required for explanation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 136
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.RESOLVE_CHILD",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "RVS.DONE_CHILD_REVIEW",
+            "create_ready": "RVS.ENFORCE",
+            "update_ready": "RVS.ENFORCE",
+            "delete_ready": "RVS.ENFORCE",
+            "issues": "RVS.LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "RVS.MATCH_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Child values are listed or a supported child mutation is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 137
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.ENFORCE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "create": "RVS.PREVIEW",
+            "update": "RVS.PREVIEW",
+            "delete": "RVS.PREVIEW",
+            "blocked": "RVS.DESIGN_ISSUES"
+          },
+          "prerequisites": [
+            "RVS.RESOLVE_CHILD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported child-value mutation has exact current parent and child evidence",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.PREVIEW",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved_create": "RVS.READY_CREATE",
+            "approved_update": "RVS.READY_UPDATE",
+            "approved_delete": "RVS.READY_DELETE",
+            "missing": "RVS.APPROVAL_ISSUES"
+          },
+          "prerequisites": [
+            "RVS.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported child mutation has a complete immutable preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.VERIFY_CHILD",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "RVS.DONE_CHANGE",
+            "mismatch": "RVS.POST_CHANGE_ISSUES",
+            "uncertain": "RVS.POST_CHANGE_ISSUES"
+          },
+          "prerequisites": [
+            "RVS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A delegated child mutation requires fresh verification",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 138
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.INPUT_ISSUES",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Business intake, exact code, environment, or operation is incomplete or ambiguous",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.LOOKUP_ISSUES",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Pagination, root, validation-metadata, or child resolution fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.OWNERSHIP_ISSUES",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Current ModuleId ownership cannot be established from the complete baseline",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.DESIGN_ISSUES",
+          "node_type": "step",
+          "sequence": 13,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Root boundary, child capability, field support, preservation, or route enforcement fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.APPROVAL_ISSUES",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Exact immutable approval is absent or stale",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.POST_CHANGE_ISSUES",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Post-mutation verification is missing, mismatched, or uncertain",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.DONE_ROOT_REVIEW",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RVS.MATCH_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Recruiting-owned root review is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.DONE_VALIDATION",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RVS.READ_VALIDATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Requested validation-table metadata review is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.DONE_CHILD_REVIEW",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RVS.RESOLVE_CHILD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Requested child-value review is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.READY_CREATE",
+          "node_type": "terminal",
+          "sequence": 19,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RVS.PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact approval authorizes one delegated Common Value Sets child create followed by fresh verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.READY_UPDATE",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RVS.PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact approval authorizes one delegated Common Value Sets child update followed by fresh verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.READY_DELETE",
+          "node_type": "terminal",
+          "sequence": 21,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RVS.PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact approval authorizes one delegated Common Value Sets child delete followed by fresh verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RVS.DONE_CHANGE",
+          "node_type": "terminal",
+          "sequence": 22,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RVS.VERIFY_CHILD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The approved child mutation has been freshly verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 23,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Business-language error disclosure is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

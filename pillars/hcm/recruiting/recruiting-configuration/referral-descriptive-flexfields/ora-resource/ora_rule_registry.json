@@ -1,0 +1,322 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_REFERRAL_DESCRIPTIVE_FLEXFIELD",
+      "task_name": "Referral Descriptive Flexfields",
+      "start_node": "REFERRAL_DFF.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "REFERRAL_DFF.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "REFERRAL_DFF.RESOLVE_REFERENCES",
+            "missing": "REFERRAL_DFF.RETURN_ISSUES",
+            "invalid": "REFERRAL_DFF.RETURN_ISSUES",
+            "ambiguous": "REFERRAL_DFF.RETURN_ISSUES",
+            "unsupported": "REFERRAL_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every supported request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REFERRAL_DFF.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "REFERRAL_DFF.CHECK_READINESS",
+            "missing": "REFERRAL_DFF.RETURN_ISSUES",
+            "ambiguous": "REFERRAL_DFF.RETURN_ISSUES",
+            "unsupported": "REFERRAL_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "REFERRAL_DFF.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supported request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REFERRAL_DFF.CHECK_READINESS",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "REFERRAL_DFF.ENFORCE_DESIGN",
+            "missing": "REFERRAL_DFF.RETURN_ISSUES",
+            "blocked": "REFERRAL_DFF.RETURN_ISSUES",
+            "authorization": "REFERRAL_DFF.RETURN_ISSUES",
+            "unsupported": "REFERRAL_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "REFERRAL_DFF.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supported request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REFERRAL_DFF.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "REFERRAL_DFF.APPROVAL_GATE",
+            "blocked": "REFERRAL_DFF.RETURN_ISSUES",
+            "conflict": "REFERRAL_DFF.RETURN_ISSUES",
+            "unsupported": "REFERRAL_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "REFERRAL_DFF.CHECK_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supported request",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REFERRAL_DFF.APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "REFERRAL_DFF.EXECUTE",
+            "not_required": "REFERRAL_DFF.EXECUTE",
+            "missing": "REFERRAL_DFF.RETURN_ISSUES",
+            "stale": "REFERRAL_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "REFERRAL_DFF.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require approval bound to the current preview immediately before a state-changing handoff; read-only inspection and planning use not_required",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REFERRAL_DFF.EXECUTE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "completed": "REFERRAL_DFF.RETURN_SUCCESS",
+            "import_accepted": "REFERRAL_DFF.MONITOR_IMPORT",
+            "verify_requested": "REFERRAL_DFF.VERIFY",
+            "failed": "REFERRAL_DFF.RETURN_ISSUES",
+            "uncertain": "REFERRAL_DFF.RETURN_ISSUES",
+            "unsupported": "REFERRAL_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "REFERRAL_DFF.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Build and validate the final FSM archive from the analysed current-definition package or the qualified historical Global structural contract plus confirmed delta; after core.data-loader approval, upload and initiate exactly once and keep an accepted request ID internal for required completion monitoring",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REFERRAL_DFF.MONITOR_IMPORT",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "succeeded": "REFERRAL_DFF.RETURN_IMPORT_SUCCESS",
+            "completed_with_errors": "REFERRAL_DFF.RETURN_ISSUES",
+            "failed": "REFERRAL_DFF.RETURN_ISSUES",
+            "timed_out": "REFERRAL_DFF.RETURN_ISSUES",
+            "log_unavailable": "REFERRAL_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "REFERRAL_DFF.EXECUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For an accepted create, update, or copy import, monitor every 15 seconds for at most 300 seconds, download and read the FSM ProcessLog, reconcile all actionable errors, and never retry the submission",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REFERRAL_DFF.VERIFY",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "REFERRAL_DFF.RETURN_VERIFY_SUCCESS",
+            "missing": "REFERRAL_DFF.RETURN_ISSUES",
+            "invalid": "REFERRAL_DFF.RETURN_ISSUES",
+            "failed": "REFERRAL_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "REFERRAL_DFF.EXECUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only when the requester separately asks for functional post-import verification; task-scoped status monitoring and ProcessLog review remain mandatory for accepted create, update, or copy imports",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REFERRAL_DFF.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "REFERRAL_DFF.EXECUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported non-import action completed with verified evidence",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REFERRAL_DFF.RETURN_IMPORT_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 91,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "REFERRAL_DFF.MONITOR_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Terminal status and the reviewed ProcessLog confirm clean completion; report only that the segment operation completed successfully and link the ProcessLog",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REFERRAL_DFF.RETURN_VERIFY_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 92,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "REFERRAL_DFF.VERIFY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A separately requested verification completed with verified evidence",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "REFERRAL_DFF.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any failure, refusal, missing input, ambiguity, conflict, authorization failure, blocked dependency, stale approval, or uncertain result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,2672 @@
+{
+  "schemaVersion": "remit-to-coverage-disposition-v1",
+  "classification": "Oracle Internal",
+  "asOf": "2026-09-21",
+  "taskCode": "AR_MANAGE_REMIT_TO_ADDRESSES",
+  "reviewedSourceCommit": "123da9a7ee8d9aebac4e6cd8b6352d68cdf5efc1",
+  "catalog": {
+    "path": "e2e-test-catalog.json",
+    "sha256": "e7e72683d3dcd9a8995a9c6cbc29971973caa1b1ea670a26c6c68d0e1d8342b7",
+    "digestFormat": "JSON sorted keys, compact separators, ensure_ascii=true, ASCII bytes",
+    "variantCount": 236
+  },
+  "dispositionComplete": true,
+  "exhaustiveTestingComplete": false,
+  "mergeApproval": false,
+  "counts": {
+    "passed": 0,
+    "failed": 0,
+    "blocked": 235,
+    "not_applicable": 1
+  },
+  "semantics": {
+    "blocked": "Unverified as this complete catalog variant, or missing the stated prerequisite; not necessarily a product defect.",
+    "passed": "Requires direct per-variant execution evidence covering the full expected behavior; related tests alone do not qualify.",
+    "not_applicable": "Outside the declared operation contract with an explicit rationale; unsupported-request handling remains separately testable.",
+    "executionEvidence": "Evidence of this entire catalog variant, not a nearby unit test or historical scenario."
+  },
+  "evidenceProfiles": {
+    "unit": {
+      "sourceCommit": "123da9a7ee8d9aebac4e6cd8b6352d68cdf5efc1",
+      "discovered": 114,
+      "passed": 109,
+      "skipped": 5,
+      "failed": 0,
+      "scope": "Windows Python 3.12 synthetic task regression; not a catalog campaign or live user journey."
+    },
+    "continuationLive": {
+      "reviewDate": "2026-09-21",
+      "release": "11.13.26.10.0",
+      "country": "US",
+      "pageUrl": "https://confluence.oraclecorp.com/confluence/pages/viewpage.action?pageId=21942576693",
+      "pageVersion": 5,
+      "evidenceAttachment": "manage-remit-to-addresses-evidence-20260921.zip",
+      "sha256": "d7dcad9aad0d97f6a09fc3c3e3952bb3592678b1b49f1d04eb9903facc08a966",
+      "memberCount": 212,
+      "verifiedLogicalPhases": 9,
+      "attemptCount": 10,
+      "failedAttempts": 1,
+      "requirementCountsByPhase": [4, 4, 20, 20, 2, 6, 194, 6, 8],
+      "formalRequirements": 264,
+      "finalMismatches": 0,
+      "retainedDestinations": 100,
+      "largestSingleLiveCreateBatch": 97,
+      "newCoverageFinalStatus": "I",
+      "baselineNonAuditRowsRestored": true,
+      "physicalDeletionPerformed": false,
+      "catalogAbsenceAssertionsSatisfied": false,
+      "catalogPassPromotion": false,
+      "scopeWarning": "Targeted working-tree live evidence in one nonproduction scope, not an exact-commit rerun, exhaustive catalog execution or whole-batch UI inspection. Retained test destinations were explicitly authorized; that consent is not reusable."
+    },
+    "historicalLive": {
+      "release": "11.13.26.10.0",
+      "country": "US",
+      "scope": "Single nonproduction environment and selected reference set; no all-country/release claim.",
+      "pageUrl": "https://confluence.oraclecorp.com/confluence/pages/viewpage.action?pageId=21942576693",
+      "pageVersion": 4,
+      "evidenceAttachment": "manage-remit-to-addresses-evidence-20260917.zip",
+      "sha256": "52a6677351f579b964d99833acd3473ddc2c400b2d3304a5ed3d6223f1739e37",
+      "addedScenarios": [
+        "C02",
+        "L01",
+        "L02",
+        "L03",
+        "L04"
+      ],
+      "formalRequirements": 22,
+      "scopeWarning": "Historical targeted evidence; not promoted to a catalog pass or a fresh exact-commit live run."
+    }
+  },
+  "reasonDefinitions": {
+    "PROMPT_TRANSCRIPT": {
+      "reason": "No complete catalog-ID-bound agent transcript proves routing, all follow-up questions/answers and the expected stopping rule.",
+      "nextAction": "Run this variant through the Implementation Router and task skill; retain the unchanged prompt, follow-ups, final classification and absence/presence of the expected candidate."
+    },
+    "FIELD_MATRIX": {
+      "reason": "Aggregate unit results are available, but no catalog-ID-bound field fixture and full assertion result were verified for this individual variant.",
+      "nextAction": "Execute the exact named field/identity variant with a compatible baseline and record normalization, candidate or rejection, plus every expected assertion."
+    },
+    "RESOLVER_MATRIX": {
+      "reason": "No catalog-ID-bound authoritative zero/one/many-match resolver evidence was verified for this variant; task exports do not prove exhaustive reference domains.",
+      "nextAction": "Resolve the listed task-owned prerequisite from authorized FSM evidence; record exact match-count outcomes. If authority remains unavailable, retain the blocker rather than inventing a direct API/DB route."
+    },
+    "STATUS_CAMPAIGN_FIXTURE": {
+      "reason": "Status-update/rollback unit coverage exists, but the catalog campaign fixture is still conditional and its complete per-variant execution evidence is absent.",
+      "nextAction": "Register the exact-key A/I fixture and execute this variant. A live rollback requires a successful forward import, separately governed reverse candidate, fresh exports and reconciliation."
+    },
+    "CREATE_RETENTION": {
+      "reason": "The catalog live-create variant has no declared supported removal path or candidate-specific governed retained-state policy. Historical retained-state approvals do not authorize another run.",
+      "nextAction": "Obtain a supported cleanup declaration or explicit retained-state authorization for the exact scenario, then execute the normal task route and retain process results plus fresh-export reconciliation."
+    },
+    "OWNER_GATES": {
+      "reason": "No complete campaign-owner evidence binds this variant's confirmation/approval invalidation, process state, or warning policy to an immutable design/candidate.",
+      "nextAction": "Exercise the relevant Run Book/Data Loader or tester gate with controlled fixtures; record prior and changed fingerprints, process identity and expected no-resubmit/no-handoff outcome."
+    },
+    "CATALOG_EXECUTION": {
+      "reason": "Related unit tests are supporting evidence only; the complete catalog variant was not separately executed and its required evidence was not bound to its ID.",
+      "nextAction": "Execute this exact catalog variant and retain every required artifact and assertion. Do not promote related synthetic tests to live or conversation-level evidence."
+    },
+    "REPORT_RENDER": {
+      "reason": "The existing historical page is not proof of this catalog report-rendering variant's complete acceptance checks.",
+      "nextAction": "Render the full campaign from actual run records and validate inventory, prompts, follow-ups, artifact references and dispositions. Publish only under separately authorized classification/destination."
+    },
+    "NO_EFFECTIVE_DATE": {
+      "reason": "This generic variant expects valid/invalid effective-date chronology, but the reviewed two-BO CSV contract exposes no supported scheduled end-date operation.",
+      "nextAction": "Keep this positive chronology variant not applicable to the declared release scope. Continue testing end-date request clarification under the lifecycle negative cases; never substitute immediate inactivation silently."
+    }
+  },
+  "variants": [
+    {
+      "variantId": "RT-01-A",
+      "caseId": "RT-01",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "PROMPT_TRANSCRIPT",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Requires agent-assisted execution through the Implementation Router and selected task skill; deterministic fixture tests alone are not prompt-execution evidence."
+      ]
+    },
+    {
+      "variantId": "RT-02-A",
+      "caseId": "RT-02",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "PROMPT_TRANSCRIPT",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Requires agent-assisted execution through the Implementation Router and selected task skill; deterministic fixture tests alone are not prompt-execution evidence."
+      ]
+    },
+    {
+      "variantId": "RT-02-B",
+      "caseId": "RT-02",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "PROMPT_TRANSCRIPT",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Requires agent-assisted execution through the Implementation Router and selected task skill; deterministic fixture tests alone are not prompt-execution evidence."
+      ]
+    },
+    {
+      "variantId": "RT-03-A",
+      "caseId": "RT-03",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "PROMPT_TRANSCRIPT",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Requires agent-assisted execution through the Implementation Router and selected task skill; deterministic fixture tests alone are not prompt-execution evidence."
+      ]
+    },
+    {
+      "variantId": "RT-03-B",
+      "caseId": "RT-03",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "PROMPT_TRANSCRIPT",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Requires agent-assisted execution through the Implementation Router and selected task skill; deterministic fixture tests alone are not prompt-execution evidence."
+      ]
+    },
+    {
+      "variantId": "RT-04-A",
+      "caseId": "RT-04",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "PROMPT_TRANSCRIPT",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Requires agent-assisted execution through the Implementation Router and selected task skill; deterministic fixture tests alone are not prompt-execution evidence."
+      ]
+    },
+    {
+      "variantId": "RT-05-A",
+      "caseId": "RT-05",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "PROMPT_TRANSCRIPT",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Requires agent-assisted execution through the Implementation Router and selected task skill; deterministic fixture tests alone are not prompt-execution evidence."
+      ]
+    },
+    {
+      "variantId": "RT-05-B",
+      "caseId": "RT-05",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "PROMPT_TRANSCRIPT",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Requires agent-assisted execution through the Implementation Router and selected task skill; deterministic fixture tests alone are not prompt-execution evidence."
+      ]
+    },
+    {
+      "variantId": "RT-05-C",
+      "caseId": "RT-05",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "PROMPT_TRANSCRIPT",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Requires agent-assisted execution through the Implementation Router and selected task skill; deterministic fixture tests alone are not prompt-execution evidence."
+      ]
+    },
+    {
+      "variantId": "RT-05-D",
+      "caseId": "RT-05",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "PROMPT_TRANSCRIPT",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Requires agent-assisted execution through the Implementation Router and selected task skill; deterministic fixture tests alone are not prompt-execution evidence."
+      ]
+    },
+    {
+      "variantId": "RT-05-E",
+      "caseId": "RT-05",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "PROMPT_TRANSCRIPT",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Requires agent-assisted execution through the Implementation Router and selected task skill; deterministic fixture tests alone are not prompt-execution evidence."
+      ]
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-SetCode-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-SetCode-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-SetCode-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-TerritoryCode-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-TerritoryCode-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-TerritoryCode-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-Address1-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-Address1-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-Address1-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-OrigSystemReference-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-OrigSystemReference-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-OrigSystemReference-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-ShortDescription-CREATE-UNRESOLVED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-Description-CREATE-UNRESOLVED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-PostalCode-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-PostalCode-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-PostalCode-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-State-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-State-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-State-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-City-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-City-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-City-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-CreatedBy-AUDIT",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-CreationDate-AUDIT",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-LastUpdatedBy-AUDIT",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-LastUpdateDate-AUDIT",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-LastUpdateLogin-AUDIT",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-SetName-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-Address2-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-AddrElementAttribute2-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-AddrElementAttribute3-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute1-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute10-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute11-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute12-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute13-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute14-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute15-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute16-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute17-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute18-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute19-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute2-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute20-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute3-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute4-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute5-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute6-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute7-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute8-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttribute9-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttributeCategory-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttributeDate1-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttributeDate2-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttributeDate3-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttributeDate4-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttributeDate5-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttributeNumber1-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttributeNumber2-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttributeNumber3-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttributeNumber4-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-GlobalAttributeNumber5-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-County-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-Address3-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-Address4-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_LOCATION-Province-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.SetCode-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.SetCode-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.SetCode-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.TerritoryCode-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.TerritoryCode-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.TerritoryCode-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.Address1-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.Address1-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.Address1-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.OrigSystemReference-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.OrigSystemReference-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.OrigSystemReference-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.PostalCode-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.PostalCode-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.PostalCode-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.State-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.State-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.State-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.City-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.City-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AR_REMIT_TO_LOCATION.City-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Country-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Country-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Country-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-State-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-State-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-State-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-PostalCodeHigh-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-PostalCodeHigh-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-PostalCodeHigh-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-PostalCodeLow-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-PostalCodeLow-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-PostalCodeLow-KEY-MUTATION",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-LastUpdateDate-AUDIT",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-LastUpdatedBy-AUDIT",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-CreationDate-AUDIT",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-CreatedBy-AUDIT",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-LastUpdateLogin-AUDIT",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Status-VALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Status-INVALID",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-AttributeCategory-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute1-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute2-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute3-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute4-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute5-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute6-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute7-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute8-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute9-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute10-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute11-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute12-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute13-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute14-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-Attribute15-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BR-FIELD-AR_REMIT_TO_ADDRESS-SetCode-BLOCKED",
+      "caseId": "BR-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "FIELD_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-SetCode",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Target access policy and optional supported public preflight are not yet reviewed."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-TerritoryCode",
+      "caseId": "RD-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-Address1",
+      "caseId": "RD-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-OrigSystemReference",
+      "caseId": "RD-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-PostalCode",
+      "caseId": "RD-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-State",
+      "caseId": "RD-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-City",
+      "caseId": "RD-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-SetName",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Target access policy and optional supported public preflight are not yet reviewed."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-Address2",
+      "caseId": "RD-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-AddrElementAttribute2",
+      "caseId": "RD-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-AddrElementAttribute3",
+      "caseId": "RD-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute1",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute10",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute11",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute12",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute13",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute14",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute15",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute16",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute17",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute18",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute19",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute2",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute20",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute3",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute4",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute5",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute6",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute7",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute8",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttribute9",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttributeCategory",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttributeDate1",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttributeDate2",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttributeDate3",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttributeDate4",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttributeDate5",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttributeNumber1",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttributeNumber2",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttributeNumber3",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttributeNumber4",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-GlobalAttributeNumber5",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-County",
+      "caseId": "RD-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-Address3",
+      "caseId": "RD-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-Address4",
+      "caseId": "RD-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_LOCATION-Province",
+      "caseId": "RD-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Country",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Accepted target lookup rows, extensibility and import semantic validation require closure."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-State",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "UI LOV selection does not establish CSV validation; target geography and lookup values remain to verify."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-AttributeCategory",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute1",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute2",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute3",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute4",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute5",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute6",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute7",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute8",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute9",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute10",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute11",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute12",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute13",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute14",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-Attribute15",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No deployment evidence; conditional business fields must remain unresolved, not globally unsupported."
+      ]
+    },
+    {
+      "variantId": "RD-AR_REMIT_TO_ADDRESS-SetCode",
+      "caseId": "RD-01",
+      "executionClass": "live-readonly",
+      "disposition": "blocked",
+      "reasonCode": "RESOLVER_MATRIX",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "Target access policy and optional supported public preflight are not yet reviewed."
+      ]
+    },
+    {
+      "variantId": "LC-01-A",
+      "caseId": "LC-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "STATUS_CAMPAIGN_FIXTURE",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_remit_business.py::test_status_update_preserves_parent_and_child_values"
+      ],
+      "catalogBlockers": [
+        "Register the criteria Status fixture in the campaign runner. Task-local tests pass offline, not live."
+      ]
+    },
+    {
+      "variantId": "LC-02-A",
+      "caseId": "LC-02",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_remit_business.py::test_noop_update_emits_no_candidate",
+        "tests/test_fsm_task_adapter.py::test_create_build_validate_determinism_reconcile_and_defaults"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "LC-02-B",
+      "caseId": "LC-02",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_remit_business.py::test_noop_update_emits_no_candidate",
+        "tests/test_fsm_task_adapter.py::test_create_build_validate_determinism_reconcile_and_defaults"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "LC-03-A",
+      "caseId": "LC-03",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "STATUS_CAMPAIGN_FIXTURE",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_remit_business.py::test_status_rollback_is_exact_and_reconcilable",
+        "tests/test_remit_business.py::test_rollback_does_not_overwrite_concurrent_status_change"
+      ],
+      "catalogBlockers": [
+        "Register the criteria Status fixture in the campaign runner. Task-local tests pass offline, not live."
+      ]
+    },
+    {
+      "variantId": "LC-03-B",
+      "caseId": "LC-03",
+      "executionClass": "live-mutation",
+      "disposition": "blocked",
+      "reasonCode": "STATUS_CAMPAIGN_FIXTURE",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_remit_business.py::test_status_rollback_is_exact_and_reconcilable",
+        "tests/test_remit_business.py::test_rollback_does_not_overwrite_concurrent_status_change"
+      ],
+      "catalogBlockers": [
+        "Register the criteria Status fixture in the campaign runner. Task-local tests pass offline, not live."
+      ]
+    },
+    {
+      "variantId": "LC-04-A",
+      "caseId": "LC-04",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "OWNER_GATES",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "LC-04-B",
+      "caseId": "LC-04",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "OWNER_GATES",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BI-01-A",
+      "caseId": "BI-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BI-01-B",
+      "caseId": "BI-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "BI-01-C",
+      "caseId": "BI-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "SM-01-A",
+      "caseId": "SM-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "SM-02-A",
+      "caseId": "SM-02",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "PROMPT_TRANSCRIPT",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_remit_business.py::test_follow_up_resolves_only_answered_operations",
+        "tests/test_remit_business.py::test_country_and_address_clarification_before_zip"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "SM-02-B",
+      "caseId": "SM-02",
+      "executionClass": "static",
+      "disposition": "not_applicable",
+      "reasonCode": "NO_EFFECTIVE_DATE",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_remit_business.py::test_follow_up_resolves_only_answered_operations",
+        "tests/test_remit_business.py::test_country_and_address_clarification_before_zip"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "SM-03-A",
+      "caseId": "SM-03",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "SM-03-B",
+      "caseId": "SM-03",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "SM-04-A",
+      "caseId": "SM-04",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_remit_business.py::test_hundred_parent_child_pairs",
+        "tests/test_remit_business.py::test_hundred_status_updates_one_parent_dependency",
+        "tests/test_remit_business.py::test_late_duplicate_prevents_entire_hundred_row_package"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "SM-04-B",
+      "caseId": "SM-04",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_remit_business.py::test_hundred_parent_child_pairs",
+        "tests/test_remit_business.py::test_hundred_status_updates_one_parent_dependency",
+        "tests/test_remit_business.py::test_late_duplicate_prevents_entire_hundred_row_package"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "SM-04-C",
+      "caseId": "SM-04",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_remit_business.py::test_hundred_parent_child_pairs",
+        "tests/test_remit_business.py::test_hundred_status_updates_one_parent_dependency",
+        "tests/test_remit_business.py::test_late_duplicate_prevents_entire_hundred_row_package"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "SM-05-A",
+      "caseId": "SM-05",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_remit_business.py::test_unrelated_concurrent_addition_allowed",
+        "tests/test_remit_business.py::test_baseline_removal_fails",
+        "tests/test_remit_business.py::test_status_update_reconcile_detects_lost_other_value"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "SM-05-B",
+      "caseId": "SM-05",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_remit_business.py::test_unrelated_concurrent_addition_allowed",
+        "tests/test_remit_business.py::test_baseline_removal_fails",
+        "tests/test_remit_business.py::test_status_update_reconcile_detects_lost_other_value"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "SM-05-C",
+      "caseId": "SM-05",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_remit_business.py::test_unrelated_concurrent_addition_allowed",
+        "tests/test_remit_business.py::test_baseline_removal_fails",
+        "tests/test_remit_business.py::test_status_update_reconcile_detects_lost_other_value"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "PK-01-A",
+      "caseId": "PK-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_fsm_task_adapter.py::test_csv_rows_match_exact_template_header_and_preserve_trailing_blank"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "PK-02-A",
+      "caseId": "PK-02",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_export_preflight.py::test_unrelated_metadata_rejected",
+        "tests/test_fsm_task_adapter.py::test_archive_and_output_safety_gates"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "PK-02-B",
+      "caseId": "PK-02",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_export_preflight.py::test_unrelated_metadata_rejected",
+        "tests/test_fsm_task_adapter.py::test_archive_and_output_safety_gates"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "PK-02-C",
+      "caseId": "PK-02",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_export_preflight.py::test_unrelated_metadata_rejected",
+        "tests/test_fsm_task_adapter.py::test_archive_and_output_safety_gates"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "PK-02-D",
+      "caseId": "PK-02",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [
+        "tests/test_export_preflight.py::test_unrelated_metadata_rejected",
+        "tests/test_fsm_task_adapter.py::test_archive_and_output_safety_gates"
+      ],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "OF-01-A",
+      "caseId": "OF-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "OWNER_GATES",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "OF-01-B",
+      "caseId": "OF-01",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "OWNER_GATES",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "OF-01-C",
+      "caseId": "OF-01",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "OWNER_GATES",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "IM-01-A",
+      "caseId": "IM-01",
+      "executionClass": "live-mutation",
+      "disposition": "blocked",
+      "reasonCode": "CREATE_RETENTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": [
+        "No evidence-backed create removal path or governed retained-state approval policy is declared."
+      ]
+    },
+    {
+      "variantId": "IM-02-A",
+      "caseId": "IM-02",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "OWNER_GATES",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "IM-02-B",
+      "caseId": "IM-02",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "OWNER_GATES",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "IM-03-A",
+      "caseId": "IM-03",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "IM-03-B",
+      "caseId": "IM-03",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "IM-03-C",
+      "caseId": "IM-03",
+      "executionClass": "offline",
+      "disposition": "blocked",
+      "reasonCode": "CATALOG_EXECUTION",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    },
+    {
+      "variantId": "DOC-01-A",
+      "caseId": "DOC-01",
+      "executionClass": "static",
+      "disposition": "blocked",
+      "reasonCode": "REPORT_RENDER",
+      "executionEvidence": [],
+      "supportingUnitTests": [],
+      "catalogBlockers": []
+    }
+  ]
+}

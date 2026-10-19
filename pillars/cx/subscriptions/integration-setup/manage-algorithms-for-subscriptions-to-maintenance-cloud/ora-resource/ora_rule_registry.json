@@ -1,0 +1,307 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_ALGORITHMS_FOR_SUBSCRIPTIONS_TO_MAINTENANCE_CLOUD",
+      "task_name": "Manage Algorithms for Subscriptions to Maintenance Cloud",
+      "start_node": "MNTALG.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "MNTALG.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MNTALG.RESOLVE_LOOKUPS",
+            "invalid": "MNTALG.REPORT_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate phase, source evidence, mapping scope, target interface field shape, and approval evidence required for the requested checkpoint.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MNTALG.RESOLVE_LOOKUPS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MNTALG.CHECK_DEPENDENCIES",
+            "unresolved": "MNTALG.REPORT_ISSUES",
+            "incomplete_contract": "MNTALG.REPORT_ISSUES"
+          },
+          "prerequisites": [
+            "MNTALG.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve only documented lookup contracts for algorithm, mapping, subscription context, interface import contract, approval, and transfer validation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 30,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 31,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 32,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 33,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 34,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 35,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "MNTALG.CHECK_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "MNTALG.ENFORCE_DESIGN",
+            "blocked": "MNTALG.REPORT_ISSUES",
+            "draft_only": "MNTALG.REPORT_ISSUES"
+          },
+          "prerequisites": [
+            "MNTALG.RESOLVE_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate algorithm contract, service mapping handoff, subscription coverage context, target interface mapping, approval, and downstream transfer evidence for the current rule_phase.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MNTALG.ENFORCE_DESIGN",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "MNTALG.CHECK_EXECUTION_CONTRACT",
+            "blocked": "MNTALG.REPORT_ISSUES"
+          },
+          "prerequisites": [
+            "MNTALG.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce preventive-maintenance scope, source authority, target interface boundary, row linkage, process boundary, and approval boundary.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MNTALG.CHECK_EXECUTION_CONTRACT",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MNTALG.RETURN_RULE_RESULTS",
+            "blocked": "MNTALG.REPORT_ISSUES",
+            "unsupported": "MNTALG.RETURN_UNSUPPORTED"
+          },
+          "prerequisites": [
+            "MNTALG.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Gate exact algorithm mutation, artifact creation, approval, live execution, process validation, and unsupported-operation requests.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MNTALG.RETURN_RULE_RESULTS",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MNTALG.CHECK_EXECUTION_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return validation and design findings for the current checkpoint; this is not proof of deployed algorithm or Maintenance Cloud transfer success.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MNTALG.REPORT_ISSUES",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "reported": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Classify blockers, missing contracts, failed evidence, or unsupported requests and return the safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return blocking findings without retrying lookups, imports, mutations, or scheduled processes.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MNTALG.RETURN_UNSUPPORTED",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Refuse unsupported live operations and identify the missing contract or owning workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "incomplete",
+        "blocking_reasons": [
+          {
+            "node_id": "MNTALG.RESOLVE_LOOKUPS",
+            "file": "ora_reference_lookups.md",
+            "line": 30,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "MNTALG.RESOLVE_LOOKUPS",
+            "file": "ora_reference_lookups.md",
+            "line": 31,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "MNTALG.RESOLVE_LOOKUPS",
+            "file": "ora_reference_lookups.md",
+            "line": 32,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "MNTALG.RESOLVE_LOOKUPS",
+            "file": "ora_reference_lookups.md",
+            "line": 33,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "MNTALG.RESOLVE_LOOKUPS",
+            "file": "ora_reference_lookups.md",
+            "line": 34,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "MNTALG.RESOLVE_LOOKUPS",
+            "file": "ora_reference_lookups.md",
+            "line": 35,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          }
+        ]
+      }
+    }
+  ]
+}

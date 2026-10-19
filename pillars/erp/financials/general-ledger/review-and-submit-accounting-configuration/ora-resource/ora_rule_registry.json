@@ -1,0 +1,230 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "GL_REVIEW_AND_SUBMIT_ACCOUNTING_CONFIGURATION",
+      "task_name": "Review and Submit Accounting Configuration",
+      "start_node": "GLREV.VALIDATE",
+      "nodes": [
+        {
+          "id": "GLREV.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "GLREV.DEPENDENCIES",
+            "invalid": "GLREV.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GLREV.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "GLREV.LOOKUPS",
+            "blocked": "GLREV.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GLREV.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated input exists",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GLREV.LOOKUPS",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "GLREV.DEFAULTS",
+            "blocked": "GLREV.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GLREV.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact export and LOV resolution are required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GLREV.DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "GLREV.ENFORCE"
+          },
+          "prerequisites": [
+            "GLREV.LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact resolved values are available",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 137
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GLREV.ENFORCE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "GLREV.ERROR_POLICY",
+            "blocked": "GLREV.ERROR_POLICY"
+          },
+          "prerequisites": [
+            "GLREV.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Defaults and exact evidence are available",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GLREV.ERROR_POLICY",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "classified": "GLREV.APPROVAL_GATE"
+          },
+          "prerequisites": [
+            "GLREV.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Preflight outcomes and mutation boundaries must be classified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GLREV.APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "GLREV.APPROVED_REQUEST",
+            "missing": "GLREV.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GLREV.ERROR_POLICY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Preview-only returns missing; execute requires unchanged exact approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GLREV.APPROVED_REQUEST",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GLREV.APPROVAL_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validation is ready and exact approval is bound; the task runbook may invoke the core ESS submitter once",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GLREV.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Input, dependency, lookup, design, approval, or prior-request issues remain",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

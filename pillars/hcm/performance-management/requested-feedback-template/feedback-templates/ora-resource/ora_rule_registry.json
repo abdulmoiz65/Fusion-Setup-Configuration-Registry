@@ -1,0 +1,107 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HRA_FEEDBACK_TEMPLATES",
+      "task_name": "Feedback Templates",
+      "start_node": "FEEDBACK_TEMPLATES.VALIDATE",
+      "nodes": [
+        {
+          "id": "FEEDBACK_TEMPLATES.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "FEEDBACK_TEMPLATES.ENFORCE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A feedback template is being created or changed. Evaluate ora_rest_execution.json evidence_resolution and ora_reference_lookups.md alternatives before classifying a technical dependency as unresolved.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_TEMPLATES.ENFORCE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "FEEDBACK_TEMPLATES.DONE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FEEDBACK_TEMPLATES.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A feedback template is being created, changed, activated, inactivated, or deleted.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input validation or a documented design check fails, or applicable declared evidence alternatives are exhausted. Distinguish CUSTOMER_DECISION_REQUIRED, SKILL_LIMITATION and VALIDATION_FAILED.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_TEMPLATES.DONE",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FEEDBACK_TEMPLATES.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All applicable documented checks pass.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

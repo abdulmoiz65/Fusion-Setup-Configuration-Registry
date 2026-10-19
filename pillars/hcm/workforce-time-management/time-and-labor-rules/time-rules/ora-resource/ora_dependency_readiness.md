@@ -1,0 +1,52 @@
+# Time Rules Dependency Readiness
+
+Source: Supplied Time Rules and Time Rule Templates ASM_SETUP_CSV_METADATA.xml files, their CSV template reports, and the requested template-first conditional-creation and verification workflow.
+
+## Dependency Order
+
+| Sequence | Dependency | What Must Happen |
+|---|---|---|
+| 1 | Current Time Rules export | Refresh and read all five supported CSV objects before matching |
+| 2 | Current Time Rule Templates export | After an exact-rule reuse is ruled out and before any non-exact create or update package is prepared, reuse a current verified matching template baseline or refresh and read the parent, input, usage, and applicable translation CSV objects |
+| 3 | Verified Time Rule Template | Reuse exactly one fully compatible template, or pause for the separate Time Rule Templates task to create and verify the explicitly approved proposal |
+| 4 | ORA_HWM_RULE parent | Prepare or import the Time Rule parent only after its template is verified |
+| 5 | Complete resolved configuration | Resolve every parent, input, output, conditional-parent, and conditional-member field from the request, verified template, compatible-rule evidence, documented default, or focused user decision before generating rows |
+| 6 | ORA_HWM_RULE_INPUT and ORA_HWM_RULE_OUTPUT children | Prepare ordered child rows for their exact parent |
+| 7 | ORA_HWM_RULE_CNDL parent | Prepare conditional parent rows before conditional members |
+| 8 | ORA_HWM_RULE_CNDL_MBR children | Prepare conditional members in ProcessingOrder sequence |
+| 9 | Creation verification | Refresh the authoritative export and verify a newly created rule before reuse |
+| 10 | Time Rules task identity | Use task code ORA_HWM_MANAGE_RULES from the selected Time and Labor nested task skill; reject name-only catalog routing |
+
+## Dependency Rules
+
+| Dependency ID | Dependency | Mandatory | Applies When | Status | Value Source | Resolver | Why | User Guidance | Values to Fill |
+|---|---|---|---|---|---|---|---|---|---|
+| TIMERULE.CURRENT_EXPORT | Complete current Time Rules setup-task export | Yes | Before every behavioral lookup | Lookup | User-authorized current setup-task export | find_behaviorally_equivalent_time_rule | Matching must use authoritative current behavior | Refresh all five CSV objects together | Match category, verified RuleName, RuleType, differences |
+| TIMERULE.TEMPLATE_EXPORT | Complete current Time Rule Templates setup-task export from the target Fusion environment | Conditional | A non-exact create or update proposal lacks a current verified matching template baseline | Lookup | User-authorized current Time Rule Templates setup-task export | find_compatible_time_rule_template | Template compatibility must be established from current functional configuration, not TemplateName | Reuse the current verified matching baseline when available; otherwise refresh the parent, input, usage, and applicable translation CSV objects together | Match category, verified TemplateName, formula, inputs, outputs, behavior differences |
+| TIMERULE.VERIFIED_TEMPLATE | Fully compatible and verified Time Rule Template | Yes | Before a new Time Rule is proposed for import | Satisfied | Exact match from the current template export, or a separately approved Time Rule Templates task followed by refreshed export verification | find_compatible_time_rule_template | A Time Rule cannot be created against an absent, partially compatible, or unverified template | Reuse the displayed fully compatible template; otherwise approve the joint proposal and complete the Time Rule Templates task first | Verified TemplateName, template behavior, verification evidence |
+| TIMERULE.RESOLVED_CONFIGURATION | Complete resolved Time Rule configuration | Yes | Before generating a new or updated Time Rule package | Verify | Normalized request, verified compatible template, compatible-rule evidence when available, documented defaults, and focused user decisions | find_behaviorally_equivalent_time_rule | A complete field-level resolution prevents silent whole-rule cloning and prevents missing fields or trailing blanks | Resolve each field in precedence order: explicit user requirement; request-derived value; verified template value; common compatible-rule value; documented default; focused user decision. For exactly one derivable candidate, propose a new rule by default and retain the candidate as internal provenance; record Update existing only when the user explicitly requests it. An intent-derived RuleName or RuleType is a draft for lookup only and must be confirmed or resolved before package generation. Block unresolved fields. Generate every required row, then validate row width before ZIP creation | Field values and provenance; intended operation; unresolved business choices; row set; row-width validation evidence |
+| TIMERULE.BATCH_ORDER | Parent and child CSV processing order | Yes | When preparing a CSV package | Satisfied | Supplied ASM_SETUP_CSV_METADATA.xml | | The migration metadata defines TimeRules before RulesConditionalVO and parent paths before child paths | Preserve the metadata order | ORA_HWM_RULE, ORA_HWM_RULE_INPUT, ORA_HWM_RULE_OUTPUT, ORA_HWM_RULE_CNDL, ORA_HWM_RULE_CNDL_MBR |
+| TIMERULE.CREATE_MISSING | Approved creation and verification of a new Time Rule | Conditional | Only after the default or explicitly selected Create new operation and a fully compatible template are verified | Import with Approval | Normalized Time Rule specification, verified TemplateName, and an immutable validated FSM CSV ZIP |  | A new rule cannot be created until its prerequisite template is verified and the approved CSV import succeeds | Prepare the minimal package, validate it, approve its immutable preview, import through Data Loader, and refresh the export | Verified RuleName, RuleType, TemplateName, archive SHA-256, import result |
+| TIMERULE.FINAL_COMPLETION | Task-authorized asynchronous status monitoring and read-back verification | Yes | An approved Time Rules create, update, import, load, or documented dependent submission is accepted | Verify | Accepted request identity, approved immutable artifact, core.data-loader status route, authoritative Time Rules export, and active workflow context | monitor_and_verify_approved_async_time_rule_request | Submission acceptance alone is not final success | Immediately issue the initial task-authorized status request; while the status is In progress or not yet available, issue follow-up status requests. On documented terminal success, read back and verify supported approved Time Rule values, label only defaults as Default, and present standalone results when no one active documented parent exists. When exactly one active documented parent establishes this task as a prerequisite, retain its identity and safe resume stage, state that the prerequisite is verified and ready to resume it, and ask “Would you like to resume {parent workflow}?” Return `resume_requested` only after confirmation. | Accepted request ID, terminal status, read-back evidence, verified values, defaulted values, parent identity and safe resume stage when applicable, mismatch or failure evidence |
+| TIMERULE.FSM_IMPORT_ROUTE | FSM CSV import route | Conditional | Before any live create or update | Satisfied | `core.data-loader`, an immutable validated Time Rules CSV ZIP, and explicit approval |  | Time Rules setup data is imported through the mandatory Data Loader workflow; a direct REST create endpoint is not required | Do not upload or initiate until the exact previewed archive is approved | archive path, SHA-256, task-validation envelope, import result |
+| TIMERULE.TASK_IDENTITY | Selected Time Rules setup task | Yes | Before any Time Rules export, import, or execution | Satisfied only when TaskCode is ORA_HWM_MANAGE_RULES | Selected nested Time Rules SKILL.md | | The Time and Labor task identity is scoped by the generated nested task skill; a same-name catalog row is not sufficient | Use ORA_HWM_MANAGE_RULES and stop if a different code was selected | TaskCode=ORA_HWM_MANAGE_RULES; TaskName=Time Rules |
+
+## Dependency Classification
+
+| Result Category | When Used | Can Run Lookup/Create? |
+|---|---|---|
+| Exact match | Exactly one verified behaviorally identical rule exists | Lookup complete; reuse allowed |
+| Derivable family match | Exactly one verified same-family predecessor differs only by the requested name or explicitly supplied requirement values | Use it internally to propose business values, default to Create new, verify its template, then resolve fields and prepare the approved immutable archive. Record an update only when explicitly requested. |
+| Compatible match | Candidate differences fall within approved compatibility tolerances but the candidate is not an exact same-family predecessor | Lookup complete; use candidates as evidence and request a decision only for an unresolved meaningful business input or output |
+| Multiple exact matches | More than one verified identical candidate exists | Lookup complete; automatic selection blocked |
+| No match | No exact, derivable-family, or approved compatible rule exists | Conditional creation may be prepared and validated; approval is required only immediately before Fusion import |
+| Lookup failure | The authoritative export cannot be read or normalized | No lookup result or creation is allowed |
+| Blocked | CSV package, approval preview, import approval, or verification is missing | No live creation or dependent use is allowed |
+| Final completion monitoring | An approved asynchronous request is In progress or not yet available | Continue task-authorized status requests until a documented terminal status; do not request separate user status authorization or submit again |
+| Parent context required | Parent contexts are multiple, conflicting, stale, incomplete, or undocumented | Stop and ask the user to identify the intended workflow; do not infer a handoff |
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| TIMERULE.CREATE_DEPENDENCY | step | 8 | resolve_dependency | ready->TIMERULE.RULE_COMPLETE_SUMMARY;blocked->TIMERULE.DEPENDENCY_ERROR | TIMERULE.FIND_TEMPLATE | stop | A non-exact Time Rule proposal has an explicit operation when needed and exactly one fully compatible template is verified |

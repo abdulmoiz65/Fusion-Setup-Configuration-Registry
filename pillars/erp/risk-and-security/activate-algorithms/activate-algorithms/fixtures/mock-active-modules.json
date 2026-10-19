@@ -1,0 +1,9 @@
+{
+  "source": "MOCK_ACTIVE_MODULES",
+  "confirmed": true,
+  "environment": "DEV3",
+  "active_process_level_twos": [
+    "Order to Cash",
+    "Record to Report"
+  ]
+}

@@ -1,0 +1,233 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_PAYROLL_FLOW_PATTERNS",
+      "task_name": "Payroll Flow Patterns",
+      "start_node": "PFP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "PFP.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "PFP.RESOLVE_REFERENCES",
+            "missing": "PFP.HANDLE_ERROR",
+            "invalid": "PFP.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Payroll Flow Patterns request before lookup, dependency resolution, or artifact preparation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 112
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PFP.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PFP.CHECK_DEPENDENCIES",
+            "not_found": "PFP.CHECK_DEPENDENCIES",
+            "blocked": "PFP.HANDLE_ERROR",
+            "failure": "PFP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PFP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve current ProcessFlows metadata and every read-only pattern lookup applicable to the requested operation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 130
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PFP.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PFP.APPLY_DEFAULTS",
+            "blocked": "PFP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PFP.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After applicable read-only lookups and ProcessFlows metadata resolution",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PFP.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "PFP.ENFORCE_DESIGN",
+            "not_applicable": "PFP.ENFORCE_DESIGN",
+            "blocked": "PFP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PFP.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply only documented defaults after required inputs and dependencies are resolved",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PFP.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "PFP.EXECUTION_GATE",
+            "blocked": "PFP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PFP.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a ProcessFlows Data Loader preview or import artifact is treated as ready",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PFP.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PFP.READY_FOR_DATA_LOADER",
+            "blocked": "PFP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PFP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, reference resolution, dependencies, defaults, and design enforcement; this gate hands an approved preview candidate to core.data-loader and does not itself perform a Fusion write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PFP.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "PFP.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, dependency, defaulting, design, approval, process, or verification failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PFP.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return all blocking items and one safe next action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PFP.READY_FOR_DATA_LOADER",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PFP.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The task-local requirements are complete and the request is ready to enter the separate core.data-loader preview and approval workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

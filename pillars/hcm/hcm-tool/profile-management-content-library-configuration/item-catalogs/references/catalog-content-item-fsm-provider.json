@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "task_code": "ORA_MANAGE_PROFILE_ITEM_CATALOG",
+  "task_name": "Item Catalogs",
+  "fusion_release": "26C",
+  "source_product_releases": ["11.13.26.10.0"],
+  "provider": "oracle.apps.hcm.profiles.contentLibrary.itemCatalogMigrationService.ItemCatalogMigrationService",
+  "parent_catalog_strategy": "existing-catalog-anchor",
+  "supported_child_scope": {
+    "content_item": "one create-only row per package",
+    "rating_description": "blocked",
+    "translations": "blocked",
+    "relationships": "blocked",
+    "dynamic_fields": "blocked",
+    "updates_deletes_end_dates": "blocked"
+  },
+  "providers": [
+    {"context_name": "BEHAVIOR", "lifecycle": "verified", "allowed_supplier_codes": ["C"]},
+    {"context_name": "CERTIFICATION", "lifecycle": "verified", "allowed_supplier_codes": ["C"]},
+    {"context_name": "COMPETENCY", "lifecycle": "verified", "allowed_supplier_codes": ["C"]},
+    {"context_name": "DEGREE", "lifecycle": "verified", "allowed_supplier_codes": ["C"]},
+    {"context_name": "EDUCATION_LEVEL", "lifecycle": "verified", "allowed_supplier_codes": ["C"]},
+    {"context_name": "HONOR", "lifecycle": "verified", "allowed_supplier_codes": ["C"]},
+    {"context_name": "LANGUAGE", "lifecycle": "verified", "allowed_supplier_codes": ["C"]},
+    {"context_name": "MEMBERSHIP", "lifecycle": "verified", "allowed_supplier_codes": ["C"]},
+    {"context_name": "PROJECT", "lifecycle": "verified", "allowed_supplier_codes": ["C"]}
+  ],
+  "source_evidence": [
+    "The Item Catalog SKILL.md and parent fsm-import-contract.md explicitly document this same provider/member/header/key/grouping contract against product release 11.13.26.10.0. Accept that exact product release as a provider binding without converting it to quarterly release 26C or authorizing a 26C seed overlay.",
+    "ItemCatalogMigrationAMImpl imports the root logical graph, including base Content Items, before its root commit; translation documents are processed and committed later. This does not establish a separate parent-only commit before base children.",
+    "ContentItemVOImpl resolves ContentValueSetId from its parent logical row, so a child package requires an exact parent-catalog anchor row.",
+    "A controlled 26C non-production Item Catalog export supplies the CSV headers, UserKey-compatible parent references, and portable field shapes; exact run identifiers remain in project evidence.",
+    "All nine registered contexts passed a controlled 26C non-production FSM create, successful Data Loader and ProcessLog checks, exact child and full Item Catalog export readback, parent no-drift comparison, and duplicate-create lock; immutable evidence paths and hashes remain in the project promotion record."
+  ]
+}

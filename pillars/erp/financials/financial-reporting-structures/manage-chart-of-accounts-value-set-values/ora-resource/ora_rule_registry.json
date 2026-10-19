@@ -1,0 +1,159 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "GL_MANAGE_CHART_OF_ACCOUNTS_VALUE_SET_VALUES",
+      "task_name": "Manage Chart of Accounts Value Set Values",
+      "start_node": "MVS.VALIDATE_BASE",
+      "nodes": [
+        {
+          "id": "MVS.VALIDATE_BASE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MVS.RESOLVE_VALUE_SET",
+            "invalid": "MVS.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Create/update candidate supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MVS.RESOLVE_VALUE_SET",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MVS.CLASSIFY",
+            "none": "MVS.FAILED",
+            "ambiguous": "MVS.FAILED",
+            "invalid_length": "MVS.FAILED"
+          },
+          "prerequisites": [
+            "MVS.VALIDATE_BASE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create/update candidate",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MVS.CLASSIFY",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "classified": "MVS.VALIDATE_CLASSIFIED",
+            "invalid": "MVS.FAILED"
+          },
+          "prerequisites": [
+            "MVS.RESOLVE_VALUE_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolved create/update candidate",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MVS.VALIDATE_CLASSIFIED",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MVS.READY_FOR_DATA_LOADER",
+            "invalid": "MVS.FAILED"
+          },
+          "prerequisites": [
+            "MVS.CLASSIFY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Segment-usage classification completed",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MVS.READY_FOR_DATA_LOADER",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MVS.VALIDATE_CLASSIFIED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated candidate is ready for package preparation and Data Loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MVS.FAILED",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any blocking validation, lookup, package, Data Loader handoff, or returned terminal failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,417 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_CAPTCHA_PROVIDER_CONFIGURATION",
+      "task_name": "Configure Candidate Experience CAPTCHA Provider",
+      "start_node": "CAPTCHA.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "CAPTCHA.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CAPTCHA.CHECK_DEPENDENCIES",
+            "export_requested": "CAPTCHA.GATE_EXPORT",
+            "invalid": "CAPTCHA.HANDLE_INPUT_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A task-level export, non-secret Draft preview, or controlled multi-provider import is requested. A potential but unobserved export value is not invalid input.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.GATE_EXPORT",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "export_authorized": "CAPTCHA.COMPLETE_EXPORT_HANDOFF"
+          },
+          "prerequisites": [
+            "CAPTCHA.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An explicit task-level export request passed input validation. Hypothetical protected-content risk is not a gate failure.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.COMPLETE_EXPORT_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAPTCHA.GATE_EXPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return export_ready to the outer task workflow. The direct request authorizes the read-only export without a second confirmation or approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CAPTCHA.APPLY_DEFAULTS",
+            "not_ready": "CAPTCHA.HANDLE_DEPENDENCY_ERROR"
+          },
+          "prerequisites": [
+            "CAPTCHA.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A non-secret Draft preview or controlled multi-provider import is requested.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "CAPTCHA.ENFORCE_DESIGN"
+          },
+          "prerequisites": [
+            "CAPTCHA.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every requested record and its dependencies are ready.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "draft_preview": "CAPTCHA.DONE_DRAFT_PREVIEW",
+            "import_requested": "CAPTCHA.GATE_IMPORT",
+            "post_import_reconciliation": "CAPTCHA.RECONCILE_EXPORT",
+            "blocked": "CAPTCHA.HANDLE_DESIGN_BLOCKER"
+          },
+          "prerequisites": [
+            "CAPTCHA.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A non-secret Draft preview, controlled multi-provider import, or post-import reconciliation is requested.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 114
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.GATE_IMPORT",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready_for_import_handoff": "CAPTCHA.COMPLETE_IMPORT_HANDOFF",
+            "blocked_for_import_handoff": "CAPTCHA.IMPORT_BLOCKED"
+          },
+          "prerequisites": [
+            "CAPTCHA.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A controlled multi-provider import passed task-level preflight. This task does not request approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.RECONCILE_EXPORT",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "reconciled": "CAPTCHA.DONE_RECONCILED",
+            "mismatch": "CAPTCHA.HANDLE_RECONCILIATION_ERROR"
+          },
+          "prerequisites": [
+            "CAPTCHA.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A fresh post-import task export is supplied to reconcile every requested provider record.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.HANDLE_INPUT_ERROR",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CAPTCHA.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CAPTCHA.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation is invalid.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.HANDLE_DEPENDENCY_ERROR",
+          "node_type": "step",
+          "sequence": 71,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CAPTCHA.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CAPTCHA.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A dependency is unavailable or incomplete.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.HANDLE_DESIGN_BLOCKER",
+          "node_type": "step",
+          "sequence": 72,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CAPTCHA.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CAPTCHA.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A design gate blocks progress.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.HANDLE_RECONCILIATION_ERROR",
+          "node_type": "step",
+          "sequence": 73,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CAPTCHA.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CAPTCHA.RECONCILE_EXPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A post-import reconciliation does not match every requested provider record's requested Code and Name, Provider ID, or Draft status.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.DONE_DRAFT_PREVIEW",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAPTCHA.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A non-secret Draft preview is compliant.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.IMPORT_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 81,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAPTCHA.GATE_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Import preflight is incomplete.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.COMPLETE_IMPORT_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 82,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAPTCHA.GATE_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Import preflight is verified; hand off the one immutable multi-provider package only to core.data-loader, which owns final execution approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.DONE_RECONCILED",
+          "node_type": "terminal",
+          "sequence": 83,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAPTCHA.RECONCILE_EXPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The fresh post-import export reconciles the requested Code and Name, Provider ID, and Draft status for every requested provider record.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAPTCHA.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "An issue has been handled.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

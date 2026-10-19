@@ -1,0 +1,232 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_EMP_CAMP_SMS_CONFIG",
+      "task_name": "Manage SMS Configuration",
+      "start_node": "SMS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "SMS.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SMS.DEFAULT_PROVIDER_ID",
+            "invalid": "SMS.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A parent provider-account CSV row is reviewed",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SMS.DEFAULT_PROVIDER_ID",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "SMS.CHECK_DEPENDENCIES",
+            "unchanged": "SMS.CHECK_DEPENDENCIES"
+          },
+          "prerequisites": [
+            "SMS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated request continues; default blank ProviderCode to TWILIO, blank MessageMaxLength to 1600, and blank CommProviderId consistently with the resulting provider; otherwise pass through explicit values unchanged",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SMS.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "SMS.ENFORCE_SINGLE_ACTIVE",
+            "blocked": "SMS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "SMS.DEFAULT_PROVIDER_ID"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated and defaulted provider request is evaluated against only the dependencies applicable to its requested operation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SMS.ENFORCE_SINGLE_ACTIVE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "SMS.EXECUTION_GATE",
+            "disclosed": "SMS.EXECUTION_GATE",
+            "blocked": "SMS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "SMS.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The import active-status boundary and the post-creation exactly-one-active handoff are reviewed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SMS.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "SMS.EVALUATE_RESULT",
+            "blocked": "SMS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "SMS.ENFORCE_SINGLE_ACTIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The core Data Loader workflow evaluates the exact target environment and immutable import artifact",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SMS.EVALUATE_RESULT",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "successful": "SMS.RETURN_SUCCESS",
+            "failed_or_uncertain": "SMS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "SMS.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Data Loader provider-creation process reaches a terminal or uncertain status",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SMS.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "SMS.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input, dependency, provider-policy, approval, process-failure, timeout, or uncertain-result handling is required",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SMS.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SMS.EVALUATE_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Provider creation succeeds; when activation was requested, return the exact Manage SMS Configuration activation handoff and exactly-one-active requirement",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SMS.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SMS.HANDLE_ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A blocker or failed, timed-out, or uncertain import prevents successful completion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

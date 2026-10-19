@@ -1,0 +1,133 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_CMP_MANAGE_SALARY_RANGE_DIFFERENTIALS",
+      "task_name": "Salary Range Differentials",
+      "start_node": "SRD.RESOLVE_BUSINESS_OBJECT",
+      "nodes": [
+        {
+          "id": "SRD.RESOLVE_BUSINESS_OBJECT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SRD.READ_SCHEMA",
+            "not_found": "SRD.HANDLE_ISSUE",
+            "lookup_failed": "SRD.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before handling a Salary Range Differentials request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRD.READ_SCHEMA",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "schema_ready": "SRD.VALIDATE_INPUT",
+            "schema_unavailable": "SRD.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "SRD.RESOLVE_BUSINESS_OBJECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before field-level validation, preview, or import preparation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRD.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SRD.COMPLETE",
+            "invalid": "SRD.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "SRD.READ_SCHEMA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After the registered business object and current schema resolve",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRD.HANDLE_ISSUE",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A lookup or validation failure is classified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRD.COMPLETE",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SRD.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All applicable metadata-backed validation succeeds",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

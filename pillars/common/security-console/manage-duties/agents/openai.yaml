@@ -1,0 +1,4 @@
+interface:
+  display_name: "Manage Duties"
+  short_description: "Prepare duty changes, FSM templates, exports and imports"
+  default_prompt: "Use $manage-duties to create, update, delete or redesign custom duties, help prepare FSM input, or export/import setup data through Data Loader; deletion requires a supported import contract."

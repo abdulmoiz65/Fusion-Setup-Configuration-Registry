@@ -1,0 +1,430 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This API was built based on what is used by the OCI. It contains a small subset of the API provided by OCI.",
+        "title": "OCI",
+        "version": 3
+    },
+    "host": "<Host.OCIDomain.Name>",
+    "basePath": "/admin/v1",
+    "schemes": [
+        "https"
+    ],
+    "paths": {
+        "/Users": {
+            "get": {
+                "operationId": "users",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/attributesParam"
+                    },
+                    {
+                        "$ref": "#/parameters/startIndexParam"
+                    },
+                    {
+                        "$ref": "#/parameters/countParam"
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Typical success response",
+                        "schema": {
+                            "$ref": "#/definitions/UserList"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "access_token": [
+
+                        ]
+                    }
+                ],
+                "description": "Gets information about users.",
+                "summary": "Get Users Information"
+            }
+        },
+        "/Groups": {
+            "get": {
+                "operationId": "groups",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/attributesParam"
+                    },
+                    {
+                        "$ref": "#/parameters/startIndexParam"
+                    },
+                    {
+                        "$ref": "#/parameters/countParam"
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Typical success response",
+                        "schema": {
+                            "$ref": "#/definitions/GroupList"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "access_token": [
+
+                        ]
+                    }
+                ],
+                "description": "Gets information about groups.",
+                "summary": "Get Group List Information"
+            }
+        },
+        "/AppRoles": {
+            "get": {
+                "operationId": "approles",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/attributesParam"
+                    },
+                    {
+                        "$ref": "#/parameters/startIndexParam"
+                    },
+                    {
+                        "$ref": "#/parameters/countParam"
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Typical success response",
+                        "schema": {
+                            "$ref": "#/definitions/AppRoleList"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "access_token": [
+
+                        ]
+                    }
+                ],
+                "description": "Gets information about application roles.",
+                "summary": "Get Application Role List Information"
+            }
+        }
+    },
+    "definitions": {
+        "Email": {
+            "properties": {
+                "secondary": {
+                    "type": "boolean",
+                    "title": "Is secondary email"
+                },
+                "verified": {
+                    "type": "boolean",
+                    "title": "Email verified"
+                },
+                "primary": {
+                    "type": "boolean",
+                    "title": "Is primary email"
+                },
+                "type": {
+                    "type": "string",
+                    "title": "Email type"
+                },
+                "value": {
+                    "type": "string",
+                    "title": "Email"
+                }
+            },
+            "title": "User profile",
+            "type": "object"
+        },
+        "AppRoleShort": {
+            "properties": {
+                "appName": {
+                     "type": "string",
+                     "title": "Application name"
+                },
+                "appId": {
+                     "type": "string",
+                     "title": "Application ID"
+                },
+                "display": {
+                     "type": "string",
+                     "title": "Application role name"
+                },
+                "adminRole": {
+                     "type": "boolean",
+                     "title": "Is administrator role"
+                },
+                "value": {
+                     "type": "string",
+                     "title": "Application Role ID"
+                }
+            },
+            "title": "Application Role Summarized",
+            "type": "object"
+        },
+        "AppRole": {
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "title": "Application Role ID"
+                },
+                "displayName": {
+                    "type": "string",
+                    "title": "Display name"
+                },
+                "description": {
+                     "type": "string",
+                     "title": "Application Role description"
+                },
+                "ocid": {
+                     "type": "string",
+                     "title": "Application Role OCID"
+                },
+                "app": {
+                    "title": "Application Information for the AppRole",
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Application Name"
+                        },
+                        "value": {
+                            "type": "string",
+                            "title": "Application ID"
+                        },
+                        "display": {
+                            "type": "string",
+                            "title": "Application Display Name"
+                        }
+                    }
+                },
+                "adminRole": {
+                     "type": "boolean",
+                     "title": "Is administrator role"
+                }
+            },
+            "title": "Application Role",
+            "type": "object"
+        },
+        "User": {
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "title": "User Full Name",
+                    "type": "object",
+                    "properties": {
+                        "givenName": {
+                            "type": "string",
+                            "title": "Given Name"
+                        },
+                        "formatted": {
+                            "type": "string",
+                            "title": "Formatted Name"
+                        },
+                        "familyName": {
+                            "type": "string",
+                            "title": "Family Name"
+                        }
+                    }
+                },
+                "userName": {
+                    "type": "string",
+                    "title": "User name"
+                },
+                "emails": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Email"
+                    }
+                },
+                "displayName": {
+                    "type": "string",
+                    "title": "Display name"
+
+                },
+                "active": {
+                    "type": "boolean",
+                    "title": "Active"
+                },
+                "urn:ietf:params:scim:schemas:oracle:idcs:extension:user:User": {
+                    "type": "object",
+                    "properties": {
+                        "appRoles": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/AppRoleShort"
+                            }
+                        }
+                    }
+                }
+            },
+            "title": "User profile",
+            "type": "object"
+        },
+        "Member": {
+            "properties": {
+                "display": {
+                    "type": "string",
+                    "title": "Member display name"
+                },
+                "name": {
+                    "type": "string",
+                    "title": "Member name"
+                },
+                "type": {
+                    "type": "string",
+                    "title": "Member type"
+                },
+                "value": {
+                    "type": "string",
+                    "title": "Member profile ID"
+                }
+            },
+            "title": "Member information",
+            "type": "object"
+        },
+        "Group": {
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "displayName": {
+                    "type": "string",
+                    "title": "Group name"
+                },
+                "members": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Member"
+                    }
+                },
+                "urn:ietf:params:scim:schemas:oracle:idcs:extension:group:Group": {
+                    "title": "Group Schema extension",
+                    "type": "object",
+                    "properties": {
+                        "description": {
+                            "type": "string",
+                            "title": "Group description"
+                        }
+                    }
+                }
+            },
+            "title": "User group",
+            "type": "object"
+        },
+        "UserList": {
+            "description": "A Collection of Users",
+            "type": "object",
+            "properties": {
+                "totalResults": {
+                    "type": "number"
+                },
+                "startIndex": {
+                    "type": "number"
+                },
+                "itemsPerPage": {
+                    "type": "number"
+                },
+                "Resources": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/User"
+                    }
+                }
+            },
+            "title": "OCI User List Information"
+        },
+        "GroupList": {
+            "description": "A Collection of Groups",
+            "type": "object",
+            "properties": {
+                "totalResults": {
+                    "type": "number"
+                },
+                "startIndex": {
+                    "type": "number"
+                },
+                "itemsPerPage": {
+                    "type": "number"
+                },
+                "Resources": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Group"
+                    }
+                }
+            },
+            "title": "OCI Group List Information"
+        },
+        "AppRoleList": {
+            "description": "A Collection of Application Role",
+            "type": "object",
+            "properties": {
+                "totalResults": {
+                    "type": "number"
+                },
+                "startIndex": {
+                    "type": "number"
+                },
+                "itemsPerPage": {
+                    "type": "number"
+                },
+                "Resources": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/AppRole"
+                    }
+                }
+            },
+            "title": "OCI Application Role List Information"
+        }
+    },
+    "securityDefinitions": {
+        "access_token": {
+            "in": "header",
+            "name": "Authorization",
+            "type": "Bearer"
+        },
+        "oauth": {
+            "flow": "client_credentials",
+            "scopes": {
+                "urn:opc:idm:__myscopes__": "Get user and group info"
+            },
+            "tokenUrl": "https://<Host.OCIDomain.Name>/oauth2/v1/token",
+            "type": "oauth2"
+        }
+    },
+    "parameters": {
+        "attributesParam": {
+            "description": "A comma-delimited string that specifies the names of resource attributes that should be returned in the response.",
+            "in": "query",
+            "name": "attributes",
+            "type": "string"
+        },
+        "startIndexParam": {
+            "description": "An integer that indicates the 1-based index of the first query result.",
+            "in": "query",
+            "name": "startIndex",
+            "type": "string"
+        },
+        "countParam": {
+            "description": "An integer that indicates the desired maximum number of query results per page.",
+            "in": "query",
+            "name": "count",
+            "type": "string"
+        }
+    }
+}

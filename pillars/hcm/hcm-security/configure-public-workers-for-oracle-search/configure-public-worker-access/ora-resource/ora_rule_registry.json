@@ -1,0 +1,233 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PER_CONFIGURE_PUBLIC_WORKER_ACCESS",
+      "task_name": "Configure Public Worker Access",
+      "start_node": "PWA.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "PWA.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PWA.VERIFY_CONFIGURATION_NAME",
+            "invalid": "PWA.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Data Loader create, update, or delete package is prepared",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PWA.VERIFY_CONFIGURATION_NAME",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "create_available": "PWA.CHECK_DEPENDENCIES",
+            "existing_found": "PWA.CHECK_DEPENDENCIES",
+            "duplicate_or_ambiguous": "PWA.BLOCKED",
+            "rename_unsupported": "PWA.BLOCKED"
+          },
+          "prerequisites": [
+            "PWA.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A PWA configuration is created, updated, or deleted",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 123
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PWA.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "PWA.RESOLVE_REFERENCES",
+            "blocked": "PWA.BLOCKED"
+          },
+          "prerequisites": [
+            "PWA.VERIFY_CONFIGURATION_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Configuration Name availability and input validation passed for a Data Loader package",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PWA.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PWA.APPLY_DEFAULTS",
+            "unresolved": "PWA.BLOCKED"
+          },
+          "prerequisites": [
+            "PWA.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Required reference values are needed for the Data Loader package",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 124
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PWA.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "PWA.ENFORCE_DESIGN"
+          },
+          "prerequisites": [
+            "PWA.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolved package values require documented defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PWA.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PWA.DATALOADER_GATE",
+            "blocked": "PWA.BLOCKED"
+          },
+          "prerequisites": [
+            "PWA.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Data Loader package values and documented defaults are available",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PWA.DATALOADER_GATE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PWA.READY_FOR_DATALOADER",
+            "blocked": "PWA.BLOCKED"
+          },
+          "prerequisites": [
+            "PWA.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The package passes nested-FSM structure validation and has a complete exact preview, explicit approval, and import-status plan; expanded configuration verification is optional after successful import status",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PWA.READY_FOR_DATALOADER",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PWA.DATALOADER_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The task-local Data Loader package is validated and ready for its separately authorized submission workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PWA.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A required input, dependency, lookup, design rule, Data Loader gate, or delete prerequisite is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

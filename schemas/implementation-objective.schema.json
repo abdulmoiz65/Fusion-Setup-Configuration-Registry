@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fdos.oracle.example/schemas/implementation-objective.schema.json",
+  "title": "Implementation Objective",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["objective", "customer", "pillars", "implementation_phase"],
+  "properties": {
+    "objective": {
+      "type": "string",
+      "minLength": 1
+    },
+    "customer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pillars": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["ERP", "HCM", "SCM", "CX"]
+      },
+      "minItems": 1
+    },
+    "offerings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "countries": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "industry": {
+      "type": "string"
+    },
+    "implementation_phase": {
+      "type": "string",
+      "enum": ["discovery", "design", "build", "test", "deploy", "operate"]
+    }
+  }
+}

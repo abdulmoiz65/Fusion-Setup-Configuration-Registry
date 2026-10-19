@@ -1,0 +1,183 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_FFS_TS_ACTIVITY_TYPES",
+      "task_name": "Activity Types",
+      "start_node": "AT.VALIDATE",
+      "nodes": [
+        {
+          "id": "AT.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "AT.LOOKUP_CURRENT_STATE",
+            "invalid": "AT.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before any current-state check or REST preview for Activity Types",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.LOOKUP_CURRENT_STATE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "AT.DEPENDENCIES",
+            "unresolved": "AT.RETURN_ISSUES",
+            "failure": "AT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "AT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before dependency readiness and any REST preview for Activity Types",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "AT.DESIGN",
+            "blocked": "AT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "AT.LOOKUP_CURRENT_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After current-state checks and before the design gate",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.DESIGN",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "AT.PREVIEW_GATE",
+            "fail": "AT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "AT.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before any REST preview for Activity Types",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.PREVIEW_GATE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "AT.ALL_GOOD",
+            "blocked": "AT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "AT.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before approval or any live Activity Types PUT",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.ALL_GOOD",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AT.PREVIEW_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "An exact preview is recorded and approval is current; live execution remains outside this resource-authoring workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Validation, lookup, dependency, design, preview, approval, or live execution is blocked or fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

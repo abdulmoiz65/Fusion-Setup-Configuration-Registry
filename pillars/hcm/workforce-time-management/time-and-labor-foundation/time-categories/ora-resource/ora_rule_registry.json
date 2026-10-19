@@ -1,0 +1,501 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HWM_MANAGE_TIME_CATEGORIES",
+      "task_name": "Time Categories",
+      "start_node": "TC.INTAKE",
+      "nodes": [
+        {
+          "id": "TC.INTAKE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "category_required": "TC.SEARCH_EXISTING",
+            "not_required": "TC.RETURN_NOT_REQUIRED",
+            "clarification_required": "TC.RETURN_CLARIFICATION"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A plain-language Time and Labor requirement is supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.SEARCH_EXISTING",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "exact_match": "TC.REUSE_EXISTING",
+            "close_match": "TC.SELECT_EXISTING",
+            "no_match": "TC.VALIDATE",
+            "lookup_failure": "TC.ERROR"
+          },
+          "prerequisites": [
+            "TC.INTAKE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A derived requirement needs a Time Category.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 173
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.SELECT_EXISTING",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reuse_selected": "TC.REUSE_EXISTING",
+            "create_confirmed": "TC.VALIDATE",
+            "selection_required": "TC.RETURN_SELECTION",
+            "blocked": "TC.ERROR"
+          },
+          "prerequisites": [
+            "TC.SEARCH_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "More than one plausible existing Time Category is returned.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 174
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TC.DEPENDENCIES",
+            "missing": "TC.ERROR",
+            "invalid": "TC.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Time Categories create or edit request is prepared",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TC.VERIFY_FSM",
+            "not_applicable": "TC.VERIFY_FSM",
+            "needs_input": "TC.ERROR",
+            "unresolved": "TC.ERROR"
+          },
+          "prerequisites": [
+            "TC.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation has passed",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.VERIFY_FSM",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TC.RESOLVE_TIME_ATTRIBUTE",
+            "blocked": "TC.ERROR",
+            "lookup_failure": "TC.ERROR"
+          },
+          "prerequisites": [
+            "TC.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create or edit package requires fresh FSM export verification",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 171
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.RESOLVE_TIME_ATTRIBUTE",
+          "node_type": "decision",
+          "sequence": 35,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TC.DEFAULTS",
+            "not_applicable": "TC.DEFAULTS",
+            "blocked": "TC.ERROR",
+            "lookup_failure": "TC.ERROR"
+          },
+          "prerequisites": [
+            "TC.VERIFY_FSM"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A condition row uses a Time Attribute",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 172
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "TC.ENFORCE",
+            "preserved": "TC.ENFORCE",
+            "not_applicable": "TC.ENFORCE",
+            "blocked": "TC.ERROR"
+          },
+          "prerequisites": [
+            "TC.RESOLVE_TIME_ATTRIBUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependency, package-verification, and Time Attribute resolution gates have passed",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.ENFORCE",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "TC.ROUTE",
+            "not_applicable": "TC.ROUTE",
+            "blocked": "TC.ERROR"
+          },
+          "prerequisites": [
+            "TC.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation, lookup resolution, defaults, preservation, and Complete Summary generation have completed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.ROUTE",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TC.LOADER_READY",
+            "blocked": "TC.ERROR",
+            "unsupported": "TC.ERROR"
+          },
+          "prerequisites": [
+            "TC.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid business-only Complete Summary is present and create or edit has passed the task-local gates; provider approval ownership remains unchanged",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.ERROR",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "TC.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, dependency, lookup, package, approval, or import gate is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.RETURN_NOT_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 76,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TC.INTAKE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The requirement does not require a Time Category",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.RETURN_CLARIFICATION",
+          "node_type": "terminal",
+          "sequence": 77,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TC.INTAKE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The requirement needs business clarification before a Time Category decision",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.RETURN_SELECTION",
+          "node_type": "terminal",
+          "sequence": 78,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TC.SELECT_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The user must choose between plausible existing Time Categories",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.REUSE_EXISTING",
+          "node_type": "terminal",
+          "sequence": 79,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TC.SEARCH_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A suitable existing Time Category is selected or exactly matched",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue has been disclosed with one safe next action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TC.ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Time Categories is ready for the selected Core Data Loader FSM preview workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.FINAL_COMPLETION",
+          "node_type": "step",
+          "sequence": 95,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "TC.FINAL_COMPLETION_SUCCESS",
+            "failed": "TC.FINAL_COMPLETION_ERROR",
+            "timed_out": "TC.FINAL_COMPLETION_ERROR",
+            "partial": "TC.FINAL_COMPLETION_ERROR",
+            "uncertain": "TC.FINAL_COMPLETION_ERROR",
+            "mismatched": "TC.FINAL_COMPLETION_ERROR"
+          },
+          "prerequisites": [
+            "TC.LOADER_READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An approved asynchronous Time Categories submission was accepted.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 175
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.FINAL_COMPLETION_ERROR",
+          "node_type": "terminal",
+          "sequence": 96,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Task-authorized monitoring reached failure, timeout, partial success, uncertainty, or category read-back mismatch.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TC.FINAL_COMPLETION_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 97,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TC.FINAL_COMPLETION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Terminal success status and authoritative category read-back verification passed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

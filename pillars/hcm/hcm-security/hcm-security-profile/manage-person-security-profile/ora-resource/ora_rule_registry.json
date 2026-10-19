@@ -1,0 +1,261 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_PERSON_AND_ASSIGNMENT_SECURITY_PROFILE",
+      "task_name": "Manage Person Security Profile",
+      "start_node": "PSP.VALIDATE",
+      "nodes": [
+        {
+          "id": "PSP.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PSP.DEFAULT_ASSIGNMENTS",
+            "invalid": "PSP.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A person security profile configuration or CSV import request is supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSP.DEFAULT_ASSIGNMENTS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "PSP.LOOKUP_PROFILE_REFERENCES",
+            "not_needed": "PSP.LOOKUP_PROFILE_REFERENCES"
+          },
+          "prerequisites": [
+            "PSP.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Valid person security profile configuration is available",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSP.LOOKUP_PROFILE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PSP.LOOKUP_SIMILAR_WORKSTRUCTURE_PROFILES",
+            "not_applicable": "PSP.LOOKUP_SIMILAR_WORKSTRUCTURE_PROFILES",
+            "unavailable": "PSP.ERROR"
+          },
+          "prerequisites": [
+            "PSP.DEFAULT_ASSIGNMENTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new or updated Person Security Profile supplies a Name, profile-reference, or lookup-backed value.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSP.LOOKUP_SIMILAR_WORKSTRUCTURE_PROFILES",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matches": "PSP.LOOKUP_AOR_SCOPE_OPTIONS",
+            "no_matches": "PSP.ENFORCE",
+            "not_applicable": "PSP.ENFORCE",
+            "unavailable": "PSP.ERROR"
+          },
+          "prerequisites": [
+            "PSP.LOOKUP_PROFILE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new Person Security Profile is being validated for preview or CSV package generation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSP.LOOKUP_AOR_SCOPE_OPTIONS",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PSP.ENFORCE",
+            "no_exact_match": "PSP.ENFORCE",
+            "unavailable": "PSP.ERROR"
+          },
+          "prerequisites": [
+            "PSP.LOOKUP_SIMILAR_WORKSTRUCTURE_PROFILES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The similar-profile lookup returned one or more enabled exact matches.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSP.ENFORCE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "PSP.RESOLVE_CSV_LAYOUT",
+            "blocked": "PSP.ERROR"
+          },
+          "prerequisites": [
+            "PSP.DEFAULT_ASSIGNMENTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid person security profile configuration is being prepared for preview or CSV package generation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSP.RESOLVE_CSV_LAYOUT",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PSP.CSV_READINESS",
+            "unresolved": "PSP.ERROR"
+          },
+          "prerequisites": [
+            "PSP.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Person Security Profile FSM CSV package is generated from a current target-environment template-only export",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSP.CSV_READINESS",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PSP.READY",
+            "blocked": "PSP.ERROR"
+          },
+          "prerequisites": [
+            "PSP.RESOLVE_CSV_LAYOUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported CSV import package is being generated or imported",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSP.ERROR",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, lookup, dependency, or design-enforcement rule is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PSP.READY",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PSP.CSV_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Person security profile validation, CSV layout readiness, and design enforcement are compliant",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_REDWOOD_MANUFACTURING_WORK_AREAS",
+      "task_name": "Manufacturing Work Areas",
+      "start_node": "WA.VALIDATE",
+      "nodes": [
+        {
+          "id": "WA.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "WA.REFERENCE_LOOKUPS",
+            "failure": "WA.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manufacturing Work Areas request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WA.REFERENCE_LOOKUPS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {"resolved": "WA.DEPENDENCIES", "blocked": "WA.FAILED", "failure": "WA.FAILED"},
+          "prerequisites": ["WA.VALIDATE"],
+          "on_failure": "stop",
+          "applies_when": "Resolve organization and work-area identity before source preparation.",
+          "source": {"file": "ora_reference_lookups.md", "anchor": "task-nodes", "line": 13},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "WA.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "WA.DESIGN",
+            "failure": "WA.FAILED"
+          },
+          "prerequisites": [
+            "WA.REFERENCE_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated work-area request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WA.DESIGN",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ok": "WA.DONE",
+            "failure": "WA.FAILED"
+          },
+          "prerequisites": [
+            "WA.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Work-area design and FSM import review",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WA.DONE",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WA.DESIGN"
+          ],
+          "on_failure": "continue",
+          "applies_when": "All applicable validation, dependency, and design checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WA.FAILED",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A blocking validation, dependency, or design failure occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

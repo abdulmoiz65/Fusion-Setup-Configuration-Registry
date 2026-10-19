@@ -1,0 +1,15 @@
+{
+  "operation": "create_tree",
+  "object": {"TreeStructureCode": "SYNTHETIC_STRUCTURE", "TreeCode": "DEMO_TREE", "TreeName": "Demo tree"},
+  "versions": [{
+    "TreeVersionName": "DEMO_VERSION",
+    "ChangedSinceValidation": "",
+    "LevelCount": null,
+    "NodeCount": null,
+    "nodes": [
+      {"node_ref": "root", "DataSourceId": "SYNTHETIC_SOURCE", "Pk1StartValue": "ROOT_VALUE"},
+      {"node_ref": "child", "parent_ref": "root", "DataSourceId": "SYNTHETIC_SOURCE", "Pk1StartValue": "CHILD_VALUE"}
+    ]
+  }],
+  "parameters": [{"DataSourceId": "SYNTHETIC_SOURCE", "ParameterId": "SYNTHETIC_PARAMETER", "ParameterValue": "SYNTHETIC_VALUE"}]
+}

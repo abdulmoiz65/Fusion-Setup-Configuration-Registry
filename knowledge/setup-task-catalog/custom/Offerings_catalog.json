@@ -1,0 +1,50 @@
+{
+  "count": 3,
+  "totalResults": 3,
+  "items": [
+    {
+      "FeatureCode": "CUSTOM_HCM_TOOL",
+      "FeatureName": "HCM Tool",
+      "Classification": "CUSTOM",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "HCM"
+    },
+    {
+      "FeatureCode": "CUSTOM_SUBSCRIPTIONS",
+      "FeatureName": "Subscriptions",
+      "Classification": "CUSTOM",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "CX",
+      "FunctionalAreaOrder": [
+        "ORA_SVC_COMPANY_PROFILE",
+        "ORA_ASK_USERS_AND_SECURITY",
+        "CUSTOM_FOUNDATION_SETUP",
+        "CUSTOM_BILLING_SETUP",
+        "CUSTOM_USAGE_RATING_SETUP",
+        "CUSTOM_RENEWAL_SETUP",
+        "CUSTOM_COVERAGE_SETUP",
+        "CUSTOM_INTEGRATION_SETUP"
+      ]
+    },
+    {
+      "FeatureCode": "ORA_LEARNING_MANAGEMENT",
+      "FeatureName": "Learning Management",
+      "Classification": "CUSTOM",
+      "EnabledFlag": "Y",
+      "ObsoleteFlag": "N",
+      "SelectedChoices": "[]",
+      "FrozenFlag": "N",
+      "FeatureType": "OFFERING",
+      "Pillar": "HCM",
+      "CustomCodeOverride": true
+    }
+  ]
+}

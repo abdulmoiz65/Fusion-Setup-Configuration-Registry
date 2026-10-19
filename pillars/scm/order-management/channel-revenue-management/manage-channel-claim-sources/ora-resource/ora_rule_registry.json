@@ -1,0 +1,380 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_CJM_MANAGE_CLAIM_SOURCES",
+      "task_name": "Manage Channel Claim Sources",
+      "start_node": "CJMCS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "CJMCS.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CJMCS.RESOLVE_EXISTING",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate normalized operation and supplied input shape before lookup",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCS.RESOLVE_EXISTING",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMCS.CONFIRM_DEPENDENCIES",
+            "not_applicable": "CJMCS.CONFIRM_DEPENDENCIES",
+            "not_found": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES",
+            "conflicting_id": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Update resolves all existing parent and child targets; create_child resolves existing parent only; parent create returns not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCS.CONFIRM_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "CJMCS.RESOLVE_REFERENCES",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCS.RESOLVE_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate only dependencies applicable to operation and proposed changes; reuse fresh verified existing-target evidence",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCS.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMCS.VALIDATE_DESIGN",
+            "not_found": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCS.CONFIRM_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate applicable proposed-reference and create duplicate resolvers; no applicable reference returns found",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCS.VALIDATE_DESIGN",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CJMCS.APPLY_DEFAULTS",
+            "not_compliant": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCS.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce operation-specific design rules before readiness preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCS.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CJMCS.VALIDATE_CHANGES",
+            "unchanged": "CJMCS.VALIDATE_CHANGES"
+          },
+          "prerequisites": [
+            "CJMCS.VALIDATE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create applies only omitted documented defaults; create_child applies child defaults only and never defaults parent values; every update returns unchanged and preserves all omitted flags",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCS.VALIDATE_CHANGES",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "create": "CJMCS.CONFIRM_CREATE",
+            "create_child": "CJMCS.CONFIRM_CHILD_CREATE",
+            "changed": "CJMCS.CONFIRM_UPDATE",
+            "unchanged": "CJMCS.RETURN_NO_CHANGE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCS.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply final resolved-field, sparse-diff and immutable-artifact checks; explicit create_child requires new child rows only under an existing parent; no-op performs no write",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCS.CONFIRM_CREATE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CJMCS.RETURN_CREATE_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCS.VALIDATE_CHANGES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit create with no duplicate; validated immutable artifact and supported loader shape; readiness only, not approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCS.CONFIRM_UPDATE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CJMCS.RETURN_UPDATE_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCS.VALIDATE_CHANGES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit update with verified existing targets, nonempty diff, PATCH and supported loader shape; readiness only, not approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCS.RETURN_CREATE_READY",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMCS.CONFIRM_CREATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return CREATE_READY for loader preview and approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCS.RETURN_UPDATE_READY",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMCS.CONFIRM_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return UPDATE_READY for loader preview and approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCS.RETURN_NO_CHANGE",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMCS.VALIDATE_CHANGES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return NO_CHANGE without submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCS.CONFIRM_CHILD_CREATE",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CJMCS.RETURN_CHILD_CREATE_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCS.VALIDATE_CHANGES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit child create; verified existing parent, zero child duplicates, valid child values, exact live-supported child POST/linkage and immutable child-only artifact; no parent mutation; readiness is not upload approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCS.RETURN_CHILD_CREATE_READY",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMCS.CONFIRM_CHILD_CREATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return CHILD_CREATE_READY for separate loader preview and approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return blocking issues without write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

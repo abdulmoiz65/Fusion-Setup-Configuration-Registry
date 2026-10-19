@@ -1,0 +1,204 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PO_MANAGE_PURCHASING_LINE_TYPES",
+      "task_name": "Manage Purchasing Line Types",
+      "start_node": "PLT.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "PLT.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid_create_or_update": "PLT.APPLY_DEFAULTS",
+            "valid_list": "PLT.DONE_LIST",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every create, update, or read-only list request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PLT.DONE_LIST",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PLT.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Client-side validation completed for a read-only list request; an external read route is not executed here",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PLT.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "PLT.ENFORCE_DESIGN",
+            "not_applicable": "PLT.ENFORCE_DESIGN"
+          },
+          "prerequisites": [
+            "PLT.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every validated create or update request",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PLT.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "create_ready": "PLT.READY_FOR_APPROVAL",
+            "update_ready": "PLT.READY_FOR_APPROVAL",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PLT.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every validated create or update request",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PLT.READY_FOR_APPROVAL",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "create_ready": "PLT.DONE_CREATE",
+            "update_ready": "PLT.DONE_UPDATE",
+            "missing_approval": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PLT.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid create or update request reaches its approval gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PLT.DONE_CREATE",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PLT.READY_FOR_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The validated create request has current approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PLT.DONE_UPDATE",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PLT.READY_FOR_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The validated update request has current approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, design, or approval gate blocks the request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

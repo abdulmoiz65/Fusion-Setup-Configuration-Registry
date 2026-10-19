@@ -1,0 +1,39 @@
+{
+  "operation": "create_tree",
+  "object": {
+    "TreeStructureCode": "SYNTHETIC_STRUCTURE",
+    "TreeCode": "SEQUENCED_TREE",
+    "TreeName": "Sequenced Tree"
+  },
+  "versions": [
+    {
+      "TreeVersionName": "SEQUENCED_VERSION",
+      "nodes": [
+        {
+          "node_ref": "root",
+          "DataSourceId": "SYNTHETIC_SOURCE",
+          "Pk1StartValue": "ROOT_VALUE"
+        },
+        {
+          "node_ref": "child",
+          "parent_ref": "root",
+          "DataSourceId": "SYNTHETIC_SOURCE",
+          "Pk1StartValue": "CHILD_VALUE"
+        },
+        {
+          "node_ref": "grandchild",
+          "parent_ref": "child",
+          "DataSourceId": "SYNTHETIC_SOURCE",
+          "Pk1StartValue": "GRANDCHILD_VALUE"
+        }
+      ]
+    }
+  ],
+  "parameters": [
+    {
+      "DataSourceId": "SYNTHETIC_SOURCE",
+      "ParameterId": "SYNTHETIC_PARAMETER",
+      "ParameterValue": "SYNTHETIC_VALUE"
+    }
+  ]
+}

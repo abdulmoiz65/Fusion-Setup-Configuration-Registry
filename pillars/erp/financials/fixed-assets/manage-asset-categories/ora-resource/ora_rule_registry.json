@@ -1,0 +1,375 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "FA_MANAGE_ASSET_CATEGORY",
+      "task_name": "Manage Asset Categories",
+      "start_node": "MAC.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "MAC.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MAC.CHECK_DEPENDENCIES",
+            "invalid": "MAC.HANDLE_INPUT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request before lookup, export, preview, or import.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAC.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MAC.RESOLVE_REFERENCES",
+            "blocked": "MAC.HANDLE_DEPENDENCY"
+          },
+          "prerequisites": [
+            "MAC.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Valid input before package authoring.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAC.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "match": "MAC.DONE_MATCH",
+            "absent": "MAC.APPLY_DEFAULTS",
+            "existing_different": "MAC.HANDLE_EXISTING_DIFFERENT",
+            "ambiguous": "MAC.HANDLE_LOOKUP",
+            "failure": "MAC.HANDLE_LOOKUP"
+          },
+          "prerequisites": [
+            "MAC.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve System Controls and CAT# structure; map all category components and stop on missing required component input before component-value validation. Category creates require complete across-structure collision clearance; classify a cross-structure hold as ambiguous and reconcile target state before any reduced retry scope.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 234
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAC.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "MAC.ENFORCE_DESIGN"
+          },
+          "prerequisites": [
+            "MAC.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Lookup resolved and defaultable fields are blank.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 133
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAC.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "MAC.IMPORT_GATE",
+            "blocked": "MAC.HANDLE_DESIGN"
+          },
+          "prerequisites": [
+            "MAC.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only validation is complete; the surrounding Data Loader workflow owns approval, submission, polling, and target-state verification.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAC.IMPORT_GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MAC.VALIDATED",
+            "incomplete": "MAC.HANDLE_APPROVAL"
+          },
+          "prerequisites": [
+            "MAC.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only design validation and immutable package preparation are complete. Approval is owned by the surrounding Data Loader workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAC.HANDLE_INPUT",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MAC.ISSUES"
+          },
+          "prerequisites": [
+            "MAC.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input is invalid.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAC.HANDLE_DEPENDENCY",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MAC.ISSUES"
+          },
+          "prerequisites": [
+            "MAC.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependency is blocked; include Account Review Disclosure when account evidence is incomplete.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAC.HANDLE_LOOKUP",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MAC.ISSUES"
+          },
+          "prerequisites": [
+            "MAC.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Lookup or export baseline is blocked, ambiguous, or failed; include Account Review Disclosure for unresolved accounts.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAC.HANDLE_EXISTING_DIFFERENT",
+          "node_type": "step",
+          "sequence": 95,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "decision_required": "MAC.ISSUES"
+          },
+          "prerequisites": [
+            "MAC.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One exact category exists but differs materially; show the delta and request an explicit category-header update-existing or preserve/create-new decision.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAC.HANDLE_DESIGN",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MAC.ISSUES"
+          },
+          "prerequisites": [
+            "MAC.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Design rule blocks the package; include Account Review Disclosure for non-unique or invalid ledger-derived account combinations.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAC.HANDLE_APPROVAL",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MAC.ISSUES"
+          },
+          "prerequisites": [
+            "MAC.IMPORT_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A required parent Fixed Assets preview or approval gate is absent or stale.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAC.VALIDATED",
+          "node_type": "terminal",
+          "sequence": 120,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MAC.IMPORT_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return validated_for_import for the current validation scope; no approval, submission, or Fusion completion is implied.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAC.DONE_MATCH",
+          "node_type": "terminal",
+          "sequence": 125,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MAC.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing category/category-book/default state already matches the requested material scope; no package row or import is needed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAC.ISSUES",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocker is handled and disclosed with the safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

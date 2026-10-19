@@ -1,0 +1,309 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_INVENTORY_ZONES",
+      "task_name": "Inventory Zones",
+      "start_node": "INV-ZONES.VALIDATE-LOV-INPUTS",
+      "nodes": [
+        {
+          "id": "INV-ZONES.VALIDATE-LOV-INPUTS",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "INV-ZONES.RESOLVE-STATUS",
+            "invalid": "INV-ZONES.RETURN-ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request. Validate status and activity type only when supplied; otherwise pass to the resolver not-applicable routes.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV-ZONES.RESOLVE-STATUS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "INV-ZONES.RESOLVE-ACTIVITY-TYPE",
+            "not_applicable": "INV-ZONES.RESOLVE-ACTIVITY-TYPE",
+            "blocked": "INV-ZONES.RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "INV-ZONES.VALIDATE-LOV-INPUTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A zone status code or meaning is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV-ZONES.RESOLVE-ACTIVITY-TYPE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "INV-ZONES.APPLY-START-DATE-DEFAULT",
+            "not_applicable": "INV-ZONES.APPLY-START-DATE-DEFAULT",
+            "blocked": "INV-ZONES.RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "INV-ZONES.RESOLVE-STATUS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An activity type code or meaning is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV-ZONES.VALIDATE-SYSTEM-MANAGED-FIELDS",
+          "node_type": "step",
+          "sequence": 35,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "INV-ZONES.APPLY-START-DATE-DEFAULT",
+            "invalid": "INV-ZONES.RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "INV-ZONES.RESOLVE-ACTIVITY-TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every request. Reject user-supplied system-managed child fields when their child-row condition applies.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV-ZONES.APPLY-START-DATE-DEFAULT",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "INV-ZONES.APPLY-STATUS-DEFAULT",
+            "not_applicable": "INV-ZONES.APPLY-STATUS-DEFAULT"
+          },
+          "prerequisites": [
+            "INV-ZONES.VALIDATE-SYSTEM-MANAGED-FIELDS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create request omits StartDate.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV-ZONES.APPLY-STATUS-DEFAULT",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "INV-ZONES.ENFORCE-TASKS-ENABLED",
+            "not_applicable": "INV-ZONES.ENFORCE-TASKS-ENABLED"
+          },
+          "prerequisites": [
+            "INV-ZONES.APPLY-START-DATE-DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create request omits StatusCode.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV-ZONES.ENFORCE-TASKS-ENABLED",
+          "node_type": "step",
+          "sequence": 55,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "INV-ZONES.ENFORCE-TASK-GROUPING-LEVEL",
+            "not_applicable": "INV-ZONES.ENFORCE-DELIVERY-CART-ACTIVITY-TYPE"
+          },
+          "prerequisites": [
+            "INV-ZONES.APPLY-STATUS-DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every create or update request for an Inventory Zones Activity Usages child row.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV-ZONES.ENFORCE-TASK-GROUPING-LEVEL",
+          "node_type": "step",
+          "sequence": 57,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "INV-ZONES.ENFORCE-DELIVERY-CART-ACTIVITY-TYPE",
+            "not_applicable": "INV-ZONES.ENFORCE-DELIVERY-CART-ACTIVITY-TYPE"
+          },
+          "prerequisites": [
+            "INV-ZONES.ENFORCE-TASKS-ENABLED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every create or update request for an Inventory Zones Activity Usages child row.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV-ZONES.ENFORCE-DELIVERY-CART-ACTIVITY-TYPE",
+          "node_type": "step",
+          "sequence": 58,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "INV-ZONES.ENFORCE-DELIVERY-CART-CONFIGURATION-LEVEL",
+            "not_applicable": "INV-ZONES.ENFORCE-DELIVERY-CART-CONFIGURATION-LEVEL"
+          },
+          "prerequisites": [
+            "INV-ZONES.ENFORCE-TASK-GROUPING-LEVEL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every create or update request for an Inventory Zones Configurations child row that sets DefaultDeliveryCartId.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV-ZONES.ENFORCE-DELIVERY-CART-CONFIGURATION-LEVEL",
+          "node_type": "step",
+          "sequence": 59,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "INV-ZONES.DONE",
+            "not_applicable": "INV-ZONES.DONE"
+          },
+          "prerequisites": [
+            "INV-ZONES.ENFORCE-DELIVERY-CART-ACTIVITY-TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every create or update request for an Inventory Zones Configurations child row that sets DefaultDeliveryCartId.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV-ZONES.DONE",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "INV-ZONES.ENFORCE-DELIVERY-CART-CONFIGURATION-LEVEL"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Task-local validation, lookup, and defaulting rules have completed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV-ZONES.RETURN-ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A task-local validation or lookup blocker occurs.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

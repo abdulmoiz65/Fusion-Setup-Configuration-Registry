@@ -1,0 +1,2218 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_MANAGE_ENTERPRISE_RECRUITING_AND_CANDIDATE_EXPERIENCE_INFORMATION",
+      "task_name": "Enterprise Recruiting and Candidate Experience Information",
+      "start_node": "TASK.ROUTE_SECTION",
+      "nodes": [
+        {
+          "id": "TASK.ROUTE_SECTION",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "interview_intelligence_read": "SECTION.RESOLVE_EXPORT_SOURCE",
+            "interview_intelligence_write": "II.VALIDATE_INPUT",
+            "microsoft_graph_read": "SECTION.RESOLVE_EXPORT_SOURCE",
+            "microsoft_graph_write": "INTEGRATION.FSM_REQUIRED",
+            "google_workspace_read": "SECTION.RESOLVE_EXPORT_SOURCE",
+            "google_workspace_write": "INTEGRATION.FSM_REQUIRED",
+            "zoom_read": "SECTION.RESOLVE_EXPORT_SOURCE",
+            "zoom_write": "INTEGRATION.FSM_REQUIRED",
+            "events_read": "EVENTS.DEFAULT_API_VERSION",
+            "events_write": "EVENTS.DEFAULT_API_VERSION",
+            "candidate_authenticity_read": "SECTION.RESOLVE_EXPORT_SOURCE",
+            "candidate_authenticity_write": "CAND_AUTH.CHECK_PROFILE_OPTION",
+            "candidate_experience_read": "SECTION.RESOLVE_EXPORT_SOURCE",
+            "candidate_experience_write": "CAND_EXP.RESOLVE_FRESH_EXPORT_MAPPINGS",
+            "active_candidate_filter_read": "ACF.RESOLVE_FRESH_EXPORT_MAPPINGS",
+            "active_candidate_filter_write": "ACF.RESOLVE_FRESH_EXPORT_MAPPINGS",
+            "updates_to_candidate_info_read": "UCI.RESOLVE_FRESH_EXPORT_MAPPINGS",
+            "updates_to_candidate_info_write": "UCI.RESOLVE_FRESH_EXPORT_MAPPINGS",
+            "candidate_search_archiving_read": "CSA.RESOLVE_FRESH_EXPORT_MAPPING",
+            "candidate_search_archiving_write": "CSA.RESOLVE_FRESH_EXPORT_MAPPING",
+            "candidate_sourcing_read": "CAND_SRC.RESOLVE_FRESH_EXPORT_MAPPINGS",
+            "candidate_sourcing_write": "CAND_SRC.RESOLVE_FRESH_EXPORT_MAPPINGS",
+            "campaigns_read": "CAMP.RESOLVE_SETTING_MAPPINGS",
+            "campaigns_write": "CAMP.RESOLVE_SETTING_MAPPINGS",
+            "recruiting_management_read": "IRC.VALIDATE_DATA_PURGING",
+            "recruiting_management_write": "IRC.VALIDATE_DATA_PURGING",
+            "data_purging_read": "IRC.VALIDATE_DATA_PURGING",
+            "data_purging_write": "IRC.VALIDATE_DATA_PURGING",
+            "print_to_pdf_read": "SECTION.RESOLVE_EXPORT_SOURCE",
+            "print_to_pdf_write": "IRC.VALIDATE_DATA_PURGING",
+            "document_types_read": "SECTION.RESOLVE_EXPORT_SOURCE",
+            "document_types_write": "IRC.VALIDATE_DATA_PURGING",
+            "ai_features_read": "AI_FEATURES.RESOLVE_FRESH_EXPORT_MAPPINGS",
+            "ai_features_write": "AI_FEATURES.RESOLVE_FRESH_EXPORT_MAPPINGS",
+            "offer_read": "SECTION.RESOLVE_EXPORT_SOURCE",
+            "offer_write": "IRC.VALIDATE_DATA_PURGING",
+            "move_to_hr_read": "SECTION.RESOLVE_EXPORT_SOURCE",
+            "move_to_hr_write": "IRC.VALIDATE_DATA_PURGING",
+            "agency_hiring_read": "SECTION.RESOLVE_EXPORT_SOURCE",
+            "agency_hiring_write": "IRC.VALIDATE_DATA_PURGING",
+            "unsupported": "TASK.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A supported section read or modification request is received.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 693
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "II.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "II.CHECK_BOOSTER",
+            "invalid": "II.BLOCKED"
+          },
+          "prerequisites": [
+            "TASK.ROUTE_SECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An Interview Intelligence setting change is requested.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 694
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "II.CHECK_BOOSTER",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "enabled": "II.CHECK_DEPENDENCIES",
+            "blocked": "II.BLOCKED",
+            "failed": "II.BLOCKED"
+          },
+          "prerequisites": [
+            "II.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify Recruiting Booster through the exact same-target versioned Fusion Features item GET.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 175
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "II.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "II.ENFORCE_DESIGN",
+            "blocked": "II.BLOCKED"
+          },
+          "prerequisites": [
+            "II.CHECK_BOOSTER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Recruiting Booster lookup is enabled and remaining Interview Intelligence dependencies must be evaluated.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 220
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "II.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "II.DATALOADER_HANDOFF_GATE",
+            "no_change": "II.NO_CHANGE",
+            "blocked": "II.BLOCKED"
+          },
+          "prerequisites": [
+            "II.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated Interview Intelligence inputs and applicable readiness checks are complete; apply mandatory Companion and streaming child resets before comparing the complete final change set with the export.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 237
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "II.DATALOADER_HANDOFF_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "II.READY_FOR_DATALOADER",
+            "blocked": "II.BLOCKED"
+          },
+          "prerequisites": [
+            "II.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A nonempty Interview Intelligence package passes input, dependency, design, and integrity validation.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 333
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "II.READY_FOR_DATALOADER",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "II.DATALOADER_HANDOFF_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable ZIP is ready for core.data-loader preview, approval, submission, final process verification, and fresh post-import verification.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 334
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "II.NO_CHANGE",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "II.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every final Interview Intelligence value, including mandatory child resets, already equals the current mutation export after design enforcement.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 335
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "II.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A required Interview Intelligence input, dependency, design rule, package-integrity check, or Data Loader handoff gate is blocked.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 336
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVENTS.DEFAULT_API_VERSION",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "EVENTS.CHECK_ADVANCED_RECRUITING",
+            "not_required": "EVENTS.CHECK_ADVANCED_RECRUITING"
+          },
+          "prerequisites": [
+            "TASK.ROUTE_SECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For an Events read or modification, use latest only when api_version is omitted and preserve an explicitly supplied version for the readiness lookup.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 115
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVENTS.CHECK_ADVANCED_RECRUITING",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "enabled": "EVENTS.ROUTE_OPERATION",
+            "disabled": "EVENTS.BLOCKED",
+            "unavailable": "EVENTS.BLOCKED",
+            "unauthorized": "EVENTS.BLOCKED",
+            "unsupported": "EVENTS.BLOCKED",
+            "indeterminate": "EVENTS.BLOCKED",
+            "failed": "EVENTS.BLOCKED"
+          },
+          "prerequisites": [
+            "EVENTS.DEFAULT_API_VERSION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify Advanced Recruiting through the same-target versioned Fusion Features item GET before any Events export, validation, or import.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 176
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVENTS.ROUTE_OPERATION",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "events_read": "SECTION.RESOLVE_EXPORT_SOURCE",
+            "events_write": "EVENTS.VALIDATE_INPUT",
+            "unsupported": "EVENTS.BLOCKED"
+          },
+          "prerequisites": [
+            "EVENTS.CHECK_ADVANCED_RECRUITING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Advanced Recruiting is enabled and the Events request must be routed to read or modification handling.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 695
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVENTS.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "EVENTS.READY_FOR_CSV_WORKFLOW",
+            "invalid": "EVENTS.BLOCKED"
+          },
+          "prerequisites": [
+            "EVENTS.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate both mandatory Events settings atomically after Advanced Recruiting readiness succeeds.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 696
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVENTS.READY_FOR_CSV_WORKFLOW",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EVENTS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Advanced Recruiting is enabled and both mandatory Events values are valid for the guarded export, downstream validation, and import workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 337
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SECTION.RESOLVE_EXPORT_SOURCE",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "reusable": "SECTION.REPORT_CONFIGURATION",
+            "refresh_required": "SECTION.FRESH_EXPORT_REQUIRED",
+            "invalid": "TASK.BLOCKED"
+          },
+          "prerequisites": [
+            "TASK.ROUTE_SECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported section read must resolve reusable evidence or request a fresh task export.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 221
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_AUTH.CHECK_PROFILE_OPTION",
+          "node_type": "step",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "enabled": "CAND_AUTH.VALIDATE_INPUT",
+            "not_enabled": "CAND_AUTH.BLOCKED",
+            "blank": "CAND_AUTH.BLOCKED",
+            "missing": "CAND_AUTH.BLOCKED",
+            "unavailable": "CAND_AUTH.BLOCKED",
+            "unreadable": "CAND_AUTH.BLOCKED",
+            "failed": "CAND_AUTH.BLOCKED"
+          },
+          "prerequisites": [
+            "TASK.ROUTE_SECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read the configured Site-level Candidate Authenticity profile option through core.fusion-api.apps-common.profile-options and continue only when its value is exactly Y.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 177
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_AUTH.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 17,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CAND_AUTH.ENFORCE_CREDENTIAL_BOUNDARY",
+            "invalid": "CAND_AUTH.BLOCKED",
+            "prohibited_field": "CAND_AUTH.BLOCKED"
+          },
+          "prerequisites": [
+            "CAND_AUTH.CHECK_PROFILE_OPTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate the three mandatory Candidate Authenticity settings atomically only after the configured Site-level profile option is exactly Y.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 697
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_AUTH.ENFORCE_CREDENTIAL_BOUNDARY",
+          "node_type": "decision",
+          "sequence": 18,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CAND_AUTH.READY_FOR_CSV_WORKFLOW",
+            "blocked": "CAND_AUTH.BLOCKED"
+          },
+          "prerequisites": [
+            "CAND_AUTH.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce the three-setting CSV allowlist and prevent Candidate Authenticity credentials from entering artifacts, previews, logs, diagnostics, or runtime output.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 238
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EVENTS.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 19,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Advanced Recruiting readiness or atomic Events input validation blocks the complete Events request.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 338
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SECTION.REPORT_CONFIGURATION",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SECTION.RESOLVE_EXPORT_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported section read request is mapped from a resolved valid export with credential values redacted and provenance disclosed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 339
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INTEGRATION.FSM_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 21,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TASK.ROUTE_SECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Microsoft Graph, Google Workspace, or Zoom modification is requested.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 340
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TASK.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 22,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The requested section or operation is not supported by this task skill.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 341
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SECTION.FRESH_EXPORT_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 23,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SECTION.RESOLVE_EXPORT_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported section read requires `shared.setup-export.task-level-export` before reporting can resume.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 342
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_AUTH.READY_FOR_CSV_WORKFLOW",
+          "node_type": "terminal",
+          "sequence": 24,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAND_AUTH.ENFORCE_CREDENTIAL_BOUNDARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Candidate Authenticity readiness is exactly Y, all three mandatory values are nonblank, and the package is limited to the supported non-credential setting codes.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 343
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_AUTH.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 25,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Candidate Authenticity readiness, atomic input validation, the setting allowlist, or the protected-credential boundary blocks the complete request.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 344
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_EXP.RESOLVE_FRESH_EXPORT_MAPPINGS",
+          "node_type": "decision",
+          "sequence": 26,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CAND_EXP.VALIDATE_INPUT",
+            "partial": "CAND_EXP.VALIDATE_INPUT",
+            "fresh_export_required": "CAND_EXP.FRESH_EXPORT_REQUIRED",
+            "none_valid": "CAND_EXP.BLOCKED",
+            "failed": "CAND_EXP.BLOCKED"
+          },
+          "prerequisites": [
+            "TASK.ROUTE_SECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve every supplied Candidate Experience field against its exact documented setting code in a fresh export before preview or CSV generation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 178
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_EXP.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 27,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CAND_EXP.READY_FOR_CSV_WORKFLOW",
+            "partial": "CAND_EXP.READY_FOR_CSV_WORKFLOW",
+            "invalid_all": "CAND_EXP.BLOCKED",
+            "package_mismatch": "CAND_EXP.BLOCKED"
+          },
+          "prerequisites": [
+            "CAND_EXP.RESOLVE_FRESH_EXPORT_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate each exact-mapped Candidate Experience field independently, then validate the final full-export FSM package before it is ready; retain per-field failures in the required preview.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 698
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_EXP.READY_FOR_CSV_WORKFLOW",
+          "node_type": "terminal",
+          "sequence": 28,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAND_EXP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every Candidate Experience field that remains in scope has one exact fresh-export setting mapping and a valid supplied value, and the final package preserves the full fresh export except for validated target StringValue changes; per-field failures are disclosed in the required preview.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 345
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_EXP.FRESH_EXPORT_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 29,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAND_EXP.RESOLVE_FRESH_EXPORT_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Candidate Experience preview or modification requires a fresh target export before exact mapping can be resolved.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 346
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IRC.VALIDATE_DATA_PURGING",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "IRC.VALIDATE_RECRUITING_MANAGEMENT_SETTINGS",
+            "not_applicable": "IRC.VALIDATE_RECRUITING_MANAGEMENT_SETTINGS",
+            "invalid": "IRC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "TASK.ROUTE_SECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A configuration section, including Recruiting Management, Offer, Move to HR, or Agency Hiring, is selected.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 699
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_EXP.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "No Candidate Experience field remains eligible, or the full-export package contract failed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 349
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACF.RESOLVE_FRESH_EXPORT_MAPPINGS",
+          "node_type": "decision",
+          "sequence": 41,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ACF.RESOLVE_TIMEFRAME_MEANINGS",
+            "partial": "ACF.RESOLVE_TIMEFRAME_MEANINGS",
+            "fresh_export_required": "ACF.FRESH_EXPORT_REQUIRED",
+            "none_valid": "ACF.BLOCKED",
+            "failed": "ACF.BLOCKED"
+          },
+          "prerequisites": [
+            "TASK.ROUTE_SECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve every requested Configure Active Candidate Filter field against its exact documented setting code in the fresh current full-task export.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 182
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACF.RESOLVE_TIMEFRAME_MEANINGS",
+          "node_type": "decision",
+          "sequence": 42,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ACF.CHECK_DEPENDENCIES",
+            "not_applicable": "ACF.CHECK_DEPENDENCIES",
+            "partial": "ACF.CHECK_DEPENDENCIES",
+            "none_valid": "ACF.BLOCKED",
+            "failed": "ACF.BLOCKED"
+          },
+          "prerequisites": [
+            "ACF.RESOLVE_FRESH_EXPORT_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Activity Timeframe through the active Common Lookup when applicable and keep codes internal; otherwise continue with other exact-mapped fields.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 183
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACF.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 43,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ACF.VALIDATE_INPUT",
+            "partial": "ACF.VALIDATE_INPUT",
+            "blocked": "ACF.BLOCKED"
+          },
+          "prerequisites": [
+            "ACF.RESOLVE_TIMEFRAME_MEANINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm exact fresh-export mappings and active Activity Timeframe meaning resolution when applicable before validating Configure Active Candidate Filter input.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 225
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACF.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 44,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ACF.ENFORCE_DISPLAY_AND_WORKFLOW",
+            "partial": "ACF.ENFORCE_DISPLAY_AND_WORKFLOW",
+            "invalid_all": "ACF.BLOCKED"
+          },
+          "prerequisites": [
+            "ACF.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate every supplied Configure Active Candidate Filter field independently, retain multiple valid changes, and keep every event-specific activity field separate.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 703
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACF.ENFORCE_DISPLAY_AND_WORKFLOW",
+          "node_type": "decision",
+          "sequence": 45,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "ACF.READY_FOR_SHARED_WORKFLOW",
+            "blocked": "ACF.BLOCKED"
+          },
+          "prerequisites": [
+            "ACF.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce separate event fields, user-facing values only, the required combined preview, and exclusive use of the existing approval and import workflow.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 240
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACF.READY_FOR_SHARED_WORKFLOW",
+          "node_type": "terminal",
+          "sequence": 46,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ACF.ENFORCE_DISPLAY_AND_WORKFLOW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The user-facing combined preview is ready for the existing approval and import workflow with every requested field listed separately and internal values retained only within that guarded workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 350
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACF.FRESH_EXPORT_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 47,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ACF.RESOLVE_FRESH_EXPORT_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Configure Active Candidate Filter processing requires the existing shared current-export workflow to produce a fresh full-task export before exact mapping can resume.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 351
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACF.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 48,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "No Configure Active Candidate Filter field remains independently eligible, or the required user-facing display and shared-workflow contract cannot be satisfied.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 352
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UCI.RESOLVE_FRESH_EXPORT_MAPPINGS",
+          "node_type": "decision",
+          "sequence": 49,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "UCI.RESOLVE_ALLOWED_VALUES",
+            "partial": "UCI.RESOLVE_ALLOWED_VALUES",
+            "fresh_export_required": "UCI.FRESH_EXPORT_REQUIRED",
+            "none_valid": "UCI.BLOCKED",
+            "failed": "UCI.BLOCKED"
+          },
+          "prerequisites": [
+            "TASK.ROUTE_SECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve every requested Updates to Candidate Info Candidate Type and field pair against its exact documented setting code in the fresh current full-task export.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 184
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UCI.RESOLVE_ALLOWED_VALUES",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "UCI.CHECK_DEPENDENCIES",
+            "partial": "UCI.CHECK_DEPENDENCIES",
+            "none_valid": "UCI.BLOCKED",
+            "failed": "UCI.BLOCKED"
+          },
+          "prerequisites": [
+            "UCI.RESOLVE_FRESH_EXPORT_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve each retained Updates to Candidate Info current and proposed value through the active Common Lookup, keep codes internal, and retain every pair's independent result.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 185
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UCI.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 51,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "UCI.VALIDATE_INPUT",
+            "partial": "UCI.VALIDATE_INPUT",
+            "blocked": "UCI.BLOCKED"
+          },
+          "prerequisites": [
+            "UCI.RESOLVE_ALLOWED_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm exact pair mappings and active user-facing value resolution before validating the complete Updates to Candidate Info request.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 226
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UCI.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 52,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid_all": "UCI.ENFORCE_PREVIEW_AND_WORKFLOW",
+            "partial": "UCI.ENFORCE_PREVIEW_AND_WORKFLOW",
+            "invalid_all": "UCI.BLOCKED"
+          },
+          "prerequisites": [
+            "UCI.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate every requested Updates to Candidate Info Candidate Type and field pair independently and retain all results for one combined preview.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 704
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UCI.ENFORCE_PREVIEW_AND_WORKFLOW",
+          "node_type": "decision",
+          "sequence": 53,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "all_valid": "UCI.READY_FOR_SHARED_WORKFLOW",
+            "blocked": "UCI.BLOCKED"
+          },
+          "prerequisites": [
+            "UCI.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce exact Candidate Type names, user-facing lookup meanings only, one combined preview for every requested pair, atomic import, and exclusive use of the existing shared workflow.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 241
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UCI.READY_FOR_SHARED_WORKFLOW",
+          "node_type": "terminal",
+          "sequence": 54,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "UCI.ENFORCE_PREVIEW_AND_WORKFLOW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every requested Updates to Candidate Info pair has an exact fresh-export mapping and valid active user-facing value, and the complete combined preview is ready for the existing approval and atomic import workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 353
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UCI.FRESH_EXPORT_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 55,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "UCI.RESOLVE_FRESH_EXPORT_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Updates to Candidate Info processing requires the existing shared current-export workflow to produce a fresh full-task export before exact pair mapping can resume.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 354
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UCI.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 56,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "One or more Updates to Candidate Info pairs, the required combined preview, atomic import, or shared-workflow contract is blocked.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 355
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSA.RESOLVE_FRESH_EXPORT_MAPPING",
+          "node_type": "decision",
+          "sequence": 57,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "CSA.CHECK_DEPENDENCY",
+            "fresh_export_required": "CSA.FRESH_EXPORT_REQUIRED",
+            "missing": "CSA.BLOCKED",
+            "duplicate": "CSA.BLOCKED",
+            "failed": "CSA.BLOCKED"
+          },
+          "prerequisites": [
+            "TASK.ROUTE_SECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate the shared current-export result, resolve Candidate Search Archiving against ORA_IRC_CANDIDATE_SEARCH_ARCHIVING_ENABLED in that fresh full-task export, and keep its stored value internal.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 186
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSA.CHECK_DEPENDENCY",
+          "node_type": "decision",
+          "sequence": 58,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CSA.VALIDATE_INPUT",
+            "blocked": "CSA.BLOCKED"
+          },
+          "prerequisites": [
+            "CSA.RESOLVE_FRESH_EXPORT_MAPPING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm that Candidate Search Archiving has exactly one fresh-export mapping before validating its user-facing value.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 227
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSA.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 59,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CSA.ENFORCE_DISPLAY_AND_WORKFLOW",
+            "invalid": "CSA.BLOCKED"
+          },
+          "prerequisites": [
+            "CSA.CHECK_DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Accept only Enabled or Disabled for Candidate Search Archiving and retain the corresponding stored value internally.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 705
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSA.ENFORCE_DISPLAY_AND_WORKFLOW",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CSA.READY_FOR_SHARED_WORKFLOW",
+            "blocked": "CSA.BLOCKED"
+          },
+          "prerequisites": [
+            "CSA.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce user-facing Enabled or Disabled values, the required Candidate Search Archiving preview, and exclusive use of the existing approval and import workflow.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 242
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSA.READY_FOR_SHARED_WORKFLOW",
+          "node_type": "terminal",
+          "sequence": 61,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSA.ENFORCE_DISPLAY_AND_WORKFLOW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Candidate Search Archiving has one exact fresh-export mapping, a valid user-facing value, and a compliant preview ready for the existing approval and import workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 356
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSA.FRESH_EXPORT_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 62,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSA.RESOLVE_FRESH_EXPORT_MAPPING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Candidate Search Archiving requires the existing shared current-export workflow to produce a fresh full-task export before exact mapping can resume.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 357
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSA.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 63,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Candidate Search Archiving mapping, input, display, or shared-workflow enforcement is blocked.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 358
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_SRC.RESOLVE_FRESH_EXPORT_MAPPINGS",
+          "node_type": "decision",
+          "sequence": 64,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "CAND_SRC.APPLY_ACTIVE_ATTRIBUTES_DEFAULT",
+            "partial": "CAND_SRC.APPLY_ACTIVE_ATTRIBUTES_DEFAULT",
+            "fresh_export_required": "CAND_SRC.FRESH_EXPORT_REQUIRED",
+            "none_valid": "CAND_SRC.BLOCKED",
+            "failed": "CAND_SRC.BLOCKED"
+          },
+          "prerequisites": [
+            "TASK.ROUTE_SECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate the shared current-export result and resolve every requested Candidate Sourcing UI field to exactly one authoritative setting row without inferring mappings or current values.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 187
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_SRC.APPLY_ACTIVE_ATTRIBUTES_DEFAULT",
+          "node_type": "decision",
+          "sequence": 65,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CAND_SRC.CHECK_DEPENDENCIES",
+            "not_required": "CAND_SRC.CHECK_DEPENDENCIES"
+          },
+          "prerequisites": [
+            "CAND_SRC.RESOLVE_FRESH_EXPORT_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Job Category only when Enable Talent Community is proposed as Y, the attributes field is omitted from the same Candidate Sourcing modification, and its exact fresh-export target row is resolved.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 116
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_SRC.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 66,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CAND_SRC.VALIDATE_INPUT",
+            "partial": "CAND_SRC.VALIDATE_INPUT",
+            "blocked": "CAND_SRC.BLOCKED"
+          },
+          "prerequisites": [
+            "CAND_SRC.APPLY_ACTIVE_ATTRIBUTES_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm exact Candidate Sourcing mappings and require an enabled final Talent Community state for attributes and Global Talent Community Pool visibility before input validation.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 228
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_SRC.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 67,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CAND_SRC.ENFORCE_WORKFLOW",
+            "partial": "CAND_SRC.ENFORCE_WORKFLOW",
+            "invalid_all": "CAND_SRC.BLOCKED"
+          },
+          "prerequisites": [
+            "CAND_SRC.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate each exact-mapped Candidate Sourcing field against the eight-code allowlist, Boolean, frequency, and Talent Community attribute contracts.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 706
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_SRC.ENFORCE_WORKFLOW",
+          "node_type": "decision",
+          "sequence": 68,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "csv_ready": "CAND_SRC.READY_FOR_SHARED_WORKFLOW",
+            "fsm_ui_required": "CAND_SRC.FSM_UI_REQUIRED",
+            "mixed_action_required": "CAND_SRC.MIXED_ACTION_REQUIRED",
+            "blocked": "CAND_SRC.BLOCKED"
+          },
+          "prerequisites": [
+            "CAND_SRC.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce UI-label-first output, Talent Community dependency, CSV support for Global Talent Community Pool Visible = N, the manual FSM/ADF UI route for Y, and explicit separation of mixed requests.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 243
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_SRC.READY_FOR_SHARED_WORKFLOW",
+          "node_type": "terminal",
+          "sequence": 69,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAND_SRC.ENFORCE_WORKFLOW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Candidate Sourcing CSV-eligible fields have exact mappings, valid values, satisfied dependencies, and a UI-label-first preview ready for the existing approval and import workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 359
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_SRC.FSM_UI_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAND_SRC.ENFORCE_WORKFLOW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Global Talent Community Pool Visible = Y requires the documented Candidate Sourcing FSM/ADF UI save action and must not produce a CSV row.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 360
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_SRC.MIXED_ACTION_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 71,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAND_SRC.ENFORCE_WORKFLOW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The request combines CSV-eligible Candidate Sourcing changes with Global Talent Community Pool Visible = Y; present both routes and require an explicit decision before either proceeds.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 361
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_SRC.FRESH_EXPORT_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 72,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAND_SRC.RESOLVE_FRESH_EXPORT_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Candidate Sourcing requires the existing shared current-export workflow to produce a fresh full-task ORA_IRC_SETTING.csv export before exact mapping can resume.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 362
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAND_SRC.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 73,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Candidate Sourcing mapping, input, dependency, display, or route enforcement is blocked.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 363
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAMP.RESOLVE_SETTING_MAPPINGS",
+          "node_type": "decision",
+          "sequence": 74,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "CAMP.RESOLVE_DURATION_UNIT",
+            "fresh_export_required": "CAMP.FRESH_EXPORT_REQUIRED",
+            "missing": "CAMP.BLOCKED",
+            "duplicate": "CAMP.BLOCKED",
+            "failed": "CAMP.BLOCKED"
+          },
+          "prerequisites": [
+            "TASK.ROUTE_SECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate the shared export result and resolve every requested Campaigns field to exactly one documented ORA_IRC_SETTING.csv row using permitted evidence for the requested operation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 188
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAMP.RESOLVE_DURATION_UNIT",
+          "node_type": "decision",
+          "sequence": 75,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved_read": "CAMP.REPORT_CONFIGURATION",
+            "not_applicable_read": "CAMP.REPORT_CONFIGURATION",
+            "resolved_write": "CAMP.VALIDATE_INPUT",
+            "not_applicable_write": "CAMP.VALIDATE_INPUT",
+            "invalid": "CAMP.BLOCKED",
+            "failed": "CAMP.BLOCKED"
+          },
+          "prerequisites": [
+            "CAMP.RESOLVE_SETTING_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Recent-campaign exclusion duration through the active Common Lookup when applicable, keep LookupCode internal, and route the validated operation to reporting or input validation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 189
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAMP.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 76,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CAMP.ENFORCE_WORKFLOW",
+            "invalid": "CAMP.BLOCKED"
+          },
+          "prerequisites": [
+            "CAMP.RESOLVE_DURATION_UNIT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate every requested Campaigns field against the seven-code allowlist and its documented enum, digits-only, Boolean, numeric-minimum, or lookup-backed value contract as one complete request.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 707
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAMP.ENFORCE_WORKFLOW",
+          "node_type": "decision",
+          "sequence": 77,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CAMP.READY_FOR_SHARED_WORKFLOW",
+            "blocked": "CAMP.BLOCKED"
+          },
+          "prerequisites": [
+            "CAMP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce exact Campaigns mappings, active duration meanings, documented display order, complete-request preview, and exclusive use of the existing guarded workflow.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 244
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAMP.REPORT_CONFIGURATION",
+          "node_type": "terminal",
+          "sequence": 78,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAMP.RESOLVE_DURATION_UNIT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Campaigns read resolved exact setting mappings and any applicable duration Meaning from permitted export and Common Lookup evidence.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 364
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAMP.READY_FOR_SHARED_WORKFLOW",
+          "node_type": "terminal",
+          "sequence": 79,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAMP.ENFORCE_WORKFLOW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The complete Campaigns request has exact mappings, valid values, a compliant ordered preview, and is ready for the existing approval and import workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 365
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAMP.FRESH_EXPORT_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAMP.RESOLVE_SETTING_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Campaigns processing requires the existing shared export workflow to produce permitted current task evidence before exact mapping can resume.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 366
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAMP.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 81,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Campaigns mapping, lookup, input, preview, atomic-request, or shared-workflow enforcement is blocked.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 367
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IRC.VALIDATE_RECRUITING_MANAGEMENT_SETTINGS",
+          "node_type": "decision",
+          "sequence": 82,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "IRC.LOOKUP_REQUISITION_NUMBER_GENERATION_METHOD",
+            "partial": "IRC.LOOKUP_REQUISITION_NUMBER_GENERATION_METHOD",
+            "invalid_all": "IRC.RETURN_ISSUES",
+            "not_applicable": "IRC.RESOLVE_OFFER_PROFILE_OPTIONS"
+          },
+          "prerequisites": [
+            "IRC.VALIDATE_DATA_PURGING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate every supplied Recruiting Management setting independently after exact fresh-export mapping; otherwise continue the existing configuration path.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 700
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IRC.LOOKUP_REQUISITION_NUMBER_GENERATION_METHOD",
+          "node_type": "decision",
+          "sequence": 83,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "IRC.ENFORCE_CONFIGURATION_MIGRATION",
+            "not_applicable": "IRC.ENFORCE_CONFIGURATION_MIGRATION",
+            "no_match_warning": "IRC.ENFORCE_CONFIGURATION_MIGRATION",
+            "many_matches_warning": "IRC.ENFORCE_CONFIGURATION_MIGRATION",
+            "invalid_setting_skipped": "IRC.ENFORCE_CONFIGURATION_MIGRATION",
+            "authentication_failure": "IRC.RETURN_ISSUES",
+            "authorization_failure": "IRC.RETURN_ISSUES",
+            "transport_failure": "IRC.RETURN_ISSUES",
+            "response_shape_failure": "IRC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IRC.VALIDATE_RECRUITING_MANAGEMENT_SETTINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify an eligible Requisition Number Generation Method against ORA_IRC_REQ_GEN_METHOD by exact accepted LookupCode; otherwise continue without that field.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 179
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IRC.RESOLVE_OFFER_PROFILE_OPTIONS",
+          "node_type": "decision",
+          "sequence": 85,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "IRC.RESOLVE_OFFER_COLLABORATOR_TYPES",
+            "not_applicable": "IRC.RESOLVE_OFFER_COLLABORATOR_TYPES",
+            "not_found": "IRC.RETURN_ISSUES",
+            "ambiguous": "IRC.RETURN_ISSUES",
+            "failure": "IRC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IRC.VALIDATE_RECRUITING_MANAGEMENT_SETTINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read the exact Site-level value of every profile option required by the supplied Offer day settings; otherwise continue without this lookup.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 180
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IRC.RESOLVE_OFFER_COLLABORATOR_TYPES",
+          "node_type": "decision",
+          "sequence": 86,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "IRC.CHECK_OFFER_DEPENDENCIES",
+            "not_applicable": "IRC.CHECK_OFFER_DEPENDENCIES",
+            "not_found": "IRC.RETURN_ISSUES",
+            "ambiguous": "IRC.RETURN_ISSUES",
+            "failure": "IRC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IRC.RESOLVE_OFFER_PROFILE_OPTIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve all specific Offer collaborator labels or codes to enabled current LookupCode values; otherwise continue without this lookup.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 181
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IRC.CHECK_OFFER_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 87,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "IRC.CHECK_MOVE_TO_HR_DEPENDENCIES",
+            "not_applicable": "IRC.CHECK_MOVE_TO_HR_DEPENDENCIES",
+            "blocked": "IRC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IRC.RESOLVE_OFFER_COLLABORATOR_TYPES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Offer is selected; otherwise return not_applicable.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 222
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IRC.CHECK_MOVE_TO_HR_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 88,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "IRC.CHECK_AGENCY_HIRING_DEPENDENCIES",
+            "not_applicable": "IRC.CHECK_AGENCY_HIRING_DEPENDENCIES",
+            "blocked": "IRC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IRC.CHECK_OFFER_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Duplicate Check in Move to HR is supplied; otherwise return not_applicable.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 223
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IRC.CHECK_AGENCY_HIRING_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 89,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "IRC.ENFORCE_CONFIGURATION_MIGRATION",
+            "not_applicable": "IRC.ENFORCE_CONFIGURATION_MIGRATION",
+            "blocked": "IRC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IRC.CHECK_MOVE_TO_HR_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Agent User Category or Agent Role is supplied for Agency Hiring; otherwise return not_applicable.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 224
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IRC.ENFORCE_CONFIGURATION_MIGRATION",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "IRC.VALIDATE_RECRUITING_MANAGEMENT_ARCHIVE",
+            "blocked": "IRC.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A configuration section reaches migration enforcement from either the Recruiting Management lookup path or the existing configuration dependency path.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 239
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IRC.VALIDATE_RECRUITING_MANAGEMENT_ARCHIVE",
+          "node_type": "decision",
+          "sequence": 91,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "IRC.DONE",
+            "not_applicable": "IRC.DONE",
+            "invalid": "IRC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IRC.ENFORCE_CONFIGURATION_MIGRATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before any Recruiting Management preview or import, validate the retained child rows, matching unchanged parent rows, required columns, and complete archive relationship; otherwise return not_applicable.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 701
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IRC.DONE",
+          "node_type": "terminal",
+          "sequence": 92,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IRC.VALIDATE_RECRUITING_MANAGEMENT_ARCHIVE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Configuration passes the documented migration, archive-validation, and FSM completion gates.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 347
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IRC.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 93,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A documented validation, lookup, dependency, design, archive, or import-reconciliation rule blocks the request.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 348
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AI_FEATURES.RESOLVE_FRESH_EXPORT_MAPPINGS",
+          "node_type": "decision",
+          "sequence": 94,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "AI_FEATURES.VALIDATE_INPUT",
+            "partial": "AI_FEATURES.VALIDATE_INPUT",
+            "fresh_export_required": "AI_FEATURES.FRESH_EXPORT_REQUIRED",
+            "none_valid": "AI_FEATURES.BLOCKED",
+            "failed": "AI_FEATURES.BLOCKED"
+          },
+          "prerequisites": [
+            "TASK.ROUTE_SECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate the shared fresh-export result and resolve only supported AI Features scalar fields through exact local mappings, including all three importance rows when that group is applicable and a nonblank preserved Selected countries value when requested.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 190
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AI_FEATURES.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 95,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "AI_FEATURES.ENFORCE_MIGRATION",
+            "partial": "AI_FEATURES.ENFORCE_MIGRATION",
+            "invalid_all": "AI_FEATURES.BLOCKED"
+          },
+          "prerequisites": [
+            "AI_FEATURES.RESOLVE_FRESH_EXPORT_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate supported AI Features scalar inputs, validate the three importance values as one exact-sum group, preserve eligible Selected countries evidence, and retain unsupported fields as explicit blocked results.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 702
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AI_FEATURES.ENFORCE_MIGRATION",
+          "node_type": "decision",
+          "sequence": 96,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "AI_FEATURES.READY_FOR_SHARED_WORKFLOW",
+            "blocked": "AI_FEATURES.BLOCKED"
+          },
+          "prerequisites": [
+            "AI_FEATURES.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce the six-code AI Features allowlist, migration-view exclusions, exact standalone country preservation, and generic setting identity/value structure before shared workflow handoff.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 245
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AI_FEATURES.READY_FOR_SHARED_WORKFLOW",
+          "node_type": "terminal",
+          "sequence": 97,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AI_FEATURES.ENFORCE_MIGRATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every retained supported AI Features scalar field has exact fresh-export evidence, valid input, and a compliant migration route ready for the existing approval and import workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 368
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AI_FEATURES.FRESH_EXPORT_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 98,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AI_FEATURES.RESOLVE_FRESH_EXPORT_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "AI Features requires a fresh current full-task export before supported scalar mappings, importance-group values, or standalone Selected countries evidence can be resolved.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 369
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AI_FEATURES.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "No supported AI Features field remains eligible, the importance group is invalid or incomplete, or migration enforcement blocks the request.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 370
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

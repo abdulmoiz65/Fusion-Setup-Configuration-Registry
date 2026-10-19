@@ -1,0 +1,205 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ZCH_MANAGE_CUSTOMER_HUB_PROFILE_OPTIONS",
+      "task_name": "Manage Customer Hub Profile Options",
+      "start_node": "CHP.VALIDATE_CONTEXT",
+      "nodes": [
+        {
+          "id": "CHP.VALIDATE_CONTEXT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CHP.READ_PROFILE_OPTION",
+            "invalid": "CHP.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before operation review, immutable preview, or status continuation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CHP.READ_PROFILE_OPTION",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CHP.DEPENDENCY_READINESS",
+            "unresolved": "CHP.ERROR"
+          },
+          "prerequisites": [
+            "CHP.VALIDATE_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preview whenever a profile definition or configured SITE value must be verified",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CHP.DEPENDENCY_READINESS",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "CHP.APPLY_DEFAULT",
+            "blocked": "CHP.ERROR"
+          },
+          "prerequisites": [
+            "CHP.READ_PROFILE_OPTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before default evaluation, design review, immutable preview, approved execution, or status continuation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CHP.APPLY_DEFAULT",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CHP.DESIGN_GATE",
+            "not_applicable": "CHP.DESIGN_GATE",
+            "blocked": "CHP.ERROR"
+          },
+          "prerequisites": [
+            "CHP.DEPENDENCY_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "When a user asks to use or restore a documented default; otherwise take the not_applicable branch",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CHP.DESIGN_GATE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CHP.VALIDATED",
+            "fail": "CHP.ERROR"
+          },
+          "prerequisites": [
+            "CHP.APPLY_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before direct-update preview, immutable import preview, approved execution, or outcome reporting",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CHP.ERROR",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CHP.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any validation, lookup, dependency, design, approval, execution, polling, or persistence failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CHP.VALIDATED",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CHP.DESIGN_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The operation-specific contract is ready for exact preview, approved execution, or status continuation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CHP.ISSUES",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "The request has unresolved validation, execution, or verification issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

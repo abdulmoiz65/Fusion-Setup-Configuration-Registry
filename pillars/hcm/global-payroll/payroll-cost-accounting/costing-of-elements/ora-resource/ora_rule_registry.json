@@ -1,0 +1,1853 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_ELEMENT_CRITERIA_COSTING",
+      "task_name": "Costing of Elements",
+      "start_node": "COE.ROUTE_OPERATION",
+      "nodes": [
+        {
+          "id": "COE.ROUTE_OPERATION",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "lookup": "COE.SEARCH.VALIDATE_INPUT",
+            "end_date_result": "COE.END_DATE.VALIDATE_RESUME",
+            "zap_result": "COE.ZAP.VALIDATE_RESUME",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Save requested_operation. New operations use shared discovery; explicit status/verification of a retained End Date or Zap takes its result branch without discovery, rendering or submission. Contextual Zap approval restores the saved COE.ZAP.GATE and completed preparation in that run instead of starting a new operation.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.SEARCH.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COE.SEARCH.APPLY_DEFAULTS",
+            "missing": "COE.SEARCH.NEEDS_INPUT",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate date, filters and non-Search clues. End Date additionally requires its separate end and LDG; Zap requires its explicit history-selector start and LDG before any live lookup.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.SEARCH.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "COE.SEARCH.CHECK_DEPENDENCIES",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.SEARCH.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply only Search pagination/filter defaults.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.SEARCH.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ldg_text": "COE.SEARCH.RESOLVE_LDG",
+            "direct": "COE.SEARCH.ENFORCE_ROUTE",
+            "blocked": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.SEARCH.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select LDG discovery or direct Search; defer HDL prerequisites.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.VALIDATE_RESUME",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COE.ZAP.READ_RESULT",
+            "missing": "COE.ZAP.NEEDS_RESUME_INPUT",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Zap result resume requirements and retain status-only versus verification intent. A load ID alone does not establish the artifact, target inventory or baseline, and never authorizes resubmission.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.SEARCH.RESOLVE_LDG",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COE.SEARCH.ENFORCE_ROUTE",
+            "no_match": "COE.SEARCH.LDG_NOT_FOUND",
+            "ambiguous": "COE.SEARCH.NEEDS_LDG_SELECTION",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.SEARCH.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Invoke resolve_element_costing_ldg only for the LDG-text branch; resolved requires complete candidate evidence and one selected identity.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 244
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.SEARCH.ENFORCE_ROUTE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "COE.SEARCH.FETCH",
+            "blocked": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.SEARCH.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Shared Search uses its two public GET contracts; LDG-text branch must have resolved its LDG.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.SEARCH.FETCH",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "COE.SEARCH.RETURN_TO_OPERATION",
+            "empty": "COE.SEARCH.RETURN_TO_OPERATION",
+            "partial": "COE.SEARCH.PARTIAL",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.SEARCH.ENFORCE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Invoke search_element_costing for the original operation and normalize every page. found and empty require complete=true; an intentional pagination stop uses partial, while a response or request failure uses failed.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 245
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.SEARCH.RETURN_TO_OPERATION",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "search": "COE.SEARCH.DONE",
+            "operation": "COE.IDENTITY.SELECT",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.SEARCH.FETCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A complete result returns to the saved requested_operation: Search ends with its list; Create, Update, Correct, End Date and Zap require identity selection. Never replace the operation with Search.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 246
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.IDENTITY.SELECT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "COE.IDENTITY.CHECK_OPERATION",
+            "no_match": "COE.IDENTITY.NOT_FOUND",
+            "ambiguous": "COE.IDENTITY.NEEDS_SELECTION",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.SEARCH.RETURN_TO_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Operation identity selection, selection resume and HDL identity mapping to the complete search_element_costing evidence without another GET.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 247
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.SEARCH.DONE",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.SEARCH.RETURN_TO_OPERATION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the complete list or empty result only for requested_operation=Search. Other operations use identity resolution instead of this terminal.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.IDENTITY.CHECK_OPERATION",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "supported": "COE.HDL.VALIDATE_INPUT",
+            "zap": "COE.ZAP.VALIDATE_INPUT",
+            "unsupported": "COE.OPERATION.UNSUPPORTED",
+            "blocked": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.IDENTITY.SELECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create requires explicit N; Update/Correct/End Date explicit Y. Explicit Zap uses the dedicated branch after unique source selection; Search's costing flag cannot replace complete historical scope or prove absence. State checks remain provisional until history/detail.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.END_DATE.VALIDATE_RESUME",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COE.END_DATE.READ_RESULT",
+            "missing": "COE.END_DATE.NEEDS_RESUME_INPUT",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply End Date result resume requirements, retaining status-only versus verification intent. A load reference is not authorization to submit or reconstruct an archive.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COE.HDL.RESOLVE_CONTEXT",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.IDENTITY.CHECK_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate business intent/change shape using canonical keys; defer runtime labels, schema and account columns to resolvers.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COE.ZAP.HISTORY",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.IDENTITY.CHECK_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate Zap selectors, explicit full-history deletion intent and canonical identity. Do not require end dates, flags or account values; reject simultaneous value changes and supplied physical target overrides.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.RESOLVE_CONTEXT",
+          "node_type": "decision",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COE.HDL.CHECK_SCOPE",
+            "blocked": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run query_element_costing_history then read_element_costing_record at the requested date for Create or selected interval for Update/Correct. Resolve structure for Create/Update/Correct only. End Date applies Preparation baseline under End Date Read Comparisons to the allocation, EL and all existing LIV records, retaining every interval snapshot without KFF/LOV validation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 248
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.CHECK_SCOPE",
+          "node_type": "decision",
+          "sequence": 17,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "COE.HDL.RESOLVE_VALUES",
+            "unchanged": "COE.END_DATE.UNCHANGED",
+            "unsupported": "COE.OPERATION.UNSUPPORTED",
+            "blocked": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.RESOLVE_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Operation Contracts before value resolution. Build Update's preserved snapshot and uniquely selected deltas. End Date applies End Date Scope to build its complete target set, expected result and change set; unchanged requires every target already at the requested end. A narrowed End Date scope is unsupported; missing or conflicting component evidence is blocked. Unsupported Correct account/new-input scope has no write.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.RESOLVE_VALUES",
+          "node_type": "decision",
+          "sequence": 18,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COE.HDL.VALIDATE_VALUES",
+            "blocked": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.CHECK_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "End Date has no value changes: retain baseline evidence and skip type/group/input, KFF, segment and priority-account resolvers. For other operations resolve requested type, group and inputs with the three named LOV actions. For Create/Update accounts run resolve_element_costing_kff and validate_element_costing_segments, plus resolve_element_priority_account for OVRRIDE. Reuse unchanged EL/LIV values from the complete baseline; Correct flags/type-only skips account resolvers.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 249
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.VALIDATE_VALUES",
+          "node_type": "decision",
+          "sequence": 19,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COE.HDL.APPLY_DEFAULTS",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.RESOLVE_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate resolved flags, choices, components and unit-labelled priority proportions for Create/Update/Correct. End Date has no value delta and skips these checks; its identity/date/scope checks remain mandatory.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "COE.HDL.CHECK_DEPENDENCIES",
+            "skipped": "COE.HDL.CHECK_DEPENDENCIES",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.VALIDATE_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply conditional defaults to requested Create/Update rows, Correct changes or End Date special attribute; do not overwrite baseline values or infer an End Date date.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.HISTORY",
+          "node_type": "decision",
+          "sequence": 21,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COE.ZAP.DETAILS",
+            "blocked": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ZAP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Invoke query_element_costing_history under Zap History and Detail; bind the selector to one logical allocation and retain its entire history plus unrelated baseline intervals. Empty or unmatched history blocks preparation without claiming orphan absence.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 250
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 22,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "COE.HDL.RESOLVE_TEMPLATES",
+            "blocked": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require applicable resolved facts and business inputs without duplicate GETs; loader_schema is completed next. Check submission_context before any import handoff, not as a reason to block permitted metadata retrieval.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.RESOLVE_TEMPLATES",
+          "node_type": "decision",
+          "sequence": 23,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COE.HDL.RENDER",
+            "blocked": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Invoke resolve_element_hdl_templates for the exact mapped objects; no upload or approval pause at this step.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 251
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.RENDER",
+          "node_type": "decision",
+          "sequence": 24,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "rendered": "COE.HDL.VALIDATE_SOURCE",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.RESOLVE_TEMPLATES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Source Assembly and operation contract without an intermediate approval pause.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.VALIDATE_SOURCE",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COE.HDL.ENFORCE_ROUTE",
+            "artifact_only": "COE.END_DATE.PREPARED",
+            "special_attribute_rejected": "COE.END_DATE.VALIDATION_BLOCKED",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.RENDER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Reconcile End Date members and rows to the complete target/change sets. For explicit artifact_only apply local ZIP checks and return artifact_only without claiming loader readiness. Otherwise delegate schema/key, archive and Task Hook checks to core.data-loader; retain exact preflight envelope and immutable bytes. Only the specific End Date special-attribute rejection in either object uses special_attribute_rejected; all other failures use invalid.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.END_DATE.READ_RESULT",
+          "node_type": "decision",
+          "sequence": 26,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COE.END_DATE.RESULT",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.END_DATE.VALIDATE_RESUME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Invoke read_element_costing_load_result once for the explicit status/verification request, including the shared loader error checks. Do not upload or poll automatically.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 252
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.END_DATE.RESULT",
+          "node_type": "decision",
+          "sequence": 27,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "pending": "COE.END_DATE.STATUS_PENDING",
+            "status_succeeded": "COE.END_DATE.STATUS_REPORTED",
+            "verify_succeeded": "COE.END_DATE.VERIFY",
+            "failed": "COE.HDL.HANDLE_ERROR",
+            "timed_out": "COE.HDL.HANDLE_ERROR",
+            "unknown": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.END_DATE.READ_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate the bound core.data-loader result. Not-yet-available/in-progress is pending. Successful terminal status with no failed objects/errors selects status_succeeded for status-only or verify_succeeded for explicit business verification. Partial success, errors, timeout or unknown state cannot reach verification.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.END_DATE.VERIFY",
+          "node_type": "decision",
+          "sequence": 28,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "COE.END_DATE.DONE",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.END_DATE.RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply End Date Read Comparisons verification through query_element_costing_history and read_element_costing_record. Enter only after verify_succeeded; any missing evidence or mismatch fails rather than replaying the load.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 253
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.DETAILS",
+          "node_type": "decision",
+          "sequence": 29,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COE.ZAP.CHECK_SCOPE",
+            "blocked": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ZAP.HISTORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Zap History and Detail through read_element_costing_record for every selected and exclusivity-check interval. Resolve physical accounts and EL/LIV targets; require complete evidence before scope enforcement.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 254
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.ENFORCE_ROUTE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready_create": "COE.HDL.GATE_CREATE",
+            "ready_update": "COE.HDL.GATE_UPDATE",
+            "ready_correct": "COE.HDL.GATE_CORRECT",
+            "ready_end_date": "COE.HDL.GATE_END_DATE",
+            "blocked": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.VALIDATE_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce final account/change rules and project prerequisites against the loader-validated immutable archive before the single approval.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.CHECK_SCOPE",
+          "node_type": "decision",
+          "sequence": 31,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "COE.ZAP.CHECK_DEPENDENCIES",
+            "unsupported": "COE.OPERATION.UNSUPPORTED",
+            "blocked": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ZAP.DETAILS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Zap Scope and Handoff to complete history/detail. Require full logical history, target exclusivity and explicit coverage of allocation, accounts and all existing EL/LIV; reject split-only or partial-object deletion.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 32,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "COE.ZAP.RESOLVE_TEMPLATES",
+            "blocked": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ZAP.CHECK_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require bound identity, complete history/detail and the full physical target inventory. Skip value/KFF/default dependencies. Resolve loader_schema next and finish zap_delete_contract plus submission_context before any execution approval; no additional GETs here.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.RESOLVE_TEMPLATES",
+          "node_type": "decision",
+          "sequence": 33,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COE.ZAP.RENDER",
+            "blocked": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ZAP.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Invoke resolve_element_hdl_templates for all included DELETE objects and source-specific key forms; no KFF or value LOV requests.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 255
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.RENDER",
+          "node_type": "decision",
+          "sequence": 34,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "rendered": "COE.ZAP.VALIDATE_SOURCE",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ZAP.RESOLVE_TEMPLATES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Render Zap Source Assembly from the complete resolved physical target inventory, preserving each object's actual dates and identity. No MERGE, value defaults or source setup deletion.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.VALIDATE_SOURCE",
+          "node_type": "decision",
+          "sequence": 35,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COE.ZAP.ENFORCE",
+            "invalid": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ZAP.RENDER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Zap Source Assembly and core.data-loader validation for every included object. For execution, also retain the immutable archive, persisted preflight and exact Task Hook preview. No upload or intermediate approval pause.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.ENFORCE",
+          "node_type": "decision",
+          "sequence": 36,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "COE.ZAP.REFRESH",
+            "blocked": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ZAP.VALIDATE_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce Zap component coverage, source preservation and validated loader dependency handling. Require persisted preflight and Task Hook preview for execution; validation-only retains its distinct no-upload intent. Continue to freshness before requesting approval.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.REFRESH",
+          "node_type": "decision",
+          "sequence": 37,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "unchanged": "COE.ZAP.GATE",
+            "changed": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ZAP.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Zap History and Detail freshness through the existing source/history/detail resolvers before the single approval preview. A changed baseline invalidates the prepared artifact; this node never submits or rebuilds it.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 256
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.GATE",
+          "node_type": "decision",
+          "sequence": 38,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "COE.ZAP.SUBMIT",
+            "awaiting_approval": "COE.ZAP.AWAITING_APPROVAL",
+            "validated_only": "COE.ZAP.VALIDATED",
+            "blocked": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ZAP.REFRESH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Zap Scope and Handoff. Validation-only returns its validated deliverables without approval/upload. Execution requires persisted preflight and Task Hook preview for the complete destructive scope before awaiting_approval. Contextual approval restores this gate and completed preparation, then verifies exact bytes and bound context through core.data-loader; no duplicate pillar confirmation, discovery or rebuild.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.SUBMIT",
+          "node_type": "decision",
+          "sequence": 39,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "COE.ZAP.PENDING",
+            "blocked": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ZAP.GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Hand off the exact approved immutable DELETE archive once through core.data-loader with its preserved preflight and taskValidationEnvelope. Bind accepted identifiers to the complete target inventory and baseline; no automatic retries or polling.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.GATE_CREATE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "COE.HDL.READY_CREATE",
+            "blocked": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.ENFORCE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Create archive passed validation and has fresh approval for core.data-loader handoff.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.GATE_UPDATE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "COE.HDL.READY_UPDATE",
+            "blocked": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.ENFORCE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An Update archive passed validation and has fresh approval for core.data-loader handoff.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.GATE_CORRECT",
+          "node_type": "decision",
+          "sequence": 55,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "COE.HDL.READY_CORRECT",
+            "blocked": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.ENFORCE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Supported Correct archive and Task Hook have passed; use the single current core.data-loader approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.GATE_END_DATE",
+          "node_type": "decision",
+          "sequence": 56,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "COE.END_DATE.RECHECK_STATE",
+            "blocked": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.ENFORCE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require the complete End Date change-set archive with full loader/schema and Task Hook validation for every member plus the single core.data-loader approval bound to exact bytes, environment and the allocation/EL/LIV expected result. Approved proceeds to the separate state recheck; this gate performs no reads or submission. Artifact-only output cannot enter it.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.END_DATE.RECHECK_STATE",
+          "node_type": "decision",
+          "sequence": 57,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "unchanged": "COE.END_DATE.SUBMIT",
+            "changed": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.HDL.GATE_END_DATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply End Date Read Comparisons approval freshness using the bound identity. Preserve exact approved bytes and baseline. Changed or incomplete state invalidates approval; this check never rerenders or reselects identity.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 257
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.END_DATE.SUBMIT",
+          "node_type": "decision",
+          "sequence": 58,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "COE.END_DATE.PENDING",
+            "blocked": "COE.HDL.HANDLE_ERROR",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.END_DATE.RECHECK_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require unchanged state and still-valid exact-artifact approval; submit once through core.data-loader. Capture the actual accepted load reference. An ambiguous or failed initiation stops with diagnostics and never automatically replays.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.READY_CREATE",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.HDL.GATE_CREATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The approved Create archive is ready for core.data-loader handoff.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.READ_RESULT",
+          "node_type": "decision",
+          "sequence": 61,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "COE.ZAP.RESULT",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ZAP.VALIDATE_RESUME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Invoke read_element_costing_load_result for the saved accepted Zap, retaining component/row outcomes and complete error checks. No upload or automatic polling.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 258
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.RESULT",
+          "node_type": "decision",
+          "sequence": 62,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "pending": "COE.ZAP.STATUS_PENDING",
+            "status_succeeded": "COE.ZAP.STATUS_REPORTED",
+            "verify_succeeded": "COE.ZAP.VERIFY",
+            "failed": "COE.HDL.HANDLE_ERROR",
+            "timed_out": "COE.HDL.HANDLE_ERROR",
+            "unknown": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ZAP.READ_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require terminal success with no errors and matching results for every submitted allocation, account and EL/LIV CostInfo DELETE. Return status_succeeded only for status-only intent; explicit verification takes verify_succeeded. Pending remains pending; partial, failed or unknown results cannot claim Zap completion.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.VERIFY",
+          "node_type": "decision",
+          "sequence": 63,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "COE.ZAP.DONE",
+            "failed": "COE.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "COE.ZAP.RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Zap Verification only after verify_succeeded, using the saved source, complete history, physical targets and loader results. Missing evidence or surviving targets fail without replay.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 259
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.DONE",
+          "node_type": "terminal",
+          "sequence": 64,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.ZAP.VERIFY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "All submitted DELETE targets succeeded and Zap Verification passed for the complete selected logical history, accounts and EL/LIV. Report preserved eligibility/unrelated state and the independent CostInfo verification boundary.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.STATUS_REPORTED",
+          "node_type": "terminal",
+          "sequence": 65,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.ZAP.RESULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the bound shared loader success report for status-only intent. Business verification was not performed; do not claim confirmed historical removal.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.STATUS_PENDING",
+          "node_type": "terminal",
+          "sequence": 66,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.ZAP.RESULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the bound pending/not-yet-available loader result and retain resume context. No resubmission or automatic polling.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.VALIDATED",
+          "node_type": "terminal",
+          "sequence": 68,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.ZAP.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Explicit validation-only completed with validated sources and archive, without upload or destructive approval. Later execution requires current loader preflight, Task Hook preview and approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.PENDING",
+          "node_type": "terminal",
+          "sequence": 69,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.ZAP.SUBMIT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the accepted core.data-loader initiation report and save its actual identifiers with the immutable archive and pre-load baseline. Explicit status/verification enters COE.ZAP.VALIDATE_RESUME without submission.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.READY_UPDATE",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.HDL.GATE_UPDATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The approved Update archive is ready for core.data-loader handoff.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.AWAITING_APPROVAL",
+          "node_type": "terminal",
+          "sequence": 71,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.ZAP.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Preparation, complete-target validation, persisted preflight, Task Hook preview and freshness are complete. Return the loader approval-required report; contextual approval resumes the same COE.ZAP.GATE with its completed prerequisites and exact bytes.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.END_DATE.STATUS_REPORTED",
+          "node_type": "terminal",
+          "sequence": 72,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.END_DATE.RESULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the shared loader success report for an explicit status-only request. Business readback has not been performed; do not claim verified End Date values.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.END_DATE.STATUS_PENDING",
+          "node_type": "terminal",
+          "sequence": 73,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.END_DATE.RESULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the shared loader pending/not-yet-available result with the retained resume reference. No business verification or resubmission occurred.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.END_DATE.DONE",
+          "node_type": "terminal",
+          "sequence": 74,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.END_DATE.VERIFY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The bound End Date comparisons passed. For complete_costing report the common verified end for CostAllocation, CostInformation EL and every existing LIV, with preserved values/history. Earlier artifacts retain the limited verification report defined in End Date Read Comparisons; never infer child closure from absence of the allocation.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.READY_CORRECT",
+          "node_type": "terminal",
+          "sequence": 75,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.HDL.GATE_CORRECT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Hand off the exact approved correction archive to core.data-loader; this is not completed Fusion costing.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.END_DATE.PENDING",
+          "node_type": "terminal",
+          "sequence": 76,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.END_DATE.SUBMIT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the accepted core.data-loader initiation report and retain the actual load reference bound to the archive and pre-load baseline. A later explicit status/verification request enters COE.END_DATE.VALIDATE_RESUME; never resubmit or poll automatically.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.END_DATE.PREPARED",
+          "node_type": "terminal",
+          "sequence": 77,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.HDL.VALIDATE_SOURCE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Explicit artifact_only request completed with local source checks and the End Date change-set DAT/ZIP links for the complete target set; loader_validated=false and no upload. Future submission requires full validation and fresh approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.END_DATE.VALIDATION_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 78,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.HDL.VALIDATE_SOURCE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Retain all prepared DATs/ZIP and report the component and exact special-attribute validation failure as catalog mismatch. Not loader-approved, not uploaded and not a completed End Date.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.END_DATE.UNCHANGED",
+          "node_type": "terminal",
+          "sequence": 79,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.HDL.CHECK_SCOPE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Complete history/detail confirms the latest allocation, EL and every existing LIV already end on the requested date. Return verified no-op for the complete target set; no archive or submission.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "COE.HDL.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Shared handler for Search and HDL failures; preserve partial Search evidence and classify the failing stage.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.HDL.FAILED",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.HDL.HANDLE_ERROR"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The request stopped with a classified diagnostic and safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.SEARCH.NEEDS_INPUT",
+          "node_type": "terminal",
+          "sequence": 91,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.SEARCH.VALIDATE_INPUT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Request only missing lookup selectors/date, End Date requested end or Zap selector start/LDG, retaining requested_operation; resume common validation when supplied.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.SEARCH.LDG_NOT_FOUND",
+          "node_type": "terminal",
+          "sequence": 92,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.SEARCH.RESOLVE_LDG"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Report no matching LDG and request corrected text or an explicit LDG ID. No element search was run.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.SEARCH.NEEDS_LDG_SELECTION",
+          "node_type": "terminal",
+          "sequence": 93,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.SEARCH.RESOLVE_LDG"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Show candidate names and request selection; resume the LDG resolver with the same context.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.SEARCH.PARTIAL",
+          "node_type": "terminal",
+          "sequence": 94,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.SEARCH.FETCH"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Report complete=false and next_offset. Resume the same lookup with unchanged requested_operation, filters, date and environment; never continue to HDL from partial results.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.IDENTITY.NEEDS_SELECTION",
+          "node_type": "terminal",
+          "sequence": 95,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.IDENTITY.SELECT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Show candidate business identities, request selection and retain the original operation. Resume identity selection only with matching complete evidence.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.IDENTITY.NOT_FOUND",
+          "node_type": "terminal",
+          "sequence": 96,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.IDENTITY.SELECT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Report no matching eligibility identity; ask for corrected selectors. Do not infer a new element, eligibility, code or costing source.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.OPERATION.UNSUPPORTED",
+          "node_type": "terminal",
+          "sequence": 97,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Return resolved identity and the unsupported operation or scope; reached from operation selection or scope validation. No archive or mutation occurred.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.END_DATE.NEEDS_RESUME_INPUT",
+          "node_type": "terminal",
+          "sequence": 98,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.END_DATE.VALIDATE_RESUME"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Request only missing load-to-artifact binding or baseline context for read-only verification. Do not substitute a new End Date, reconstruct a supposed pre-load baseline or upload again.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COE.ZAP.NEEDS_RESUME_INPUT",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COE.ZAP.VALIDATE_RESUME"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Request only missing accepted-load binding, immutable target inventory or pre-load evidence. Do not reconstruct deleted physical targets, start a new Zap or upload again.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

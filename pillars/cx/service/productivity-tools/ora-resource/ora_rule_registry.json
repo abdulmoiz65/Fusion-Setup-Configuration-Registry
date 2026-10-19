@@ -1,0 +1,1052 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "ORA_CONFIGURE_ACTION_BAR_PARAMETERS",
+      "task_name": "Configure Action Bar Parameters",
+      "start_node": "ACTIONBAR.VALIDATE",
+      "nodes": [
+        {
+          "id": "ACTIONBAR.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ACTIONBAR.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A read-only request to list Action Bar configurations",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIONBAR.LOOKUP",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "ACTIONBAR.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ACTIONBAR.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A read-only Action Bar configuration collection request is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIONBAR.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ACTIONBAR.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Action Bar guidance is ready for preview handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Action Bar gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_MANAGE_SERVICE_REQUEST_MESSAGE_TYPES_AND_SUBTYPES",
+      "task_name": "Manage Service Request Message Types and Subtypes",
+      "start_node": "MSGTYPE.VALIDATE",
+      "nodes": [
+        {
+          "id": "MSGTYPE.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MSGTYPE.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A read-only request to list Service Request Message Types or Subtypes",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MSGTYPE.LOOKUP",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "MSGTYPE.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MSGTYPE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A read-only Message Type or Subtype collection request is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MSGTYPE.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MSGTYPE.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Message Type or Subtype guidance is ready for preview handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Message Type or Subtype gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_NOTE_TYPES",
+      "task_name": "Manage Note Types",
+      "start_node": "NOTETYPE.VALIDATE",
+      "nodes": [
+        {
+          "id": "NOTETYPE.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "list_valid": "NOTETYPE.LOOKUP",
+            "update_valid": "NOTETYPE.UPDATE_PREFLIGHT",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Note Types collection read or Meaning update request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTETYPE.LOOKUP",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "NOTETYPE.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "NOTETYPE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A read-only Note Types collection request is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTETYPE.UPDATE_PREFLIGHT",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "NOTETYPE.UPDATE_APPROVAL_GATE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "NOTETYPE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated Note Type Meaning update needs an exact-match preflight",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTETYPE.UPDATE_APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "NOTETYPE.UPDATE_READY",
+            "denied": "NOTETYPE.UPDATE_REFUSED"
+          },
+          "prerequisites": [
+            "NOTETYPE.UPDATE_PREFLIGHT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact-match preflight found one target and the exact Meaning update payload is ready for user approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTETYPE.UPDATE_READY",
+          "node_type": "terminal",
+          "sequence": 31,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "NOTETYPE.UPDATE_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit approval permits one PATCH to the documented Note Type lookup-code endpoint",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTETYPE.UPDATE_REFUSED",
+          "node_type": "terminal",
+          "sequence": 32,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "NOTETYPE.UPDATE_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The update preview was denied or approval was not granted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTETYPE.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "NOTETYPE.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Note Type guidance is ready for preview handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Note Type gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_PASSIVE_BEACON_CONFIGURATION",
+      "task_name": "Manage Passive Beacon Configuration",
+      "start_node": "BEACON.VALIDATE",
+      "nodes": [
+        {
+          "id": "BEACON.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "BEACON.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A read-only request to list passive Beacon provider statuses",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEACON.LOOKUP",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "BEACON.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "BEACON.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A read-only passive Beacon provider-status collection request is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEACON.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BEACON.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Passive Beacon guidance is ready for preview handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Passive Beacon gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_SEARCH_OPTIONS",
+      "task_name": "Manage Global Search Profile Options",
+      "start_node": "GSEARCH.VALIDATE",
+      "nodes": [
+        {
+          "id": "GSEARCH.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "GSEARCH.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Global Search profile option request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GSEARCH.LOOKUP",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "GSEARCH.DEFAULT",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GSEARCH.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Global Search profile value must be checked",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GSEARCH.DEFAULT",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "GSEARCH.DESIGN",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GSEARCH.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Global Search is being enabled",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 13
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GSEARCH.DESIGN",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "GSEARCH.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GSEARCH.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Global Search is being enabled or validated",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GSEARCH.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GSEARCH.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Global Search guidance is ready for preview handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Global Search gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_SERVICE_REQUEST_DYNAMIC_LINKS",
+      "task_name": "Manage Service Request Dynamic Links",
+      "start_node": "DYNLINK.VALIDATE",
+      "nodes": [
+        {
+          "id": "DYNLINK.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DYNLINK.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A read-only request to list Dynamic Link records",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DYNLINK.LOOKUP",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "DYNLINK.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "DYNLINK.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A read-only Dynamic Link collection request is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DYNLINK.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DYNLINK.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dynamic Link guidance is ready for preview handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Dynamic Link gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_STANDARD_TEXT_PROFILE_OPTS",
+      "task_name": "Manage Standard Text Profile Options",
+      "start_node": "STDTEXT.VALIDATE",
+      "nodes": [
+        {
+          "id": "STDTEXT.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "STDTEXT.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Standard Text profile option request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "STDTEXT.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "STDTEXT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Standard Text profile option guidance is ready for preview handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Standard Text profile option gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_TAGS",
+      "task_name": "Manage Tags",
+      "start_node": "TAG.VALIDATE",
+      "nodes": [
+        {
+          "id": "TAG.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "list_valid": "TAG.LOOKUP",
+            "create_valid": "TAG.CREATE_PREFLIGHT",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Tags collection read or create request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TAG.LOOKUP",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "TAG.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "TAG.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A read-only Tags collection request is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TAG.CREATE_PREFLIGHT",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "absent": "TAG.CREATE_APPROVAL_GATE",
+            "exists": "TAG.DUPLICATE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "TAG.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated Tag create request needs an exact-name duplicate preflight",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TAG.CREATE_APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "TAG.CREATE_READY",
+            "denied": "TAG.CREATE_REFUSED"
+          },
+          "prerequisites": [
+            "TAG.CREATE_PREFLIGHT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact-name preflight found no match and the exact create payload is ready for user approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TAG.CREATE_READY",
+          "node_type": "terminal",
+          "sequence": 31,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TAG.CREATE_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit approval permits one POST to the documented Tags collection endpoint",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TAG.DUPLICATE",
+          "node_type": "terminal",
+          "sequence": 32,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TAG.CREATE_PREFLIGHT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An exact-name match exists; creation is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TAG.CREATE_REFUSED",
+          "node_type": "terminal",
+          "sequence": 33,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TAG.CREATE_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The create preview was denied or approval was not granted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TAG.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TAG.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Tag guidance is ready for preview handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Tag gate produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

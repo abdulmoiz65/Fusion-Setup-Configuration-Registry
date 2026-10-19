@@ -1,0 +1,22 @@
+{
+  "name": "fscr-vblens-express-mode",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Build and read Express Mode evidence caches, validate extensions, build VX archives, and run approved Fusion deployments.",
+  "scripts": {
+    "inspect:capabilities": "node scripts/inspect_express_capabilities.js --json",
+    "inspect:field-contracts": "node scripts/extract_business_rule_contracts.js --json",
+    "assess:behavior-contract": "node scripts/resolve_solution_contract.js --json",
+    "resolve:rule-destination": "node scripts/resolve_business_rule_destination.js --json",
+    "resolve:setup-value": "node scripts/resolve_setup_value.js --json",
+    "fetch:runtime-evidence": "node scripts/fetch_runtime_evidence.js --json",
+    "fetch:service-evidence": "node scripts/fetch_service_evidence.js --json",
+    "explore:evidence": "node scripts/investigate_express_evidence.js --json",
+    "build:vx": "node scripts/build_vx.js --json",
+    "deploy:vx": "node scripts/deploy_express_mode.js --json",
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

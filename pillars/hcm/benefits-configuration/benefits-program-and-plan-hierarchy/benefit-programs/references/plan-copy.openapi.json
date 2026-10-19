@@ -1,0 +1,477 @@
+{
+  "openapi": "3.1.2",
+  "info": {
+    "title": "Oracle Fusion Benefits Plan Copy Import API",
+    "version": "1.2.0",
+    "description": "Host-neutral contract for the approval-gated Benefits Plan Copy import workflow. Authentication and the Fusion origin are supplied at runtime."
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Fusion origin supplied by the selected OAuth environment"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Plan Copy"
+    },
+    {
+      "name": "ESS"
+    }
+  ],
+  "security": [
+    {
+      "FusionOAuth": []
+    }
+  ],
+  "paths": {
+    "/hcmRestApi/resources/latest/benefitPlanCopyParameters": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/RestFrameworkVersion"
+        }
+      ],
+      "post": {
+        "operationId": "createPlanCopy",
+        "tags": [
+          "Plan Copy"
+        ],
+        "summary": "Create a Benefits Plan Copy import",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/vnd.oracle.adf.resourceitem+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanCopyCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Plan Copy import created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanCopy"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hcmRestApi/resources/latest/benefitPlanCopyParameters/{plCopyId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/RestFrameworkVersion"
+        },
+        {
+          "$ref": "#/components/parameters/PlCopyId"
+        }
+      ],
+      "get": {
+        "operationId": "getPlanCopy",
+        "tags": [
+          "Plan Copy"
+        ],
+        "summary": "Get Plan Copy processing status",
+        "responses": {
+          "200": {
+            "description": "Plan Copy import status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanCopy"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hcmRestApi/resources/latest/benefitPlanCopyParameters/{plCopyId}/enclosure/PackageContent": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/RestFrameworkVersion"
+        },
+        {
+          "$ref": "#/components/parameters/PlCopyId"
+        }
+      ],
+      "put": {
+        "operationId": "uploadPlanCopyPackage",
+        "tags": [
+          "Plan Copy"
+        ],
+        "summary": "Upload the Plan Copy package enclosure",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/zip": {}
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Package uploaded"
+          }
+        }
+      }
+    },
+    "/hcmRestApi/resources/latest/benefitPlanCopyParameters/{plCopyId}/enclosure/RequestLogs": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/RestFrameworkVersion"
+        },
+        {
+          "$ref": "#/components/parameters/PlCopyId"
+        }
+      ],
+      "get": {
+        "operationId": "getPlanCopyRequestLog",
+        "tags": [
+          "Plan Copy"
+        ],
+        "summary": "Download the consolidated Plan Copy import log",
+        "responses": {
+          "200": {
+            "description": "Consolidated import log stored in PARAM_ATTRIBUTE_BLOB2",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hcmRestApi/resources/latest/benefitPlanCopyParameters/{plCopyId}/action/generateMappings": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/RestFrameworkVersion"
+        },
+        {
+          "$ref": "#/components/parameters/PlCopyId"
+        }
+      ],
+      "post": {
+        "operationId": "generatePlanCopyMappings",
+        "tags": [
+          "Plan Copy"
+        ],
+        "summary": "Generate mappings and import the RequestSource FDOS Plan Copy package",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/AdfAction"
+        },
+        "responses": {
+          "200": {
+            "description": "Combined mapping and import ESS request submitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hcmRestApi/resources/latest/benefitPlanCopyParameters/{plCopyId}/child/mappings": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/RestFrameworkVersion"
+        },
+        {
+          "$ref": "#/components/parameters/PlCopyId"
+        }
+      ],
+      "get": {
+        "operationId": "listPlanCopyMappings",
+        "tags": [
+          "Plan Copy"
+        ],
+        "summary": "List generated Plan Copy mappings",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "totalResults",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plan Copy mappings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hcmRestApi/resources/latest/benefitPlanCopyParameters/{plCopyId}/child/logs": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/RestFrameworkVersion"
+        },
+        {
+          "$ref": "#/components/parameters/PlCopyId"
+        }
+      ],
+      "get": {
+        "operationId": "listPlanCopyLogs",
+        "tags": [
+          "Plan Copy"
+        ],
+        "summary": "List Plan Copy processing logs",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "totalResults",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plan Copy processing logs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ess/rest/scheduler/v1/requests/{requestId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/RequestId"
+        }
+      ],
+      "get": {
+        "operationId": "getEssRequest",
+        "tags": [
+          "ESS"
+        ],
+        "summary": "Get an ESS request status",
+        "responses": {
+          "200": {
+            "description": "ESS request status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "FusionOAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "OAuth 2.0 access token",
+        "description": "Access token supplied by the shared Fusion OAuth client"
+      }
+    },
+    "parameters": {
+      "RestFrameworkVersion": {
+        "name": "REST-Framework-Version",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "const": "9"
+        }
+      },
+      "PlCopyId": {
+        "name": "plCopyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "RequestId": {
+        "name": "requestId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "requestBodies": {
+      "AdfAction": {
+        "required": true,
+        "content": {
+          "application/vnd.oracle.adf.action+json": {
+            "schema": {
+              "type": "object",
+              "maxProperties": 0
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "PlanCopyCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "Name",
+          "EffectiveDate",
+          "FileName",
+          "ComponentObjType",
+          "Description",
+          "ReuseCode",
+          "SendNotifications",
+          "RequestSource"
+        ],
+        "properties": {
+          "Name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "EffectiveDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "FileName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ComponentObjType": {
+            "type": "string",
+            "const": "PLN"
+          },
+          "Description": {
+            "type": "string",
+            "const": "Benefits Plan Copy REST import"
+          },
+          "ReuseCode": {
+            "type": "string",
+            "const": "N"
+          },
+          "SendNotifications": {
+            "type": "string",
+            "const": "N"
+          },
+          "RequestSource": {
+            "type": "string",
+            "const": "FDOS",
+            "description": "Runs import from the generateMappings request without a separate submitImport action."
+          }
+        }
+      },
+      "PlanCopy": {
+        "type": "object",
+        "properties": {
+          "PlCopyId": {
+            "type": "integer"
+          },
+          "ImportPlDesign": {
+            "type": "integer"
+          },
+          "RequestStatus": {
+            "type": "string"
+          },
+          "MappingRequestStatus": {
+            "type": "string"
+          }
+        }
+      },
+      "ActionResult": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "object"
+              }
+            ]
+          }
+        }
+      },
+      "CollectionResponse": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "totalResults": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}

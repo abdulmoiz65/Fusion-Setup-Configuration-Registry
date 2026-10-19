@@ -1,0 +1,255 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_FAST_FORMULA",
+      "task_name": "Fast Formulas",
+      "start_node": "FF.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "FF.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "FF.RESOLVE_DEPENDENCIES",
+            "invalid": "FF.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 151
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FF.RESOLVE_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "FF.RESOLVE_REFERENCES",
+            "blocked": "FF.HANDLE_ERROR",
+            "unsupported": "FF.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "FF.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated Fast Formula request with an explicit formula type and legislative scope",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FF.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FF.APPLY_DEFAULTS",
+            "not_required": "FF.APPLY_DEFAULTS",
+            "blocked": "FF.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "FF.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Fast Formula Type or Legislative Data Group reference or LOV-style value requires validation or resolution",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FF.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "FF.ENFORCE_DESIGN",
+            "skipped": "FF.ENFORCE_DESIGN",
+            "invalid": "FF.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "FF.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "EffectiveEndDate is blank or explicitly supplied",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FF.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "FF.EXECUTION_GATE",
+            "noncompliant": "FF.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "FF.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependencies and defaults are ready and formula or HDL design is available for review",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FF.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "hdl_preparation_ready": "FF.DONE_HDL_PREPARATION",
+            "guidance_ready": "FF.DONE_GUIDANCE",
+            "blocked": "FF.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "FF.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation, dependency, reference resolution, defaulting, and design checks completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FF.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A prior node reports invalid, blocked, unsupported, unauthorized, failed, or uncertain",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FF.DONE_HDL_PREPARATION",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FF.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The HDL contract is validated for handoff to a separately authorized core.data-loader workflow; no Fusion write is authorized here",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FF.DONE_GUIDANCE",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FF.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Source-backed Fast Formula guidance is ready for return; no Fusion write occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Blocking, unsupported, or failure details are safely classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

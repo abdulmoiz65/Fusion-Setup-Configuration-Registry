@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "exceptions": [
+    {
+      "id": "COMMON-SECURITY-CONSOLE-001",
+      "rule": "pillar.effective_catalog_hierarchy",
+      "status": "approved",
+      "skill_path": "pillars/common/security-console/manage-job-roles",
+      "skill_id": "common.security-console.manage-job-roles",
+      "layer": "pillar",
+      "pillar": "Common",
+      "approval_basis": "Repository user explicitly approved catalog placement as an exception on 2026-10-12. Merge authorization remains subject to repository owner review.",
+      "reason": "Canonical reusable Common Security Console setup guidance spans offerings; security-console is a shared domain folder, not a generated Oracle offering."
+    },
+    {
+      "id": "COMMON-SECURITY-CONSOLE-001",
+      "rule": "pillar.effective_catalog_hierarchy",
+      "status": "approved",
+      "skill_path": "pillars/common/security-console/manage-duties",
+      "skill_id": "common.security-console.manage-duties",
+      "layer": "pillar",
+      "pillar": "Common",
+      "approval_basis": "Repository user explicitly approved catalog placement as an exception on 2026-10-12. Merge authorization remains subject to repository owner review.",
+      "reason": "Canonical reusable Common Security Console setup guidance spans offerings; security-console is a shared domain folder, not a generated Oracle offering."
+    },
+    {
+      "id": "COMMON-SECURITY-CONSOLE-001",
+      "rule": "pillar.effective_catalog_hierarchy",
+      "status": "approved",
+      "skill_path": "pillars/common/security-console/manage-data-security-policies",
+      "skill_id": "common.security-console.manage-data-security-policies",
+      "layer": "pillar",
+      "pillar": "Common",
+      "approval_basis": "Repository user explicitly approved catalog placement as an exception on 2026-10-12. Merge authorization remains subject to repository owner review.",
+      "reason": "Canonical reusable Common Security Console setup guidance spans offerings; security-console is a shared domain folder, not a generated Oracle offering."
+    },
+    {
+      "id": "COMMON-SECURITY-CONSOLE-001",
+      "rule": "pillar.effective_catalog_hierarchy",
+      "status": "approved",
+      "skill_path": "pillars/common/security-console/manage-hcm-role-provisioning-rules",
+      "skill_id": "common.security-console.manage-hcm-role-provisioning-rules",
+      "layer": "pillar",
+      "pillar": "Common",
+      "approval_basis": "Repository user explicitly approved catalog placement as an exception on 2026-10-12. Merge authorization remains subject to repository owner review.",
+      "reason": "Canonical reusable Common Security Console setup guidance spans offerings; security-console is a shared domain folder, not a generated Oracle offering."
+    },
+    {
+      "id": "COMMON-SECURITY-CONSOLE-001",
+      "rule": "pillar.effective_catalog_hierarchy",
+      "status": "approved",
+      "skill_path": "pillars/common/security-console/manage-hcm-ldap-user-account-options",
+      "skill_id": "common.security-console.manage-hcm-ldap-user-account-options",
+      "layer": "pillar",
+      "pillar": "Common",
+      "approval_basis": "Repository user explicitly approved catalog placement as an exception on 2026-10-12. Merge authorization remains subject to repository owner review.",
+      "reason": "Canonical reusable Common Security Console setup guidance spans offerings; security-console is a shared domain folder, not a generated Oracle offering."
+    },
+    {
+      "id": "COMMON-SECURITY-CONSOLE-001",
+      "rule": "pillar.effective_catalog_hierarchy",
+      "status": "approved",
+      "skill_path": "pillars/common/security-console/manage-security-fsm-skill",
+      "skill_id": "common.security-console.manage-security-fsm-skill",
+      "layer": "pillar",
+      "pillar": "Common",
+      "approval_basis": "Repository user explicitly approved catalog placement as an exception on 2026-10-12. Merge authorization remains subject to repository owner review.",
+      "reason": "Canonical reusable Common Security Console setup guidance spans offerings; security-console is a shared domain folder, not a generated Oracle offering."
+    },
+    {
+      "id": "COMMON-SECURITY-CONSOLE-001",
+      "rule": "pillar.effective_catalog_hierarchy",
+      "status": "approved",
+      "skill_path": "pillars/common/security-console/user-security-common",
+      "skill_id": "common.security-console.user-security-common",
+      "layer": "pillar",
+      "pillar": "Common",
+      "approval_basis": "Repository user explicitly approved catalog placement as an exception on 2026-10-12. Merge authorization remains subject to repository owner review.",
+      "reason": "Canonical reusable Common Security Console setup guidance spans offerings; security-console is a shared domain folder, not a generated Oracle offering."
+    },
+    {
+      "id": "COMMON-SECURITY-CONSOLE-001",
+      "rule": "pillar.effective_catalog_hierarchy",
+      "status": "approved",
+      "skill_path": "pillars/common/security-console/bulk-user-role-provisioning",
+      "skill_id": "common.security-console.bulk-user-role-provisioning",
+      "layer": "pillar",
+      "pillar": "Common",
+      "approval_basis": "Repository user explicitly approved catalog placement as an exception on 2026-10-12. Merge authorization remains subject to repository owner review.",
+      "reason": "Canonical reusable Common Security Console setup guidance spans offerings; security-console is a shared domain folder, not a generated Oracle offering."
+    }
+  ]
+}

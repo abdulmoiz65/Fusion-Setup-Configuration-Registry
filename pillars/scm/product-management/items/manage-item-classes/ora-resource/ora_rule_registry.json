@@ -1,0 +1,206 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "EGO_MANAGE_ITEM_CLASSES",
+      "task_name": "Manage Item Classes",
+      "start_node": "MICS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "MICS.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MICS.RESOLVE_REFERENCES",
+            "invalid": "MICS.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before any reference resolution or final-package readiness validation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MICS.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MICS.CHECK_DEPENDENCIES",
+            "blocked": "MICS.HANDLE_ERROR",
+            "failure": "MICS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MICS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve every applicable local reference from approved export and Run Book evidence",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MICS.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MICS.ENFORCE_DESIGN",
+            "blocked": "MICS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MICS.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After reference resolution and before design enforcement",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MICS.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "MICS.PACKAGE_PREVIEW_GATE",
+            "blocked": "MICS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MICS.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before final-package readiness validation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MICS.PACKAGE_PREVIEW_GATE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MICS.READY_FOR_DATA_LOADER_PREVIEW",
+            "blocked": "MICS.HANDLE_ERROR",
+            "failure": "MICS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MICS.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After the task SKILL.md local workflow produces the exact final immutable FSM ZIP and immediately before core.data-loader builds its preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MICS.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MICS.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, dependency, enforcement, or package-readiness failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MICS.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MICS.READY_FOR_DATA_LOADER_PREVIEW",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MICS.PACKAGE_PREVIEW_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All task rules and final-package readiness checks passed; the central Data Loader preview has not yet been created or approved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

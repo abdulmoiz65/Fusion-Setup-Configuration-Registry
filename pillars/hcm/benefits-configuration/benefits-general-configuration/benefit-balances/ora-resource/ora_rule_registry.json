@@ -1,0 +1,312 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "BEN_MANAGE_BENEFIT_BALANCE",
+      "task_name": "Benefit Balances",
+      "start_node": "BEN_BAL.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "BEN_BAL.VALIDATE_REQUEST",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "BEN_BAL.CHECK_READINESS",
+            "invalid": "BEN_BAL.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate operation, object, artifact, target context, record prerequisites, per-section date-effectivity and effectiveOf availability, and unsupported CSV routing",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_BAL.CHECK_READINESS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "BEN_BAL.LOOKUP_USAGE",
+            "missing": "BEN_BAL.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_BAL.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify prerequisites, active Run Book, and immutable Data Loader preflight readiness",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_BAL.LOOKUP_USAGE",
+          "node_type": "decision",
+          "sequence": 21,
+          "action_type": "reference_lookup",
+          "execution_route": "core.fusion-api.rest-api-client",
+          "transitions": {
+            "matched": "BEN_BAL.LOOKUP_UNITS",
+            "skipped": "BEN_BAL.LOOKUP_UNITS",
+            "forbidden": "BEN_BAL.LOOKUP_UNITS",
+            "invalid": "BEN_BAL.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_BAL.CHECK_READINESS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validate supplied BalanceUsageMeaning through BEN_BNFTS_BAL_USG; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_BAL.LOOKUP_UNITS",
+          "node_type": "decision",
+          "sequence": 22,
+          "action_type": "reference_lookup",
+          "execution_route": "core.fusion-api.rest-api-client",
+          "transitions": {
+            "matched": "BEN_BAL.LOOKUP_LEGAL_EMPLOYER",
+            "skipped": "BEN_BAL.LOOKUP_LEGAL_EMPLOYER",
+            "forbidden": "BEN_BAL.LOOKUP_LEGAL_EMPLOYER",
+            "invalid": "BEN_BAL.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_BAL.LOOKUP_USAGE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validate supplied NonMonetaryUnitsMeaning through BEN_NNMNTRY_UOM; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_BAL.LOOKUP_LEGAL_EMPLOYER",
+          "node_type": "decision",
+          "sequence": 23,
+          "action_type": "reference_lookup",
+          "execution_route": "core.fusion-api.rest-api-client",
+          "transitions": {
+            "matched": "BEN_BAL.LOOKUP_CURRENCY",
+            "skipped": "BEN_BAL.LOOKUP_CURRENCY",
+            "forbidden": "BEN_BAL.LOOKUP_CURRENCY",
+            "invalid": "BEN_BAL.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_BAL.LOOKUP_UNITS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validate supplied LegalEmployerName against legalEmployersLov Name; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_BAL.LOOKUP_CURRENCY",
+          "node_type": "decision",
+          "sequence": 24,
+          "action_type": "reference_lookup",
+          "execution_route": "core.fusion-api.rest-api-client",
+          "transitions": {
+            "matched": "BEN_BAL.DERIVE_EFFECTIVE_OF",
+            "skipped": "BEN_BAL.DERIVE_EFFECTIVE_OF",
+            "forbidden": "BEN_BAL.DERIVE_EFFECTIVE_OF",
+            "invalid": "BEN_BAL.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_BAL.LOOKUP_LEGAL_EMPLOYER"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validate supplied CurrencyName against currenciesLOV Name; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_BAL.DERIVE_EFFECTIVE_OF",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "derived": "BEN_BAL.ENFORCE_DESIGN",
+            "invalid": "BEN_BAL.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_BAL.LOOKUP_CURRENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Default an omitted supported Create, Update, or Correction EffectiveEndDate to 4712/12/31; derive and verify YYYY-MM-DD effectiveOf per supported row and omit it from unsupported sections",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_BAL.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "BEN_BAL.GATE_EXECUTION",
+            "blocked": "BEN_BAL.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_BAL.DERIVE_EFFECTIVE_OF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce object scope, current schema, identities, prerequisites, and mutation approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_BAL.GATE_EXECUTION",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "BEN_BAL.READY_FOR_EXECUTION",
+            "blocked": "BEN_BAL.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_BAL.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm current approval is bound to the validated artifact, target, and operation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_BAL.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "BEN_BAL.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, readiness, design, approval, or load failure blocks progress",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_BAL.READY_FOR_EXECUTION",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BEN_BAL.GATE_EXECUTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every documented gate passed; ready for the selected core.data-loader workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_BAL.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was safely disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

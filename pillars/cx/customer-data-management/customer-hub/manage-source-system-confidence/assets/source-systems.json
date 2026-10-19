@@ -1,0 +1,125 @@
+{
+  "catalog_id": "cx-cdm-source-systems",
+  "fusion_release": "11.13.26.10.0",
+  "schema_version": "1.0",
+  "source": {
+    "path": "fusionapps/crm/hz/db/data/OrigSystemSeedSD.xml",
+    "sha256": "d2a5e2c3a46ae7580712849fa01766f335e3a94ca7e17bed6663229fd27a9cbf"
+  },
+  "orig_systems": [
+    {
+      "orig_system": "CSV",
+      "orig_system_name": "Comma separated values",
+      "description": "Maintains cross reference between Oracle Fusion applications database and records imported using comma-separated files.",
+      "seeded": true
+    },
+    {
+      "orig_system": "DAAS",
+      "orig_system_name": "Oracle Data and Insight Cloud",
+      "description": "Used for recording cross-references between Oracle CX Sales and B2B Service, and Oracle Data as a Service.",
+      "seeded": true
+    },
+    {
+      "orig_system": "DATAFOX",
+      "orig_system_name": "DataFox",
+      "description": "DataFox",
+      "seeded": true
+    },
+    {
+      "orig_system": "DNB",
+      "orig_system_name": "D&B",
+      "description": "Maintains cross reference between Oracle Fusion applications database and D&B records.",
+      "seeded": true
+    },
+    {
+      "orig_system": "FUSION",
+      "orig_system_name": "Oracle Fusion Applications",
+      "description": "Used to capture content source for records created or updated by various out of box Oracle Fusion Applications processes.",
+      "seeded": true
+    },
+    {
+      "orig_system": "FUSION_HCM",
+      "orig_system_name": "Oracle Fusion Human Capital Management",
+      "description": "Maintains cross reference between Oracle Fusion Human Capital Management applications and Customer Data Management applications.",
+      "seeded": true
+    },
+    {
+      "orig_system": "FUSION_MOBILE",
+      "orig_system_name": "Oracle Fusion Mobile Applications",
+      "description": "Maintains cross reference between Oracle Fusion applications database and mobile devices.",
+      "seeded": true
+    },
+    {
+      "orig_system": "LINKEDIN",
+      "orig_system_name": "LinkedIn Sales Navigator",
+      "description": "Maintains cross-references between Oracle CX Sales and B2B Service records and LinkedIn profiles",
+      "seeded": true
+    },
+    {
+      "orig_system": "ONE_TIME_PAYMENTS",
+      "orig_system_name": "Payment request for one time payments",
+      "description": "",
+      "seeded": true
+    },
+    {
+      "orig_system": "OPS",
+      "orig_system_name": "Oracle Fusion Order Orchestration And Planning",
+      "description": "Used by Order Orchestration And Planning.",
+      "seeded": true
+    },
+    {
+      "orig_system": "ORA_BM_CPQ",
+      "orig_system_name": "Big Machines CPQ Cloud",
+      "description": "Source System for Configure, Price and Cloud",
+      "seeded": true
+    },
+    {
+      "orig_system": "ORA_ELECTRONIC_DOCUMENTS",
+      "orig_system_name": "Electronic Documents",
+      "description": "Source system for electronic document orders",
+      "seeded": true
+    },
+    {
+      "orig_system": "ORA_FA_CPQ",
+      "orig_system_name": "Oracle CPQ",
+      "description": "Originating system for Oracle Fusion CPQ",
+      "seeded": true
+    },
+    {
+      "orig_system": "PIMDH",
+      "orig_system_name": "Product Information Management Data Hub",
+      "description": "Used by Product Information Management Data Hub for cross reference.",
+      "seeded": true
+    },
+    {
+      "orig_system": "PIMHCC",
+      "orig_system_name": "External Healthcare Catalog",
+      "description": "Item master enrichment for healthcare",
+      "seeded": true
+    },
+    {
+      "orig_system": "PIMOH",
+      "orig_system_name": "Oracle Health",
+      "description": "Sync Item with Oracle Health for EMR/EHR",
+      "seeded": true
+    },
+    {
+      "orig_system": "RNOW",
+      "orig_system_name": "RightNow Service Cloud",
+      "description": "Maintains cross reference between Oracle Fusion applications database and records imported using comma-separated files.",
+      "seeded": true
+    },
+    {
+      "orig_system": "UNKNOWN",
+      "orig_system_name": "Unknown Source System",
+      "description": "Default source system, used when specific source system is not known.",
+      "seeded": true
+    },
+    {
+      "orig_system": "CIS",
+      "orig_system_name": "Customer Information System",
+      "description": "Utilities Customer Care and Billing System",
+      "seeded": true
+    }
+  ]
+}

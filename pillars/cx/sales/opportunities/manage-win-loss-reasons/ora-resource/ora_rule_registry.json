@@ -1,0 +1,409 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "MOO_MANAGE_WIN/LOSS_REASONS",
+      "task_name": "Manage Win/Loss Reasons",
+      "start_node": "OPP.WIN_LOSS.VALIDATE",
+      "nodes": [
+        {
+          "id": "OPP.WIN_LOSS.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "OPP.WIN_LOSS.RESOLVE_PARENT",
+            "missing": "OPP.WIN_LOSS.RETURN_MISSING",
+            "invalid": "OPP.WIN_LOSS.RETURN_MISSING",
+            "failed": "OPP.WIN_LOSS.RETURN_FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Win/Loss Reasons request; preserve exact catalog identity and explicit set decisions. FSM mutation preparation may supply a classified same-target export-unavailability receipt instead of final ZIP/context and continue to the verifier. REST_FALLBACK Create, Update, or Disable accepts EXPORT_REQUEST_FAILED, PROCESS_FAILED, PROCESS_TIMEOUT, COMPLETED_LOOKUP_OMISSION, or COMPLETED_UNUSABLE_EXPORT only as candidates pending fresh REST reads and exact-preview approval; no loader capability or task context is required for REST",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.RESOLVE_PARENT",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OPP.WIN_LOSS.RESOLVE_SET",
+            "missing": "OPP.WIN_LOSS.RETURN_MISSING",
+            "failed": "OPP.WIN_LOSS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.WIN_LOSS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the exact MOO_SETID_WIN_LOSS_REASON parent, task scope, editability metadata, canonical link, and nonblank ReferenceGroupName",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.RESOLVE_SET",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OPP.WIN_LOSS.DEPENDENCY",
+            "not_applicable": "OPP.WIN_LOSS.DEPENDENCY",
+            "missing": "OPP.WIN_LOSS.RETURN_MISSING",
+            "failed": "OPP.WIN_LOSS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.WIN_LOSS.RESOLVE_PARENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require the explicit Common-versus-different set decision, then resolve one exact set and any requested BU assignment for SingleLookup or every Package REST_FALLBACK row; reject malformed, unknown, cross-environment, Common-choice, selector, assignment, export, or row-identity conflicts without substitution; FSM Package mode defers per-row validation to verify_win_loss_reason_fsm_package, and Export has no set selector",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.DEPENDENCY",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "OPP.WIN_LOSS.RESOLVE_STATE",
+            "fallback_eligible": "OPP.WIN_LOSS.RESOLVE_STATE",
+            "fallback_candidate": "OPP.WIN_LOSS.RESOLVE_STATE",
+            "not_applicable": "OPP.WIN_LOSS.RESOLVE_STATE",
+            "missing": "OPP.WIN_LOSS.RETURN_MISSING",
+            "failed": "OPP.WIN_LOSS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.WIN_LOSS.RESOLVE_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Preserve the exact catalog/FND identities. For FSM mutation preparation, a classified export-unavailability receipt may continue as fallback_candidate without a final ZIP or Data Loader context. REST_FALLBACK receipts remain candidates until fresh requested-row reads and, for completed lookup omission, nonempty inventory confirmation. Verify exact explicit sets and returned reference group/BU assignments; never infer Common Set or query loader capability",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.RESOLVE_STATE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OPP.WIN_LOSS.VERIFY_PACKAGE",
+            "not_found": "OPP.WIN_LOSS.VERIFY_PACKAGE",
+            "empty": "OPP.WIN_LOSS.VERIFY_PACKAGE",
+            "not_applicable": "OPP.WIN_LOSS.VERIFY_PACKAGE",
+            "failed": "OPP.WIN_LOSS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.WIN_LOSS.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve current state for SingleLookup or every distinct Package REST_FALLBACK row; for COMPLETED_LOOKUP_OMISSION also read the complete existing inventory of each selected set through the documented resolver and require nonempty results; FSM Package mode and full-task Export continue as not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.VERIFY_PACKAGE",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "ready": "OPP.WIN_LOSS.DESIGN",
+            "fallback_eligible": "OPP.WIN_LOSS.DESIGN",
+            "fallback_required": "OPP.WIN_LOSS.RETURN_FALLBACK_REQUIRED",
+            "not_applicable": "OPP.WIN_LOSS.DESIGN",
+            "missing": "OPP.WIN_LOSS.RETURN_MISSING",
+            "failed": "OPP.WIN_LOSS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.WIN_LOSS.RESOLVE_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate usable complete FND Export baselines and reviewed FSM deltas; before a mutation handoff return fallback_required for EXPORT_REQUEST_FAILED, PROCESS_FAILED, PROCESS_TIMEOUT, COMPLETED_LOOKUP_OMISSION, or COMPLETED_UNUSABLE_EXPORT. REST_FALLBACK needs its exact-target receipt and fresh parent/set/requested-row state; completed omission also needs nonempty inventory confirmation. Return fallback_eligible for direct Apps Common REST without loader capability/context/ZIP requirements. Inventory, Read and REST Delete are not_applicable; Export/Import remain FSM-only",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.DESIGN",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "OPP.WIN_LOSS.GATE",
+            "blocked": "OPP.WIN_LOSS.RETURN_MISSING",
+            "failed": "OPP.WIN_LOSS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.WIN_LOSS.VERIFY_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce explicit exact sets, RequestMode, fixed identity, per-row operation/state and impact, minimal deltas, preserved native FSM content and catalog/execution routing. An unavailable/unusable export selects only direct REST fallback after its receipt and fresh reads; bind approval to one immutable REST preview and enforce stop-on-first-failure/no-rollback. FSM-only/Data Loader-only constraints or submitted/uncertain mutations block route changes",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.GATE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read_only": "OPP.WIN_LOSS.RETURN_READ",
+            "rest_approved": "OPP.WIN_LOSS.RETURN_REST_READY",
+            "fsm_handoff_ready": "OPP.WIN_LOSS.RETURN_FSM_READY",
+            "accepted_initiation": "OPP.WIN_LOSS.RETURN_ACCEPTED",
+            "export_ready": "OPP.WIN_LOSS.RETURN_EXPORT_READY",
+            "missing": "OPP.WIN_LOSS.RETURN_MISSING",
+            "failed": "OPP.WIN_LOSS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.WIN_LOSS.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return read-only or validated export results, native FSM Data Loader handoff, or direct Apps Common REST readiness after exact-preview approval. Any unavailable/unusable exact-target FSM export selects direct REST fallback after applicable fresh reads; no registered loader capability/context/session is used for fallback. Never reuse another route approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.RETURN_READ",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.WIN_LOSS.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Inventory or Read completed with exact parent, reference-group, pagination, set, assignment when requested, and lookup evidence",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.RETURN_REST_READY",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.WIN_LOSS.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "One exact REST Delete or ordered REST_FALLBACK Create/Update/Disable list has its separately approved immutable preview and is ready for Apps Common submission once per request with immediate per-row verification; stop on first failure/uncertainty, report partial outcomes and do not roll back automatically. No Data Loader capability, context, session, ZIP or approval is involved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.RETURN_FSM_READY",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.WIN_LOSS.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "One unchanged FND_MANAGE_SET_ENABLED_LOOKUPS Create, Update, Disable, or Import ZIP with only reviewed MOO_SETID_WIN_LOSS_REASON changes, preserved unrelated content, exact catalog/execution identities, and resolved persisted catalog task context is ready for core.data-loader Task Hook validation and preview; no upload approval or execution has occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.RETURN_ACCEPTED",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.WIN_LOSS.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Core Data Loader returned accepted initiation; end this request without polling, ProcessLog retrieval, result retrieval, or live verification until a later explicit request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.RETURN_EXPORT_READY",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.WIN_LOSS.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The fresh complete FND_MANAGE_SET_ENABLED_LOOKUPS export baseline and its MOO_SETID_WIN_LOSS_REASON inventory are validated for review or package preparation under the Manage Win/Loss Reasons catalog context; no mutation package or upload approval is implied",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.RETURN_MISSING",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Required input, exact parent/set/code state, impact, native FSM package/context evidence, fallback receipt/fresh reads or route-owned approval is missing. REST_FALLBACK always uses direct REST preview/approval and requires no Data Loader context/ZIP. Native FSM Data Loader approval belongs to its later session and is not required before handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.RETURN_FAILED",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Validation, parent/set/code lookup, package/fallback verification, handoff, execution, import, or later verification failed; for REST return successful, failed/uncertain, and unattempted row groups without retry or rollback",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.WIN_LOSS.RETURN_FALLBACK_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.WIN_LOSS.VERIFY_PACKAGE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return RestFallbackRequired, classified FsmExportUnavailableReason for EXPORT_REQUEST_FAILED, PROCESS_FAILED, PROCESS_TIMEOUT, COMPLETED_LOOKUP_OMISSION, or COMPLETED_UNUSABLE_EXPORT, actual attempt/process status, sanitized exact-target receipt/defect and available artifact path/hash, unchanged requested rows/confirmed sets, and RestFallbackEligible=false. This terminal performs no external action. The invoking router continues the same mutation once as REST_FALLBACK for fresh parent/set/requested-row validation and additional nonempty inventory only for completed lookup omission, then direct Apps Common REST preview and separate approval. Do not re-export, query loader capability, require task context/final ZIP, reuse approval, or reroute after submission/uncertainty or an explicit incompatible-route constraint",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

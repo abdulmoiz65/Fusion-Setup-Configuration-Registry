@@ -1,0 +1,382 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_REDWOOD_MANUFACTURING_RESOURCE_INSTANCES",
+      "task_name": "Manufacturing Resource Instances",
+      "start_node": "MRINST.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "MRINST.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MRINST.RESOLVE_PARENT",
+            "invalid": "MRINST.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Manufacturing Resource Instances import is prepared.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRINST.RESOLVE_PARENT",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "MRINST.RESOLVE_LABOR_PARTY",
+            "not_found": "MRINST.BLOCKED"
+          },
+          "prerequisites": [
+            "MRINST.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A ResourceId, or a complete ResourceCode and OrganizationCode pair, is supplied for a Manufacturing Resource Instances import.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRINST.RESOLVE_LABOR_PARTY",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MRINST.RESOLVE_SCHEDULING",
+            "not_applicable": "MRINST.RESOLVE_SCHEDULING",
+            "not_found": "MRINST.BLOCKED"
+          },
+          "prerequisites": [
+            "MRINST.RESOLVE_PARENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A LABOR instance supplies Person, Person Name, or Party Name and needs PartyId derivation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRINST.RESOLVE_SCHEDULING",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MRINST.VERIFY_ASSET",
+            "not_applicable": "MRINST.VERIFY_ASSET",
+            "failure": "MRINST.BLOCKED"
+          },
+          "prerequisites": [
+            "MRINST.RESOLVE_LABOR_PARTY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run resolve_workforce_scheduling for every LABOR create/update; only other child types/operations return not_applicable.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRINST.VERIFY_ASSET",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MRINST.VERIFY_WORK_CENTER",
+            "not_applicable": "MRINST.VERIFY_WORK_CENTER",
+            "failure": "MRINST.BLOCKED"
+          },
+          "prerequisites": [
+            "MRINST.RESOLVE_SCHEDULING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run verify_equipment_asset for a supplied EQUIPMENT asset; otherwise record not_applicable.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRINST.VERIFY_WORK_CENTER",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MRINST.VALIDATE_DOMAIN_EVIDENCE",
+            "not_applicable": "MRINST.VALIDATE_DOMAIN_EVIDENCE",
+            "failure": "MRINST.BLOCKED"
+          },
+          "prerequisites": [
+            "MRINST.VERIFY_ASSET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run verify_primary_work_center_assignment for every supplied or asset-derived primary work center; otherwise record not_applicable.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRINST.VALIDATE_DOMAIN_EVIDENCE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MRINST.DEPENDENCIES",
+            "invalid": "MRINST.BLOCKED"
+          },
+          "prerequisites": [
+            "MRINST.VERIFY_WORK_CENTER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Check required LaborEligibilityEvidence content and binding after all applicable read-only domain lookups; no person association requires no person evidence.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRINST.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MRINST.DESIGN",
+            "blocked": "MRINST.BLOCKED"
+          },
+          "prerequisites": [
+            "MRINST.VALIDATE_DOMAIN_EVIDENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require all applicable named resolver results and reviewed person evidence before evaluating readiness; metadata-only or unavailable domain evidence is blocked.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRINST.DESIGN",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "MRINST.ROUTE_REST",
+            "blocked": "MRINST.BLOCKED"
+          },
+          "prerequisites": [
+            "MRINST.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All applicable domain evidence passes dependency validation; evaluate every Domain Eligibility Rule before ready.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRINST.ROUTE_REST",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "equipment_rest_supported": "MRINST.EQUIPMENT_READY",
+            "labor_rest_supported": "MRINST.LABOR_READY",
+            "rest_unsupported": "MRINST.FSM_APPROVAL",
+            "resource_type_invalid": "MRINST.BLOCKED"
+          },
+          "prerequisites": [
+            "MRINST.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "REST preflight and Data Loader metadata evaluate the selected child operation.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRINST.EQUIPMENT_READY",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MRINST.ROUTE_REST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The parent ResourceType is EQUIPMENT and core.data-loader validated productionResources/{ResourceId}/child/EquipmentInstance.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRINST.LABOR_READY",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MRINST.ROUTE_REST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The parent ResourceType is LABOR and core.data-loader validated productionResources/{ResourceId}/child/LaborInstance.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRINST.FSM_APPROVAL",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "MRINST.FSM_READY",
+            "approval_missing": "MRINST.BLOCKED"
+          },
+          "prerequisites": [
+            "MRINST.ROUTE_REST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "REST metadata proves the selected child operation is unsupported.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRINST.FSM_READY",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MRINST.FSM_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "core.data-loader validated the immutable FSM artifact and the user explicitly approved it.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRINST.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A required identity, applicable domain evidence, child route, metadata contract, or approval is missing or failed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

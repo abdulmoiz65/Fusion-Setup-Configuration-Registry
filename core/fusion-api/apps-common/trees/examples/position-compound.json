@@ -1,0 +1,21 @@
+{
+  "operation": "create_tree",
+  "object": {
+    "TreeStructureCode": "PER_POS_TREE_STRUCTURE",
+    "TreeCode": "DEMO_POSITION_TREE",
+    "TreeName": "Demo Position Tree"
+  },
+  "versions": [{
+    "TreeVersionName": "DEMO_POSITION_VERSION",
+    "nodes": [{
+      "node_ref": "root-position",
+      "DataSourceId": "SYNTHETIC_POSITION_SOURCE",
+      "Pk1StartValue": "SYNTHETIC_POSITION_VALUE"
+    }]
+  }],
+  "parameters": [{
+    "DataSourceId": "SYNTHETIC_POSITION_SOURCE",
+    "ParameterId": "SYNTHETIC_PARAMETER",
+    "ParameterValue": "SYNTHETIC_VALUE"
+  }]
+}

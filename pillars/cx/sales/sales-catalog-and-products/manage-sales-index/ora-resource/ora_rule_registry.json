@@ -1,0 +1,207 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_SALES_INDEX",
+      "task_name": "Manage Sales Index",
+      "start_node": "SALES_INDEX.VALIDATE-REQUEST",
+      "nodes": [
+        {
+          "id": "SALES_INDEX.VALIDATE-REQUEST",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SALES_INDEX.CHECK-DELEGATION-CONTRACT",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Sales Index request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_INDEX.CHECK-DELEGATION-CONTRACT",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "SALES_INDEX.VERIFY-INDEX-PROFILE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SALES_INDEX.VALIDATE-REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every validated request; resolve PM_INDEXES_DELEGATION here, then evaluate CURRENT_INDEX_METADATA and NAMED_PROFILE in VERIFY-INDEX-PROFILE",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_INDEX.VERIFY-INDEX-PROFILE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matches": "SALES_INDEX.APPLY-REBUILD-DEFAULT",
+            "delta": "SALES_INDEX.ENFORCE-DELEGATED-INDEXING",
+            "not_found": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SALES_INDEX.CHECK-DELEGATION-CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every dependency-ready selected index request; first verify_index_attribute_profile then resolve_sales_index_attribute_names; matches requires a complete named profile and no removals; delta includes explicit removals; any lookup failure blocks",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_INDEX.APPLY-REBUILD-DEFAULT",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "rebuild_prepared": "SALES_INDEX.DONE-REBUILD-HANDOFF",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SALES_INDEX.VERIFY-INDEX-PROFILE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected index already contains the complete requested profile",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_INDEX.ENFORCE-DELEGATED-INDEXING",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "delegated_request_prepared": "SALES_INDEX.DONE-DELTA-HANDOFF",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SALES_INDEX.VERIFY-INDEX-PROFILE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected index has missing requested identities or explicit removals; preserve the full named profile and removals for child-owned delta calculation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_INDEX.DONE-REBUILD-HANDOFF",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SALES_INDEX.APPLY-REBUILD-DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A rebuild-only request has been prepared for delegation to Manage Product Management Indexes.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_INDEX.DONE-DELTA-HANDOFF",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SALES_INDEX.ENFORCE-DELEGATED-INDEXING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A selected profile delta request has been prepared for delegation to Manage Product Management Indexes.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation, readiness, metadata comparison, or delegation handling is blocked.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

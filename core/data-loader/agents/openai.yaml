@@ -1,0 +1,4 @@
+interface:
+  display_name: "Data Loader"
+  short_description: "Validate, generate multi-object XLSX or DAT samples, and run Fusion data loads"
+  default_prompt: "Use the Data Loader skill to validate, generate loadable XLSX samples or an explicitly requested DAT sample for one or more registered business objects, run, or inspect this Oracle Fusion data load and show the complete user-friendly result directly in chat."

@@ -1,0 +1,155 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "FND_MANAGE_COMMON_LOOKUPS",
+      "task_name": "Manage Common Lookups",
+      "start_node": "MCL.VALIDATE_PROVIDER_INPUT",
+      "nodes": [
+        {
+          "id": "MCL.VALIDATE_PROVIDER_INPUT",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MCL.QUERY_LOOKUP_PROVIDER",
+            "blocked": "MCL.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before a lookup provider lookup or recommendation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCL.QUERY_LOOKUP_PROVIDER",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MCL.ENFORCE_PROVIDER_OWNERSHIP",
+            "blocked": "MCL.HANDLE_ISSUES",
+            "failure": "MCL.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "MCL.VALIDATE_PROVIDER_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before proposing a lookup configuration change with the exact runtime identifier supplied by the consuming task",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCL.ENFORCE_PROVIDER_OWNERSHIP",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "MCL.READY",
+            "blocked": "MCL.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "MCL.QUERY_LOOKUP_PROVIDER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a lookup recommendation or provider-owned change using the exact runtime identifier",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCL.HANDLE_ISSUES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MCL.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A provider dependency, identifier, validation, or approval gate is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCL.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocked provider dependency has been disclosed with a safe next action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCL.READY",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MCL.ENFORCE_PROVIDER_OWNERSHIP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Provider evidence supports a recommendation; any provider-owned mutation still needs user confirmation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

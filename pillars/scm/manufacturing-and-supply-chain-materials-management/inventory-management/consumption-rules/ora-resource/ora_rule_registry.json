@@ -1,0 +1,109 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_CONSUMPTION_RULES",
+      "task_name": "Consumption Rules",
+      "start_node": "CONSUMPTIONRULES.VALIDATE_OWNING_PARTY_CONTEXT",
+      "nodes": [
+        {
+          "id": "CONSUMPTIONRULES.VALIDATE_OWNING_PARTY_CONTEXT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CONSUMPTIONRULES.CHECK_DEPENDENCIES",
+            "invalid": "CONSUMPTIONRULES.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request. Apply the dependency only when `OwningPartySite` is supplied.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CONSUMPTIONRULES.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CONSUMPTIONRULES.DATALOADER_HANDOFF",
+            "blocked": "CONSUMPTIONRULES.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CONSUMPTIONRULES.VALIDATE_OWNING_PARTY_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every request after the Owning Party Site input gate and after a successful per-run `inventoryConsumptionRules` metadata preflight for the selected environment.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CONSUMPTIONRULES.DATALOADER_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CONSUMPTIONRULES.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The approved dependency passes; hand off the source to `core.data-loader`, which owns LOV and backend validation.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 13
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CONSUMPTIONRULES.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CONSUMPTIONRULES.VALIDATE_OWNING_PARTY_CONTEXT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The approved dependency is incomplete.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

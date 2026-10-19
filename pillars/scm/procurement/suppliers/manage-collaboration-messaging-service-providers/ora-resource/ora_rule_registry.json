@@ -1,0 +1,157 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_CMK_COLLAB_MESG_SERVICE_PROVIDER",
+      "task_name": "Manage Collaboration Messaging Service Providers",
+      "start_node": "CMKSP.INPUT_CONTRACT",
+      "nodes": [
+        {
+          "id": "CMKSP.INPUT_CONTRACT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "validated": "CMKSP.RESOLVE_PREREQUISITES",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A task CSV import is requested",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CMKSP.RESOLVE_PREREQUISITES",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "CMKSP.CHECK_DEPENDENCIES",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CMKSP.INPUT_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before task-CSV import approval",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CMKSP.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 18,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CMKSP.IMPORT_GATE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CMKSP.RESOLVE_PREREQUISITES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before task-CSV import approval",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CMKSP.IMPORT_GATE",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready_for_approval": "CMKSP.READY_FOR_APPROVAL",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CMKSP.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before upload or import initiation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CMKSP.READY_FOR_APPROVAL",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CMKSP.IMPORT_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "All read-only import gates have passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A validation or execution gate blocks import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

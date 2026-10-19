@@ -1,0 +1,318 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PAY_MANAGE_VALUE_BY_CRITERIA",
+      "task_name": "Values Defined by Criteria",
+      "start_node": "VALUE_BY_CRITERIA.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "VALUE_BY_CRITERIA.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "VALUE_BY_CRITERIA.RESOLVE_DEPENDENCIES",
+            "invalid": "VALUE_BY_CRITERIA.HANDLE_INPUT_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate Values Defined by Criteria HDL inputs without inferring headers, codes, or calculation payloads.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VALUE_BY_CRITERIA.RESOLVE_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "VALUE_BY_CRITERIA.RESOLVE_REFERENCES",
+            "blocked": "VALUE_BY_CRITERIA.HANDLE_DEPENDENCY_ERROR"
+          },
+          "prerequisites": [
+            "VALUE_BY_CRITERIA.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm target metadata, LDG, setup references, hierarchy, immutable artifact, and loader prerequisites.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VALUE_BY_CRITERIA.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "VALUE_BY_CRITERIA.APPLY_DEFAULTS",
+            "blocked": "VALUE_BY_CRITERIA.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "VALUE_BY_CRITERIA.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve target metadata and every required LDG, setup, calculation, and hierarchy reference without inventing a REST contract.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VALUE_BY_CRITERIA.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "VALUE_BY_CRITERIA.DESIGN_GATE",
+            "not_applicable": "VALUE_BY_CRITERIA.DESIGN_GATE",
+            "blocked": "VALUE_BY_CRITERIA.HANDLE_DESIGN_BLOCKER"
+          },
+          "prerequisites": [
+            "VALUE_BY_CRITERIA.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply only the documented retrieval-date and resilient fallback defaults after target evidence is available.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VALUE_BY_CRITERIA.DESIGN_GATE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "VALUE_BY_CRITERIA.EXECUTION_GATE",
+            "blocked": "VALUE_BY_CRITERIA.HANDLE_DESIGN_BLOCKER"
+          },
+          "prerequisites": [
+            "VALUE_BY_CRITERIA.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce the target-specific HDL contract, LDG-scoped hierarchy integrity, fallback behavior, and complete leaf payloads.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VALUE_BY_CRITERIA.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "VALUE_BY_CRITERIA.DONE",
+            "blocked": "VALUE_BY_CRITERIA.HANDLE_EXECUTION_BLOCKER"
+          },
+          "prerequisites": [
+            "VALUE_BY_CRITERIA.DESIGN_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require validated nonproduction evidence and the owning core.data-loader approval before a live HDL import.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VALUE_BY_CRITERIA.DONE",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "VALUE_BY_CRITERIA.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The task-local validation and readiness path completed; any live import remains owned by core.data-loader.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VALUE_BY_CRITERIA.HANDLE_INPUT_ERROR",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input validation failed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VALUE_BY_CRITERIA.HANDLE_DEPENDENCY_ERROR",
+          "node_type": "step",
+          "sequence": 81,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Dependency readiness failed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VALUE_BY_CRITERIA.HANDLE_LOOKUP_ERROR",
+          "node_type": "step",
+          "sequence": 82,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Reference resolution failed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VALUE_BY_CRITERIA.HANDLE_DESIGN_BLOCKER",
+          "node_type": "step",
+          "sequence": 83,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Design enforcement failed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "VALUE_BY_CRITERIA.HANDLE_EXECUTION_BLOCKER",
+          "node_type": "step",
+          "sequence": 84,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Execution readiness failed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return documented blocking issues for correction.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

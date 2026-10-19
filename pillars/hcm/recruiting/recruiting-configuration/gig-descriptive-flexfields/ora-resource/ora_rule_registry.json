@@ -1,0 +1,346 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_MANAGE_OM_GIG_DESCRIPTIVE_FLEXFIELDS",
+      "task_name": "Gig Descriptive Flexfields",
+      "start_node": "GIG_DFF.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "GIG_DFF.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "GIG_DFF.RESOLVE_REFERENCES",
+            "missing": "GIG_DFF.RETURN_ISSUES",
+            "invalid": "GIG_DFF.RETURN_ISSUES",
+            "ambiguous": "GIG_DFF.RETURN_ISSUES",
+            "unsupported": "GIG_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every supported request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GIG_DFF.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "GIG_DFF.CHECK_READINESS",
+            "missing": "GIG_DFF.RETURN_ISSUES",
+            "ambiguous": "GIG_DFF.RETURN_ISSUES",
+            "blocked": "GIG_DFF.RETURN_ISSUES",
+            "unsupported": "GIG_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GIG_DFF.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supported request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GIG_DFF.CHECK_READINESS",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "GIG_DFF.ENFORCE_DESIGN",
+            "missing": "GIG_DFF.RETURN_ISSUES",
+            "blocked": "GIG_DFF.RETURN_ISSUES",
+            "authorization": "GIG_DFF.RETURN_ISSUES",
+            "unsupported": "GIG_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GIG_DFF.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supported request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GIG_DFF.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "GIG_DFF.APPROVAL_GATE",
+            "blocked": "GIG_DFF.RETURN_ISSUES",
+            "conflict": "GIG_DFF.RETURN_ISSUES",
+            "unsupported": "GIG_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GIG_DFF.CHECK_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supported request",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GIG_DFF.APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "GIG_DFF.EXECUTE",
+            "not_required": "GIG_DFF.EXECUTE",
+            "missing": "GIG_DFF.RETURN_ISSUES",
+            "stale": "GIG_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GIG_DFF.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require approval for any mutation; read-only inspection and planning use not_required",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GIG_DFF.EXECUTE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "planned": "GIG_DFF.RETURN_PLAN_SUCCESS",
+            "configured": "GIG_DFF.RETURN_SEGMENT_SUCCESS",
+            "import_accepted": "GIG_DFF.MONITOR_IMPORT",
+            "verify_requested": "GIG_DFF.VERIFY",
+            "failed": "GIG_DFF.RETURN_ISSUES",
+            "uncertain": "GIG_DFF.RETURN_ISSUES",
+            "unsupported": "GIG_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GIG_DFF.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For create, update, or copy, establish the name first, then analyse this request's fresh exact-task export for copy/update, or a validated matching package for new create before building and validating the immutable Gig package; after core.data-loader approval, upload and initiate once and keep an accepted request ID internal for required completion monitoring Global create, copy, update, and disable may use the verified fallback after an export attempt fails, times out, or returns unusable rows; Global update and copy may instead use the confirmed fallback after an unavailable or empty export.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GIG_DFF.MONITOR_IMPORT",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "succeeded": "GIG_DFF.RETURN_IMPORT_SUCCESS",
+            "completed_with_errors": "GIG_DFF.RETURN_ISSUES",
+            "failed": "GIG_DFF.RETURN_ISSUES",
+            "timed_out": "GIG_DFF.RETURN_ISSUES",
+            "log_unavailable": "GIG_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GIG_DFF.EXECUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For an accepted create, update, or copy import, monitor every 15 seconds for at most 300 seconds, download and read the FSM ProcessLog, reconcile all actionable errors, and never retry the submission",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GIG_DFF.VERIFY",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "GIG_DFF.RETURN_VERIFY_SUCCESS",
+            "missing": "GIG_DFF.RETURN_ISSUES",
+            "invalid": "GIG_DFF.RETURN_ISSUES",
+            "failed": "GIG_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GIG_DFF.EXECUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only for a separate functional Verify request; task-scoped status monitoring and ProcessLog review remain mandatory for accepted create, update, or copy imports",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GIG_DFF.RETURN_PLAN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GIG_DFF.EXECUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported read-only inspection or plan completed without a Fusion mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GIG_DFF.RETURN_SEGMENT_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 91,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GIG_DFF.EXECUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An approved segment configuration action completed with reported evidence",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GIG_DFF.RETURN_IMPORT_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 93,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GIG_DFF.MONITOR_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Terminal status and the reviewed ProcessLog confirm clean completion; report only that the segment operation completed successfully and link the ProcessLog",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GIG_DFF.RETURN_VERIFY_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 94,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GIG_DFF.VERIFY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A separate verification request completed against the approved Gig design",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GIG_DFF.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any missing input, ambiguity, conflict, blocker, refusal, authorization failure, stale approval, failed action, or uncertain result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

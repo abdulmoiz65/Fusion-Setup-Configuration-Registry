@@ -1,0 +1,185 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_RENEWAL_TEMPLATES",
+      "task_name": "Manage Renewal Templates",
+      "start_node": "RT.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "RT.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RT.DESCRIBE_SCHEMA",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A renewal template create, update, or review request is prepared",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.DESCRIBE_SCHEMA",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RT.RESOLVE_COTERMINATE",
+            "blocked": "RETURN_ISSUES",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RT.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A REST operation is planned",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.RESOLVE_COTERMINATE",
+          "node_type": "decision",
+          "sequence": 22,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RT.APPLY_DEFAULTS",
+            "blocked": "RETURN_ISSUES",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RT.DESCRIBE_SCHEMA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A renewal template request supplies a Coterminate value",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "RT.ENFORCE_DESIGN",
+            "not_applicable": "RT.ENFORCE_DESIGN",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RT.RESOLVE_COTERMINATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create request has completed schema validation",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RETURN_SUCCESS",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RT.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A renewal template create, update, or review request has completed schema validation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RT.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All documented input and design checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation, describe access, or design enforcement is blocked or fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

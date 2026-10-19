@@ -1,0 +1,244 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_QP_MANAGE_PRICING_LOOKUPS",
+      "task_name": "Manage Pricing Lookups",
+      "start_node": "QP.LOOKUPS.RESOLVE_TYPE",
+      "nodes": [
+        {
+          "id": "QP.LOOKUPS.RESOLVE_TYPE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "QP.LOOKUPS.RESOLVE_CODE",
+            "not_found": "RETURN_LOOKUP_ISSUES",
+            "ambiguous": "RETURN_LOOKUP_ISSUES",
+            "failed": "RETURN_LOOKUP_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Pricing lookup request is received.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 224
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.LOOKUPS.RESOLVE_CODE",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "existing": "QP.LOOKUPS.ENFORCE_DESIGN",
+            "available_for_create": "QP.LOOKUPS.ENFORCE_DESIGN",
+            "not_found": "RETURN_LOOKUP_ISSUES",
+            "ambiguous": "RETURN_LOOKUP_ISSUES",
+            "failed": "RETURN_LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "QP.LOOKUPS.RESOLVE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A lookup code is created, changed, or inspected after its lookup type resolves.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 225
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.LOOKUPS.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "QP.LOOKUPS.EXECUTION_GATE",
+            "oracle_consultation_required": "RETURN_ORACLE_CONSULTATION",
+            "blocked": "RETURN_DESIGN_ISSUES"
+          },
+          "prerequisites": [
+            "QP.LOOKUPS.RESOLVE_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The lookup type and code have resolved.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.LOOKUPS.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved-preview": "RETURN_READY_FOR_AUTHORIZED_EXECUTION",
+            "approval_missing": "RETURN_APPROVAL_REQUIRED",
+            "contract_missing": "RETURN_EXECUTION_CONTRACT_ISSUES"
+          },
+          "prerequisites": [
+            "QP.LOOKUPS.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A compliant lookup change is ready for the task-specific authorized executor.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_READY_FOR_AUTHORIZED_EXECUTION",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.LOOKUPS.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The lookup-resolution, design, and approval gates passed; any mutation remains subject to its authorized execution route and current approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_LOOKUP_ISSUES",
+          "node_type": "terminal",
+          "sequence": 61,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "The read-only lookup could not resolve a unique required identity.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ORACLE_CONSULTATION",
+          "node_type": "terminal",
+          "sequence": 62,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Oracle guidance is required before a change with an uncertain effect on Pricing logic.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_DESIGN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 63,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A documented design rule blocks the requested lookup change.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_APPROVAL_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 64,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A current approval bound to the exact mutation preview is required.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_EXECUTION_CONTRACT_ISSUES",
+          "node_type": "terminal",
+          "sequence": 65,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "The task-specific execution contract is incomplete or cannot authorize a mutation.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

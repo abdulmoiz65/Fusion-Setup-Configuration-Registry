@@ -1,0 +1,1243 @@
+{
+  "classification": "Oracle Highly Restricted",
+  "status": "INTERFACE_MAPPING_REVIEW_ONLY",
+  "source_url": "https://codesearch.oraclecorp.com/source/xref/FUSIONAPPS_11.13.26.10.0_LINUX.X64/fusionapps/fin/ar/db/plsql/ar_customer_interface_pkg.pkb",
+  "captured_source_sha256": "401a440df99fff2e8e2556cac9204a62fa7b3c61c1020f8dbf551ebf163b538f",
+  "control_source_sha256": "c85f853f709c7adaec364476049c74f21f00ac5fc5bfdf97b6e2a96c89a548e4",
+  "field_count": 87,
+  "live_ready": false,
+  "limits": [
+    "Interface mapping is not proof of persisted values or update mutability.",
+    "Product-owned defaults are recorded for reconciliation, never injected into input.",
+    "Profile, tax registration, receipt scope, set resolution and all final values need downstream verification."
+  ],
+  "fields": [
+    {
+      "position": 1,
+      "input_field": "ORIG_SOURCE_SYSTEM_NAME",
+      "interface_mappings": [
+        {
+          "table": "AR_UPD_CUSTOMERS",
+          "column": "ORIG_SOURCE_SYSTEM",
+          "source_expression": "Exact display-name resolution through HZ_ORIG_SYSTEMS_VL; otherwise supplied ADE control uses SUBSTR(REGEXP_REPLACE(name,'[^[:alnum:]]'),1,30). Preserve Oracle character semantics.",
+          "source_lines": "13209-13215"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 2,
+      "input_field": "PARTY_NUMBER",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTIES_T",
+          "column": "PARTY_NUMBER",
+          "source_expression": "PARTY_NUMBER",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 3,
+      "input_field": "PARTY_ORIG_SYSTEM_REFERENCE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTIES_T",
+          "column": "PARTY_ORIG_SYSTEM_REFERENCE",
+          "source_expression": "PARTY_ORIG_SYSTEM_REFERENCE",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "HZ_IMP_PARTYSITES_T",
+          "column": "PARTY_ORIG_SYSTEM_REFERENCE",
+          "source_expression": "PARTY_ORIG_SYSTEM_REFERENCE",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "PARTY_ORIG_SYSTEM_REFERENCE",
+          "source_expression": "PARTY_ORIG_SYSTEM_REFERENCE",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "HZ_IMP_PARTYSITEUSES_T",
+          "column": "PARTY_ORIG_SYSTEM_REFERENCE",
+          "source_expression": "PARTY_ORIG_SYSTEM_REFERENCE",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 4,
+      "input_field": "PARTY_NAME",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTIES_T",
+          "column": "ORGANIZATION_NAME",
+          "source_expression": "PARTY_NAME",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 5,
+      "input_field": "DUNS_NUMBER",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTIES_T",
+          "column": "DUNS_NUMBER_C",
+          "source_expression": "DUNS_NUMBER",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 6,
+      "input_field": "TAXPAYER_ID_NUM",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTIES_T",
+          "column": "JGZZ_FISCAL_CODE",
+          "source_expression": "TAXPAYER_ID_NUM",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 7,
+      "input_field": "TAXPAYER_REGISTRATION_NUM",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTIES_T",
+          "column": "TAX_REFERENCE",
+          "source_expression": "TAXPAYER_REGISTRATION_NUM",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 8,
+      "input_field": "GSA_INDICATOR_FLAG",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTIES_T",
+          "column": "GSA_INDICATOR_FLAG",
+          "source_expression": "GSA_INDICATOR_FLAG",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 9,
+      "input_field": "ACCOUNT_NUMBER",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ACCOUNT_NUMBER",
+          "source_expression": "ACCOUNT_NUMBER",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 10,
+      "input_field": "CUST_ORIG_SYSTEM_REFERENCE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "CUST_ORIG_SYSTEM_REFERENCE",
+          "source_expression": "CUST_ORIG_SYSTEM_REFERENCE",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "HZ_IMP_ACCTSITES_T",
+          "column": "CUST_ORIG_SYSTEM_REFERENCE",
+          "source_expression": "CUST_ORIG_SYSTEM_REFERENCE",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "RA_CUST_PAY_METHOD_INT_ALL",
+          "column": "CUST_ORIG_SYSTEM_REFERENCE",
+          "source_expression": "CUST_ORIG_SYSTEM_REFERENCE",
+          "source_lines": "14646-14684"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 11,
+      "input_field": "ACCOUNT_DESCRIPTION",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ACCOUNT_NAME",
+          "source_expression": "ACCOUNT_DESCRIPTION",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 12,
+      "input_field": "ACCOUNT_TYPE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "CUSTOMER_TYPE",
+          "source_expression": "ACCOUNT_TYPE",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 13,
+      "input_field": "ACCOUNT_ESTABLISHED_DATE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTYSITES_T",
+          "column": "START_DATE_ACTIVE",
+          "source_expression": "ACCOUNT_ESTABLISHED_DATE",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ACCOUNT_ESTABLISHED_DATE",
+          "source_expression": "ACCOUNT_ESTABLISHED_DATE",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "HZ_IMP_ACCTSITES_T",
+          "column": "START_DATE",
+          "source_expression": "ACCOUNT_ESTABLISHED_DATE",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "HZ_IMP_PARTYSITEUSES_T",
+          "column": "START_DATE",
+          "source_expression": "ACCOUNT_ESTABLISHED_DATE",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "HZ_IMP_ACCTSITEUSES_T",
+          "column": "START_DATE",
+          "source_expression": "ACCOUNT_ESTABLISHED_DATE",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING",
+      "control_derived_effect": {
+        "field": "AR_UPD_CUSTOMERS.PAYMENT_METHOD_START_DATE",
+        "evidence": "Developer-supplied ADE ArUpdCustomers.ctl derives this from account established date, default 1900/01/01; exact ADE label not supplied.",
+        "status": "SOURCE_REVIEWED_LIVE_VERIFICATION_PENDING",
+        "note": "PAYMENT_METHOD_START_DATE is not an independent Customers worksheet input. 26D PL/SQL forwards the staging value to RA_CUST_PAY_METHOD_INT_ALL.START_DATE."
+      }
+    },
+    {
+      "position": 14,
+      "input_field": "CUSTOMER_CLASS",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "CUSTOMER_CLASS_CODE",
+          "source_expression": "CUSTOMER_CLASS",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 15,
+      "input_field": "CUSTOMER_PROFILE_CLASS",
+      "interface_mappings": [
+        {
+          "table": "RA_CUSTOMER_PROFILES_INT_ALL",
+          "column": "CUSTOMER_PROFILE_CLASS_NAME",
+          "source_expression": "DECODE(CUSTOMER_PROFILE_CLASS,NULL,'DEFAULT',CUSTOMER_PROFILE_CLASS)",
+          "source_lines": "14571-14604"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 16,
+      "input_field": "PARTY_SITE_NUMBER",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTYSITES_T",
+          "column": "PARTY_SITE_NUMBER",
+          "source_expression": "PARTY_SITE_NUMBER",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 17,
+      "input_field": "CUST_SITE_ORIG_SYS_REF",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCTSITES_T",
+          "column": "CUST_SITE_ORIG_SYS_REF",
+          "source_expression": "CUST_SITE_ORIG_SYS_REF",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "HZ_IMP_ACCTSITEUSES_T",
+          "column": "CUST_SITE_ORIG_SYS_REF",
+          "source_expression": "CUST_SITE_ORIG_SYS_REF",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "RA_CUST_PAY_METHOD_INT_ALL",
+          "column": "CUST_SITE_ORIG_SYS_REF",
+          "source_expression": "CUST_SITE_ORIG_SYS_REF",
+          "source_lines": "14646-14684"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 18,
+      "input_field": "PARTY_SITE_NAME",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTYSITES_T",
+          "column": "PARTY_SITE_NAME",
+          "source_expression": "PARTY_SITE_NAME",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 19,
+      "input_field": "ACCT_ADDRESS_SET_CODE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCTSITES_T",
+          "column": "SET_CODE",
+          "source_expression": "ACCT_ADDRESS_SET_CODE",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 20,
+      "input_field": "LOCATION_ORIG_SYSTEM_REFERENCE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTYSITES_T",
+          "column": "LOCATION_ORIG_SYSTEM_REFERENCE",
+          "source_expression": "LOCATION_ORIG_SYSTEM_REFERENCE",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "LOCATION_ORIG_SYSTEM_REFERENCE",
+          "source_expression": "LOCATION_ORIG_SYSTEM_REFERENCE",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 21,
+      "input_field": "ADDRESS_LINE_1",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "ADDRESS1",
+          "source_expression": "ADDRESS_LINE_1",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 22,
+      "input_field": "ADDRESS_LINE_2",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "ADDRESS2",
+          "source_expression": "ADDRESS_LINE_2",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 23,
+      "input_field": "MAIL_STOP",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTYSITES_T",
+          "column": "MAILSTOP",
+          "source_expression": "MAIL_STOP",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 24,
+      "input_field": "ADDRESS_LINE_3",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "ADDRESS3",
+          "source_expression": "ADDRESS_LINE_3",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 25,
+      "input_field": "ADDRESS_LINE_4",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "ADDRESS4",
+          "source_expression": "ADDRESS_LINE_4",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 26,
+      "input_field": "BUILDING",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "BUILDING",
+          "source_expression": "BUILDING",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 27,
+      "input_field": "FLOOR_NUMBER",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "FLOOR_NUMBER",
+          "source_expression": "FLOOR_NUMBER",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 28,
+      "input_field": "HOUSE_TYPE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "HOUSE_TYPE",
+          "source_expression": "HOUSE_TYPE",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 29,
+      "input_field": "ADDR_ELEMENT_ATTRIBUTE1",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "ADDR_ELEMENT_ATTRIBUTE1",
+          "source_expression": "ADDR_ELEMENT_ATTRIBUTE1",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 30,
+      "input_field": "ADDR_ELEMENT_ATTRIBUTE2",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "ADDR_ELEMENT_ATTRIBUTE2",
+          "source_expression": "ADDR_ELEMENT_ATTRIBUTE2",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 31,
+      "input_field": "ADDR_ELEMENT_ATTRIBUTE3",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "ADDR_ELEMENT_ATTRIBUTE3",
+          "source_expression": "ADDR_ELEMENT_ATTRIBUTE3",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 32,
+      "input_field": "ADDR_ELEMENT_ATTRIBUTE4",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "ADDR_ELEMENT_ATTRIBUTE4",
+          "source_expression": "ADDR_ELEMENT_ATTRIBUTE4",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 33,
+      "input_field": "ADDR_ELEMENT_ATTRIBUTE5",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "ADDR_ELEMENT_ATTRIBUTE5",
+          "source_expression": "ADDR_ELEMENT_ATTRIBUTE5",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 34,
+      "input_field": "CITY",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "CITY",
+          "source_expression": "CITY",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 35,
+      "input_field": "STATE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "STATE",
+          "source_expression": "STATE",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 36,
+      "input_field": "PROVINCE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "PROVINCE",
+          "source_expression": "PROVINCE",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 37,
+      "input_field": "POSTAL_CODE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "POSTAL_CODE",
+          "source_expression": "POSTAL_CODE",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 38,
+      "input_field": "POSTAL_PLUS4_CODE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "POSTAL_PLUS4_CODE",
+          "source_expression": "POSTAL_PLUS4_CODE",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 39,
+      "input_field": "COUNTY",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "COUNTY",
+          "source_expression": "COUNTY",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 40,
+      "input_field": "COUNTRY",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "COUNTRY",
+          "source_expression": "COUNTRY",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 41,
+      "input_field": "ADDRESS_LINES_PHONETIC",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "ADDRESS_LINES_PHONETIC",
+          "source_expression": "ADDRESS_LINES_PHONETIC",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 42,
+      "input_field": "ADDRESS_DESCRIPTION",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "DESCRIPTION",
+          "source_expression": "ADDRESS_DESCRIPTION",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 43,
+      "input_field": "ADDR_SHORT_DESCRIPTION",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "SHORT_DESCRIPTION",
+          "source_expression": "ADDR_SHORT_DESCRIPTION",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 44,
+      "input_field": "TIMEZONE_CODE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "TIMEZONE_CODE",
+          "source_expression": "TIMEZONE_CODE",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 45,
+      "input_field": "SALES_TAX_GEOCODE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "SALES_TAX_GEOCODE",
+          "source_expression": "SALES_TAX_GEOCODE",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 46,
+      "input_field": "SALES_TAX_INSIDE_CITY_LIMITS",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_LOCATIONS_T",
+          "column": "SALES_TAX_INSIDE_CITY_LIMITS",
+          "source_expression": "SALES_TAX_INSIDE_CITY_LIMITS",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 47,
+      "input_field": "IDENTIFYING_ADDRESS_FLAG",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTYSITES_T",
+          "column": "IDENTIFYING_ADDRESS_FLAG",
+          "source_expression": "IDENTIFYING_ADDRESS_FLAG",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 48,
+      "input_field": "ACCT_SITE_LANGUAGE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCTSITES_T",
+          "column": "ACCT_SITE_LANGUAGE",
+          "source_expression": "ACCT_SITE_LANGUAGE",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 49,
+      "input_field": "TRANSLATED_CUSTOMER_NAME",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCTSITES_T",
+          "column": "TRANSLATED_CUSTOMER_NAME",
+          "source_expression": "TRANSLATED_CUSTOMER_NAME",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 50,
+      "input_field": "CUST_SITEUSE_ORIG_SYS_REF",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTYSITEUSES_T",
+          "column": "SITEUSE_ORIG_SYSTEM_REF",
+          "source_expression": "CUST_SITEUSE_ORIG_SYS_REF",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "HZ_IMP_ACCTSITEUSES_T",
+          "column": "CUST_SITEUSE_ORIG_SYS_REF",
+          "source_expression": "CUST_SITEUSE_ORIG_SYS_REF",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 51,
+      "input_field": "SITE_USE_CODE",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTYSITEUSES_T",
+          "column": "SITE_USE_TYPE",
+          "source_expression": "SITE_USE_CODE",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "HZ_IMP_ACCTSITEUSES_T",
+          "column": "SITE_USE_CODE",
+          "source_expression": "SITE_USE_CODE",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 52,
+      "input_field": "SITE_USE_PRIMARY_FLAG",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_PARTYSITEUSES_T",
+          "column": "PRIMARY_FLAG",
+          "source_expression": "SITE_USE_PRIMARY_FLAG",
+          "source_lines": "13297-13714"
+        },
+        {
+          "table": "HZ_IMP_ACCTSITEUSES_T",
+          "column": "PRIMARY_FLAG",
+          "source_expression": "SITE_USE_PRIMARY_FLAG",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 53,
+      "input_field": "SITE_LOCATION",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCTSITEUSES_T",
+          "column": "LOCATION",
+          "source_expression": "SITE_LOCATION",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 54,
+      "input_field": "BILL_TO_CUST_SITE_REF",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCTSITEUSES_T",
+          "column": "BILL_TO_CUST_SITE_REF",
+          "source_expression": "BILL_TO_CUST_SITE_REF",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 55,
+      "input_field": "PAYMENT_METHOD_NAME",
+      "interface_mappings": [
+        {
+          "table": "RA_CUST_PAY_METHOD_INT_ALL",
+          "column": "PAYMENT_METHOD_NAME",
+          "source_expression": "PAYMENT_METHOD_NAME",
+          "source_lines": "14646-14684"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 56,
+      "input_field": "PAYMENT_METHOD_PRIMARY_FLAG",
+      "interface_mappings": [
+        {
+          "table": "RA_CUST_PAY_METHOD_INT_ALL",
+          "column": "PRIMARY_FLAG",
+          "source_expression": "DECODE(PAYMENT_METHOD_PRIMARY_FLAG,NULL,'N',PAYMENT_METHOD_PRIMARY_FLAG)",
+          "source_lines": "14646-14684"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 57,
+      "input_field": "ATTRIBUTE_CATEGORY",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE_CATEGORY",
+          "source_expression": "ATTRIBUTE_CATEGORY",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 58,
+      "input_field": "ATTRIBUTE1",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE1",
+          "source_expression": "ATTRIBUTE1",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 59,
+      "input_field": "ATTRIBUTE2",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE2",
+          "source_expression": "ATTRIBUTE2",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 60,
+      "input_field": "ATTRIBUTE3",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE3",
+          "source_expression": "ATTRIBUTE3",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 61,
+      "input_field": "ATTRIBUTE4",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE4",
+          "source_expression": "ATTRIBUTE4",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 62,
+      "input_field": "ATTRIBUTE5",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE5",
+          "source_expression": "ATTRIBUTE5",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 63,
+      "input_field": "ATTRIBUTE6",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE6",
+          "source_expression": "ATTRIBUTE6",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 64,
+      "input_field": "ATTRIBUTE7",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE7",
+          "source_expression": "ATTRIBUTE7",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 65,
+      "input_field": "ATTRIBUTE8",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE8",
+          "source_expression": "ATTRIBUTE8",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 66,
+      "input_field": "ATTRIBUTE9",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE9",
+          "source_expression": "ATTRIBUTE9",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 67,
+      "input_field": "ATTRIBUTE10",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE10",
+          "source_expression": "ATTRIBUTE10",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 68,
+      "input_field": "ATTRIBUTE11",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE11",
+          "source_expression": "ATTRIBUTE11",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 69,
+      "input_field": "ATTRIBUTE12",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE12",
+          "source_expression": "ATTRIBUTE12",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 70,
+      "input_field": "ATTRIBUTE13",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE13",
+          "source_expression": "ATTRIBUTE13",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 71,
+      "input_field": "ATTRIBUTE14",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE14",
+          "source_expression": "ATTRIBUTE14",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 72,
+      "input_field": "ATTRIBUTE15",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE15",
+          "source_expression": "ATTRIBUTE15",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 73,
+      "input_field": "ATTRIBUTE16",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE16",
+          "source_expression": "ATTRIBUTE16",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 74,
+      "input_field": "ATTRIBUTE17",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE17",
+          "source_expression": "ATTRIBUTE17",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 75,
+      "input_field": "ATTRIBUTE18",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE18",
+          "source_expression": "ATTRIBUTE18",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 76,
+      "input_field": "ATTRIBUTE19",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE19",
+          "source_expression": "ATTRIBUTE19",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 77,
+      "input_field": "ATTRIBUTE20",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE20",
+          "source_expression": "ATTRIBUTE20",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 78,
+      "input_field": "ATTRIBUTE21",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE21",
+          "source_expression": "ATTRIBUTE21",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 79,
+      "input_field": "ATTRIBUTE22",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE22",
+          "source_expression": "ATTRIBUTE22",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 80,
+      "input_field": "ATTRIBUTE23",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE23",
+          "source_expression": "ATTRIBUTE23",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 81,
+      "input_field": "ATTRIBUTE24",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE24",
+          "source_expression": "ATTRIBUTE24",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 82,
+      "input_field": "ATTRIBUTE25",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE25",
+          "source_expression": "ATTRIBUTE25",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 83,
+      "input_field": "ATTRIBUTE26",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE26",
+          "source_expression": "ATTRIBUTE26",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 84,
+      "input_field": "ATTRIBUTE27",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE27",
+          "source_expression": "ATTRIBUTE27",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 85,
+      "input_field": "ATTRIBUTE28",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE28",
+          "source_expression": "ATTRIBUTE28",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 86,
+      "input_field": "ATTRIBUTE29",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE29",
+          "source_expression": "ATTRIBUTE29",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    },
+    {
+      "position": 87,
+      "input_field": "ATTRIBUTE30",
+      "interface_mappings": [
+        {
+          "table": "HZ_IMP_ACCOUNTS_T",
+          "column": "ATTRIBUTE30",
+          "source_expression": "ATTRIBUTE30",
+          "source_lines": "13297-13714"
+        }
+      ],
+      "persisted_verification": "PENDING"
+    }
+  ]
+}

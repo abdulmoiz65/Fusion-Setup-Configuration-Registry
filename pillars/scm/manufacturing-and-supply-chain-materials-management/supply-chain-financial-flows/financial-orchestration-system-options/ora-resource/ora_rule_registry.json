@@ -1,0 +1,160 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_FOS_MANAGE_SYSTEM_OPTIONS_NEW",
+      "task_name": "Financial Orchestration System Options",
+      "start_node": "FOS.SO.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "FOS.SO.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "validated": "FOS.SO.CHECK_DEPENDENCIES",
+            "blocked": "FOS.SO.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.SO.CHECK_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "FOS.SO.RESOLVE_RECORD",
+            "blocked": "FOS.SO.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "FOS.SO.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After supplied System Options values pass input validation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.SO.RESOLVE_RECORD",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "existing": "FOS.SO.DONE",
+            "missing": "FOS.SO.DONE",
+            "multiple": "FOS.SO.HANDLE_ISSUE",
+            "lookup_failed": "FOS.SO.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "FOS.SO.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preparing a System Options create or update",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.SO.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "FOS.SO.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOS.SO.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A project-scope, reference-resolution, lookup-contract, or input-validation issue occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.SO.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FOS.SO.HANDLE_ISSUE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.SO.DONE",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FOS.SO.RESOLVE_RECORD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "System Options values and record state are validated for the separate create-or-update workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

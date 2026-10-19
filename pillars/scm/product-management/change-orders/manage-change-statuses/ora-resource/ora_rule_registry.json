@@ -1,0 +1,158 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "EGO_MANAGE_CHANGE_STATUSES",
+      "task_name": "Manage Change Statuses",
+      "start_node": "MCS.INPUT",
+      "nodes": [
+        {
+          "id": "MCS.INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MCS.LOOKUPS",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Manage Change Statuses request is supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCS.LOOKUPS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "MCS.DEFAULTS",
+            "missing": "RETURN_ISSUES",
+            "conflict": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MCS.INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation passed; evaluate the Local Lookups against the fixed catalog and supplied current export/template evidence without external calls",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCS.DEFAULTS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "MCS.DESIGN",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MCS.LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Required lookups passed",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCS.DESIGN",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "MCS.RETURN_SUCCESS",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MCS.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Required input, lookup, and defaulting rules passed; evaluate pre-preview rules now and retain the import approval requirement for the Data Loader submission gate",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A reached validation rule returns a missing, invalid, or conflicting outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCS.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MCS.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All pre-preview task rules pass; return validation evidence to Data Loader without authorizing import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

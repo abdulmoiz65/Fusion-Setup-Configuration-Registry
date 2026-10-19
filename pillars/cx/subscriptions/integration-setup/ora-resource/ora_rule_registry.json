@@ -1,0 +1,599 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_GROUPING_RULES_FOR_ORDER_MANAGEMENT_TO_SUBSCRIPTIONS",
+      "task_name": "Manage Grouping Rules for Order Management to Subscriptions",
+      "start_node": "GROUPRULE.VALIDATE",
+      "nodes": [
+        {
+          "id": "GROUPRULE.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "view_valid": "GROUPRULE.LIST",
+            "om_oss_attr_map_requested": "GROUPRULE.OM_OSS_ATTR_MAP",
+            "om_oss_attr_map_update_requested": "GROUPRULE.OM_OSS_ATTR_MAP_UPDATE_PREVIEW",
+            "create_valid": "GROUPRULE.CREATE_NUMBER_AND_RANK",
+            "invalid": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any grouping-rule-set request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.ENABLED_FLAG_UPDATE",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "preview_ready": "GROUPRULE.CREATE_PREVIEW",
+            "update_issue": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An existing grouping rule set is enabled or disabled through Data Loader",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.CREATE_NUMBER_AND_RANK",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "available": "GROUPRULE.CREATE_PREVIEW",
+            "rank_conflict": "GROUPRULE.RETURN_ISSUES",
+            "lookup_issue": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A grouping-rule-set create request needs a unique generated number and an unused rank",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.OBJECT_METADATA",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "GROUPRULE.CREATE_PREVIEW",
+            "lookup_issue": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A user-supplied object DisplayName must resolve to RestResource for a create request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.LIST",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "listed": "GROUPRULE.LIST_DONE",
+            "resolved": "GROUPRULE.DETAIL",
+            "lookup_issue": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Listing rule sets or resolving one requested by name",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.PUBLISHED_STATUS",
+          "node_type": "step",
+          "sequence": 22,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "retrieved": "GROUPRULE.PUBLISHED_STATUS_DONE",
+            "lookup_issue": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Published status is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.OM_OSS_ATTR_MAP",
+          "node_type": "step",
+          "sequence": 23,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "retrieved": "GROUPRULE.OM_OSS_ATTR_MAP_DONE",
+            "lookup_issue": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Order Management to Subscription attribute map is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.DETAIL",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "retrieved": "GROUPRULE.SEGREGATION",
+            "lookup_issue": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One specific grouping rule set is resolved",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.SEGREGATION",
+          "node_type": "step",
+          "sequence": 35,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "retrieved": "GROUPRULE.CONDITIONS",
+            "lookup_issue": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.DETAIL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Segregation Rule additional attributes are displayed for one selected rule set",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.CONDITIONS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "retrieved": "GROUPRULE.CONDITION_JSON",
+            "empty": "GROUPRULE.GROUPING_RULES",
+            "lookup_issue": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.SEGREGATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Rule-builder conditions are displayed for one selected rule set",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.CONDITION_JSON",
+          "node_type": "step",
+          "sequence": 45,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "retrieved": "GROUPRULE.GROUPING_RULES",
+            "lookup_issue": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.CONDITIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Rule-builder ConditionJson is resolved for display",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.GROUPING_RULES",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "retrieved": "GROUPRULE.ATTRIBUTES",
+            "lookup_issue": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.CONDITIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Child grouping-rule details are requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.ATTRIBUTES",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "retrieved": "GROUPRULE.ATTRIBUTE_METADATA",
+            "lookup_issue": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.GROUPING_RULES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Child grouping-rule attributes are displayed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.ATTRIBUTE_METADATA",
+          "node_type": "step",
+          "sequence": 65,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "retrieved": "GROUPRULE.REVIEW",
+            "unavailable": "GROUPRULE.REVIEW",
+            "lookup_issue": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.ATTRIBUTES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Object-specific attribute titles and names are resolved for detail display or create mapping",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.REVIEW",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "reviewed": "GROUPRULE.DONE",
+            "lookup_issue": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.ATTRIBUTE_METADATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Any read-only grouping-rule-set view or review",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.CREATE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 75,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "preview_ready": "GROUPRULE.CREATE_READY",
+            "blocked": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.CREATE_NUMBER_AND_RANK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A grouping-rule-set import request with a valid Data Loader archive",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.OM_OSS_ATTR_MAP_UPDATE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 76,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "preview_ready": "GROUPRULE.OM_OSS_ATTR_MAP_UPDATE_READY",
+            "blocked": "GROUPRULE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "GROUPRULE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An Order Management to Subscription attribute-map update request with a valid Data Loader archive",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.DONE",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GROUPRULE.REVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only specific-rule-set view or review is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.LIST_DONE",
+          "node_type": "terminal",
+          "sequence": 85,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GROUPRULE.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only rule-set list view is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.PUBLISHED_STATUS_DONE",
+          "node_type": "terminal",
+          "sequence": 86,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GROUPRULE.PUBLISHED_STATUS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only published-status lookup is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.OM_OSS_ATTR_MAP_DONE",
+          "node_type": "terminal",
+          "sequence": 87,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GROUPRULE.OM_OSS_ATTR_MAP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only Order Management to Subscription attribute-map lookup is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation, lookup, or design checks fail",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.CREATE_READY",
+          "node_type": "terminal",
+          "sequence": 95,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GROUPRULE.CREATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact Data Loader archive preview is ready for explicit approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GROUPRULE.OM_OSS_ATTR_MAP_UPDATE_READY",
+          "node_type": "terminal",
+          "sequence": 96,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GROUPRULE.OM_OSS_ATTR_MAP_UPDATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact Order Management to Subscription attribute-map Data Loader archive preview is ready for explicit approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

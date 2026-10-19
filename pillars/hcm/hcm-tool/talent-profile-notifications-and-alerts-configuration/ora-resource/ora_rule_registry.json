@@ -1,0 +1,511 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "HRT_MANAGE_TALENT_NOTIFICATIONS",
+      "task_name": "Talent Notifications",
+      "start_node": "TPN.CLASSIFY_REQUEST",
+      "nodes": [
+        {
+          "id": "TPN.CLASSIFY_REQUEST",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "guidance_only": "TPN.RETURN_GUIDANCE",
+            "blank_template": "TPN.RETURN_BLANK_TEMPLATE",
+            "draft_questionnaire": "TPN.RETURN_DRAFT_QUESTIONNAIRE",
+            "implementation": "TPN.VALIDATE_INPUT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Classify request intent locally before project, authentication, REST, FSM, or Data Loader work; never infer implementation from an informational question, file, row, or ambiguous desired state",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TPN.CHECK_REST_CAPABILITY",
+            "invalid": "TPN.RETURN_VALIDATION_FAILED"
+          },
+          "prerequisites": [
+            "TPN.CLASSIFY_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For explicit implementation only, resolve the authenticated FDOS environment without release intake, then validate hybrid target input, explicit enabled state, whole-set behavior, or a durable clarification, approval, or readback continuation before any package or Fusion mutation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.CHECK_REST_CAPABILITY",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "available": "TPN.CHECK_DEPENDENCIES",
+            "blocked": "TPN.RETURN_VALIDATION_FAILED"
+          },
+          "prerequisites": [
+            "TPN.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For explicit implementation only, use the authenticated FDOS environment to run the one source-backed bounded Talent Notifications GET; retain only a sanitized capability receipt and no notification data",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.CHECK_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TPN.RESOLVE_TARGETS",
+            "blocked": "TPN.RETURN_VALIDATION_FAILED"
+          },
+          "prerequisites": [
+            "TPN.CHECK_REST_CAPABILITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For explicit implementation only, validate run, authenticated environment, optional trusted release evidence, task support, fresh export and exact product-scope evidence, continuation, minimal-package, Data Loader, and optional Alert Foundation readiness for the current phase",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.RESOLVE_TARGETS",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "TPN.APPLY_TRACE_DEFAULTS",
+            "mapping_confirmation_required": "TPN.RETURN_MAPPING_CONFIRMATION_REQUIRED",
+            "candidate_selection_required": "TPN.RETURN_CANDIDATE_SELECTION_REQUIRED",
+            "blocked": "TPN.RETURN_VALIDATION_FAILED"
+          },
+          "prerequisites": [
+            "TPN.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Partition the fresh export by exact ProductCode, resolve direct or semantic targets only within eligible HRT rows, diagnose unsupported or out-of-scope identities, require confirmation, select a stable provider key, preserve complete rows, and compare only NotifEnabled",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.APPLY_TRACE_DEFAULTS",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "TPN.ENFORCE_DESIGN",
+            "not_needed": "TPN.ENFORCE_DESIGN"
+          },
+          "prerequisites": [
+            "TPN.RESOLVE_TARGETS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "On the implementation path, apply trace-only defaults after eligible target and provider-key resolution; never default request intent to implementation, the authenticated environment, quarterly release, target, product scope, enabled state, or confirmation",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "no_change": "TPN.RETURN_EXACT_MATCH",
+            "change_ready": "TPN.EXECUTION_GATE",
+            "blocked": "TPN.RETURN_VALIDATION_FAILED"
+          },
+          "prerequisites": [
+            "TPN.APPLY_TRACE_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "On the explicit implementation path, enforce authenticated release-free preflight, exact ProductCode HRT scope, whole-set failure, confirmed target resolution, stable provider identity, raw-row preservation, minimal FSM upsert packaging, one approval, deferred readback, and Alert Foundation boundaries",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "no_change": "TPN.RETURN_EXACT_MATCH",
+            "preview_ready": "TPN.RETURN_APPROVAL_REQUIRED",
+            "approved_and_submitted": "TPN.RETURN_PENDING_READBACK",
+            "execution_failed": "TPN.RETURN_EXECUTION_FAILED",
+            "status_active": "TPN.RETURN_PENDING_READBACK",
+            "status_complete": "TPN.RESOLVE_READBACK",
+            "status_failed": "TPN.RETURN_READBACK_FAILED"
+          },
+          "prerequisites": [
+            "TPN.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "On the explicit implementation path, delegate immutable preview, the single approval, submission, and continuation status to core.data-loader; never bypass it",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.RESOLVE_READBACK",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "match": "TPN.RETURN_VERIFIED",
+            "mismatch": "TPN.RETURN_READBACK_FAILED",
+            "blocked": "TPN.RETURN_READBACK_FAILED"
+          },
+          "prerequisites": [
+            "TPN.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify approved provider identifiers, exact ProductCode HRT scope, and NotifEnabled values using a fresh post-import export",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.RETURN_VALIDATION_FAILED",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return validation_failed with request-mode, preflight, or row-level causes, including deterministic scope reason codes, whole-set failure, and no Fusion mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.RETURN_MAPPING_CONFIRMATION_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TPN.RESOLVE_TARGETS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Persist mapping_confirmation_required and return the exact delivered correction without persistence approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.RETURN_CANDIDATE_SELECTION_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TPN.RESOLVE_TARGETS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Persist candidate_selection_required with original intent, candidates, rationale, state, and export reference",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.RETURN_EXACT_MATCH",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TPN.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return exact_match_no_change without package, approval, or import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.RETURN_APPROVAL_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TPN.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return the immutable business preview and one Data Loader submission question",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.RETURN_PENDING_READBACK",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TPN.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Persist pending_readback after accepted or active execution and stop without claiming success",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.RETURN_VERIFIED",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TPN.RESOLVE_READBACK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return verified only after successful completion and matching fresh-export readback",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.RETURN_READBACK_FAILED",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return readback_failed for failed, uncertain, missing, ambiguous, changed-key, or mismatched post-import evidence",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.RETURN_EXECUTION_FAILED",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TPN.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return a sanitized execution failure without retry or replay",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.RETURN_GUIDANCE",
+          "node_type": "terminal",
+          "sequence": 19,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TPN.CLASSIFY_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return guidance_provided from local checked-in guidance without project, authentication, REST, FSM, Data Loader, or persistence approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.RETURN_BLANK_TEMPLATE",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TPN.CLASSIFY_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return blank_template_provided with the existing checked-in XLSX unchanged and no runtime generation or Fusion-dependent work",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPN.RETURN_DRAFT_QUESTIONNAIRE",
+          "node_type": "terminal",
+          "sequence": 21,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TPN.CLASSIFY_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return draft_questionnaire_provided containing user-supplied values and open questions only under the required unvalidated label, without XLSX conversion or Fusion-dependent work",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_DEPARTMENT_TREE",
+      "task_name": "Manage Department Trees",
+      "start_node": "DEPTTREE.VALIDATE",
+      "nodes": [
+        {
+          "id": "DEPTTREE.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DEPTTREE.CORE_READY",
+            "missing": "DEPTTREE.ERROR",
+            "invalid": "DEPTTREE.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPTTREE.CORE_READY",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "DEPTTREE.RESOLVE_MEMBERS",
+            "missing": "DEPTTREE.ERROR",
+            "blocked": "DEPTTREE.ERROR"
+          },
+          "prerequisites": [
+            "DEPTTREE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPTTREE.RESOLVE_MEMBERS",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "DEPTTREE.DEFAULTS",
+            "not_required": "DEPTTREE.DEFAULTS",
+            "missing": "DEPTTREE.ERROR",
+            "ambiguous": "DEPTTREE.ERROR"
+          },
+          "prerequisites": [
+            "DEPTTREE.CORE_READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every request; resolve named members when supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPTTREE.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "DEPTTREE.DESIGN",
+            "preserved": "DEPTTREE.DESIGN",
+            "not_required": "DEPTTREE.DESIGN",
+            "blocked": "DEPTTREE.ERROR"
+          },
+          "prerequisites": [
+            "DEPTTREE.RESOLVE_MEMBERS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After member resolution and before design enforcement",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPTTREE.DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "DEPTTREE.CORE_HANDOFF",
+            "blocked": "DEPTTREE.ERROR"
+          },
+          "prerequisites": [
+            "DEPTTREE.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every request",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPTTREE.ERROR",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation, dependency, lookup, defaulting, or design failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPTTREE.CORE_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEPTTREE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved ID-based request is ready for core.fusion-api.apps-common.trees",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

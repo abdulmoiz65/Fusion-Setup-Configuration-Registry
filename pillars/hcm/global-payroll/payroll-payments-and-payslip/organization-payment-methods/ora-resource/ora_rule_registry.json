@@ -1,0 +1,637 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_ORGANIZATION_PAYMENT_METHODS",
+      "task_name": "Organization Payment Methods",
+      "start_node": "OPM.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "OPM.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "OPM.VALIDATE_RULE_CONDITIONS",
+            "failed": "OPM.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.VALIDATE_RULE_CONDITIONS",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "OPM.VALIDATE_DEPENDENCIES",
+            "failed": "OPM.FAILED"
+          },
+          "prerequisites": [
+            "OPM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every create or update request; evaluate Payment Method Rule Conditional Field Validation and Payment Method Rule Pre-DAT Validation Gate for every proposed rule, including child-only requests",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.VALIDATE_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "OPM.CHECK_DUPLICATE",
+            "blocked": "OPM.FAILED"
+          },
+          "prerequisites": [
+            "OPM.VALIDATE_RULE_CONDITIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.CHECK_DUPLICATE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "clear": "OPM.RESOLVE_PRENOTIFICATION_ENABLEMENT",
+            "exists": "OPM.FAILED",
+            "failure": "OPM.FAILED"
+          },
+          "prerequisites": [
+            "OPM.VALIDATE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 122
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.RESOLVE_PRENOTIFICATION_ENABLEMENT",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "OPM.VALIDATE_PRENOTIFICATION_SELECTION",
+            "failed": "OPM.FAILED"
+          },
+          "prerequisites": [
+            "OPM.CHECK_DUPLICATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every create or update request; establish legislation and Category enablement before selection eligibility or defaults",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.VALIDATE_PRENOTIFICATION_SELECTION",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "OPM.APPLY_DEFAULTS",
+            "failed": "OPM.FAILED"
+          },
+          "prerequisites": [
+            "OPM.RESOLVE_PRENOTIFICATION_ENABLEMENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every create or update request; reject selection of an unsupported or disabled flag before defaulting",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "OPM.VALIDATE_PRENOTIFICATION"
+          },
+          "prerequisites": [
+            "OPM.VALIDATE_PRENOTIFICATION_SELECTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The supplied operation needs documented defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.VALIDATE_PRENOTIFICATION",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "OPM.ENFORCE_HDL_DESIGN",
+            "failed": "OPM.FAILED"
+          },
+          "prerequisites": [
+            "OPM.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every create or update request; validate supplied prenotification values against their existing format and metadata contracts; preserve input intent",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.ENFORCE_HDL_DESIGN",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "OPM.APPROVAL_GATE",
+            "failed": "OPM.FAILED"
+          },
+          "prerequisites": [
+            "OPM.VALIDATE_PRENOTIFICATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every create or update request; require current prenotification enablement, selection, and supplied-value validation evidence without a validation waiver; evaluate same-source default-rule conflicts over the proposed effective dates",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "OPM.DONE",
+            "missing_approval": "OPM.FAILED",
+            "changed_archive": "OPM.FAILED"
+          },
+          "prerequisites": [
+            "OPM.ENFORCE_HDL_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before UCM upload and HCM Data Loader initiation; reject a preview with a prenotification validation waiver or invalid final prenotification state",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.DONE",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPM.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved archive is submitted through HCM Data Loader and Fusion accepts initiation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.FAILED",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any stop condition",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.READ_LIST",
+          "node_type": "step",
+          "sequence": 101,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matches": "OPM.READ_DETAILS",
+            "no_matches": "OPM.READ_HIERARCHY_EMPTY",
+            "failure": "OPM.READ_HIERARCHY_FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Full OPM hierarchy discovery is requested for an LDG and date",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "rest-hierarchy-task-nodes",
+            "line": 245
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.READ_DETAILS",
+          "node_type": "step",
+          "sequence": 102,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "OPM.READ_SOURCES",
+            "failure": "OPM.READ_HIERARCHY_FAILED"
+          },
+          "prerequisites": [
+            "OPM.READ_LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For each OPM ID returned by OPM.READ_LIST",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "rest-hierarchy-task-nodes",
+            "line": 246
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.READ_SOURCES",
+          "node_type": "step",
+          "sequence": 103,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "OPM.READ_RULES",
+            "failure": "OPM.READ_HIERARCHY_FAILED"
+          },
+          "prerequisites": [
+            "OPM.READ_DETAILS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For each OPM ID being reconstructed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "rest-hierarchy-task-nodes",
+            "line": 247
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.READ_RULES",
+          "node_type": "step",
+          "sequence": 104,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "OPM.READ_HIERARCHY_DONE",
+            "failure": "OPM.READ_HIERARCHY_FAILED"
+          },
+          "prerequisites": [
+            "OPM.READ_SOURCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For each OPM ID being reconstructed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "rest-hierarchy-task-nodes",
+            "line": 248
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.READ_HIERARCHY_EMPTY",
+          "node_type": "terminal",
+          "sequence": 105,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPM.READ_LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only hierarchy discovery completed with a valid empty LDG result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "rest-hierarchy-terminal-nodes",
+            "line": 116
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.READ_HIERARCHY_DONE",
+          "node_type": "terminal",
+          "sequence": 106,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPM.READ_RULES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only hierarchy discovery completed with one or more reconstructed OPM hierarchies",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "rest-hierarchy-terminal-nodes",
+            "line": 117
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.READ_HIERARCHY_FAILED",
+          "node_type": "terminal",
+          "sequence": 107,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A read-only hierarchy discovery stop condition occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "rest-hierarchy-terminal-nodes",
+            "line": 118
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.VALIDATE_PHYSICAL_DELETE",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "OPM.DELETE_RESOLVE_OPM",
+            "failed": "OPM.DELETE_FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A permanent PaymentMethodRule deletion is requested",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 398
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.DELETE_RESOLVE_OPM",
+          "node_type": "step",
+          "sequence": 121,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OPM.DELETE_RESOLVE_RULE",
+            "failure": "OPM.DELETE_FAILED"
+          },
+          "prerequisites": [
+            "OPM.VALIDATE_PHYSICAL_DELETE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A permanent PaymentMethodRule deletion is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 123
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.DELETE_RESOLVE_RULE",
+          "node_type": "step",
+          "sequence": 122,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OPM.ENFORCE_PHYSICAL_DELETE",
+            "failure": "OPM.DELETE_FAILED"
+          },
+          "prerequisites": [
+            "OPM.DELETE_RESOLVE_OPM"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A permanent PaymentMethodRule deletion is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 124
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.ENFORCE_PHYSICAL_DELETE",
+          "node_type": "decision",
+          "sequence": 123,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "OPM.PHYSICAL_DELETE_APPROVAL_GATE",
+            "failed": "OPM.DELETE_FAILED"
+          },
+          "prerequisites": [
+            "OPM.DELETE_RESOLVE_RULE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A permanent PaymentMethodRule deletion is requested",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 185
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.PHYSICAL_DELETE_APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 124,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "OPM.PHYSICAL_DELETE_DONE",
+            "missing_approval": "OPM.DELETE_FAILED",
+            "changed_archive": "OPM.DELETE_FAILED"
+          },
+          "prerequisites": [
+            "OPM.ENFORCE_PHYSICAL_DELETE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before UCM upload and HCM Data Loader initiation of a permanent PaymentMethodRule deletion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "physical-payment-method-rule-deletion-task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.PHYSICAL_DELETE_DONE",
+          "node_type": "terminal",
+          "sequence": 125,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPM.PHYSICAL_DELETE_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The approved immutable DELETE archive is accepted for HCM Data Loader initiation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "physical-payment-method-rule-deletion-task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPM.DELETE_FAILED",
+          "node_type": "terminal",
+          "sequence": 126,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any permanent PaymentMethodRule deletion stop condition",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "physical-payment-method-rule-deletion-task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

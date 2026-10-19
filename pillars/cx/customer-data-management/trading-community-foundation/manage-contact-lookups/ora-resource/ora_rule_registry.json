@@ -1,0 +1,210 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HZ_MANAGE_CONTACT_LOOKUPS",
+      "task_name": "Manage Contact Lookups",
+      "start_node": "CL.VALIDATE",
+      "nodes": [
+        {
+          "id": "CL.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CL.DEFAULT_SCOPE",
+            "invalid": "CL.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before lookup resolution, validation, export, or import routing.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.DEFAULT_SCOPE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "lookup_or_mutation": "CL.LOOKUP_TARGET",
+            "import": "CL.DEPENDENCY_READINESS",
+            "failure": "CL.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CL.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply exact task identity and safe routing; never default a lookup identity, payload value, or task-local import fallback.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.LOOKUP_TARGET",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "create": "CL.DEPENDENCY_READINESS",
+            "read_or_update": "CL.DESIGN_GATE",
+            "not_found": "CL.RETURN_ISSUES",
+            "failure": "CL.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CL.DEFAULT_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve exact task membership, category, type, code, level, seed evidence, and current fields.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.DEPENDENCY_READINESS",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "CL.DESIGN_GATE",
+            "blocked": "CL.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CL.DEFAULT_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a mutation preview or exact-task FSM import preview.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.DESIGN_GATE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CL.EXECUTION_GATE",
+            "fail": "CL.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CL.DEFAULT_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before returning read readiness or previewing a mutation, export, or import.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CL.READY",
+            "blocked": "CL.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CL.DESIGN_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm supported routing, immutable preview, approval, and retry restrictions.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.READY",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CL.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Request is validated and ready for its owning executor.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CL.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Validation, membership, dependency, design, Task Hook, approval, or execution readiness is blocked.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,411 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PJF_MANAGE_PLANNING_BILLING_RESOURCE_BREAKDOWN_STRUCTURES",
+      "task_name": "Manage Planning and Billing Resource Breakdown Structures",
+      "start_node": "RBS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "RBS.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RBS.APPLY_DEFAULTS",
+            "invalid": "RBS.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every requested create batch",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "RBS.ROUTE_OPERATION",
+            "failure": "RBS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RBS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Valid create input; add explicit UI-equivalent default requirements before package preview",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.ROUTE_OPERATION",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "supported": "RBS.FIND_RBS",
+            "unsupported": "RBS.RETURN_REFUSAL",
+            "invalid": "RBS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RBS.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only the observed new custom planning RBS create profile is supported by these authored rules",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.FIND_RBS",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "absent": "RBS.LOOKUP_PROJECT_UNIT",
+            "duplicate": "RBS.RETURN_REFUSAL",
+            "failure": "RBS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RBS.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Check the requested Name against a complete current-target task export",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.LOOKUP_PROJECT_UNIT",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RBS.LOOKUP_SET",
+            "failure": "RBS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RBS.FIND_RBS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Project Unit CSV context by supplied Name plus PRJ_PROJECT_UNIT and copy the confirmed fields; do not inspect Status or decide RBS From Date eligibility",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.LOOKUP_SET",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RBS.LOOKUP_JOB",
+            "skip": "RBS.LOOKUP_JOB",
+            "failure": "RBS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RBS.LOOKUP_PROJECT_UNIT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied Job Set name; skip when absent and no Job row exists",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.LOOKUP_JOB",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RBS.LOOKUP_PERSON",
+            "skip": "RBS.LOOKUP_PERSON",
+            "failure": "RBS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RBS.LOOKUP_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a Job only for an actual Job or Job: Expenditure Category resource row",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.LOOKUP_PERSON",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RBS.LOOKUP_ORGANIZATION",
+            "skip": "RBS.LOOKUP_ORGANIZATION",
+            "failure": "RBS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RBS.LOOKUP_JOB"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a Named Person only for an actual person row",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.LOOKUP_ORGANIZATION",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RBS.RESOLVE_HIERARCHY",
+            "skip": "RBS.RESOLVE_HIERARCHY",
+            "failure": "RBS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RBS.LOOKUP_PERSON"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For an actual Organization row, apply the confirmed classification precedence and project Organization plus target-enterprise context into the tested CSV columns",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.RESOLVE_HIERARCHY",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "RBS.RESOLVE_DEPENDENCIES",
+            "failure": "RBS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RBS.LOOKUP_ORGANIZATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify only observed format/element shapes, explicit class tree and tested Job parent",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RBS.ENFORCE_DESIGN",
+            "missing": "RBS.RETURN_ISSUES",
+            "conflict": "RBS.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "RBS.RESOLVE_HIERARCHY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Observed create-batch dependencies must be satisfied before preview",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "RBS.EXECUTION_GATE",
+            "blocked": "RBS.RETURN_REFUSAL",
+            "failure": "RBS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RBS.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Observed create profile and complete package gate before Data Loader preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RBS.RETURN_SUCCESS",
+            "not_ready": "RBS.RETURN_ISSUES",
+            "declined": "RBS.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "RBS.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return task-rule validation/preparation only; loader owns later approval and submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RBS.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validated preparation completed; import neither initiated nor verified by this terminal",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Correctable input, source, reference, artifact or approval issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RBS.RETURN_REFUSAL",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Unsupported, unsafe or declined action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

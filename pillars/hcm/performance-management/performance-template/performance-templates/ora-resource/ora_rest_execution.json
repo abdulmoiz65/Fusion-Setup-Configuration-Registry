@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "task_code": "HRA_MANAGE_PERFORMANCE_TEMPLATES",
+  "task_name": "Performance Templates",
+  "route": "task_local_shared_single_request_rest",
+  "resource_version": "11.13.18.05",
+  "root_path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates",
+  "atomic_role_delete": {
+    "path": "/hcmRestApi/resources/11.13.18.05",
+    "content_type": "application/vnd.oracle.adf.batch+json",
+    "required_scopes": ["template/sections/roleActions", "template/roles"],
+    "part_path_prefix": "/hcmRestApi/resources/11.13.18.05"
+  },
+  "section_upsert": {"path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates", "content_type": "application/vnd.oracle.adf.resourceitem+json", "headers": {"Upsert-Mode": "true"}, "allowed_root_fields": ["TemplateDefnId", "sections"], "required_root_fields": ["TemplateDefnId", "sections"], "required_section_fields": ["SectionDefId", "SequenceNumber", "SectionTypeCode"], "required_materialized_section_fields": ["EnableItemsFlag", "EnableSectionCommentsFlag", "RateItemFlag", "RateSectionFlag", "UseProfileFlag", "UseSectionWeightsForCalculationFlag", "UseSpecificProfileFlag", "UseWorkerGoalsFlag", "WeightSectionFlag"], "required_materialized_role_action_fields": ["SectionRatingsRequiredCode", "ShareRatingsFlag", "UpdateProfileFlag"], "questionnaire_role_action": {"section_type_code": "QUESTIONNAIRE", "spec_worker_role_field": "questionnaire_worker_tmpl_role_id"}},
+  "allowed_methods": ["GET", "POST", "PATCH", "DELETE"],
+  "describe_required": true,
+  "resources": {
+    "template": {"collection_path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates", "parent_identifiers": [], "item_identifier": "template_id", "nested_create_children": ["roles", "alerts"], "required_nested_create_children": ["roles"], "required_nested_child_fields": {"roles": ["RoleId", "RoleTypeCode"]}},
+    "template/alerts": {"collection_path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates/{template_id}/child/alerts", "parent_identifiers": ["template_id"], "item_identifier": "record_id", "parent_managed_attributes": ["TemplateDefnId"]},
+    "template/eligibilityProfiles": {"collection_path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates/{template_id}/child/eligibilityProfiles", "parent_identifiers": ["template_id"], "item_identifier": "record_id", "item_identifier_shape": "scalar", "parent_managed_attributes": [], "create_owner_binding": {"type_field": "TalentObjectType", "type_value": "TEMPLATE", "id_field": "TalentObjectId", "identifier": "template_id", "identifier_component": "before_comma"}},
+    "template/roles": {"collection_path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates/{template_id}/child/roles", "parent_identifiers": ["template_id"], "item_identifier": "record_id", "parent_managed_attributes": ["TemplateDefnId"]},
+    "template/sections": {"collection_path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates/{template_id}/child/sections", "parent_identifiers": ["template_id"], "item_identifier": "record_id", "parent_managed_attributes": ["TemplateDefnId"], "nested_create_children": ["roleActions"], "required_nested_create_children": ["roleActions"]},
+    "template/sections/items": {"collection_path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates/{template_id}/child/sections/{section_id}/child/items", "parent_identifiers": ["template_id", "section_id"], "item_identifier": "record_id", "parent_managed_attributes": ["SectionId"]},
+    "template/sections/roleActions": {"collection_path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates/{template_id}/child/sections/{section_id}/child/roleActions", "parent_identifiers": ["template_id", "section_id"], "item_identifier": "record_id", "parent_managed_attributes": ["SectionId"]},
+    "template/periods": {"collection_path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates/{template_id}/child/periods", "parent_identifiers": ["template_id"], "item_identifier": "record_id", "parent_managed_attributes": ["TemplateDefnId"]},
+    "template/periods/documentTypes": {"collection_path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates/{template_id}/child/periods/{period_id}/child/documentTypes", "parent_identifiers": ["template_id", "period_id"], "item_identifier": "record_id", "parent_managed_attributes": ["TmplPeriodId"]},
+    "template/periods/dueDates": {"collection_path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates/{template_id}/child/periods/{period_id}/child/dueDates", "parent_identifiers": ["template_id", "period_id"], "item_identifier": "record_id", "parent_managed_attributes": ["TmplPeriodId"]},
+    "template/periods/eligibilityProfiles": {"collection_path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates/{template_id}/child/periods/{period_id}/child/eligibilityProfiles", "parent_identifiers": ["template_id", "period_id"], "item_identifier": "record_id", "item_identifier_shape": "scalar", "parent_managed_attributes": [], "create_owner_binding": {"type_field": "TalentObjectType", "type_value": "TEMPLATE_PERIOD", "id_field": "TalentObjectId", "identifier": "period_id", "identifier_component": "after_comma"}},
+    "template/periods/questionnaires": {"collection_path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates/{template_id}/child/periods/{period_id}/child/questionnaires", "parent_identifiers": ["template_id", "period_id"], "item_identifier": "record_id", "parent_managed_attributes": ["TmplPeriodId"]}
+  },
+  "operations": {
+    "list": {"method": "GET", "level": "collection", "mutation": false},
+    "get": {"method": "GET", "level": "item", "mutation": false},
+    "create": {"method": "POST", "level": "collection", "mutation": true},
+    "update": {"method": "PATCH", "level": "item", "mutation": true},
+    "delete": {"method": "DELETE", "level": "item", "mutation": true},
+    "section_upsert": {"method": "POST", "level": "collection", "mutation": true},
+    "atomic_role_delete": {"method": "POST", "level": "collection", "mutation": true}
+  },
+  "custom_actions": {
+    "getFastFormulaList": {"method": "POST", "mutation": false},
+    "findByAdvancedSearchQuery": {"method": "POST", "mutation": false},
+    "deletePerformanceTemplate": {"method": "POST", "mutation": true},
+    "duplicatePerformanceTemplate": {"method": "POST", "mutation": true},
+    "submitEssRequestForTemplate": {"method": "POST", "mutation": true}
+  },
+  "custom_action_validation": {
+    "findByAdvancedSearchQuery": {
+      "allowed_sort_fields": ["Name", "DateFrom", "DateTo"],
+      "allowed_sort_directions": ["asc", "desc"]
+    }
+  },
+  "unsupported_operations": {
+    "upsert": "Upsert is disabled because its concrete create-or-update effect is not approval-bound."
+  },
+  "required_headers": {"REST-Framework-Version": "9"},
+  "approval_binding_fields": ["environment", "method", "relative_path", "query", "headers", "body_sha256", "describe_sha256", "contract_sha256"],
+  "item_mutation_concurrency": {"spec_field": "if_match", "header": "If-Match", "required_operations": ["update", "delete"]},
+  "verification": "After a successful create or update, perform a separately declared exact-identity GET and compare every requested field. After child DELETE, verify exact child absence and preserved parent/sibling state. Reject root standard DELETE when target Describe omits that item action; use the declared custom delete route."
+}

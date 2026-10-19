@@ -1,0 +1,183 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_ALERTS",
+      "task_name": "Alerts",
+      "start_node": "ALERT.VALIDATE",
+      "nodes": [
+        {
+          "id": "ALERT.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ALERT.LOOKUP",
+            "invalid": "ALERT.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALERT.LOOKUP",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ALERT.DEPENDENCY",
+            "skipped_simple": "ALERT.DEPENDENCY",
+            "unresolved": "ALERT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ALERT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Deep or explicit read/identity checks execute declared resolvers; simple CREATE records skipped_simple without an external call",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALERT.DEPENDENCY",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ALERT.DESIGN",
+            "blocked": "ALERT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ALERT.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALERT.DESIGN",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "ALERT.APPROVAL",
+            "blocked": "ALERT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ALERT.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALERT.APPROVAL",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "ALERT.READY",
+            "blocked": "ALERT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ALERT.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mutation is requested; read-only requests record not applicable and continue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALERT.READY",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ALERT.APPROVAL"
+          ],
+          "on_failure": "continue",
+          "applies_when": "All applicable gates passed; simple CREATE records lookup skipped_simple rather than a live pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ALERT.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any validation, lookup, dependency, design, or approval gate blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

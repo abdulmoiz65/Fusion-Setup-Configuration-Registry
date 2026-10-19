@@ -1,0 +1,209 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_INVENTORY_TRANSACTION_REASONS",
+      "task_name": "Inventory Transaction Reasons",
+      "start_node": "ITR.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "ITR.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ITR.RESOLVE_REASON_TYPE",
+            "invalid": "ITR.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before Data Loader task validation or import preparation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ITR.RESOLVE_REASON_TYPE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ITR.RESOLVE_REASON_CONTEXT",
+            "not_required": "ITR.RESOLVE_REASON_CONTEXT",
+            "blocked": "ITR.HANDLE_ERROR",
+            "failure": "ITR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ITR.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied Type display value or compare supplied Type code and display value",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ITR.RESOLVE_REASON_CONTEXT",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ITR.CHECK_DEPENDENCIES",
+            "not_required": "ITR.CHECK_DEPENDENCIES",
+            "blocked": "ITR.HANDLE_ERROR",
+            "failure": "ITR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ITR.RESOLVE_REASON_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied Context display value after Type is available",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ITR.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ITR.DATA_LOADER_HANDOFF",
+            "blocked": "ITR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ITR.RESOLVE_REASON_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After optional Type and Context resolution and before Data Loader handoff",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ITR.DATA_LOADER_HANDOFF",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ITR.DONE",
+            "blocked": "ITR.HANDLE_ERROR",
+            "failure": "ITR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "ITR.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before handing resolved data to core.data-loader for inventoryTransactionReasonsV2",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ITR.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "ITR.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, dependency, or Data Loader handoff issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ITR.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ITR.DONE",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ITR.DATA_LOADER_HANDOFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Local task rules passed and Data Loader owns final validation and execution",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

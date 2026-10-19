@@ -1,0 +1,566 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_EVENT_ACTION",
+      "task_name": "Event Action",
+      "start_node": "EA.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "EA.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "EA.CHECK_DEPENDENCIES",
+            "invalid": "EA.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Event Action HDL request; evaluate Required Groups, Dependency-Aware Validation, and Field Validation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_input_validation.md",
+                "line": 9,
+                "column": "How to Resolve",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_input_validation.md",
+                "line": 14,
+                "column": "How to Resolve",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_input_validation.md",
+                "line": 36,
+                "column": "What Happens",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_input_validation.md",
+                "line": 40,
+                "column": "What Happens",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "EA.CHECK_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "EA.LOOKUP_LDG",
+            "blocked": "EA.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EA.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Any Event Action HDL request; evaluate Dependency Rules, including conditional dependencies",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 20,
+                "column": "Value Source",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_dependency_readiness.md",
+                "line": 24,
+                "column": "Value Source",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "EA.LOOKUP_LDG",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "EA.LOOKUP_EVENT_GROUP",
+            "not_applicable": "EA.LOOKUP_EVENT_GROUP",
+            "missing": "EA.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EA.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolver find_ldg_by_exact_name; LDG-specific action with name requiring resolution",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 11,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 12,
+                "column": "Requested Fields",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 12,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "EA.LOOKUP_EVENT_GROUP",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "EA.LOOKUP_HCM_GROUP",
+            "not_applicable": "EA.LOOKUP_HCM_GROUP",
+            "missing": "EA.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EA.LOOKUP_LDG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolver find_event_group_by_exact_code; association requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 11,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 12,
+                "column": "Requested Fields",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 12,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "EA.LOOKUP_HCM_GROUP",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "EA.VERIFY_TYPE",
+            "not_applicable": "EA.VERIFY_TYPE",
+            "missing": "EA.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EA.LOOKUP_EVENT_GROUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolver find_hcm_group_by_name_or_id; Criteria requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 11,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 12,
+                "column": "Requested Fields",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 12,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "EA.VERIFY_TYPE",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "EA.VERIFY_METADATA",
+            "missing": "EA.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EA.LOOKUP_HCM_GROUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolver verify_event_action_type; every Event Action request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 11,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 12,
+                "column": "Requested Fields",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 12,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "EA.VERIFY_METADATA",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "EA.ENFORCE_DESIGN",
+            "missing": "EA.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EA.VERIFY_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolver verify_event_action_metadata; every Event Action HDL request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 11,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 12,
+                "column": "Requested Fields",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 12,
+                "column": "Request Path or URL",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "EA.ENFORCE_DESIGN",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "EA.EXECUTION_GATE",
+            "blocked": "EA.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EA.VERIFY_METADATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Any Event Action HDL request; evaluate Design Rules and source conflicts",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EA.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "EA.RETURN_READY",
+            "blocked": "EA.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "EA.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Check current target metadata, confirmed lookups, registered Event Action business object, exact immutable HDL artifact, approved core data-loader execution contract, and approval; writable route details are TBD",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EA.RETURN_READY",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "EA.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return validated readiness only; no Fusion mutation is performed by this registry",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "EA.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return missing or failed validation, lookup, design, or execution-gate evidence",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "incomplete",
+        "blocking_reasons": [
+          {
+            "node_id": "EA.VALIDATE_INPUT",
+            "file": "ora_input_validation.md",
+            "line": 9,
+            "column": "How to Resolve",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.VALIDATE_INPUT",
+            "file": "ora_input_validation.md",
+            "line": 14,
+            "column": "How to Resolve",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.VALIDATE_INPUT",
+            "file": "ora_input_validation.md",
+            "line": 36,
+            "column": "What Happens",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.VALIDATE_INPUT",
+            "file": "ora_input_validation.md",
+            "line": 40,
+            "column": "What Happens",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.CHECK_DEPENDENCIES",
+            "file": "ora_dependency_readiness.md",
+            "line": 20,
+            "column": "Value Source",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.CHECK_DEPENDENCIES",
+            "file": "ora_dependency_readiness.md",
+            "line": 24,
+            "column": "Value Source",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.LOOKUP_LDG",
+            "file": "ora_reference_lookups.md",
+            "line": 11,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.LOOKUP_LDG",
+            "file": "ora_reference_lookups.md",
+            "line": 12,
+            "column": "Requested Fields",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.LOOKUP_LDG",
+            "file": "ora_reference_lookups.md",
+            "line": 12,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.LOOKUP_EVENT_GROUP",
+            "file": "ora_reference_lookups.md",
+            "line": 11,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.LOOKUP_EVENT_GROUP",
+            "file": "ora_reference_lookups.md",
+            "line": 12,
+            "column": "Requested Fields",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.LOOKUP_EVENT_GROUP",
+            "file": "ora_reference_lookups.md",
+            "line": 12,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.LOOKUP_HCM_GROUP",
+            "file": "ora_reference_lookups.md",
+            "line": 11,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.LOOKUP_HCM_GROUP",
+            "file": "ora_reference_lookups.md",
+            "line": 12,
+            "column": "Requested Fields",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.LOOKUP_HCM_GROUP",
+            "file": "ora_reference_lookups.md",
+            "line": 12,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.VERIFY_TYPE",
+            "file": "ora_reference_lookups.md",
+            "line": 11,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.VERIFY_TYPE",
+            "file": "ora_reference_lookups.md",
+            "line": 12,
+            "column": "Requested Fields",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.VERIFY_TYPE",
+            "file": "ora_reference_lookups.md",
+            "line": 12,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.VERIFY_METADATA",
+            "file": "ora_reference_lookups.md",
+            "line": 11,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.VERIFY_METADATA",
+            "file": "ora_reference_lookups.md",
+            "line": 12,
+            "column": "Requested Fields",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "EA.VERIFY_METADATA",
+            "file": "ora_reference_lookups.md",
+            "line": 12,
+            "column": "Request Path or URL",
+            "message": "Value is TBD"
+          }
+        ]
+      }
+    }
+  ]
+}

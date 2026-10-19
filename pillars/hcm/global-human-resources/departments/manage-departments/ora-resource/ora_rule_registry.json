@@ -1,0 +1,292 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_DEPARTMENT",
+      "task_name": "Manage Departments",
+      "start_node": "DEPT.VALIDATE",
+      "nodes": [
+        {
+          "id": "DEPT.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DEPT.READ",
+            "missing": "DEPT.ERROR",
+            "invalid": "DEPT.ERROR",
+            "unsupported": "DEPT.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Departments request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPT.READ",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "DEPT.HISTORY",
+            "create_available": "DEPT.HISTORY",
+            "not_found": "DEPT.ERROR",
+            "duplicate": "DEPT.ERROR",
+            "ambiguous": "DEPT.ERROR",
+            "failed": "DEPT.ERROR"
+          },
+          "prerequisites": [
+            "DEPT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read is requested, an exact target is required before edit, inactivation, or delete-effective-split, or a uniqueness check is required before create",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPT.HISTORY",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "eligible": "DEPT.DEPENDENCIES",
+            "not_required": "DEPT.DEPENDENCIES",
+            "first_row": "DEPT.ERROR",
+            "missing": "DEPT.ERROR",
+            "ambiguous": "DEPT.ERROR",
+            "failed": "DEPT.ERROR"
+          },
+          "prerequisites": [
+            "DEPT.READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A delete-effective-split request is resolved after the exact Department is read",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPT.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "DEPT.DEFAULTS",
+            "not_required": "DEPT.DEFAULTS",
+            "needs_input": "DEPT.ERROR",
+            "unresolved": "DEPT.ERROR"
+          },
+          "prerequisites": [
+            "DEPT.HISTORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After target and delete-history resolution and before defaulting",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPT.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "DEPT.DESIGN",
+            "preserved": "DEPT.DESIGN",
+            "not_required": "DEPT.DESIGN",
+            "blocked": "DEPT.ERROR"
+          },
+          "prerequisites": [
+            "DEPT.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, current-state reads, and required resolvers are complete",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPT.DESIGN",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "DEPT.ROUTE",
+            "not_required": "DEPT.ROUTE",
+            "blocked": "DEPT.ERROR"
+          },
+          "prerequisites": [
+            "DEPT.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, dependencies, lookups, and defaulting are complete",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPT.ROUTE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read": "DEPT.DONE",
+            "create_or_edit_or_inactivate_or_delete_ready": "DEPT.LOADER_READY",
+            "mutation_blocked": "DEPT.ERROR"
+          },
+          "prerequisites": [
+            "DEPT.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select read completion or the Core Data Loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPT.ERROR",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "DEPT.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior node returns invalid, missing, ambiguous, first-row, blocked, failed, partial, timed-out, uncertain, stale, or unverified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPT.DONE",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEPT.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPT.LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEPT.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Mutation rules passed; invoke core.data-loader and follow it through immutable ZIP preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEPT.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request cannot safely continue without correction or reconciliation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

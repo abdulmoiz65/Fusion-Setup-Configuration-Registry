@@ -1,0 +1,130 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_LABEL_OUTPUT_PREFERENCES",
+      "task_name": "Label Output Preferences",
+      "start_node": "LOP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "LOP.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LOP.RESOLVE_LOOKUPS",
+            "invalid": "LOP.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before Data Loader preparation for a Label preference line",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LOP.RESOLVE_LOOKUPS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LOP.COMPLETE",
+            "blocked": "LOP.HANDLE_ERROR",
+            "failure": "LOP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "LOP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve every supplied Label header and line LOV value; resolve subinventory only after organization resolution, and block a line that supplies both a user and a job role.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LOP.HANDLE_ERROR",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "LOP.STOP"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, lookup, Data Loader, or Fusion error occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LOP.COMPLETE",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LOP.RESOLVE_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation and applicable lookups completed without a blocking error",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LOP.STOP",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking error occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

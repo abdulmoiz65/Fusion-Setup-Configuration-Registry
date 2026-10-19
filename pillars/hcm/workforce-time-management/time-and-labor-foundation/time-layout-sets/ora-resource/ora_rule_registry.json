@@ -1,0 +1,406 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HXT_MANAGE_LAYOUT_SETS",
+      "task_name": "Time Layout Sets",
+      "start_node": "TLS.CHECK_RELEASE_SUPPORT",
+      "nodes": [
+        {
+          "id": "TLS.CHECK_RELEASE_SUPPORT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "supported": "TLS.CHECK_REST_CAPABILITY",
+            "unsupported": "TLS.RETURN_UNSUPPORTED_RELEASE",
+            "release_unavailable": "TLS.CHECK_REST_CAPABILITY",
+            "blocked": "TLS.HANDLE_ERROR",
+            "lookup_failure": "TLS.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Time Layout Sets request begins; retrieve environment_version_details through shared.baseline-assessment.topology-manager.environment-info before all task processing",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.CHECK_REST_CAPABILITY",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "usable": "TLS.VALIDATE_INPUT",
+            "blocked": "TLS.HANDLE_ERROR",
+            "lookup_failure": "TLS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "TLS.CHECK_RELEASE_SUPPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The environment release is 27A or later, or release details are unavailable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.RETURN_UNSUPPORTED_RELEASE",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TLS.CHECK_RELEASE_SUPPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The environment release is before 27A and Time Layout Sets is unavailable through this skill",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TLS.SEARCH_LAYOUT_SETS",
+            "missing": "TLS.HANDLE_ERROR",
+            "invalid": "TLS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "TLS.CHECK_REST_CAPABILITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Time Layout Sets search, create, update, or delete request passed the release and REST-capability gates",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.SEARCH_LAYOUT_SETS",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TLS.CHECK_DEPENDENCIES",
+            "no_equivalent": "TLS.CHECK_DEPENDENCIES",
+            "single_match": "TLS.SEARCH_SINGLE_RESULT",
+            "multiple_matches": "TLS.SEARCH_MULTIPLE_RESULTS",
+            "no_matches": "TLS.SEARCH_NO_RESULTS",
+            "awaiting_create_choice": "TLS.AWAIT_DUPLICATE_CHOICE",
+            "blocked": "TLS.HANDLE_ERROR",
+            "lookup_failure": "TLS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "TLS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A criteria search is requested, an existing layout is updated or deleted using supplied criteria, or a new layout is checked for a similar existing layout",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.CHECK_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TLS.RESOLVE_LOOKUPS",
+            "blocked": "TLS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "TLS.SEARCH_LAYOUT_SETS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create, update, or delete request passed the criteria-search or duplicate-check gate",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.RESOLVE_LOOKUPS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TLS.APPLY_DEFAULTS",
+            "not_applicable": "TLS.APPLY_DEFAULTS",
+            "blocked": "TLS.HANDLE_ERROR",
+            "lookup_failure": "TLS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "TLS.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A selected value needs a Fusion identity",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "TLS.ENFORCE_DESIGN",
+            "not_applicable": "TLS.ENFORCE_DESIGN"
+          },
+          "prerequisites": [
+            "TLS.RESOLVE_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "New or incomplete layout is prepared",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.ENFORCE_DESIGN",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "TLS.PROVIDER_APPROVAL",
+            "blocked": "TLS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "TLS.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation, lookup resolution, defaults, preservation, and Complete Summary generation have completed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.PROVIDER_APPROVAL",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TLS.READY",
+            "blocked": "TLS.HANDLE_ERROR",
+            "unsupported": "TLS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "TLS.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid business-only Complete Summary is present; provider execution and approval ownership remain unchanged",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.READY",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TLS.PROVIDER_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All summary, preview, and approval gates pass for handoff to the provider-owned approval process",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.HANDLE_ERROR",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A declared failure occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.SEARCH_SINGLE_RESULT",
+          "node_type": "terminal",
+          "sequence": 81,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TLS.SEARCH_LAYOUT_SETS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One criteria-search match was loaded completely and presented to the user",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.SEARCH_MULTIPLE_RESULTS",
+          "node_type": "terminal",
+          "sequence": 82,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TLS.SEARCH_LAYOUT_SETS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Multiple criteria-search matches were presented to the user for selection",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.SEARCH_NO_RESULTS",
+          "node_type": "terminal",
+          "sequence": 83,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TLS.SEARCH_LAYOUT_SETS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "No candidate met every supplied search condition",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TLS.AWAIT_DUPLICATE_CHOICE",
+          "node_type": "terminal",
+          "sequence": 84,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TLS.SEARCH_LAYOUT_SETS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create request has a matching Time Layout Set and awaits the user's use-existing or create-new choice",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

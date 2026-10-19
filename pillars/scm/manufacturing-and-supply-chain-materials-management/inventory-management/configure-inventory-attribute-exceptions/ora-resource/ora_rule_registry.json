@@ -1,0 +1,114 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_CONFIGURE_INVENTORY_ATTRIBUTE_EXCEPTIONS",
+      "task_name": "Configure Inventory Attribute Exceptions",
+      "start_node": "IAE.APPLY_ATTRIBUTE_CODE_DEFAULT",
+      "nodes": [
+        {
+          "id": "IAE.APPLY_ATTRIBUTE_CODE_DEFAULT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "IAE.DERIVE_EXCEPTION_TYPE",
+            "overridden": "IAE.DERIVE_EXCEPTION_TYPE",
+            "not_applicable": "IAE.DERIVE_EXCEPTION_TYPE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Set InvAttributeCode to COUNTRY_OF_ORIGIN_CODE before Data Loader preparation for a create request.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IAE.DERIVE_EXCEPTION_TYPE",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "item_scope": "IAE.DONE",
+            "category_scope": "IAE.DONE",
+            "explicit_supplied": "IAE.DONE",
+            "ambiguous": "IAE.REQUEST_SCOPE_CLARITY",
+            "incomplete": "IAE.REQUEST_SCOPE_CLARITY",
+            "missing_scope": "IAE.REQUEST_SCOPE_CLARITY"
+          },
+          "prerequisites": [
+            "IAE.APPLY_ATTRIBUTE_CODE_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Derive I or C only for an omitted type with an unambiguous scope; preserve an explicit type and leave compatibility validation to REST/BO.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IAE.DONE",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IAE.DERIVE_EXCEPTION_TYPE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The approved task-local rules are ready for the invoking Data Loader Task Hook; Core Data Loader owns preview, approval, upload, and initiation.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IAE.REQUEST_SCOPE_CLARITY",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IAE.DERIVE_EXCEPTION_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The request needs clarification because its type is omitted and item-level/category-level scope is ambiguous, incomplete, or missing.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

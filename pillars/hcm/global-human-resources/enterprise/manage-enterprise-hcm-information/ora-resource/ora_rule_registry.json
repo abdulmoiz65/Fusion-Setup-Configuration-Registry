@@ -1,0 +1,398 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_ENTERPRISE_HCM_INFORMATION",
+      "task_name": "Manage Enterprise HCM Information",
+      "start_node": "ENT.VALIDATE",
+      "nodes": [
+        {
+          "id": "ENT.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ENT.READ",
+            "missing": "ENT.ERROR",
+            "invalid": "ENT.ERROR",
+            "unsupported": "ENT.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Enterprise HCM Information request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENT.READ",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ENT.HISTORY",
+            "not_found": "ENT.ERROR",
+            "failed": "ENT.ERROR"
+          },
+          "prerequisites": [
+            "ENT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enterprise details, context details, edit precheck, or delete is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENT.HISTORY",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "eligible": "ENT.CLASSIFICATION",
+            "not_required": "ENT.CLASSIFICATION",
+            "first_row": "ENT.ERROR",
+            "missing": "ENT.ERROR",
+            "ambiguous": "ENT.ERROR",
+            "failed": "ENT.ERROR"
+          },
+          "prerequisites": [
+            "ENT.READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Date-effective delete is requested after the Enterprise is read using today's effective date",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENT.CLASSIFICATION",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ENT.CONTEXT",
+            "not_required": "ENT.CONTEXT",
+            "ambiguous": "ENT.ERROR",
+            "failed": "ENT.ERROR"
+          },
+          "prerequisites": [
+            "ENT.HISTORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An Enterprise OrgInformation EFF row is built",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENT.CONTEXT",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ENT.CONTEXT_READ",
+            "all_requested": "ENT.CONTEXT_READ",
+            "not_required": "ENT.VALUESET",
+            "ambiguous": "ENT.ERROR",
+            "failed": "ENT.ERROR"
+          },
+          "prerequisites": [
+            "ENT.HISTORY",
+            "ENT.CLASSIFICATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A context, segment, or explicit all-context read is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENT.CONTEXT_READ",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ENT.VALUESET",
+            "failed": "ENT.ERROR"
+          },
+          "prerequisites": [
+            "ENT.CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A selected context or all explicitly requested Additional Information contexts are read from live links",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENT.VALUESET",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "ENT.DEPENDENCIES",
+            "not_required": "ENT.DEPENDENCIES",
+            "invalid": "ENT.ERROR",
+            "failed": "ENT.ERROR"
+          },
+          "prerequisites": [
+            "ENT.HISTORY",
+            "ENT.CLASSIFICATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A proposed segment value is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENT.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ENT.DEFAULTS",
+            "not_required": "ENT.DEFAULTS",
+            "needs_input": "ENT.ERROR",
+            "unresolved": "ENT.ERROR"
+          },
+          "prerequisites": [
+            "ENT.VALUESET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After Enterprise, delete-history, and requested EFF lookups and before defaulting",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENT.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "ENT.DESIGN",
+            "preserved": "ENT.DESIGN",
+            "not_required": "ENT.DESIGN",
+            "blocked": "ENT.ERROR"
+          },
+          "prerequisites": [
+            "ENT.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, current-state reads, and required resolvers are complete",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENT.DESIGN",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "ENT.ROUTE",
+            "not_required": "ENT.ROUTE",
+            "blocked": "ENT.ERROR"
+          },
+          "prerequisites": [
+            "ENT.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, dependencies, lookups, and defaulting are complete",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENT.ROUTE",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read": "ENT.DONE",
+            "edit_or_delete_ready": "ENT.LOADER_READY",
+            "mutation_blocked": "ENT.ERROR"
+          },
+          "prerequisites": [
+            "ENT.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select read completion or the Core Data Loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENT.ERROR",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "ENT.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior node returns invalid, missing, ambiguous, first-row, blocked, failed, partial, timed-out, uncertain, stale, or unverified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENT.DONE",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ENT.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENT.LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ENT.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Edit or eligible delete rules passed; invoke core.data-loader and follow it through immutable ZIP preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENT.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request cannot safely continue without correction or reconciliation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,253 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_INV_CONFIGURE_RFID_INTEGRATIONS_AND_DEVICES",
+      "task_name": "Configure RFID Integrations and Devices",
+      "start_node": "RFID.DEFAULT_DEVICE_ENABLED_FLAG",
+      "nodes": [
+        {
+          "id": "RFID.DEFAULT_DEVICE_ENABLED_FLAG",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "RFID.VALIDATE_INPUT",
+            "preserved": "RFID.VALIDATE_INPUT",
+            "failed": "RFID.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Apply Boolean false only for create records when a device omits both EnabledFlag and Status or a processes child row omits UnmapTagFlag; preserve explicit values, update omissions, and non-applicable records",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RFID.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RFID.PREFLIGHT_BOS",
+            "invalid": "RFID.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "RFID.DEFAULT_DEVICE_ENABLED_FLAG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate the approved Device Type, Status, Event Type, and Process Type input representations before Data Loader handoff",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RFID.PREFLIGHT_BOS",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RFID.RESOLVE_DEVICE_TYPE",
+            "unresolved": "RFID.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "RFID.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Complete the fresh selected-environment Data Loader metadata preflight for every applicable registered BO",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RFID.RESOLVE_DEVICE_TYPE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RFID.RESOLVE_EVENT_TYPE",
+            "no_processes": "RFID.COMPLETE_PARENT",
+            "failed": "RFID.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "RFID.PREFLIGHT_BOS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Device Type with resolve_rfid_device_type and continue to process resolution only when a processes child row is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RFID.RESOLVE_EVENT_TYPE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RFID.RESOLVE_PROCESS_TYPE",
+            "failed": "RFID.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "RFID.RESOLVE_DEVICE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the Event Type for each supplied processes child row through resolve_rfid_process_event_type",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RFID.RESOLVE_PROCESS_TYPE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RFID.COMPLETE_PROCESS",
+            "failed": "RFID.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "RFID.RESOLVE_EVENT_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the Process Type for each supplied processes child row through resolve_rfid_process_type",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RFID.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "RFID.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any prior node returns invalid, unresolved, failed, ambiguous, or unavailable",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RFID.COMPLETE_PARENT",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RFID.RESOLVE_DEVICE_TYPE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Integration or Device input is resolved and no processes child row is supplied",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RFID.COMPLETE_PROCESS",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RFID.RESOLVE_PROCESS_TYPE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Integration, Device, and every supplied processes child row are resolved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RFID.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Corrected input, metadata, access, or lookup evidence is required",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

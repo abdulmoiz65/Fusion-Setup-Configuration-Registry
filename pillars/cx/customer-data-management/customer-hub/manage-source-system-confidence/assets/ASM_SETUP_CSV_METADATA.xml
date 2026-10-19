@@ -1,0 +1,43 @@
+<MigrationProcessCSVMetadataVO>
+   <MigrationProcessCSVMetadataVORow>
+      <ProcessId>-999</ProcessId>
+      <ProcessName>Manage Source System Confidence_20260908_021233_445</ProcessName>
+      <ProcessDescription>Manage Source System Confidence_20260908_021233_445</ProcessDescription>
+      <ProcessDate>2026-09-08 02:12:53.603</ProcessDate>
+      <ObjectShortName>ORA_ZCH_MANAGE_SOURCE_SYSTEM_CONFIDENCE</ObjectShortName>
+      <ObjectType>TASK</ObjectType>
+      <CreatedByFlow>TASK_CSV</CreatedByFlow>
+      <ProcessType>EXPORT</ProcessType>
+      <ProcessStatus>COMPLETED</ProcessStatus>
+      <ProcessEnv>cptcpuwqy</ProcessEnv>
+      <ProcessStartDate>2026-09-08 02:12:33.148</ProcessStartDate>
+      <ProcessEndDate>2026-09-08 02:12:53.603</ProcessEndDate>
+      <ProcessRelease>11.13.26.10.0</ProcessRelease>
+      <SubmittedBy>FUSION</SubmittedBy>
+      <ESSRequestId>301056</ESSRequestId>
+      <MigrationProcessBusinessObjectCSVMetadata1>
+         <MigrationProcessBusinessObjectCSVMetadataVORow>
+            <ProcessId>-999</ProcessId>
+            <BusinessObjectShortName>ORA_ZCH_CONFIDENCE_LEVEL</BusinessObjectShortName>
+            <BatchName null="true"/>
+            <XmlAttributeList>AttributeName,ColumnName,ConfidenceLevel,CreatedBy,EffectiveEndDate,EffectiveLatestChange,EffectiveSequence,EffectiveStartDate,EntityLevel,LastUpdatedBy,ObjDef,ObjName,OrigSystem,TableName,OrigSystem1</XmlAttributeList>
+            <XmlAttributeTypeList>string,string,int,string,date,string,int,date,string,string,string,string,string,string,string</XmlAttributeTypeList>
+            <XmlNodePath>/SourceConfidenceSetupVO/SourceConfidenceSetupVORow</XmlNodePath>
+            <NodeSequence>1</NodeSequence>
+         </MigrationProcessBusinessObjectCSVMetadataVORow>
+      </MigrationProcessBusinessObjectCSVMetadata1>
+      <MigrationProcessBatchCSVMetadata null="true"/>
+      <MigrationProcessScopeValueCSVMetadata null="true"/>
+      <MigrationProcessMigrationObjectCSVMetadata>
+         <MigrationProcessMigrationObjectCSVMetadataVORow>
+            <ProcessId>-999</ProcessId>
+            <BusinessObjectShortName>ORA_ZCH_CONFIDENCE_LEVEL</BusinessObjectShortName>
+            <MigrateFlag>Y</MigrateFlag>
+            <IncludeExternalDataFlag>Y</IncludeExternalDataFlag>
+            <ServiceType null="true"/>
+         </MigrationProcessMigrationObjectCSVMetadataVORow>
+      </MigrationProcessMigrationObjectCSVMetadata>
+      <MigrationProcessTaskCSVMetadata null="true"/>
+      <MigrationProcessServiceVersionCSVMetadata null="true"/>
+   </MigrationProcessCSVMetadataVORow>
+</MigrationProcessCSVMetadataVO>

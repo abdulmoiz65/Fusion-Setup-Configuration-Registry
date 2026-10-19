@@ -1,0 +1,46 @@
+# Reference Lookups
+
+Every referenced lookup must use the exact header
+`REST-Framework-Version: 9`.
+
+## Source
+
+| Source | Location | Used For |
+|---|---|---|
+| Developer-provided Data Loader contract | costOrganizationsLOV, costOrgBooksLOV, costingItemsLOV, costProfileDetails and the published costAccountingItemCostProfiles DAT template | Validate the supplied user-friendly values before the Data Loader import |
+
+## Live Lookups
+
+| Resolver | Runs When | Source Values | Request Path or URL | Requested Fields | Match Rule | Values to Fill | If No Match or Many Matches |
+|---|---|---|---|---|---|---|---|
+| resolve_cost_organization_exact | After input validation | Cost Organization Name | /fscmRestApi/resources/11.13.18.05/costOrganizationsLOV?q=UPPER(CostOrganizationName)%20%3D%20UPPER('<Cost Organization Name>') | Inspect `CostOrganizationId` and `CostOrganizationName` from the response. Do not send a `fields` query parameter; this LOV rejects it. | Compare returned CostOrganizationName to the supplied complete value case-insensitively. Require exactly one equal match; never select a partial or first result. | CostOrganizationId | Stop and request a valid unique Cost Organization Name. |
+| resolve_cost_book_exact | After CostOrganizationId is resolved | Cost Book Code and CostOrganizationId | /fscmRestApi/resources/11.13.18.05/costOrgBooksLOV?fields=CostBookCode,CostBookId,PeriodicAverageFlag&finder=findByCostOrganization;bindCostOrgId=<CostOrganizationId>&q=PeriodicAverageFlag%3Dfalse%20AND%20UPPER(CostBookCode)%20%3D%20UPPER('<Cost Book Code>')&limit=25&offset=0 | CostBookId, CostBookCode, PeriodicAverageFlag | Require finder=findByCostOrganization;bindCostOrgId=<CostOrganizationId> and q=PeriodicAverageFlag=false. Compare returned CostBookCode to the supplied complete value case-insensitively and require exactly one equal match. | CostBookId | Stop and request a valid unique non-Periodic Average Cost Book Code. |
+| resolve_costing_item_exact | After CostOrganizationId is resolved | Item Number, CostOrganizationId | Tenant-resolved `costingItemsLOV` route: start with `/fscmRestApi/resources/{version}/costingItemsLOV`. If that route rejects this documented request with HTTP 400, resolve the same-environment verified versioned `costingItemsLOV` route from approved environment metadata or configuration and retain it only for the current session. Then send `fields=Item,ItemId,InventoryOrganizationId,MasterInventoryOrganizationId`, `finder=findItems;bindCostOrgId=<CostOrganizationId>`, `q=CostingEnabledFlag=true and UPPER(Item) = UPPER('<Item Number>')`, `limit=25`, and `offset=0`. | Item, ItemId, InventoryOrganizationId, MasterInventoryOrganizationId; `CostingEnabledFlag` is enforced by the query predicate and must not be added to `fields`. | Require the selected session route, finder=findItems;bindCostOrgId=<CostOrganizationId>, and q=CostingEnabledFlag=true with a case-insensitive equality predicate for the complete supplied Item Number. Require exactly one equal match; never select a partial or first result. | InventoryItemId from ItemId; InventoryOrgId from InventoryOrganizationId | Stop and report a fusion_api_error when neither approved route accepts the documented request; otherwise request a valid unique Costing Enabled Item Number. |
+| resolve_expense_cost_profile_exact | Expense Cost Profile is supplied | Expense Cost Profile Code, CostOrganizationId | /fscmRestApi/resources/11.13.18.05/costProfileDetails?finder=SearchBySetAccess;bindValStructureTypeCode=EXPENSE,bindCostOrgId=<CostOrganizationId>&q=CostProfileCode='<Expense Cost Profile Code>' | CostProfileId, CostProfileCode, CostMethodCode | Use the EXPENSE finder. Require a non-PERIODIC_AVERAGE CostMethodCode, compare returned CostProfileCode to the supplied complete value case-insensitively, and require exactly one equal match. Never select a partial or first result. | ExpenseCostProfileId from CostProfileId | Stop and request a valid unique non-Periodic Average Expense Cost Profile Code. |
+| resolve_asset_cost_profile_exact | Asset Cost Profile is supplied | Asset Cost Profile Code, CostOrganizationId | /fscmRestApi/resources/11.13.18.05/costProfileDetails?finder=SearchBySetAccess;bindValStructureTypeCode=ASSET,bindCostOrgId=<CostOrganizationId>&q=CostProfileCode='<Asset Cost Profile Code>' | CostProfileId, CostProfileCode, CostMethodCode | Use the ASSET finder. Require a non-PERIODIC_AVERAGE CostMethodCode, compare returned CostProfileCode to the supplied complete value case-insensitively, and require exactly one equal match. Never select a partial or first result. | AssetCostProfileId from CostProfileId | Stop and request a valid unique non-Periodic Average Asset Cost Profile Code. |
+| resolve_consigned_cost_profile_exact | Consigned Cost Profile is supplied | Consigned Cost Profile Code, CostOrganizationId | /fscmRestApi/resources/11.13.18.05/costProfileDetails?finder=SearchBySetAccess;bindValStructureTypeCode=CONSIGNED,bindCostOrgId=<CostOrganizationId>&q=CostProfileCode='<Consigned Cost Profile Code>' | CostProfileId, CostProfileCode, CostMethodCode | Use the CONSIGNED finder, compare returned CostProfileCode to the supplied complete value case-insensitively, and require exactly one equal match. Never select a partial or first result. | ConsignedCostProfileId from CostProfileId | Stop and request a valid unique Consigned Cost Profile Code. |
+| prepare_delete_loader_source | Delete identity validation | Cost Organization Name, Cost Book Code, Item Number | `core.data-loader` delete-oriented source preparation and Task Hook validation | The registered Data Loader business-object contract | Use the Data Loader's live metadata and task validation to validate the complete source; do not call the business-object REST endpoint directly. | Validated immutable delete-oriented source | Stop and correct the source when validation is incomplete, ambiguous, or blocked. |
+
+## Lookup Execution Rules
+
+| Situation | What Happens |
+|---|---|
+| REST framework header | Send `REST-Framework-Version: 9` with every lookup request. |
+| Lookup ordering | Run the resolvers strictly in this order: Cost Organization, Cost Book, Item, then each supplied Cost Profile. |
+| Cost Organization response mapping | Map the exact response's `CostOrganizationId` to the `bindCostOrgId` value used by downstream resolvers. |
+| Costing Items LOV route | Start with `/fscmRestApi/resources/{version}/costingItemsLOV`. If Fusion returns HTTP 400 for the documented request, resolve and retain a same-environment verified versioned route from approved metadata or configuration for the current session only. Do not request a raw URL from the end user, persist a pod host, or hardcode an `rv:` identifier or route version in this reusable skill. |
+| Costing Items route failure | If neither the generic nor same-environment verified route accepts the documented request, stop with fusion_api_error; do not change predicates or select a partial result. |
+| Partial search result | Do not select it. Equality must be verified against the complete user-supplied value, case-insensitively. |
+| Multiple equal matches | Stop and ask the user for a valid unique value. |
+| Data Loader source contract | Use CostOrgName, CostBookCode, and ItemNumber as the configured user-friendly foreign-key values. Retain InventoryOrgId only when the published business object requires item scope. For each supplied profile type, submit its Cost Profile Code when its foreign-key key set is active; otherwise submit only that type's exact resolved CostProfileId. Do not submit both the code and ID for the same profile type. |
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| ICP.RESOLVE_COST_ORGANIZATION | step | 2 | reference_lookup | resolved->ICP.RESOLVE_COST_BOOK;blocked->ICP.HANDLE_ISSUE;failure->ICP.HANDLE_ISSUE | ICP.VALIDATE_INPUT | stop | Always |
+| ICP.RESOLVE_COST_BOOK | step | 3 | reference_lookup | resolved->ICP.RESOLVE_COSTING_ITEM;blocked->ICP.HANDLE_ISSUE;failure->ICP.HANDLE_ISSUE | ICP.RESOLVE_COST_ORGANIZATION | stop | Always |
+| ICP.RESOLVE_COSTING_ITEM | step | 4 | reference_lookup | resolved->ICP.RESOLVE_EXPENSE_COST_PROFILE;blocked->ICP.HANDLE_ISSUE;failure->ICP.HANDLE_ISSUE | ICP.RESOLVE_COST_BOOK | stop | Always |
+| ICP.RESOLVE_EXPENSE_COST_PROFILE | step | 5 | reference_lookup | resolved->ICP.RESOLVE_ASSET_COST_PROFILE;not_applicable->ICP.RESOLVE_ASSET_COST_PROFILE;blocked->ICP.HANDLE_ISSUE;failure->ICP.HANDLE_ISSUE | ICP.RESOLVE_COSTING_ITEM | stop | Expense Cost Profile is supplied |
+| ICP.RESOLVE_ASSET_COST_PROFILE | step | 6 | reference_lookup | resolved->ICP.RESOLVE_CONSIGNED_COST_PROFILE;not_applicable->ICP.RESOLVE_CONSIGNED_COST_PROFILE;blocked->ICP.HANDLE_ISSUE;failure->ICP.HANDLE_ISSUE | ICP.RESOLVE_EXPENSE_COST_PROFILE | stop | Asset Cost Profile is supplied |
+| ICP.RESOLVE_CONSIGNED_COST_PROFILE | step | 7 | reference_lookup | resolved->ICP.ENFORCE_LOADER_PAYLOAD_CONTRACT;not_applicable->ICP.ENFORCE_LOADER_PAYLOAD_CONTRACT;blocked->ICP.HANDLE_ISSUE;failure->ICP.HANDLE_ISSUE | ICP.RESOLVE_ASSET_COST_PROFILE | stop | Consigned Cost Profile is supplied |

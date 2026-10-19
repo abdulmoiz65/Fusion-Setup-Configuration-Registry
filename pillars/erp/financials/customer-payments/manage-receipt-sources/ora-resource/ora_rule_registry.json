@@ -1,0 +1,401 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "AR_MANAGE_RECEIPT_SOURCES",
+      "task_name": "Manage Receipt Sources",
+      "start_node": "RS.VALIDATE",
+      "nodes": [
+        {
+          "id": "RS.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RS.DEPENDENCIES",
+            "needs_input": "RS.NEEDS_INPUT",
+            "unsafe": "RS.SAFETY_HOLD"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Receipt Sources request before dependency or package evaluation.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RS.LOOKUP_PACKAGE",
+            "needs_input": "RS.NEEDS_INPUT",
+            "unsafe": "RS.SAFETY_HOLD"
+          },
+          "prerequisites": [
+            "RS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation completed for a Manage Receipt Sources request.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.LOOKUP_PACKAGE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "RS.LOOKUP_BU",
+            "needs_input": "RS.NEEDS_INPUT",
+            "unsafe": "RS.SAFETY_HOLD"
+          },
+          "prerequisites": [
+            "RS.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every request.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.LOOKUP_BU",
+          "node_type": "decision",
+          "sequence": 31,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RS.LOOKUP_TARGET",
+            "needs_input": "RS.NEEDS_INPUT"
+          },
+          "prerequisites": [
+            "RS.LOOKUP_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every operation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.LOOKUP_TARGET",
+          "node_type": "decision",
+          "sequence": 32,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "RS.LOOKUP_METHOD",
+            "needs_input": "RS.NEEDS_INPUT"
+          },
+          "prerequisites": [
+            "RS.LOOKUP_BU"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every request; create requires zero matches while update, end-date, and verify require exactly one.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.LOOKUP_METHOD",
+          "node_type": "decision",
+          "sequence": 33,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RS.LOOKUP_BANK",
+            "needs_input": "RS.NEEDS_INPUT"
+          },
+          "prerequisites": [
+            "RS.LOOKUP_TARGET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Method/class reference or lockbox design; otherwise explicit no-op pass.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.LOOKUP_BANK",
+          "node_type": "decision",
+          "sequence": 34,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RS.DEFAULTS",
+            "needs_input": "RS.NEEDS_INPUT"
+          },
+          "prerequisites": [
+            "RS.LOOKUP_METHOD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Bank-account reference; otherwise explicit no-op pass.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "RS.ENFORCE",
+            "needs_input": "RS.NEEDS_INPUT"
+          },
+          "prerequisites": [
+            "RS.LOOKUP_BANK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All applicable confirmed lookups resolved or produced an explicit no-op pass.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.ENFORCE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RS.EXECUTION_GATE",
+            "needs_input": "RS.NEEDS_INPUT",
+            "unsafe": "RS.SAFETY_HOLD"
+          },
+          "prerequisites": [
+            "RS.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Normalized values, applicable lookup outcomes, and defaults are ready for design validation.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "create_ready": "RS.READY_CREATE",
+            "update_ready": "RS.READY_UPDATE",
+            "end_date_ready": "RS.READY_END_DATE",
+            "no_op_ready": "RS.READY_NOOP",
+            "needs_input": "RS.NEEDS_INPUT",
+            "unsafe": "RS.SAFETY_HOLD"
+          },
+          "prerequisites": [
+            "RS.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Design enforcement passed and the governing implementation orchestration recorded orchestration-owned design confirmation for the exact design and source hashes; only then may static mode build and hand off a validated candidate, while live mode also requires later Core Data Loader candidate-specific approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.READY_CREATE",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RS.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create design passed every applicable static rule and is ready for the next governed stage.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.READY_UPDATE",
+          "node_type": "terminal",
+          "sequence": 71,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RS.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An update design passed every applicable static rule and is ready for the next governed stage.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.READY_END_DATE",
+          "node_type": "terminal",
+          "sequence": 72,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RS.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An end-date design passed every applicable static rule and is ready for the next governed stage.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.READY_NOOP",
+          "node_type": "terminal",
+          "sequence": 73,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RS.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verification found no requested change; no mutation candidate is needed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.NEEDS_INPUT",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Ask the smallest useful follow-up, retain resolved state, and restart at RS.VALIDATE after the answer or corrected evidence.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RS.SAFETY_HOLD",
+          "node_type": "terminal",
+          "sequence": 999,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A non-business safety or external condition prevents mutation. Explain the concrete recovery action, retain the design, and resume when the condition is corrected.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

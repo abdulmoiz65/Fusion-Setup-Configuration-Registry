@@ -1,0 +1,645 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "EGI_MANAGE_IMPORT_MAPS",
+      "task_name": "Manage Import Maps",
+      "start_node": "MIM.SELECT_IMPORT_ROUTE",
+      "nodes": [
+        {
+          "id": "MIM.SELECT_IMPORT_ROUTE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "rest": "MIM.VALIDATE_INPUT",
+            "fsm_zip": "MIM.VALIDATE_FSM_ZIP",
+            "ambiguous": "MIM.AWAIT_ROUTE",
+            "invalid": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before any route-specific validation; select REST Data Loader or FSM task-level ZIP from the explicit operation and artifact type",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.VALIDATE_FSM_ZIP",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MIM.RESOLVE_FSM_DESTINATION_ATTRIBUTES",
+            "invalid": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.SELECT_IMPORT_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The FSM task-level ZIP route is selected; validate archive identity and CSV readability while preserving transformations and expressions unchanged",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MIM.APPLY_DEFAULTS",
+            "missing_transformation_mapping": "MIM.AWAIT_TRANSFORMATION_MAPPING",
+            "invalid": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.SELECT_IMPORT_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "On the REST Data Loader route, validate parent, source, destination, and supplied transformation structure before preparing itemImportMaps source data",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied_or_not_needed": "MIM.RESOLVE_ROOT_ITEM_CLASS",
+            "blocked": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After REST input validation and before resolving a missing create-request ItemClassName or supplied or defaulted import-map format values",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.RESOLVE_ROOT_ITEM_CLASS",
+          "node_type": "step",
+          "sequence": 18,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MIM.RESOLVE_DELIMITER",
+            "not_applicable": "MIM.RESOLVE_DELIMITER",
+            "blocked": "MIM.HANDLE_ISSUE",
+            "failure": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve and default ItemClassName only for applicable REST create requests; updates and explicit nonblank values return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.RESOLVE_DELIMITER",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MIM.RESOLVE_FILE_TYPE",
+            "not_applicable": "MIM.RESOLVE_FILE_TYPE",
+            "blocked": "MIM.HANDLE_ISSUE",
+            "failure": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.RESOLVE_ROOT_ITEM_CLASS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied or defaulted Delimiter display value when no LookupCode is provided on the REST route",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.RESOLVE_FILE_TYPE",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MIM.RESOLVE_DATE_FORMAT",
+            "not_applicable": "MIM.RESOLVE_DATE_FORMAT",
+            "blocked": "MIM.HANDLE_ISSUE",
+            "failure": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.RESOLVE_DELIMITER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied or defaulted FileType display value when no LookupCode is provided on the REST route",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.RESOLVE_DATE_FORMAT",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MIM.RESOLVE_ENCODING_TYPE",
+            "not_applicable": "MIM.RESOLVE_ENCODING_TYPE",
+            "blocked": "MIM.HANDLE_ISSUE",
+            "failure": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.RESOLVE_FILE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied or defaulted DateFormat display value when no LookupCode is provided on the REST route",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.RESOLVE_ENCODING_TYPE",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MIM.RESOLVE_TIMESTAMP_FORMAT",
+            "not_applicable": "MIM.RESOLVE_TIMESTAMP_FORMAT",
+            "blocked": "MIM.HANDLE_ISSUE",
+            "failure": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.RESOLVE_DATE_FORMAT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied or defaulted EncodingType display value when no LookupCode is provided on the REST route",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.RESOLVE_TIMESTAMP_FORMAT",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MIM.RESOLVE_DESTINATION_ATTRIBUTES",
+            "not_applicable": "MIM.RESOLVE_DESTINATION_ATTRIBUTES",
+            "blocked": "MIM.HANDLE_ISSUE",
+            "failure": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.RESOLVE_ENCODING_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied or defaulted TimestampFormat display value when no LookupCode is provided on the REST route",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.RESOLVE_DESTINATION_ATTRIBUTES",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MIM.VALIDATE_TRANSFORMATION_FUNCTION",
+            "not_applicable": "MIM.VALIDATE_TRANSFORMATION_FUNCTION",
+            "blocked": "MIM.HANDLE_ISSUE",
+            "failure": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.RESOLVE_TIMESTAMP_FORMAT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve and validate REST destination payload values through cached or freshly-read importMapAttributes when a destination mapping is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.RESOLVE_FSM_DESTINATION_ATTRIBUTES",
+          "node_type": "step",
+          "sequence": 82,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MIM.CHECK_FSM_READINESS",
+            "unmatched": "MIM.CHECK_FSM_READINESS",
+            "not_applicable": "MIM.CHECK_FSM_READINESS",
+            "multiple": "MIM.HANDLE_ISSUE",
+            "failure": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.VALIDATE_FSM_ZIP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Skip rows whose unchanged DestinationTable contains the exact case-sensitive substring DUMMY_TABLE, then validate every other FSM destination row by the exact four-field code key; preserve zero-match rows with warnings and block multiple matches",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.VALIDATE_TRANSFORMATION_FUNCTION",
+          "node_type": "step",
+          "sequence": 83,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MIM.RESOLVE_TRANSFORMATION_RETURN_ATTRIBUTE",
+            "advisory": "MIM.RESOLVE_TRANSFORMATION_RETURN_ATTRIBUTE",
+            "not_applicable": "MIM.RESOLVE_TRANSFORMATION_RETURN_ATTRIBUTE",
+            "blocked": "MIM.HANDLE_ISSUE",
+            "failure": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.RESOLVE_DESTINATION_ATTRIBUTES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate each supplied REST transformation ExpressionCode against importMapFunctions and return FunctionSyntax and Examples as advisory guidance when syntax differs",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.RESOLVE_TRANSFORMATION_RETURN_ATTRIBUTE",
+          "node_type": "step",
+          "sequence": 85,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MIM.DERIVE_TRANSFORMATION_SOURCE_COLUMNS",
+            "not_applicable": "MIM.DERIVE_TRANSFORMATION_SOURCE_COLUMNS",
+            "blocked": "MIM.HANDLE_ISSUE",
+            "failure": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.VALIDATE_TRANSFORMATION_FUNCTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve ReturnAttributeName from the exact parent destination item for each supplied REST transformation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.DERIVE_TRANSFORMATION_SOURCE_COLUMNS",
+          "node_type": "step",
+          "sequence": 86,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied_or_not_needed": "MIM.DEFAULT_SOURCE_IGNORE_FLAG",
+            "blocked": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.RESOLVE_TRANSFORMATION_RETURN_ATTRIBUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Derive SourceColumns and preserve supplied optional transformation values when REST transformation children are present; otherwise return not needed",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.DEFAULT_SOURCE_IGNORE_FLAG",
+          "node_type": "step",
+          "sequence": 87,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied_or_not_needed": "MIM.CHECK_LOOKUP_READINESS",
+            "blocked": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.DERIVE_TRANSFORMATION_SOURCE_COLUMNS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After destination and transformation resolution and before REST Data Loader readiness",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.CHECK_LOOKUP_READINESS",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MIM.ENFORCE_LOOKUP_RESULTS",
+            "blocked": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.DEFAULT_SOURCE_IGNORE_FLAG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After all applicable REST defaults, lookups, transformation derivations, and source normalization complete",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.CHECK_FSM_READINESS",
+          "node_type": "decision",
+          "sequence": 92,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MIM.FSM_READY",
+            "blocked": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.RESOLVE_FSM_DESTINATION_ATTRIBUTES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After FSM archive validation and destination reporting; require the unchanged ZIP, completed eligible-row match report, DUMMY_TABLE skip report, and no multiple-match blocker",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.ENFORCE_LOOKUP_RESULTS",
+          "node_type": "decision",
+          "sequence": 100,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "allowed": "MIM.DONE",
+            "blocked": "MIM.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "MIM.CHECK_LOOKUP_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After REST validation, lookups, transformation derivations, and source normalization; disclose syntax advisories and block unresolved required values before Data Loader handoff and preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 900,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, lookup, dependency, or enforcement node reports a blocked or failed result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.DONE",
+          "node_type": "terminal",
+          "sequence": 910,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MIM.ENFORCE_LOOKUP_RESULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All documented REST lookup, destination, transformation, derivation, and enforcement gates passed; syntax advisories were disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.FSM_READY",
+          "node_type": "terminal",
+          "sequence": 915,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MIM.CHECK_FSM_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The unchanged FSM task-level ZIP is ready to return to core.data-loader with its validation report, orchestration_owner core.data-loader, task_hook_required true, and no multiple-match blocker",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 920,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Error disclosure complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.AWAIT_TRANSFORMATION_MAPPING",
+          "node_type": "terminal",
+          "sequence": 932,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MIM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return MISSING without REST lookups, workbook, or DAT preparation; resume at MIM.VALIDATE_INPUT when the destination mapping is supplied",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MIM.AWAIT_ROUTE",
+          "node_type": "terminal",
+          "sequence": 935,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MIM.SELECT_IMPORT_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return MISSING without route-specific validation or handoff; resume at MIM.SELECT_IMPORT_ROUTE when an explicit route arrives",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

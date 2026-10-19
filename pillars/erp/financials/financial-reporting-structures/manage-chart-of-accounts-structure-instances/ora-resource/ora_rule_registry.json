@@ -1,0 +1,228 @@
+{
+  "schema_version": "2.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "GL_MANAGE_CHARTS_OF_ACCOUNTS_STRUCTURE_INSTANCES",
+      "task_name": "Manage Chart of Accounts Structure Instances",
+      "start_node": "COAINS.COLLECT",
+      "nodes": [
+        {
+          "id": "COAINS.COLLECT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "collect_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COAINS.VALIDATE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_intake.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAINS.VALIDATE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "COAINS.READY"
+          },
+          "prerequisites": [
+            "COAINS.COLLECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAINS.READY",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "COAINS.LOOKUP"
+          },
+          "prerequisites": [
+            "COAINS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAINS.LOOKUP",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "absent": "COAINS.DEFAULT",
+            "match": "COAINS.DONE_MATCH"
+          },
+          "prerequisites": [
+            "COAINS.READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAINS.DEFAULT",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "COAINS.BULK"
+          },
+          "prerequisites": [
+            "COAINS.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Object absent",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAINS.BULK",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "process_bulk",
+          "execution_route": "fsm-task-csv-import",
+          "transitions": {
+            "ready": "COAINS.GATE"
+          },
+          "prerequisites": [
+            "COAINS.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Object absent",
+          "source": {
+            "file": "ora_bulk_intake.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAINS.GATE",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "COAINS.READY_IMPORT"
+          },
+          "prerequisites": [
+            "COAINS.BULK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Object absent",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAINS.READY_IMPORT",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COAINS.GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Readiness record passes",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "COAINS.DONE_MATCH",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "COAINS.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing definition matches",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

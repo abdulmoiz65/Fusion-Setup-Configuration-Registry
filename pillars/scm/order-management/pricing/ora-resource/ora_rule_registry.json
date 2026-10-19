@@ -1,0 +1,1466 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_CUSTOMER_PRICING_DEFINITIONS",
+      "task_name": "Manage Customer Pricing Definitions",
+      "start_node": "CPD.VALIDATE",
+      "nodes": [
+        {
+          "id": "CPD.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "child_association": "CPD.RESOLVE_PARENT_PRICING_STRATEGY",
+            "passed": "CPD.APPLY_DEFAULTS",
+            "failed": "CPD.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a customer pricing definition through the registered Data Loader REST workflow",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 177
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPD.RESOLVE_PARENT_PRICING_STRATEGY",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CPD.APPLY_DEFAULTS",
+            "not_found": "CPD.PREPARE_GLOBAL_FOR_ASSOCIATION",
+            "ambiguous": "CPD.ISSUES",
+            "conflict": "CPD.ISSUES",
+            "failed": "CPD.ISSUES"
+          },
+          "prerequisites": [
+            "CPD.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Associating any entity under a Pricing Strategy; resolve the global customer pricing definition with AssignmentTypeCode ORA_QP_ALL, the entity type, and its matching supported child collection; a zero-result global lookup prepares the separate global-definition create route",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 138
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPD.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CPD.CHECK_GLOBAL_ASSIGNMENT",
+            "not_applicable": "CPD.CHECK_GLOBAL_ASSIGNMENT",
+            "failed": "CPD.ISSUES"
+          },
+          "prerequisites": [
+            "CPD.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a customer pricing definition; default AssignmentTypeCode to ORA_QP_ALL and Name to Customer Pricing Definition for Validation when omitted for a global definition, and default child AssociationStartDate in Fusion ISO timestamp format when applicable",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPD.CHECK_GLOBAL_ASSIGNMENT",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "unique": "CPD.READY_CREATE",
+            "not_applicable": "CPD.READY_CREATE",
+            "existing_global": "CPD.OFFER_REUSE_GLOBAL_DEFINITION",
+            "duplicate": "CPD.ISSUES",
+            "ambiguous": "CPD.ISSUES",
+            "failed": "CPD.ISSUES"
+          },
+          "prerequisites": [
+            "CPD.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating with supplied or defaulted AssignmentTypeCode ORA_QP_ALL and an exactly one existing global definition routes to the reuse prompt; updates exclude their own identifier",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 139
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPD.OFFER_REUSE_GLOBAL_DEFINITION",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "accepted": "CPD.READY_REUSE",
+            "declined": "CPD.ISSUES"
+          },
+          "prerequisites": [
+            "CPD.CHECK_GLOBAL_ASSIGNMENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create request with AssignmentTypeCode ORA_QP_ALL finds exactly one existing global customer pricing definition; prompt the user to use that resolved definition without changing it",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 178
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPD.PREPARE_GLOBAL_FOR_ASSOCIATION",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPD.RESOLVE_PARENT_PRICING_STRATEGY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An association request found no global customer pricing definition with AssignmentTypeCode ORA_QP_ALL; prepare its separately approved Data Loader create load, then rerun association resolution after success",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 213
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPD.READY_CREATE",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPD.CHECK_GLOBAL_ASSIGNMENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Customer pricing definition inputs are valid, child PricingStrategyId values are derived when needed, defaults are applied, and global assignment uniqueness is confirmed for the separately approved Data Loader workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 214
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPD.READY_REUSE",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPD.OFFER_REUSE_GLOBAL_DEFINITION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The user accepted reuse of the exactly one resolved global customer pricing definition; return it without a create or update",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 215
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPD.ISSUES",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "CPD.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation, parent lookup, global uniqueness check, reuse decision, defaulting, or Data Loader preparation failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 216
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPD.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPD.ISSUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An issue was handled",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 217
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_QP_MANAGE_PRICE_ELEMENTS",
+      "task_name": "Manage Price Elements",
+      "start_node": "QP.PE.VALIDATE",
+      "nodes": [
+        {
+          "id": "QP.PE.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "QP.PE.DESIGN",
+            "failed": "QP.PE.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Creating, updating, or deactivating a price element",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PE.DESIGN",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "QP.PE.READY",
+            "failed": "QP.PE.ISSUES"
+          },
+          "prerequisites": [
+            "QP.PE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a price element",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PE.READY",
+          "node_type": "terminal",
+          "sequence": 3,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.PE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation and design enforcement passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PE.ISSUES",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation or design enforcement failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.PE.ISSUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An issue was handled",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_QP_MANAGE_PRICING_BASES",
+      "task_name": "Manage Pricing Bases",
+      "start_node": "QP.PB.VALIDATE",
+      "nodes": [
+        {
+          "id": "QP.PB.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "QP.PB.DEFAULT",
+            "failed": "QP.PB.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Creating, updating, or importing a pricing basis",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PB.DEFAULT",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "QP.PB.PRICE_ELEMENT_LOOKUP",
+            "not_applicable": "QP.PB.PRICE_ELEMENT_LOOKUP",
+            "failed": "QP.PB.ISSUES"
+          },
+          "prerequisites": [
+            "QP.PB.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or importing a pricing basis",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PB.PRICE_ELEMENT_LOOKUP",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "QP.PB.DEPENDENCY",
+            "not_found": "QP.PB.ISSUES",
+            "ambiguous": "QP.PB.ISSUES",
+            "failed": "QP.PB.ISSUES"
+          },
+          "prerequisites": [
+            "QP.PB.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A pricing basis references a price element",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PB.DEPENDENCY",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "QP.PB.BASIS_LOOKUP",
+            "missing": "QP.PB.ISSUES",
+            "failed": "QP.PB.ISSUES"
+          },
+          "prerequisites": [
+            "QP.PB.PRICE_ELEMENT_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A pricing basis references a price element",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PB.BASIS_LOOKUP",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "none_found": "QP.PB.DESIGN",
+            "existing_found": "QP.PB.DESIGN",
+            "ambiguous": "QP.PB.ISSUES",
+            "failed": "QP.PB.ISSUES"
+          },
+          "prerequisites": [
+            "QP.PB.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new pricing basis is being created or imported",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PB.DESIGN",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "QP.PB.READY",
+            "failed": "QP.PB.ISSUES"
+          },
+          "prerequisites": [
+            "QP.PB.BASIS_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or importing a pricing basis",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PB.READY",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.PB.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation, dependency, lookup, and design enforcement passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PB.ISSUES",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation, dependency, lookup, or design enforcement failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.PB.ISSUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An issue was handled",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_QP_MANAGE_PRICING_CHARGE_DEFINITIONS",
+      "task_name": "Manage Pricing Charge Definitions",
+      "start_node": "QP.PCD.VALIDATE",
+      "nodes": [
+        {
+          "id": "QP.PCD.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "QP.PCD.DEPENDENCY",
+            "failed": "QP.PCD.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a pricing charge definition through the registered Data Loader REST workflow",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PCD.DEPENDENCY",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "QP.PCD.DEFAULT",
+            "blocked": "QP.PCD.ISSUES",
+            "failed": "QP.PCD.ISSUES"
+          },
+          "prerequisites": [
+            "QP.PCD.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a pricing charge definition",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PCD.DEFAULT",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "QP.PCD.DESIGN",
+            "not_applicable": "QP.PCD.DESIGN",
+            "failed": "QP.PCD.ISSUES"
+          },
+          "prerequisites": [
+            "QP.PCD.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a pricing charge definition",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PCD.DESIGN",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "QP.PCD.DATA_LOADER_VALIDATION",
+            "failed": "QP.PCD.ISSUES"
+          },
+          "prerequisites": [
+            "QP.PCD.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a pricing charge definition",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PCD.DATA_LOADER_VALIDATION",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "validated": "QP.PCD.DATA_LOADER_IMPORT_READY",
+            "failed": "QP.PCD.ISSUES"
+          },
+          "prerequisites": [
+            "QP.PCD.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create or update has a live-schema-validated Data Loader source for pricingChargeDefinitions",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 133
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PCD.DATA_LOADER_IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.PCD.DATA_LOADER_VALIDATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact Data Loader source is validated, previewed, and awaiting explicit approval for core.data-loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 134
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PCD.ISSUES",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "QP.PCD.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation, dependency, lookup, design enforcement, export, or import readiness failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 135
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PCD.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.PCD.ISSUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An issue was handled",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 136
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_QP_MANAGE_PRICING_MESSAGES",
+      "task_name": "Manage Pricing Messages",
+      "start_node": "QP.PM.VALIDATE",
+      "nodes": [
+        {
+          "id": "QP.PM.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "QP.PM.LOOKUP",
+            "failed": "QP.PM.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every selected task request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 207
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PM.LOOKUP",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "passed": "QP.PM.DESIGN",
+            "failed": "QP.PM.ISSUES"
+          },
+          "prerequisites": [
+            "QP.PM.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only inventory or task-specific preflight; apply only resolver rows whose Runs When condition matches",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 159
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PM.DESIGN",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "QP.PM.READY",
+            "failed": "QP.PM.ISSUES"
+          },
+          "prerequisites": [
+            "QP.PM.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every selected task request; evaluate only applicable rules",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 188
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PM.READY",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.PM.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Applicable task validation passed; hand off to the selected core workflow only",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 257
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PM.ISSUES",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "reported": "QP.PM.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A required task check failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 258
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PM.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.PM.ISSUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return blocking issues without execution",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 259
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_QP_MANAGE_PRICING_PARAMETERS",
+      "task_name": "Manage Pricing Parameters",
+      "start_node": "QP.PP.VALIDATE",
+      "nodes": [
+        {
+          "id": "QP.PP.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "read": "QP.PP.REST_GET",
+            "create_or_update": "QP.PP.DATA_LOADER_VALIDATION",
+            "failed": "QP.PP.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Getting Pricing Parameter values through the parameterized core REST-client route and creating or updating through the Data Loader workflow",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PP.REST_GET",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "retrieved": "QP.PP.REST_GET_READY",
+            "failed": "QP.PP.ISSUES"
+          },
+          "prerequisites": [
+            "QP.PP.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A read request retrieves Pricing Parameter Values through core.fusion-api.rest-api-client at `/fscmRestApi/resources/11.13.18.05/qpParameters/{pricingParametersUniqID}/child/qpParameterValues`",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PP.REST_GET_READY",
+          "node_type": "terminal",
+          "sequence": 3,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.PP.REST_GET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The requested Pricing Parameter Value list is available for read output",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PP.DATA_LOADER_VALIDATION",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "validated": "QP.PP.DATA_LOADER_IMPORT_READY",
+            "failed": "QP.PP.ISSUES"
+          },
+          "prerequisites": [
+            "QP.PP.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create or update has a live-schema-validated Data Loader source for `qpParameterValues`",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PP.DATA_LOADER_IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.PP.DATA_LOADER_VALIDATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact Data Loader artifact is previewed and awaiting explicit approval for `core.data-loader`",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.PP.ISSUES",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation, Data Loader preparation, or import readiness failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.PP.ISSUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An issue was handled",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_QP_MANAGE_ROUNDING_RULES",
+      "task_name": "Manage Rounding Rules",
+      "start_node": "QP.RR.VALIDATE",
+      "nodes": [
+        {
+          "id": "QP.RR.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "QP.RR.LOOKUP",
+            "failed": "QP.RR.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 128
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.RR.LOOKUP",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "passed": "QP.RR.DESIGN",
+            "failed": "QP.RR.ISSUES"
+          },
+          "prerequisites": [
+            "QP.RR.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating rounding rules",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.RR.DESIGN",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "QP.RR.READY",
+            "failed": "QP.RR.ISSUES"
+          },
+          "prerequisites": [
+            "QP.RR.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating rounding rules",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 116
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.RR.READY",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.RR.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All validation and design checks passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 158
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.RR.ISSUES",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "reported": "QP.RR.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, lookup or design check failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 159
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.RR.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.RR.ISSUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Issues reported",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 160
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_QP_MANAGE_ROUNDING_RULE_ASSIGNMENTS",
+      "task_name": "Manage Rounding Rule Assignments",
+      "start_node": "QP.RRA.VALIDATE",
+      "nodes": [
+        {
+          "id": "QP.RRA.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "QP.RRA.LOOKUP",
+            "failed": "QP.RRA.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Creating, updating, or deleting a rounding rule assignment",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 151
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.RRA.LOOKUP",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "QP.RRA.DEPENDENCY",
+            "failed": "QP.RRA.ISSUES"
+          },
+          "prerequisites": [
+            "QP.RRA.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a rounding rule assignment",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.RRA.DEPENDENCY",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "QP.RRA.DESIGN",
+            "blocked": "QP.RRA.ISSUES",
+            "failed": "QP.RRA.ISSUES"
+          },
+          "prerequisites": [
+            "QP.RRA.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a rounding rule assignment",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.RRA.DESIGN",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "QP.RRA.READY",
+            "failed": "QP.RRA.ISSUES"
+          },
+          "prerequisites": [
+            "QP.RRA.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a rounding rule assignment",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 154
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.RRA.READY",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.RRA.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All validation, dependency, and design checks passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 186
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.RRA.ISSUES",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "reported": "QP.RRA.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation, lookup, dependency, or design enforcement failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 187
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QP.RRA.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QP.RRA.ISSUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Issues reported",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 188
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

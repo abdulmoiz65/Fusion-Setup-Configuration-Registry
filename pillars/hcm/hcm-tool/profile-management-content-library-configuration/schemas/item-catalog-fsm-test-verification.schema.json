@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "item-catalog-fsm-test-verification.schema.json",
+  "title": "Item Catalog FSM test verification receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "verification_route",
+    "target_environment",
+    "fusion_release",
+    "task_code",
+    "load_id",
+    "context_name",
+    "authorization_fingerprint",
+    "execution_fingerprint",
+    "source_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "status": {"enum": ["verified", "blocked"]},
+    "verification_route": {
+      "const": "hcm.hcm-tool.profile-management-content-library-configuration.item-catalogs"
+    },
+    "target_environment": {"type": "string", "minLength": 1},
+    "fusion_release": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._ -]{0,63}$", "description": "Informational provenance only; use unknown when unavailable. Not a compatibility gate."},
+    "task_code": {"const": "ORA_MANAGE_PROFILE_ITEM_CATALOG"},
+    "load_id": {"type": "string", "minLength": 1},
+    "context_name": {"type": "string", "minLength": 1},
+    "authorization_fingerprint": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "execution_fingerprint": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "direct_child_readback",
+        "parent_no_drift",
+        "full_item_catalog_export",
+        "duplicate_rerun_block"
+      ],
+      "properties": {
+        "direct_child_readback": {"const": "passed"},
+        "parent_no_drift": {"const": "passed"},
+        "full_item_catalog_export": {"const": "passed"},
+        "duplicate_rerun_block": {"const": "passed"}
+      }
+    },
+    "failure_class": {
+      "enum": [
+        "input_validation",
+        "catalog_mismatch",
+        "auth_authz",
+        "transport_environment",
+        "fusion_api",
+        "process_timeout",
+        "process_failed",
+        "artifact_persistence",
+        "approval_blocker"
+      ]
+    },
+    "message": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "verified"}}},
+      "then": {"required": ["checks"]}
+    },
+    {
+      "if": {"properties": {"status": {"const": "blocked"}}},
+      "then": {"required": ["failure_class", "message"]}
+    }
+  ]
+}

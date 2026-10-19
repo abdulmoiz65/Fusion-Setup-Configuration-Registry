@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Sanitized local CAP contributor intake evidence - not a write grant",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "const": "cap-local-contributors-v1"
+    },
+    "kind": {
+      "enum": [
+        "personNumber",
+        "email"
+      ]
+    },
+    "source_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "raw_rows": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "syntax_valid_rows": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "duplicate_rows": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unique_identifiers": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "invalid_rows": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 2
+      }
+    },
+    "resolved_unique_people": {
+      "type": "null"
+    },
+    "effective_contributors": {
+      "type": "null"
+    },
+    "status": {
+      "enum": [
+        "invalid",
+        "empty",
+        "syntax_valid"
+      ]
+    },
+    "write_eligible": {
+      "const": false
+    }
+  },
+  "required": [
+    "format",
+    "kind",
+    "source_sha256",
+    "raw_rows",
+    "syntax_valid_rows",
+    "duplicate_rows",
+    "unique_identifiers",
+    "invalid_rows",
+    "resolved_unique_people",
+    "effective_contributors",
+    "status",
+    "write_eligible"
+  ]
+}

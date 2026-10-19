@@ -1,0 +1,347 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_DISABILITY_ORGANIZATION",
+      "task_name": "Manage Disability Organizations",
+      "start_node": "DISORG.VALIDATE",
+      "nodes": [
+        {
+          "id": "DISORG.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DISORG.READ",
+            "missing": "DISORG.ERROR",
+            "invalid": "DISORG.ERROR",
+            "unsupported": "DISORG.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Disability Organizations request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DISORG.READ",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "DISORG.HISTORY",
+            "list_returned": "DISORG.HISTORY",
+            "create_available": "DISORG.HISTORY",
+            "not_found": "DISORG.ERROR",
+            "duplicate": "DISORG.ERROR",
+            "ambiguous": "DISORG.ERROR",
+            "failed": "DISORG.ERROR"
+          },
+          "prerequisites": [
+            "DISORG.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read is requested, an exact target is required before edit, inactivate, or delete, or a uniqueness check is required before create",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DISORG.HISTORY",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "eligible": "DISORG.CONTEXT",
+            "not_required": "DISORG.CONTEXT",
+            "first_row": "DISORG.ERROR",
+            "missing": "DISORG.ERROR",
+            "ambiguous": "DISORG.ERROR",
+            "failed": "DISORG.ERROR"
+          },
+          "prerequisites": [
+            "DISORG.READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Date-effective delete is requested after the current organization is read using today's effective date",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DISORG.CONTEXT",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "DISORG.VALUESET",
+            "not_required": "DISORG.VALUESET",
+            "ambiguous": "DISORG.ERROR",
+            "failed": "DISORG.ERROR"
+          },
+          "prerequisites": [
+            "DISORG.HISTORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Disability Organization EFF context or segment is requested or supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DISORG.VALUESET",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "DISORG.DEPENDENCIES",
+            "not_required": "DISORG.DEPENDENCIES",
+            "invalid": "DISORG.ERROR",
+            "failed": "DISORG.ERROR"
+          },
+          "prerequisites": [
+            "DISORG.CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supplied Disability Organization EFF segment declares a value set",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DISORG.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "DISORG.DEFAULTS",
+            "not_required": "DISORG.DEFAULTS",
+            "needs_input": "DISORG.ERROR",
+            "unresolved": "DISORG.ERROR"
+          },
+          "prerequisites": [
+            "DISORG.VALUESET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After applicable reference lookups",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DISORG.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "DISORG.DESIGN",
+            "preserved": "DISORG.DESIGN",
+            "not_required": "DISORG.DESIGN",
+            "blocked": "DISORG.ERROR"
+          },
+          "prerequisites": [
+            "DISORG.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation and dependency resolution",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DISORG.DESIGN",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "DISORG.ROUTE",
+            "not_required": "DISORG.ROUTE",
+            "blocked": "DISORG.ERROR"
+          },
+          "prerequisites": [
+            "DISORG.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, dependencies, and defaulting",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DISORG.ROUTE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read": "DISORG.DONE",
+            "create_or_edit_or_inactivate_or_delete_ready": "DISORG.LOADER_READY",
+            "mutation_blocked": "DISORG.ERROR"
+          },
+          "prerequisites": [
+            "DISORG.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select read completion or the Core Data Loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DISORG.ERROR",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "DISORG.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior node returns invalid, missing, ambiguous, first-row, blocked, failed, partial, timed-out, uncertain, stale, unverified, or unsupported",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DISORG.DONE",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DISORG.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DISORG.LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DISORG.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Mutation rules passed; invoke core.data-loader and follow it through immutable ZIP preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DISORG.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request cannot safely continue without correction or reconciliation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

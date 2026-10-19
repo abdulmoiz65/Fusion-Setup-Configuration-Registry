@@ -1,0 +1,15 @@
+# Reference Lookups
+
+## Lookup Operations
+
+| Resolver | Runs When | Source Values | Request Path or URL | Requested Fields | Match Rule | Values to Fill | If No Match or Many Matches |
+|---|---|---|---|---|---|---|---|
+| export_current_recruiting_labels | Every create or update label request | Current Manage Recruiting Labels FSM data in the environment; supplied LabelCode and LabelName when present; explicit user confirmation or decline when present | Current Manage Recruiting Labels FSM export | LabelName, LabelCode, and translations | Use a case-sensitive exact LabelName match and an exact LabelCode comparison with no trimming, normalization, case folding, or locale handling. When a supplied LabelCode matches exactly one exported label but the supplied LabelName differs from that row's LabelName, return the current and supplied names and a label-name-update confirmation requirement. After explicit confirmation, resolve the current exported LabelName as the existing label name, the supplied LabelName as the new label name, and the matched LabelCode as the source LabelCode; after an explicit decline, return a correction-required outcome. Otherwise, for an update, first resolve the supplied existing label name to exactly one LabelCode, then compare the requested new label name and return every exact-match LabelCode. | Existing LabelName, resolved source LabelCode, current and supplied LabelName values for a mismatch, label-name-update confirmation outcome, exact-match target LabelCode values, and translations | For a supplied LabelCode and differing LabelName, stop pending explicit confirmation and never return a create outcome or silently replace a name; after a decline, require corrected input. For update, stop when the supplied existing label name has no or multiple exact matches. If any exact-match target LabelCode differs from the resolved source LabelCode, return a collision. For create, return whether a case-sensitive exact existing LabelName match exists. |
+| resolve_site_language_configuration | Every create or update label request | None | /fscmRestApi/resources/{version}/languagesLOV | LanguageCode, Description, InstalledFlag, ActivationStatus | Retrieve every result page before evaluation. Enabled languages are rows with ActivationStatus ACTIVE. Resolve the site base-language code from exactly one enabled row with InstalledFlag B. | Site base-language code and complete enabled-language code set | Stop if the LOV request fails, pagination is incomplete, or zero or multiple enabled base-language rows exist. |
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| LABELS.EXPORT_CURRENT_LABELS | step | 30 | reference_lookup | records->LABELS.ENSURE_SITE_LANGUAGE_CONFIGURATION | LABELS.ENSURE_CURRENT_LABEL_EXPORT | stop | Every create or update label request |
+| LABELS.RESOLVE_SITE_LANGUAGE_CONFIGURATION | step | 50 | reference_lookup | resolved->LABELS.SELECT_REQUEST_ACTION | LABELS.ENSURE_SITE_LANGUAGE_CONFIGURATION | stop | Every create or update label request |

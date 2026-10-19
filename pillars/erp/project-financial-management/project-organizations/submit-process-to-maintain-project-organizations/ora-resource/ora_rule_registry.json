@@ -1,0 +1,256 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PJF_SUBMIT_PROCESS_TO_DENORMALIZE_ORGANIZATION_HIERARCHY",
+      "task_name": "Submit Process to Maintain Project Organizations",
+      "start_node": "MPO.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "MPO.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MPO.APPLY_DEFAULTS",
+            "invalid": "MPO.RETURN_ISSUES",
+            "unsupported": "MPO.RETURN_REFUSAL"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Submit Process to Maintain Project Organizations request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPO.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "MPO.TRACK_EXISTING_REQUEST",
+            "failure": "MPO.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MPO.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Valid task input",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPO.TRACK_EXISTING_REQUEST",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MPO.RESOLVE_DEPENDENCIES",
+            "not_required": "MPO.RESOLVE_DEPENDENCIES",
+            "failure": "MPO.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MPO.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resume when requestId is supplied; otherwise continue without a lookup",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPO.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MPO.ENFORCE_DESIGN",
+            "resume": "MPO.ENFORCE_DESIGN",
+            "missing": "MPO.RETURN_ISSUES",
+            "conflict": "MPO.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "MPO.TRACK_EXISTING_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preview, submission, or resumed polling",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPO.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "MPO.EXECUTION_GATE",
+            "blocked": "MPO.RETURN_REFUSAL",
+            "failure": "MPO.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MPO.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before submission, resumed polling, or a completion claim",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPO.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready_to_submit": "MPO.RETURN_READY_TO_SUBMIT",
+            "ready_to_resume": "MPO.RETURN_READY_TO_RESUME",
+            "not_ready": "MPO.RETURN_ISSUES",
+            "declined": "MPO.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "MPO.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return a validated action or block mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPO.RETURN_READY_TO_SUBMIT",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MPO.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The fixed OrgDenormJob payload and exact target are explicitly approved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPO.RETURN_READY_TO_RESUME",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MPO.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Existing request is validated for read-only status tracking",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPO.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A correctable input, dependency, lookup, or runtime issue blocks progress",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPO.RETURN_REFUSAL",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Unsupported route, concurrency conflict, or declined approval blocks progress",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

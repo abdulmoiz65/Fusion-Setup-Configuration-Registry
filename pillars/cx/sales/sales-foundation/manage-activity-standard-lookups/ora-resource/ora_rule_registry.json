@@ -1,0 +1,353 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_ZMM_MANAGE_ACTIVITY_LOOKUPS",
+      "task_name": "Manage Activity Standard Lookups",
+      "start_node": "ACTIVITY_STD.VALIDATE",
+      "nodes": [
+        {
+          "id": "ACTIVITY_STD.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ACTIVITY_STD.DEPENDENCIES",
+            "missing_or_invalid": "ACTIVITY_STD.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY_STD.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ACTIVITY_STD.LOOKUP_TYPE",
+            "blocked": "ACTIVITY_STD.BLOCKED",
+            "failure": "ACTIVITY_STD.FAILED"
+          },
+          "prerequisites": [
+            "ACTIVITY_STD.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY_STD.LOOKUP_TYPE",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "ACTIVITY_STD.LOOKUP_CODE",
+            "not_found": "ACTIVITY_STD.BLOCKED",
+            "ambiguous": "ACTIVITY_STD.FAILED",
+            "failure": "ACTIVITY_STD.FAILED"
+          },
+          "prerequisites": [
+            "ACTIVITY_STD.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY_STD.LOOKUP_CODE",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "ACTIVITY_STD.LOOKUP_ORDER",
+            "not_found": "ACTIVITY_STD.LOOKUP_ORDER",
+            "failure": "ACTIVITY_STD.FAILED"
+          },
+          "prerequisites": [
+            "ACTIVITY_STD.LOOKUP_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "LookupCode is supplied; otherwise record not_requested and continue",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY_STD.LOOKUP_ORDER",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ACTIVITY_STD.DEFAULTS",
+            "not_requested": "ACTIVITY_STD.DEFAULTS",
+            "failure": "ACTIVITY_STD.FAILED"
+          },
+          "prerequisites": [
+            "ACTIVITY_STD.LOOKUP_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "DisplaySequence is created or changed for ZMM_ACTIVITY_STATUS_CD or ORA_ZMM_ACTIVITY_FILTER_TYPE; otherwise record not_requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY_STD.DEFAULTS",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaults_applied": "ACTIVITY_STD.DESIGN",
+            "no_default_needed": "ACTIVITY_STD.DESIGN",
+            "invalid_default_context": "ACTIVITY_STD.BLOCKED"
+          },
+          "prerequisites": [
+            "ACTIVITY_STD.LOOKUP_ORDER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY_STD.DESIGN",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "allowed": "ACTIVITY_STD.EXECUTION_GATE",
+            "policy_block": "ACTIVITY_STD.BLOCKED",
+            "invalid_evidence": "ACTIVITY_STD.FAILED"
+          },
+          "prerequisites": [
+            "ACTIVITY_STD.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY_STD.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "apps_common_ready": "ACTIVITY_STD.APPS_COMMON_READY",
+            "ui_guidance_ready": "ACTIVITY_STD.UI_READY",
+            "explicit_import_ready": "ACTIVITY_STD.IMPORT_READY",
+            "review_or_export_complete": "ACTIVITY_STD.REVIEW_COMPLETE",
+            "missing_or_unsupported_gate": "ACTIVITY_STD.BLOCKED"
+          },
+          "prerequisites": [
+            "ACTIVITY_STD.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Route lookup-code Create, Update, Deactivate, or safe Delete to Apps Common; use manual UI or package import only when explicitly selected.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 131
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY_STD.APPS_COMMON_READY",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ACTIVITY_STD.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An exact approved create, update, deactivate, or delete is ready for core.fusion-api.apps-common",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 132
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY_STD.UI_READY",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ACTIVITY_STD.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The requester explicitly selected manual UI and the reviewed task plan is ready for an authorized setup user; no Fusion side effect has occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 133
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY_STD.IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ACTIVITY_STD.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An explicitly requested Import package is validated and ready for core.data-loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 134
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY_STD.REVIEW_COMPLETE",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ACTIVITY_STD.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Review, validation, or export planning completed without mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 135
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY_STD.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A required input, task-scope, editability, impact, route, package, preview, or approval gate is missing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 136
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ACTIVITY_STD.FAILED",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, live read, mutation, verification, or import result is invalid, ambiguous, or unsuccessful",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 137
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

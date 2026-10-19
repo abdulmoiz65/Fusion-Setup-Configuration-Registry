@@ -1,0 +1,3 @@
+display_name: Fusion OAuth Authentication
+short_description: Authenticate to Oracle Fusion Cloud and refresh the project OAuth token cache.
+default_prompt: Log in to Fusion Cloud or refresh the project OAuth access token cache.

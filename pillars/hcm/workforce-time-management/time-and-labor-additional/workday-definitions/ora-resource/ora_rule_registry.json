@@ -1,0 +1,646 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HWM_MANAGE_WORK_DAY_DEFINITIONS",
+      "task_name": "WorkDay Definitions",
+      "start_node": "WDD.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "WDD.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "create_valid": "WDD.RESOLVE_CREATE_EARNED_RULE",
+            "update_valid": "WDD.SEARCH_UPDATE_DEFINITION",
+            "delete_valid": "WDD.SEARCH_DELETE_DEFINITION",
+            "missing_or_invalid": "WDD.HANDLE_INPUT_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A WorkDay Definitions create, update, or delete request is prepared",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.SEARCH_UPDATE_DEFINITION",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "selected": "WDD.VERIFY_MUTABILITY",
+            "selection_required": "WDD.HANDLE_LOOKUP_ISSUE",
+            "unresolved": "WDD.HANDLE_LOOKUP_ISSUE"
+          },
+          "prerequisites": [
+            "WDD.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An update request needs a WorkDay Definition selected by Name or Description",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.SEARCH_DELETE_DEFINITION",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "selected": "WDD.VERIFY_DELETE_MUTABILITY",
+            "selection_required": "WDD.HANDLE_LOOKUP_ISSUE",
+            "unresolved": "WDD.HANDLE_LOOKUP_ISSUE"
+          },
+          "prerequisites": [
+            "WDD.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A delete request needs a WorkDay Definition selected by Name or Description",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.VERIFY_MUTABILITY",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "mutable": "WDD.RESOLVE_CHANGE_EARNED_RULE",
+            "profile_used": "WDD.HANDLE_MUTABILITY_BLOCKER",
+            "unresolved": "WDD.HANDLE_LOOKUP_ISSUE"
+          },
+          "prerequisites": [
+            "WDD.SEARCH_UPDATE_DEFINITION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Update is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.VERIFY_DELETE_MUTABILITY",
+          "node_type": "decision",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "mutable": "WDD.ENFORCE_DELETE_DESIGN",
+            "profile_used": "WDD.HANDLE_MUTABILITY_BLOCKER",
+            "unresolved": "WDD.HANDLE_LOOKUP_ISSUE"
+          },
+          "prerequisites": [
+            "WDD.SEARCH_DELETE_DEFINITION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Delete is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.RESOLVE_CREATE_EARNED_RULE",
+          "node_type": "decision",
+          "sequence": 17,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "WDD.APPLY_CREATE_DEFAULTS",
+            "not_applicable": "WDD.APPLY_CREATE_DEFAULTS",
+            "invalid": "WDD.HANDLE_INPUT_ISSUE"
+          },
+          "prerequisites": [
+            "WDD.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create request uses the midnight-crossing assignment branch",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.RESOLVE_CHANGE_EARNED_RULE",
+          "node_type": "decision",
+          "sequence": 18,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "WDD.APPLY_CHANGE_DEFAULTS",
+            "not_applicable": "WDD.APPLY_CHANGE_DEFAULTS",
+            "invalid": "WDD.HANDLE_INPUT_ISSUE"
+          },
+          "prerequisites": [
+            "WDD.VERIFY_MUTABILITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An update request uses the midnight-crossing assignment branch",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.APPLY_CREATE_DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "WDD.CHECK_CREATE_DEPENDENCIES",
+            "not_applicable": "WDD.CHECK_CREATE_DEPENDENCIES"
+          },
+          "prerequisites": [
+            "WDD.RESOLVE_CREATE_EARNED_RULE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid create request is prepared",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.APPLY_CHANGE_DEFAULTS",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "WDD.CHECK_CHANGE_DEPENDENCIES",
+            "not_applicable": "WDD.CHECK_CHANGE_DEPENDENCIES"
+          },
+          "prerequisites": [
+            "WDD.RESOLVE_CHANGE_EARNED_RULE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mutable existing definition is prepared for update",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.CHECK_CREATE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 22,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "WDD.ENFORCE_CREATE_DESIGN",
+            "needs_input": "WDD.HANDLE_INPUT_ISSUE",
+            "unresolved": "WDD.HANDLE_LOOKUP_ISSUE"
+          },
+          "prerequisites": [
+            "WDD.APPLY_CREATE_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid create request has completed defaulting",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.CHECK_CHANGE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 23,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "WDD.ENFORCE_CHANGE_DESIGN",
+            "needs_input": "WDD.HANDLE_INPUT_ISSUE",
+            "unresolved": "WDD.HANDLE_LOOKUP_ISSUE"
+          },
+          "prerequisites": [
+            "WDD.APPLY_CHANGE_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid update request has completed defaulting",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.ENFORCE_CREATE_DESIGN",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "WDD.COMPLETE_CREATE_SUMMARY",
+            "blocked": "WDD.HANDLE_DESIGN_ISSUE"
+          },
+          "prerequisites": [
+            "WDD.CHECK_CREATE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A WorkDay Definitions create request has valid inputs and dependencies",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.ENFORCE_CHANGE_DESIGN",
+          "node_type": "decision",
+          "sequence": 31,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "WDD.COMPLETE_CHANGE_SUMMARY",
+            "blocked": "WDD.HANDLE_DESIGN_ISSUE"
+          },
+          "prerequisites": [
+            "WDD.CHECK_CHANGE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A WorkDay Definitions update request has valid inputs, mutability verification, and dependencies",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.ENFORCE_DELETE_DESIGN",
+          "node_type": "decision",
+          "sequence": 32,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "WDD.COMPLETE_DELETE_SUMMARY",
+            "blocked": "WDD.HANDLE_DESIGN_ISSUE"
+          },
+          "prerequisites": [
+            "WDD.VERIFY_DELETE_MUTABILITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A WorkDay Definitions delete request has passed mutability verification",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.COMPLETE_CREATE_SUMMARY",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "summary_ready": "WDD.PROVIDER_APPROVAL_READY_CREATE",
+            "summary_blocked": "WDD.HANDLE_SUMMARY_ISSUE"
+          },
+          "prerequisites": [
+            "WDD.ENFORCE_CREATE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create request has passed task-local gates",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.COMPLETE_CHANGE_SUMMARY",
+          "node_type": "step",
+          "sequence": 41,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "summary_ready": "WDD.PROVIDER_APPROVAL_READY_CHANGE",
+            "summary_blocked": "WDD.HANDLE_SUMMARY_ISSUE"
+          },
+          "prerequisites": [
+            "WDD.ENFORCE_CHANGE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An update request has passed task-local gates",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.COMPLETE_DELETE_SUMMARY",
+          "node_type": "step",
+          "sequence": 42,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "summary_ready": "WDD.PROVIDER_APPROVAL_READY_DELETE",
+            "summary_blocked": "WDD.HANDLE_SUMMARY_ISSUE"
+          },
+          "prerequisites": [
+            "WDD.ENFORCE_DELETE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A delete request has passed task-local gates",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.HANDLE_INPUT_ISSUE",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "WDD.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Required or field validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.HANDLE_LOOKUP_ISSUE",
+          "node_type": "step",
+          "sequence": 81,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "WDD.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Existing definition selection, identity, or mutability cannot be resolved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.HANDLE_MUTABILITY_BLOCKER",
+          "node_type": "step",
+          "sequence": 82,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "WDD.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "IsProfileUsedFlag is true",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.HANDLE_DESIGN_ISSUE",
+          "node_type": "step",
+          "sequence": 83,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "WDD.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A design enforcement rule blocks preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.HANDLE_SUMMARY_ISSUE",
+          "node_type": "step",
+          "sequence": 84,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "WDD.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Complete Summary cannot be formed solely from verified business values",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue has been disclosed with one safe next action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.PROVIDER_APPROVAL_READY_CREATE",
+          "node_type": "terminal",
+          "sequence": 95,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WDD.COMPLETE_CREATE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A business-only Complete Summary is ready for the unchanged provider-owned approval process for create",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.PROVIDER_APPROVAL_READY_CHANGE",
+          "node_type": "terminal",
+          "sequence": 96,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WDD.COMPLETE_CHANGE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A business-only Complete Summary is ready for the unchanged provider-owned approval process for update",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WDD.PROVIDER_APPROVAL_READY_DELETE",
+          "node_type": "terminal",
+          "sequence": 97,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WDD.COMPLETE_DELETE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A business-only Complete Summary is ready for the unchanged provider-owned approval process for delete; separate execution route and fresh approval remain required",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

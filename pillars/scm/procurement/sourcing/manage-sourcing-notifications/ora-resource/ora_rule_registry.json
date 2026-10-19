@@ -1,0 +1,107 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PON_MANAGE_NOTIFICATIONS",
+      "task_name": "Manage Sourcing Notifications",
+      "start_node": "SOURCING_NOTIFICATION.VALIDATE_CAPABILITY_MATRIX",
+      "nodes": [
+        {
+          "id": "SOURCING_NOTIFICATION.VALIDATE_CAPABILITY_MATRIX",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SOURCING_NOTIFICATION.ENFORCE_EDITABLE_ENABLE_FLAGS",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Manage Sourcing Notifications Data Loader source is ready for validation.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SOURCING_NOTIFICATION.ENFORCE_EDITABLE_ENABLE_FLAGS",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "SOURCING_NOTIFICATION.RETURN_VALIDATION_READY",
+            "noncompliant": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SOURCING_NOTIFICATION.VALIDATE_CAPABILITY_MATRIX"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A notification update request is limited to the screenshot-defined Auction, RFQ, and RFI Enable checkboxes.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SOURCING_NOTIFICATION.RETURN_VALIDATION_READY",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SOURCING_NOTIFICATION.ENFORCE_EDITABLE_ENABLE_FLAGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The source passes validation and the notification-update design gate.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The source is missing or fails a documented validation requirement.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

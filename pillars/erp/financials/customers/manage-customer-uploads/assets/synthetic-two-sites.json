@@ -1,0 +1,40 @@
+{
+  "schema_version": "ar-customers-input-v1",
+  "operation": "create",
+  "provenance": "explicit-business-input",
+  "Customers": [
+    {
+      "ORIG_SOURCE_SYSTEM_NAME": "FSCRLAYOUTTEST",
+      "PARTY_NUMBER": "000042",
+      "PARTY_NAME": "Synthetic Caf\u00c3\u00a9, \"North\"",
+      "ACCOUNT_NUMBER": "000420",
+      "ACCT_ADDRESS_SET_CODE": "SYNTHETIC_SET",
+      "LOCATION_ORIG_SYSTEM_REFERENCE": "SYNTH_LOC_1",
+      "ADDRESS_LINE_1": "100 Synthetic Way",
+      "COUNTRY": "US",
+      "IDENTIFYING_ADDRESS_FLAG": "Y",
+      "SITE_USE_PRIMARY_FLAG": "Y",
+      "ATTRIBUTE30": "trailing segment retained",
+      "PARTY_SITE_NUMBER": "0004201",
+      "CUST_SITEUSE_ORIG_SYS_REF": "SYNTH_BILL",
+      "SITE_USE_CODE": "BILL_TO"
+    },
+    {
+      "ORIG_SOURCE_SYSTEM_NAME": "FSCRLAYOUTTEST",
+      "PARTY_NUMBER": "000042",
+      "PARTY_NAME": "Synthetic Caf\u00c3\u00a9, \"North\"",
+      "ACCOUNT_NUMBER": "000420",
+      "ACCT_ADDRESS_SET_CODE": "SYNTHETIC_SET",
+      "LOCATION_ORIG_SYSTEM_REFERENCE": "SYNTH_LOC_2",
+      "ADDRESS_LINE_1": "100 Synthetic Way",
+      "COUNTRY": "US",
+      "IDENTIFYING_ADDRESS_FLAG": "N",
+      "SITE_USE_PRIMARY_FLAG": "Y",
+      "ATTRIBUTE30": "trailing segment retained",
+      "PARTY_SITE_NUMBER": "0004202",
+      "CUST_SITEUSE_ORIG_SYS_REF": "SYNTH_SHIP",
+      "SITE_USE_CODE": "SHIP_TO",
+      "BILL_TO_CUST_SITE_REF": "SYNTH_BILL"
+    }
+  ]
+}

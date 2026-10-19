@@ -1,0 +1,404 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "MOO_MANAGE_SALES_STAGE_PHASE_CODES",
+      "task_name": "Manage Sales Stage Phase Codes",
+      "start_node": "OPP.STAGE_PHASE.VALIDATE",
+      "nodes": [
+        {
+          "id": "OPP.STAGE_PHASE.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "OPP.STAGE_PHASE.RESOLVE_PARENT",
+            "missing": "OPP.STAGE_PHASE.RETURN_MISSING",
+            "invalid": "OPP.STAGE_PHASE.RETURN_MISSING",
+            "failed": "OPP.STAGE_PHASE.RETURN_FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Sales Stage Phase Codes request: Inventory, Read, Create, Update, Disable, Export or Import. Apply required fields only to the selected operation; full-task Export needs no code, set or Data Loader context. Reject unsupported Delete and incompatible mode/route before resolution",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.RESOLVE_PARENT",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OPP.STAGE_PHASE.RESOLVE_STATE",
+            "missing": "OPP.STAGE_PHASE.RETURN_MISSING",
+            "failed": "OPP.STAGE_PHASE.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STAGE_PHASE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the exact standard parent, unchanged business metadata, catalog ownership, editability/security and returned canonical link",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.RESOLVE_STATE",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "OPP.STAGE_PHASE.PACKAGE",
+            "not_found": "OPP.STAGE_PHASE.PACKAGE",
+            "empty": "OPP.STAGE_PHASE.PACKAGE",
+            "not_applicable": "OPP.STAGE_PHASE.PACKAGE",
+            "failed": "OPP.STAGE_PHASE.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STAGE_PHASE.RESOLVE_PARENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve exact SingleLookup or every reviewed Package code state; paginate Inventory and skip code scope only for full-task Export",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.PACKAGE",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "OPP.STAGE_PHASE.DESIGN",
+            "not_applicable": "OPP.STAGE_PHASE.DESIGN",
+            "fallback_required": "OPP.STAGE_PHASE.RETURN_FALLBACK_REQUIRED",
+            "fallback_candidate": "OPP.STAGE_PHASE.VERIFY_FALLBACK",
+            "missing": "OPP.STAGE_PHASE.RETURN_MISSING",
+            "blocked": "OPP.STAGE_PHASE.RETURN_MISSING",
+            "failed": "OPP.STAGE_PHASE.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STAGE_PHASE.RESOLVE_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify native CSV including valid header-only baseline, unchanged standard parent/child closure, exact context/hash/state/impact. Documented final exhaustion alone returns fallback_required; REST_FALLBACK returns fallback_candidate without ZIP/context; reads are not_applicable and Export/Import stay FSM-only",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.VERIFY_FALLBACK",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "eligible": "OPP.STAGE_PHASE.DESIGN",
+            "already_applied": "OPP.STAGE_PHASE.RETURN_VERIFIED",
+            "missing": "OPP.STAGE_PHASE.RETURN_MISSING",
+            "blocked": "OPP.STAGE_PHASE.RETURN_MISSING",
+            "failed": "OPP.STAGE_PHASE.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STAGE_PHASE.PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final REST_FALLBACK only: verify CSV exhaustion, same-target receipt, fully reconciled terminal prior imports, fresh standard parent/code state and full ordinary-field representability; pending/uncertain/partial work blocks",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.DESIGN",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "OPP.STAGE_PHASE.GATE",
+            "blocked": "OPP.STAGE_PHASE.RETURN_MISSING",
+            "failed": "OPP.STAGE_PHASE.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STAGE_PHASE.PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce exact standard lookup identity, operation/state, impact and native CSV readiness or dedicated final-fallback eligibility before route-owned preview/approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.GATE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "handoff_ready": "OPP.STAGE_PHASE.RETURN_READY",
+            "accepted_initiation": "OPP.STAGE_PHASE.RETURN_ACCEPTED",
+            "rest_approved": "OPP.STAGE_PHASE.RETURN_REST_READY",
+            "read_only": "OPP.STAGE_PHASE.RETURN_READ",
+            "export_ready": "OPP.STAGE_PHASE.RETURN_EXPORT_READY",
+            "missing": "OPP.STAGE_PHASE.RETURN_MISSING",
+            "failed": "OPP.STAGE_PHASE.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.STAGE_PHASE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Native FSM hands a validated immutable package to Data Loader without child approval and ends at accepted initiation. Final REST_FALLBACK needs dedicated eligible result and immediate separate exact-preview approval; submit/verify once per row. Read/Export returns no mutation authorization",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.RETURN_READY",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STAGE_PHASE.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Native unchanged CSV, exact task/context/hash and parent-child/state/impact evidence ready for Data Loader Task Hook/preview; no upload approval or execution has occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.RETURN_ACCEPTED",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STAGE_PHASE.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Data Loader accepted initiation; end without automatic status/log/live verification until later explicit request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.RETURN_MISSING",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Required identity, input, state, package/context, exhaustion/reconciliation or separate REST approval is missing; no write authorized",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.RETURN_FAILED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Validation, resolution, readiness, execution or verification failed; no retry or implicit route switch",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.RETURN_REST_READY",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STAGE_PHASE.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Eligible ordered REST_FALLBACK requests separately approved for Apps Common; submit once, verify immediately and stop at first failure/uncertainty",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.RETURN_FALLBACK_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STAGE_PHASE.PACKAGE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Applicable CSV recovery exhausted with classified same-target receipt and fully reconciled unchanged prior submissions; RestFallbackEligible=false. Router resumes unchanged request once with fresh standard parent/code reads; no REST write approval implied",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.RETURN_VERIFIED",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STAGE_PHASE.VERIFY_FALLBACK"
+          ],
+          "on_failure": "continue",
+          "applies_when": "All requested values confirmed applied by fresh exact reads and no pending/uncertain jobs; return verified result without another mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.RETURN_READ",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STAGE_PHASE.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Read/Inventory complete with exact parent/code identities, timestamps and full pagination; no mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.STAGE_PHASE.RETURN_EXPORT_READY",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.STAGE_PHASE.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Fresh exact full-task Export baseline valid for review, including header-only seeded omission; no code delta or import approval implied",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

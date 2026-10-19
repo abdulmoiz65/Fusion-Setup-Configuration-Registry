@@ -1,0 +1,5 @@
+{
+  "connectorType": "OCI",
+  "requiredSetupKeys": ["authType", "grantType", "hostUrl", "accessTokenUrl", "scopes"],
+  "allowedSetupKeys": ["authType", "grantType", "hostUrl", "accessTokenUrl", "scopes"]
+}

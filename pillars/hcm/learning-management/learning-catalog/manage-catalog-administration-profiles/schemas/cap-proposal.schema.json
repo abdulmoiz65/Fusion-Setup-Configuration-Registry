@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Local CAP proposal v1 - never a Fusion payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "proposal_id": {
+      "type": "string"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "rows": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "content_group",
+          "name",
+          "description",
+          "visibility",
+          "ownership",
+          "contributors",
+          "central_override",
+          "intent",
+          "broad_general",
+          "source",
+          "row_id",
+          "provenance",
+          "missing_fields",
+          "resolved_contributor_count",
+          "baseline_status"
+        ],
+        "properties": {
+          "content_group": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 250
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "visibility": {
+            "enum": [
+              null,
+              "ORA_EVERYONE",
+              "ORA_CONTRIBUTORS"
+            ]
+          },
+          "ownership": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "contributors": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "method": {
+                "enum": [
+                  "individual",
+                  "personNumber",
+                  "email",
+                  "none"
+                ]
+              },
+              "input_ref": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "requested_count": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "method"
+            ]
+          },
+          "central_override": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "intent": {
+            "enum": [
+              "create",
+              "reuse",
+              "update",
+              "activate",
+              "deactivate",
+              "delete",
+              "contributors",
+              "content-defaults",
+              "certificates",
+              "reconcile"
+            ]
+          },
+          "broad_general": {
+            "type": "boolean"
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "row_id": {
+            "type": "string",
+            "pattern": "^cap-row-"
+          },
+          "provenance": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "user-specified",
+                    "assistant-proposed",
+                    "server-observed",
+                    "unknown"
+                  ]
+                },
+                "source": {
+                  "type": "string"
+                },
+                "input": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "source"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "missing_fields": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "visibility",
+                "ownership",
+                "contributors"
+              ]
+            }
+          },
+          "resolved_contributor_count": {
+            "type": "null"
+          },
+          "baseline_status": {
+            "const": "not_checked"
+          }
+        }
+      }
+    },
+    "previous_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "approval": {
+      "type": "null"
+    },
+    "write_eligible": {
+      "const": false
+    },
+    "status": {
+      "const": "draft"
+    },
+    "next_step": {
+      "type": "string"
+    },
+    "reply_example": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "proposal_id",
+    "revision",
+    "rows",
+    "previous_sha256",
+    "changes",
+    "approval",
+    "write_eligible",
+    "status",
+    "next_step",
+    "reply_example"
+  ]
+}

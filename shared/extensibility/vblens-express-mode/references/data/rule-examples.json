@@ -1,0 +1,160 @@
+{
+  "description": "Curated, portable index of representative Business Rules patterns from the source knowledge package. Revalidate every pattern on the target page and release.",
+  "sourceSummary": {
+    "totalExamples": 27,
+    "verified": 8,
+    "pendingVerification": 18,
+    "unsupportedInObservedRuntime": 1
+  },
+  "curatedIndexSummary": {
+    "totalExamples": 11,
+    "verified": 4,
+    "observed": 4,
+    "candidate": 2,
+    "unsupported": 1
+  },
+  "examples": [
+    {
+      "id": "promote-future-assignment-transaction",
+      "page": "Promote",
+      "caseType": "Validation",
+      "confidence": "Verified",
+      "releaseObserved": "26B",
+      "requirement": "Show an error when a future assignment transaction already exists.",
+      "intelligence": [
+        "Read the current transaction date through .$value().",
+        "Read assignment history through .$value() and normalize object versus array.",
+        "Loop over true history rows and return true only when a later effective date exists."
+      ]
+    },
+    {
+      "id": "change-salary-correction-amount-change",
+      "page": "ChangeSalary",
+      "caseType": "Validation",
+      "confidence": "Verified",
+      "releaseObserved": "26B",
+      "requirement": "Prevent a salary correction on the same start date from changing salary amount.",
+      "intelligence": [
+        "Compare current and initial salary values only after null checks.",
+        "Normalize salary history payloads that can expose an items wrapper.",
+        "Treat matching transaction and history dates as correction evidence."
+      ]
+    },
+    {
+      "id": "change-salary-hire-date-six-month-validation",
+      "page": "ChangeSalary",
+      "caseType": "Validation",
+      "confidence": "Verified",
+      "releaseObserved": "26B",
+      "requirement": "Prevent salary changes less than six months after the earliest salary start date.",
+      "intelligence": [
+        "Normalize date-only values with UTC calendar semantics.",
+        "Find the earliest valid history date with an explicit loop.",
+        "Clamp month arithmetic for end-of-month dates."
+      ]
+    },
+    {
+      "id": "create-work-relationship-rehire-not-recommended",
+      "page": "CreateWorkRelationship",
+      "caseType": "Validation",
+      "confidence": "Verified",
+      "releaseObserved": "26B",
+      "requirement": "Show an error when a prior work relationship is not recommended for rehire.",
+      "intelligence": [
+        "Scope the rule to the rehire action in the rule condition.",
+        "Treat prior work relationships as a true collection.",
+        "Read child properties directly after materializing the collection."
+      ]
+    },
+    {
+      "id": "request-new-position-valid-grades-count",
+      "page": "RequestNewPosition",
+      "caseType": "Validation",
+      "confidence": "Candidate",
+      "releaseObserved": "26B",
+      "requirement": "Require between one and five valid grades.",
+      "intelligence": [
+        "Use positionsV2.validGrades rather than a generated positionsV2-validGrades root.",
+        "Treat validGrades as a true child collection.",
+        "Verify the count rule in the target environment before activation."
+      ]
+    },
+    {
+      "id": "advanced-expression-context-contract",
+      "page": "All pages",
+      "caseType": "Validation pattern",
+      "confidence": "Observed",
+      "releaseObserved": "26B",
+      "requirement": "Keep Advanced Expressions compatible with the designer.",
+      "intelligence": [
+        "Keep the full AMD wrapper.",
+        "Keep $componentContext, $fields, $modules, $user, and $objectContext in validation context destructuring.",
+        "Prefer explicit branches and plain loops."
+      ]
+    },
+    {
+      "id": "future-date-true-collection-validation",
+      "page": "All pages",
+      "caseType": "Validation pattern",
+      "confidence": "Observed",
+      "releaseObserved": "26B",
+      "requirement": "Show an error when a verified history collection contains a row after the transaction date.",
+      "intelligence": [
+        "Read the transaction date and history collection through their verified accessors.",
+        "Normalize only documented response wrappers such as items; loop only when the child is a true collection.",
+        "Parse date-only values with UTC calendar semantics and return true only when a later valid row exists."
+      ]
+    },
+    {
+      "id": "date-only-nth-business-day-validation",
+      "page": "All pages",
+      "caseType": "Validation pattern",
+      "confidence": "Candidate",
+      "releaseObserved": "26B",
+      "requirement": "Require a date-only field to equal a specified Monday-to-Friday business day of its month.",
+      "intelligence": [
+        "Parse and round-trip the selected value as a UTC calendar date.",
+        "Reject Saturday and Sunday explicitly before comparing the weekday count.",
+        "Treat holiday calendars as a separate setup dependency rather than assuming weekday-only logic covers them."
+      ]
+    },
+    {
+      "id": "changed-lov-related-identifier-validation",
+      "page": "All pages",
+      "caseType": "Validation pattern",
+      "confidence": "Observed",
+      "releaseObserved": "26B",
+      "requirement": "Validate a changed LOV selection against a related classification from the original selection.",
+      "intelligence": [
+        "Compare current and initial parent identifiers first so unchanged selections do not raise errors.",
+        "Prefer stable related IDs or codes over display labels.",
+        "Use .$initialValue() and .$value() only on exact-page paths proven to expose both states."
+      ]
+    },
+    {
+      "id": "percentage-cap-null-safe-validation",
+      "page": "All pages",
+      "caseType": "Validation pattern",
+      "confidence": "Observed",
+      "releaseObserved": "26B",
+      "requirement": "Show an error only when a percentage exceeds a configured cap.",
+      "intelligence": [
+        "Read the raw value through .$value() and check == null before conversion.",
+        "Convert with Number only after null handling and treat nonnumeric values as unresolved rather than above the cap.",
+        "Return true only when the valid numeric percentage is strictly greater than the configured maximum."
+      ]
+    },
+    {
+      "id": "runtime-unavailable-example",
+      "page": "Page-specific",
+      "caseType": "Validation",
+      "confidence": "Unsupported",
+      "releaseObserved": "26B",
+      "requirement": "Represent source cases that were unavailable in the observed runtime.",
+      "intelligence": [
+        "Do not turn an unsupported source case into a candidate without new evidence.",
+        "Report the observed release and missing runtime capability."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,257 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_MANAGE_JOB_REQUISITION_SECURITY_PROFILE",
+      "task_name": "Job Requisition Security Profiles",
+      "start_node": "JRSP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "JRSP.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "JRSP.CHECK_DEPENDENCIES",
+            "invalid": "JRSP.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JRSP.CHECK_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "JRSP.RESOLVE_RESPONSIBILITY_TYPE",
+            "blocked": "JRSP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JRSP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JRSP.RESOLVE_RESPONSIBILITY_TYPE",
+          "node_type": "decision",
+          "sequence": 21,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "JRSP.RESOLVE_MEMBER_TYPE_CODE",
+            "not_required": "JRSP.RESOLVE_MEMBER_TYPE_CODE",
+            "unresolved": "JRSP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JRSP.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "SecureByAorFlag is Y or not Y",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JRSP.RESOLVE_MEMBER_TYPE_CODE",
+          "node_type": "decision",
+          "sequence": 22,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "JRSP.RESOLVE_COLLABORATOR_REST_TYPE_CODE",
+            "not_required": "JRSP.RESOLVE_COLLABORATOR_REST_TYPE_CODE",
+            "unresolved": "JRSP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JRSP.RESOLVE_RESPONSIBILITY_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "SecureByTmTypeFlag is Y or not Y",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JRSP.RESOLVE_COLLABORATOR_REST_TYPE_CODE",
+          "node_type": "decision",
+          "sequence": 23,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "JRSP.ENFORCE_DESIGN",
+            "not_required": "JRSP.ENFORCE_DESIGN",
+            "unresolved": "JRSP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JRSP.RESOLVE_MEMBER_TYPE_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CollaboratorRestTypeCode is supplied and MemberTypeCode is ORA_COLLABORATOR, MemberTypeCode is ORA_COLLABORATOR and CollaboratorRestTypeCode is absent, or CollaboratorRestTypeCode is absent for another member type",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JRSP.ENFORCE_DESIGN",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "JRSP.EXECUTION_GATE",
+            "blocked": "JRSP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JRSP.RESOLVE_COLLABORATOR_REST_TYPE_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JRSP.EXECUTION_GATE",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "authorized_boundary": "JRSP.DONE",
+            "blocked": "JRSP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "JRSP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A CSV import uses core.data-loader task-level FSM workflow and has exact ZIP approval, required privilege evidence, status COMPLETED, and matching post-import readback",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JRSP.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "classified": "JRSP.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any declared failure transition",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JRSP.DONE",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JRSP.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CSV import has status COMPLETED and unscoped readback matches all supplied parent fields and contains every supplied child row",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JRSP.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, dependency, lookup, design, or boundary error occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,433 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_ANC_MANAGE_ABSENCE_PLANS",
+      "task_name": "Absence Plans",
+      "start_node": "AP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "AP.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "AP.RESOLVE_DEPENDENCIES",
+            "invalid": "AP.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Absence Plans validation or Data Loader preparation request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 130
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "AP.RESOLVE_PLAN_IDENTITY",
+            "blocked": "AP.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After required inputs are classified and before plan identity resolution or defaults are considered",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.RESOLVE_PLAN_IDENTITY",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "exact_resolved": "AP.RESOLVE_REFERENCES",
+            "history_seed_resolved": "AP.RETRIEVE_PLAN_HISTORY",
+            "keyword_results": "AP.RETURN_SEARCH_RESULTS",
+            "advanced_results": "AP.RETURN_SEARCH_RESULTS",
+            "not_required": "AP.RESOLVE_REFERENCES",
+            "unresolved": "AP.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AP.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "AC1 list/view uses the Absence Plans work-area route in search_absence_plans_advanced and returns advanced_results; AC9 resolves one exact history seed; legacy exact-name or keyword discovery retains its existing defaults; all search results are read-only candidates",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 164
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.RETRIEVE_PLAN_HISTORY",
+          "node_type": "step",
+          "sequence": 35,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "history_complete": "AP.RETURN_PLAN_HISTORY",
+            "history_incomplete": "AP.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AP.RESOLVE_PLAN_IDENTITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "AC9 retrieves every physical slice as a complete plan record and derives a history-only display",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 165
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "AP.NORMALIZE_EFFECTIVE_OF",
+            "not_required": "AP.NORMALIZE_EFFECTIVE_OF",
+            "unresolved": "AP.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AP.RESOLVE_PLAN_IDENTITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After plan identity resolution and before date-effective normalization and conditional defaults",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 166
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.NORMALIZE_EFFECTIVE_OF",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "create_normalized": "AP.REFRESH_DATALOADER_TEMPLATE",
+            "non_create_normalized": "AP.REFRESH_DATALOADER_TEMPLATE",
+            "invalid": "AP.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AP.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every date-effective Absence Plans Data Loader preparation request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 131
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.REFRESH_DATALOADER_TEMPLATE",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "create_contract_ready": "AP.REFRESH_DESCRIBE",
+            "non_create_contract_ready": "AP.REFRESH_DESCRIBE",
+            "contract_failed": "AP.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AP.NORMALIZE_EFFECTIVE_OF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every date-effective Data Loader preparation; verify parent and included supported section effectiveOf support from the registered UCM template",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 167
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.REFRESH_DESCRIBE",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "contract_ready": "AP.APPLY_DEFAULTS",
+            "not_required": "AP.APPLY_DEFAULTS",
+            "contract_failed": "AP.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AP.REFRESH_DATALOADER_TEMPLATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "DDF or DFF data is supplied, the environment changed, or current Absence Plans metadata is required; not authoritative for DAT columns",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 168
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied_or_not_needed": "AP.ENFORCE_DESIGN",
+            "unresolved": "AP.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AP.REFRESH_DESCRIBE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply every applicable omitted default to the normalized DAT value set after the current template and describe contract pass",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 119
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "eligible": "AP.VERIFY_APPLIED_DEFAULTS",
+            "blocked": "AP.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AP.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, dependency resolution, refreshed metadata, default application, and date-effective normalization",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 117
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.VERIFY_APPLIED_DEFAULTS",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "AP.READINESS_GATE",
+            "missing_or_mismatch": "AP.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Inspect the exact final DAT, verify every applicable default was carried into its parent METADATA and MERGE row, and require the durable AC10 policy-to-configuration artifact before preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 132
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.READINESS_GATE",
+          "node_type": "decision",
+          "sequence": 110,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "AP.DONE_VALIDATED",
+            "blocked": "AP.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "AP.VERIFY_APPLIED_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before handing validated Absence Plans setup data to core.data-loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 136
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "AP.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any input, dependency, lookup, metadata, design, approval, transport, Fusion, process, or persistence error",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 137
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AP.HANDLE_ISSUE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 138
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.RETURN_SEARCH_RESULTS",
+          "node_type": "terminal",
+          "sequence": 135,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AP.RESOLVE_PLAN_IDENTITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only keyword plan-search candidates were returned; no mutation is prepared",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 139
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.RETURN_PLAN_HISTORY",
+          "node_type": "terminal",
+          "sequence": 137,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AP.RETRIEVE_PLAN_HISTORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Complete AC9 effective-dated history was derived from full plan slices and returned without mutation preparation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 140
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AP.DONE_VALIDATED",
+          "node_type": "terminal",
+          "sequence": 140,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AP.READINESS_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Absence Plans data is validated and ready for the separate core.data-loader workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 141
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

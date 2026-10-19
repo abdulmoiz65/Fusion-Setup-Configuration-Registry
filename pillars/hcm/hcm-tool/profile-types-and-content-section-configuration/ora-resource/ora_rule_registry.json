@@ -1,0 +1,431 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "HRT_MANAGE_PROFILE_TYPES",
+      "task_name": "Profile Types",
+      "start_node": "PTCS.BUSINESS_INTENT",
+      "nodes": [
+        {
+          "id": "PTCS.BUSINESS_INTENT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "sufficient": "PTCS.DISCOVERY",
+            "clarification_required": "PTCS.CLARIFY"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A request is captured in business language or through expert input",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.DISCOVERY",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PTCS.PROPOSAL",
+            "ambiguous": "PTCS.CLARIFY",
+            "blocked": "PTCS.ERROR"
+          },
+          "prerequisites": [
+            "PTCS.BUSINESS_INTENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Configuration business intent is sufficient for proposal discovery; standalone GET-only diagnostics use the separately declared ptcs.read-only-verification workflow",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.PROPOSAL",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "review_complete": "PTCS.NORMALIZE",
+            "clarification_required": "PTCS.CLARIFY"
+          },
+          "prerequisites": [
+            "PTCS.DISCOVERY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Discovery yields one safe review-only proposal",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.NORMALIZE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "normalized": "PTCS.TECHNICAL_VALIDATION",
+            "incomplete": "PTCS.CLARIFY"
+          },
+          "prerequisites": [
+            "PTCS.PROPOSAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Proposal assumptions are confirmed for review",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.TECHNICAL_VALIDATION",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PTCS.PARENT_TEMPLATE_LOOKUP",
+            "invalid": "PTCS.ERROR"
+          },
+          "prerequisites": [
+            "PTCS.NORMALIZE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Technical normalization is complete; the next node treats Person parent resolution as not required and checks every supported non-Person target",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.PARENT_TEMPLATE_LOOKUP",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PTCS.MODEL_PROPERTY_LOOKUP",
+            "not_required": "PTCS.MODEL_PROPERTY_LOOKUP",
+            "missing": "PTCS.CLARIFY",
+            "approved_missing": "PTCS.MODEL_PROPERTY_LOOKUP",
+            "ambiguous": "PTCS.ERROR"
+          },
+          "prerequisites": [
+            "PTCS.TECHNICAL_VALIDATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Person requires no parent lookup; every supported non-Person content section requires its exact corresponding active Person section or a recorded matching approval for FSM prerequisite handling before property customization",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.MODEL_PROPERTY_LOOKUP",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PTCS.PARENT_ANCHOR_ENFORCEMENT",
+            "not_required": "PTCS.PARENT_ANCHOR_ENFORCEMENT",
+            "delegated_to_fsm": "PTCS.PARENT_ANCHOR_ENFORCEMENT",
+            "blocked": "PTCS.ERROR"
+          },
+          "prerequisites": [
+            "PTCS.PARENT_TEMPLATE_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Person requires no two-source model lookup; every non-Person target with an existing parent requires complete B/null-SourceCode properties from the selected Person section and complete M properties from the exact template section; an approved missing-parent request remains delegated to FSM processing",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.PARENT_ANCHOR_ENFORCEMENT",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "PTCS.SUBSCRIBER_CLOSURE",
+            "not_required": "PTCS.SUBSCRIBER_CLOSURE",
+            "delegated_to_fsm": "PTCS.SUBSCRIBER_CLOSURE",
+            "blocked": "PTCS.ERROR"
+          },
+          "prerequisites": [
+            "PTCS.MODEL_PROPERTY_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Person requires no parent anchor; every supported non-Person target must have resolved parent evidence and two-source property evidence, or approved FSM-layer handling of the missing Person prerequisite",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.SUBSCRIBER_CLOSURE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PTCS.REUSE_DECISION",
+            "not_required": "PTCS.REUSE_DECISION",
+            "blocked": "PTCS.ERROR"
+          },
+          "prerequisites": [
+            "PTCS.PARENT_ANCHOR_ENFORCEMENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before immutable preview, validate the reduced candidate ZIP whenever a subscriber is supplied or subscriber-property data is present; property rows never substitute for the exact content-source relationship",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.REUSE_DECISION",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "all_new": "PTCS.EXECUTION_CONTRACT",
+            "duplicate_found": "PTCS.DUPLICATE_STOP",
+            "ambiguous": "PTCS.ERROR",
+            "blocked": "PTCS.ERROR"
+          },
+          "prerequisites": [
+            "PTCS.SUBSCRIBER_CLOSURE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Parent-anchor, model-property, and subscriber-closure validation are complete; every candidate section must have an exact duplicate result before this whole-ZIP decision",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.EXECUTION_CONTRACT",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "confirmed": "PTCS.IMMUTABLE_PREVIEW",
+            "unresolved": "PTCS.ERROR"
+          },
+          "prerequisites": [
+            "PTCS.REUSE_DECISION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every candidate passed the exact duplicate decision and subscriber-closure validation is complete",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.IMMUTABLE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "immutable_preview_approved": "PTCS.HANDOFF",
+            "approval_pending": "PTCS.PREVIEW_READY",
+            "blocked": "PTCS.ERROR"
+          },
+          "prerequisites": [
+            "PTCS.EXECUTION_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Executor contract, parent-anchor validation, model-property resolution, and subscriber-closure validation are confirmed and immutable preview is requested",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.PREVIEW_READY",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PTCS.IMMUTABLE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Proposal and technical review are complete; executor approval is pending",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.HANDOFF",
+          "node_type": "terminal",
+          "sequence": 91,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PTCS.IMMUTABLE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Immutable preview has separate executor approval; execution and readback remain executor-owned",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.DUPLICATE_STOP",
+          "node_type": "terminal",
+          "sequence": 97,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "One or more candidate sections are exact duplicates; the entire ZIP is rejected and only a newly prepared ZIP excluding all duplicates may begin a fresh validation cycle",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.CLARIFY",
+          "node_type": "terminal",
+          "sequence": 98,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "One material business clarification is required before technical normalization",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTCS.ERROR",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any technical, provider, approval, or readback gate blocks or fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

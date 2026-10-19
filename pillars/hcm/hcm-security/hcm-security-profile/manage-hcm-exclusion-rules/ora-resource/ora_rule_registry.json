@@ -1,0 +1,182 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PER_MANAGE_HCM_EXCLUSION_RULES",
+      "task_name": "Manage HCM Exclusion Rules",
+      "start_node": "HCMEX.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "HCMEX.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "HCMEX.APPLY_DEFAULTS",
+            "invalid": "HCMEX.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "An HCM exclusion rule is being validated, created, or updated",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HCMEX.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "HCMEX.RESOLVE_REFERENCES",
+            "skipped": "HCMEX.RESOLVE_REFERENCES"
+          },
+          "prerequisites": [
+            "HCMEX.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Defaults are evaluated for a new HCM exclusion-rule row",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HCMEX.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "HCMEX.ENFORCE",
+            "missing": "HCMEX.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "HCMEX.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An HCM exclusion rule has supplied a name, exclusion type, list, hierarchy, or attribute value requiring resolution",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HCMEX.ENFORCE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "HCMEX.CSV_READINESS",
+            "blocked": "HCMEX.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "HCMEX.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated HCM exclusion-rule configuration is being prepared for preview or CSV package generation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HCMEX.CSV_READINESS",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "HCMEX.READY",
+            "blocked": "HCMEX.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "HCMEX.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported HCM exclusion-rule CSV package is being generated or imported",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HCMEX.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A task rule returns an issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "HCMEX.READY",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "HCMEX.CSV_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "HCM exclusion-rule validation, design enforcement, and CSV readiness are complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,206 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "BEN_MANAGE_PROGRAMS_PLAN_YEARS",
+      "task_name": "Year Periods and Billing Calendars",
+      "start_node": "BEN_YR.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "BEN_YR.VALIDATE_REQUEST",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "BEN_YR.CHECK_READINESS",
+            "invalid": "BEN_YR.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate task scope, target context, object identity, and exact HDL source",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_YR.CHECK_READINESS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "BEN_YR.LOOKUP_PERIOD_TYPE",
+            "missing": "BEN_YR.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_YR.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify target context, immutable Data Loader validation artifact, and approval readiness",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_YR.LOOKUP_PERIOD_TYPE",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "core.fusion-api.rest-api-client",
+          "transitions": {
+            "matched": "BEN_YR.ENFORCE_DESIGN",
+            "skipped": "BEN_YR.ENFORCE_DESIGN",
+            "forbidden": "BEN_YR.ENFORCE_DESIGN",
+            "invalid": "BEN_YR.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_YR.CHECK_READINESS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validate each supplied benefitYearPeriods.PeriodTypeMeaning through BEN_PERD_TYP; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_YR.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "BEN_YR.GATE_EXECUTION",
+            "blocked": "BEN_YR.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_YR.LOOKUP_PERIOD_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce the confirmed object boundary, metadata validation, and HDL Data Loader route",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_YR.GATE_EXECUTION",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "BEN_YR.READY_FOR_LOAD",
+            "blocked": "BEN_YR.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_YR.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm approval is current and bound to the exact validated artifact and target",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_YR.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "BEN_YR.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, dependency, design, or approval gate blocks progress",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_YR.READY_FOR_LOAD",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BEN_YR.GATE_EXECUTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every task-local gate passed; core.data-loader owns any approved load",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_YR.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was safely classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

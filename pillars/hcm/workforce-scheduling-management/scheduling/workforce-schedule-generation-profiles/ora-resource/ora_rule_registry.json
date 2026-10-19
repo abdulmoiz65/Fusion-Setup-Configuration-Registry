@@ -1,0 +1,594 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HTS_MANAGE_SCHED_GEN_PROFILES",
+      "task_name": "Workforce Schedule Generation Profiles",
+      "start_node": "SGP.VALIDATE",
+      "nodes": [
+        {
+          "id": "SGP.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SGP.DEPENDENCIES",
+            "invalid": "SGP.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "SGP.LOOKUP.INCLUDE_EXCLUDE",
+            "blocked": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.LOOKUP.INCLUDE_EXCLUDE",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SGP.LOOKUP.SHIFT_CATEGORY",
+            "no_match": "SGP.ERROR",
+            "many_matches": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Jobs or positions are supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.LOOKUP.SHIFT_CATEGORY",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SGP.LOOKUP.ENTERPRISE_SHIFT",
+            "no_match": "SGP.ERROR",
+            "many_matches": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.LOOKUP.INCLUDE_EXCLUDE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An operating shift category is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.LOOKUP.ENTERPRISE_SHIFT",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SGP.LOOKUP.DEPARTMENT",
+            "no_match": "SGP.ERROR",
+            "many_matches": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.LOOKUP.SHIFT_CATEGORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operating shifts are supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.LOOKUP.DEPARTMENT",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SGP.LOOKUP.LOCATION",
+            "no_match": "SGP.ERROR",
+            "many_matches": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.LOOKUP.ENTERPRISE_SHIFT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Staffing or float-pool departments are supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.LOOKUP.LOCATION",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SGP.LOOKUP.TIMEZONE",
+            "no_match": "SGP.ERROR",
+            "many_matches": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.LOOKUP.DEPARTMENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A location must be resolved",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.LOOKUP.TIMEZONE",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SGP.LOOKUP.SCHEDULE_MANAGER",
+            "no_match": "SGP.ERROR",
+            "many_matches": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.LOOKUP.LOCATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A staffing or float-pool row requires a time zone",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.LOOKUP.SCHEDULE_MANAGER",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SGP.LOOKUP.JOB_OR_POSITION",
+            "no_match": "SGP.ERROR",
+            "many_matches": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.LOOKUP.TIMEZONE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Schedule managers are supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.LOOKUP.JOB_OR_POSITION",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SGP.LOOKUP.RULE_SET",
+            "no_match": "SGP.ERROR",
+            "many_matches": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.LOOKUP.SCHEDULE_MANAGER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Job or position filters are supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.LOOKUP.RULE_SET",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SGP.LOOKUP.METHOD_TYPE",
+            "no_match": "SGP.ERROR",
+            "many_matches": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.LOOKUP.JOB_OR_POSITION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Rule sets are supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.LOOKUP.METHOD_TYPE",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SGP.LOOKUP.WEEKDAY",
+            "no_match": "SGP.ERROR",
+            "many_matches": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.LOOKUP.RULE_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Auto-generation is enabled and a method type is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.LOOKUP.WEEKDAY",
+          "node_type": "step",
+          "sequence": 13,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SGP.LOOKUP.ROTATION_TYPE",
+            "no_match": "SGP.ERROR",
+            "many_matches": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.LOOKUP.METHOD_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Start Date is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.LOOKUP.ROTATION_TYPE",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SGP.LOOKUP.VIOLATION_TYPE",
+            "not_applicable": "SGP.LOOKUP.VIOLATION_TYPE",
+            "unresolved": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.LOOKUP.WEEKDAY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A self-scheduling rotation type is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.LOOKUP.VIOLATION_TYPE",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SGP.DEFAULTS",
+            "not_applicable": "SGP.DEFAULTS",
+            "unresolved": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.LOOKUP.ROTATION_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A violation type is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.DEFAULTS",
+          "node_type": "step",
+          "sequence": 16,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "SGP.CREATE_DUPLICATE_CHECK",
+            "not_applicable": "SGP.CREATE_DUPLICATE_CHECK"
+          },
+          "prerequisites": [
+            "SGP.LOOKUP.VIOLATION_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After applicable reference resolution",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.CREATE_DUPLICATE_CHECK",
+          "node_type": "step",
+          "sequence": 17,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "no_match": "SGP.DESIGN",
+            "duplicate_confirmed": "SGP.DESIGN",
+            "duplicate_declined": "SGP.DONE",
+            "not_applicable": "SGP.DESIGN",
+            "uncertain": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A new-profile create operation is requested; skip for an explicit duplicate operation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.DESIGN",
+          "node_type": "step",
+          "sequence": 18,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "SGP.COMPLETE_SUMMARY",
+            "blocked": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.CREATE_DUPLICATE_CHECK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.COMPLETE_SUMMARY",
+          "node_type": "step",
+          "sequence": 19,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "generated": "SGP.EXECUTION_GATE",
+            "blocked": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Generate the Complete Summary from verified structured user values and actually applied defaults before provider-owned approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.EXECUTION_GATE",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "SGP.DONE",
+            "blocked": "SGP.ERROR"
+          },
+          "prerequisites": [
+            "SGP.COMPLETE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After the Complete Summary and before the unchanged provider-owned approval process and approved execution route",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.ERROR",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "SGP.RETURN_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A preceding node reports an error or blocker",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.RETURN_ERROR",
+          "node_type": "terminal",
+          "sequence": 22,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "An error or blocker was handled",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SGP.DONE",
+          "node_type": "terminal",
+          "sequence": 23,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SGP.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The execution gate is ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,414 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_CJM_MANAGE_CLAIM_TYPES",
+      "task_name": "Manage Channel Claim Types",
+      "start_node": "CJMCT.VALIDATE_PARENT",
+      "nodes": [
+        {
+          "id": "CJMCT.VALIDATE_PARENT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CJMCT.VALIDATE_CHILD_MAPPINGS",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate explicit create/update intent and operation-specific parent inputs; defer current-value checks to VALIDATE_UPDATE",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 167
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCT.VALIDATE_CHILD_MAPPINGS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CJMCT.FIND_BUSINESS_UNIT",
+            "not_applicable": "CJMCT.FIND_BUSINESS_UNIT",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCT.VALIDATE_PARENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A request includes zero or more businessUnitLevelMappings child rows",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 168
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCT.FIND_BUSINESS_UNIT",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMCT.RESOLVE_REFERENCE_DATA_SET",
+            "not_applicable": "CJMCT.RESOLVE_REFERENCE_DATA_SET",
+            "not_found": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES",
+            "inactive": "RETURN_ISSUES",
+            "conflicting_id": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCT.VALIDATE_CHILD_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve each create BusinessUnitId or name; on update resolve only a proposed non-null BusinessUnit name before final preparation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCT.RESOLVE_REFERENCE_DATA_SET",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "CJMCT.FIND_REFERENCE_DATA_SET",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCT.VALIDATE_CHILD_MAPPINGS",
+            "CJMCT.FIND_BUSINESS_UNIT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated parent claim type and every supplied child mapping have resolved dependencies",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCT.FIND_REFERENCE_DATA_SET",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMCT.VALIDATE_DESIGN",
+            "not_found": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCT.RESOLVE_REFERENCE_DATA_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied SetId or code/name to one consistent set before preparing the claim type preview",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCT.VALIDATE_DESIGN",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CJMCT.APPLY_DOCUMENTED_DEFAULTS",
+            "not_compliant": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCT.FIND_REFERENCE_DATA_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A reference-data-set-resolved channel claim type is prepared for core.data-loader preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCT.APPLY_DOCUMENTED_DEFAULTS",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CJMCT.FIND_BY_CODE",
+            "unchanged": "CJMCT.FIND_BY_CODE"
+          },
+          "prerequisites": [
+            "CJMCT.VALIDATE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply defaults only on create; update and creates with no missing defaulted field return unchanged",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCT.FIND_BY_CODE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMCT.FIND_EXISTING_MAPPINGS",
+            "not_found": "CJMCT.CONFIRM_CREATE_GATE",
+            "ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCT.APPLY_DOCUMENTED_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve parent identity without switching create/update intent",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCT.FIND_EXISTING_MAPPINGS",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMCT.VALIDATE_UPDATE",
+            "not_applicable": "CJMCT.VALIDATE_UPDATE",
+            "duplicate": "RETURN_ISSUES",
+            "not_found": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES",
+            "conflicting_id": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCT.FIND_BY_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "First reject a create reaching an existing parent as duplicate without child lookup. For update run find_existing_bu_mapping for supplied children, or not_applicable for parent-only",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCT.VALIDATE_UPDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CJMCT.CONFIRM_UPDATE_GATE",
+            "unchanged": "CJMCT.RETURN_NO_CHANGE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCT.FIND_EXISTING_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require update intent, exact existing identities and complete current values; validate writable changes, effective dates, sparse/no-null semantics and repeated targets",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 169
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCT.CONFIRM_CREATE_GATE",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CJMCT.RETURN_CREATE_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCT.FIND_BY_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require create intent, no existing parent and POST; missing update target blocks NOT_FOUND. Ready is validation readiness, not prior upload approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCT.RETURN_CREATE_READY",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMCT.CONFIRM_CREATE_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return create readiness to Task Hook; require its preview, approval and archive verification before core submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCT.CONFIRM_UPDATE_GATE",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CJMCT.RETURN_UPDATE_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCT.VALIDATE_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require PATCH, exact existing parent/child identities, only intended changes and verified loader field/key/linkage/omission/null support; ready permits Task Hook preview only",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCT.RETURN_UPDATE_READY",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMCT.CONFIRM_UPDATE_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return update readiness; Task Hook approval and immutable archive verification remain required before core submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCT.RETURN_NO_CHANGE",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMCT.VALIDATE_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return NO_CHANGE with no upload; partial no-op removal restarts final preparation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, dependency, lookup, duplicate, missing-target, contract or approval gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

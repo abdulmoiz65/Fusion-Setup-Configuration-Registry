@@ -1,0 +1,2 @@
+PartySourceSystem,PartySourceSystemReferenceValue,NameId,NameType,PreferredFlag,StatusFlag,PartyId,PartyNumber,Name,AcademicTitle,FirstName,LastName,MiddleName,Title,SourceSystem,SourceSystemReferenceValue,Description,TransliterationLanguage
+PartySourceSystem,PartySourceSystemReferenceValue,NameId,Additional Name Type,Preferred Indicator,StatusFlag,PartyId,Registry ID,Additional Name,Academic Title,First Name,Last Name,Middle Name,Title,SourceSystem,SourceSystemReferenceValue,Description,Transliteration Language

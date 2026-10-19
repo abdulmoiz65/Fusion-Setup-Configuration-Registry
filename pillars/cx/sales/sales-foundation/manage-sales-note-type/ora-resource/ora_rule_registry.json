@@ -1,0 +1,279 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ZBS_MANAGE_SALES_NOTE_TYPE",
+      "task_name": "Manage Sales Note Type",
+      "start_node": "SALES_NOTE.VALIDATE",
+      "nodes": [
+        {
+          "id": "SALES_NOTE.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SALES_NOTE.DEPENDENCIES",
+            "missing_or_invalid": "SALES_NOTE.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_NOTE.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "SALES_NOTE.RUNTIME_LOOKUP",
+            "blocked": "SALES_NOTE.FAILED"
+          },
+          "prerequisites": [
+            "SALES_NOTE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_NOTE.RUNTIME_LOOKUP",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "SALES_NOTE.DEFAULTS",
+            "not_found": "SALES_NOTE.DEFAULTS",
+            "not_requested": "SALES_NOTE.DEFAULTS",
+            "ambiguous": "SALES_NOTE.FAILED",
+            "failure": "SALES_NOTE.FAILED"
+          },
+          "prerequisites": [
+            "SALES_NOTE.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_NOTE.DEFAULTS",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaults_applied": "SALES_NOTE.DESIGN",
+            "no_default_needed": "SALES_NOTE.DESIGN",
+            "invalid_default_context": "SALES_NOTE.FAILED"
+          },
+          "prerequisites": [
+            "SALES_NOTE.RUNTIME_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_NOTE.DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "allowed": "SALES_NOTE.EXECUTION_GATE",
+            "policy_block": "SALES_NOTE.FAILED"
+          },
+          "prerequisites": [
+            "SALES_NOTE.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_NOTE.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ui_guidance_ready": "SALES_NOTE.UI_READY",
+            "import_handoff_ready": "SALES_NOTE.IMPORT_READY",
+            "review_or_validation_complete": "SALES_NOTE.REVIEW_COMPLETE",
+            "default_data_loader": "SALES_NOTE.IMPORT_READY",
+            "missing_gate": "SALES_NOTE.BLOCKED",
+            "unsupported_direct_write": "SALES_NOTE.BLOCKED"
+          },
+          "prerequisites": [
+            "SALES_NOTE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation: default supported mutations to Data Loader/FSM import; use manual UI only when explicitly requested.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_NOTE.UI_READY",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SALES_NOTE.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The requester explicitly selected manual UI and the reviewed plan is ready for an authorized setup user",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_NOTE.IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SALES_NOTE.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated package is ready for the default core.data-loader handoff, or Data Loader/FSM import was explicitly requested",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_NOTE.REVIEW_COMPLETE",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SALES_NOTE.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Review, export planning, or runtime availability validation completed without mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_NOTE.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A required access, mapping, package, preview, approval, or supported-write gate is missing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SALES_NOTE.FAILED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input, dependency, lookup, design, or process evidence is invalid or ambiguous",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

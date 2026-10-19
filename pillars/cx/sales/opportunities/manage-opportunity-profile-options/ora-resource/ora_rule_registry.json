@@ -1,0 +1,423 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "MOO_MANAGE_OPPORTUNITY_PROFILE_OPTIONS",
+      "task_name": "Manage Opportunity Profile Options",
+      "start_node": "OPP.PROFILE_OPTIONS.VALIDATE",
+      "nodes": [
+        {
+          "id": "OPP.PROFILE_OPTIONS.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "OPP.PROFILE_OPTIONS.DEPENDENCIES",
+            "missing": "OPP.PROFILE_OPTIONS.RETURN_MISSING",
+            "invalid": "OPP.PROFILE_OPTIONS.RETURN_FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Normalize Inventory/Review/Set/BulkSet; exact-code Review needs no export or mutation approval; validate exact identities and route-conditional inputs and reject unsupported operations",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "OPP.PROFILE_OPTIONS.LOOKUP",
+            "missing": "OPP.PROFILE_OPTIONS.RETURN_MISSING",
+            "failed": "OPP.PROFILE_OPTIONS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.PROFILE_OPTIONS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve environment/read readiness; Review skips export and continues satisfied to LOOKUP; Inventory/mutation require approved recorded export attempt, with classified failure intermediate rather than child failure",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.LOOKUP",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "OPP.PROFILE_OPTIONS.ROUTE",
+            "not_found": "OPP.PROFILE_OPTIONS.ROUTE",
+            "many": "OPP.PROFILE_OPTIONS.RETURN_MISSING",
+            "failure": "OPP.PROFILE_OPTIONS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.PROFILE_OPTIONS.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve source-backed candidates, reconcile ownership with exact definition reads before values/mutation, and preserve partial Inventory coverage. Resolve live levels and complete configured children with this task's existing capability mapping; missing parent aliases remain allowed. Preserve scope/stored-value checks and export outcome/membership. Review still skips export/mutation approval; missing/conflicting Review or mutation identity blocks; systemic live-read failures remain failures",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.ROUTE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "proceed": "OPP.PROFILE_OPTIONS.DESIGN",
+            "apps_common": "OPP.PROFILE_OPTIONS.APPS_COMMON_DESIGN",
+            "mixed": "OPP.PROFILE_OPTIONS.RETURN_SPLIT",
+            "blocked": "OPP.PROFILE_OPTIONS.RETURN_MISSING"
+          },
+          "prerequisites": [
+            "OPP.PROFILE_OPTIONS.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Proceed for Inventory with accounted known-candidate live results and explicit complete/partial coverage, complete exact-code Review, or existing-closure FSM mutation; preserve omission/failure REST selection and mixed-route BulkSet split before submission",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "OPP.PROFILE_OPTIONS.GATE",
+            "blocked": "OPP.PROFILE_OPTIONS.RETURN_MISSING",
+            "failed": "OPP.PROFILE_OPTIONS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.PROFILE_OPTIONS.ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require source-backed identity and complete exact-code Review without export/mutation approval; Inventory may pass known-candidate results with partial coverage solely to its partial terminal; preserve existing FSM prerequisites and separate REST branch",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "review_ready": "OPP.PROFILE_OPTIONS.RETURN_REVIEW",
+            "inventory_partial": "OPP.PROFILE_OPTIONS.RETURN_PARTIAL_INVENTORY",
+            "handoff_ready": "OPP.PROFILE_OPTIONS.RETURN_READY",
+            "accepted_initiation": "OPP.PROFILE_OPTIONS.RETURN_ACCEPTED",
+            "missing": "OPP.PROFILE_OPTIONS.RETURN_MISSING",
+            "failed": "OPP.PROFILE_OPTIONS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.PROFILE_OPTIONS.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return complete exact-code Review without export/mutation approval; Inventory returns review_ready only for completed explicit user-candidate scope or proven AllOptionsComplete, otherwise inventory_partial with known live results and discovery gaps. Preserve validated FSM handoff and Data Loader approval ownership; accepted initiation remains terminal",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 113
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.APPS_COMMON_DESIGN",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "OPP.PROFILE_OPTIONS.APPS_COMMON_GATE",
+            "blocked": "OPP.PROFILE_OPTIONS.RETURN_MISSING",
+            "failed": "OPP.PROFILE_OPTIONS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.PROFILE_OPTIONS.ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Preserve omission or classified-failure gates, existing-child PATCH after failure, exact live scope/state/privilege/dependencies, minimal request, immutable preview, approval and verification. Require current creation-support evidence for new Product rows; preserve eligible legacy Product PATCH",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.APPS_COMMON_GATE",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "preview_ready": "OPP.PROFILE_OPTIONS.RETURN_APPS_COMMON_READY",
+            "verified": "OPP.PROFILE_OPTIONS.RETURN_APPS_COMMON_VERIFIED",
+            "missing": "OPP.PROFILE_OPTIONS.RETURN_MISSING",
+            "failed": "OPP.PROFILE_OPTIONS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.PROFILE_OPTIONS.APPS_COMMON_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Preserve immutable REST preview, later exact approval, immediate live-state checks, one core POST/PATCH, same-run verification and bulk failure stop. Bind Product support evidence/restrictions to preview and revalidate on resume; failure fallback stays PATCH-only",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 114
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.RETURN_REVIEW",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.PROFILE_OPTIONS.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Exact-code Review, complete explicit user-candidate Inventory, or Inventory with proven AllOptionsComplete is complete; disclose its exact source coverage and authorize no mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 115
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.RETURN_READY",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.PROFILE_OPTIONS.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Unchanged validated FSM package has exact task/target/context/ASM/member/header/delta/state/preservation/path/hash evidence and is ready for Data Loader-owned preview/approval; no import occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 116
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.RETURN_ACCEPTED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.PROFILE_OPTIONS.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Data Loader returned accepted initiation; end without automatic polling, ProcessLog, results, or verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 117
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.RETURN_APPS_COMMON_READY",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.PROFILE_OPTIONS.APPS_COMMON_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Exact REST fallback preview including confirmed omission or classified export failure and existing live value is persisted and ready for later standalone approval; no write occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 118
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.RETURN_APPS_COMMON_VERIFIED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.PROFILE_OPTIONS.APPS_COMMON_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Approved Apps Common Set/BulkSet writes and exact same-run child verification succeeded",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 119
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.RETURN_SPLIT",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.PROFILE_OPTIONS.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Mixed FSM/REST BulkSet requires separate route-specific batches/previews/approvals; no handoff or write occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 120
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.RETURN_MISSING",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Required request/live/export/route/dependency/package/preview/approval evidence is missing or stale",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 121
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.RETURN_FAILED",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Input, identity, environment, export, design, package/import, REST write/verification, or persistence failed; preserve sanitized partial-success evidence",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 122
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.PROFILE_OPTIONS.RETURN_PARTIAL_INVENTORY",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.PROFILE_OPTIONS.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Inventory only: return PARTIAL with known-candidate live results, exact source coverage, unresolved identities/gaps and one safe next action; AllOptionsComplete is false and no mutation is authorized",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 123
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

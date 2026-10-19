@@ -1,0 +1,308 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PJF_MANAGE_PROJECT_UNITS",
+      "task_name": "Manage Project Unit Options",
+      "start_node": "PUOPT.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "PUOPT.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PUOPT.FIND_PROJECT_UNIT",
+            "invalid": "PUOPT.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Project Unit Options request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUOPT.FIND_PROJECT_UNIT",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PUOPT.APPLY_DEFAULTS",
+            "failure": "PUOPT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUOPT.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the project unit and all current same-task option rows through find_project_unit_options; also run resolve_project_currency when DefaultProjCurrCode is supplied for creation or change",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 148
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUOPT.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "PUOPT.RESOLVE_SET",
+            "failure": "PUOPT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUOPT.FIND_PROJECT_UNIT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolved project-unit baseline, unambiguous input, and explicit target feature status; apply eligible defaults from this file",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUOPT.RESOLVE_SET",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PUOPT.RESOLVE_BUSINESS_UNITS",
+            "not_required": "PUOPT.RESOLVE_BUSINESS_UNITS",
+            "failure": "PUOPT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUOPT.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied or required default reference set",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 149
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUOPT.RESOLVE_BUSINESS_UNITS",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "PUOPT.ROUTE_OPERATION",
+            "not_required": "PUOPT.ROUTE_OPERATION",
+            "failure": "PUOPT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUOPT.RESOLVE_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate distinct nonblank business-unit names; additions defer eligibility to Fusion FSM import and removals retain usage/deletability gates",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUOPT.ROUTE_OPERATION",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "supported": "PUOPT.RESOLVE_DEPENDENCIES",
+            "unsupported": "PUOPT.RETURN_REFUSAL",
+            "invalid": "PUOPT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUOPT.RESOLVE_BUSINESS_UNITS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After project-unit, set, and business-unit resolution",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUOPT.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PUOPT.ENFORCE_DESIGN",
+            "missing": "PUOPT.RETURN_ISSUES",
+            "conflict": "PUOPT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUOPT.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before validation completes or an FSM package preview is produced",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUOPT.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "PUOPT.EXECUTION_GATE",
+            "blocked": "PUOPT.RETURN_REFUSAL",
+            "failure": "PUOPT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PUOPT.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before validation completes or any import preview is approved",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUOPT.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PUOPT.RETURN_SUCCESS",
+            "not_ready": "PUOPT.RETURN_ISSUES",
+            "declined": "PUOPT.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "PUOPT.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return validation output, or require immutable preview and approval before import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUOPT.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PUOPT.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validation is complete or an approved package is ready for core.data-loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUOPT.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A correctable validation or dependency issue blocks progress",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PUOPT.RETURN_REFUSAL",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Unsupported operation or declined approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

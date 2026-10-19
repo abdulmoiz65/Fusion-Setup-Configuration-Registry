@@ -1,0 +1,370 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_KEY_FLEXFIELD_FOR_COST_ALLOCATION",
+      "task_name": "Cost Allocation Key Flexfield",
+      "start_node": "KFFCSV_VALIDATE_PACKAGE",
+      "nodes": [
+        {
+          "id": "KFFCSV_VALIDATE_PACKAGE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "KFFCSV_RESOLVE_PACKAGE_REFERENCES",
+            "invalid": "KFFCSV_HANDLE_INPUT_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A task-level CSV export, template, authored package, or import request is supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFFCSV_RESOLVE_PACKAGE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "KFFCSV_CHECK_DEPENDENCY_READINESS",
+            "unresolved": "KFFCSV_HANDLE_DEPENDENCY_ERROR"
+          },
+          "prerequisites": [
+            "KFFCSV_VALIDATE_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Package validation succeeded and hierarchy, labels, external references, or deployment readiness must be resolved",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFFCSV_CHECK_DEPENDENCY_READINESS",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "KFFCSV_APPLY_DEFAULTS",
+            "blocked": "KFFCSV_HANDLE_DEPENDENCY_ERROR"
+          },
+          "prerequisites": [
+            "KFFCSV_RESOLVE_PACKAGE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The local lookup result has resolved the package hierarchy and dependency evidence",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFFCSV_APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied-or-not-needed": "KFFCSV_ENFORCE_PACKAGE_DESIGN"
+          },
+          "prerequisites": [
+            "KFFCSV_CHECK_DEPENDENCY_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependencies are ready and a package is being authored or validated",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFFCSV_ENFORCE_PACKAGE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "enforced": "KFFCSV_GATE_OPERATION",
+            "blocked": "KFFCSV_HANDLE_DESIGN_ERROR"
+          },
+          "prerequisites": [
+            "KFFCSV_APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Package dependencies are resolved and the requested business effect is in scope",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFFCSV_GATE_OPERATION",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "KFFCSV_COMPLETE",
+            "blocked": "KFFCSV_HANDLE_GATE_ERROR"
+          },
+          "prerequisites": [
+            "KFFCSV_ENFORCE_PACKAGE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation and design enforcement succeeded; the selected shared workflow is determining whether the requested export, authoring, validation, or import can proceed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFFCSV_HANDLE_INPUT_ERROR",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "KFFCSV_INPUT_STOP"
+          },
+          "prerequisites": [
+            "KFFCSV_VALIDATE_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Package input validation returned invalid",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFFCSV_HANDLE_DEPENDENCY_ERROR",
+          "node_type": "step",
+          "sequence": 71,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "KFFCSV_DEPENDENCY_STOP"
+          },
+          "prerequisites": [
+            "KFFCSV_CHECK_DEPENDENCY_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Hierarchy, external reference, or readiness validation returned unresolved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFFCSV_HANDLE_DESIGN_ERROR",
+          "node_type": "step",
+          "sequence": 72,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "KFFCSV_DESIGN_STOP"
+          },
+          "prerequisites": [
+            "KFFCSV_ENFORCE_PACKAGE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Design enforcement returned blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFFCSV_HANDLE_GATE_ERROR",
+          "node_type": "step",
+          "sequence": 73,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "KFFCSV_GATE_STOP"
+          },
+          "prerequisites": [
+            "KFFCSV_GATE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Execution gate returned blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFFCSV_COMPLETE",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "KFFCSV_GATE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The shared workflow has recorded the required validated outcome; an import also requires post-import and deployment verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFFCSV_INPUT_STOP",
+          "node_type": "terminal",
+          "sequence": 81,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "KFFCSV_HANDLE_INPUT_ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFFCSV_DEPENDENCY_STOP",
+          "node_type": "terminal",
+          "sequence": 82,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "KFFCSV_HANDLE_DEPENDENCY_ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependency validation failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFFCSV_DESIGN_STOP",
+          "node_type": "terminal",
+          "sequence": 83,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "KFFCSV_HANDLE_DESIGN_ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Design enforcement failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "KFFCSV_GATE_STOP",
+          "node_type": "terminal",
+          "sequence": 84,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "KFFCSV_HANDLE_GATE_ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The operation gate failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

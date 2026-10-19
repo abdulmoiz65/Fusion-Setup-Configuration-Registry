@@ -1,0 +1,42 @@
+# Ready-to-run synthetic input: assessment only; no Fusion access or mutation.
+implementation_objective: "Assess the proposed synthetic Finance Operations job-role design and prepare a role-management plan."
+project_id: "draft-impl-project-2026-08-13"
+target_environment:
+  identity: "SYNTHETIC_TEST_ENV"
+  verified: false
+requested_operation: "assess_role_design"
+role_design_artifact:
+  artifact_id: "SYNTH-ROLE-DESIGN-001"
+  approval_status: "approved_for_assessment_only"
+  role_identity: "XX_SYNTH_FINANCE_OPERATIONS_JOB"
+  role_type: "job"
+  inheritance:
+    duty_roles:
+      - "XX_SYNTH_INVOICE_REVIEW_DUTY"
+      - "XX_SYNTH_PAYMENT_APPROVAL_DUTY"
+  duty_role_mapping:
+    - duty_role: "XX_SYNTH_INVOICE_REVIEW_DUTY"
+      purpose: "Review synthetic invoice exceptions."
+    - duty_role: "XX_SYNTH_PAYMENT_APPROVAL_DUTY"
+      purpose: "Approve synthetic payment exceptions."
+  privilege_mapping: []
+  data_security_scope:
+    status: "TBD"
+    note: "No data-security policy is proposed."
+  segregation_of_duties_review:
+    status: "pending"
+    note: "Assess the separation risk between invoice review and payment approval."
+role_scope:
+  exact_scope: "Assess one new synthetic job role; do not create, update, delete, export, or import."
+  role_identity: "XX_SYNTH_FINANCE_OPERATIONS_JOB"
+  role_type: "job"
+  hierarchy_impact: "Two synthetic duty roles would be inherited by the proposed job role."
+  duty_changes:
+    - "XX_SYNTH_INVOICE_REVIEW_DUTY"
+    - "XX_SYNTH_PAYMENT_APPROVAL_DUTY"
+  privilege_changes: []
+  data_security_scope: "TBD; no access policy is proposed."
+setup_data_artifact: null
+execution_approval:
+  approved: false
+  scope: "assessment only; no execution is authorized"

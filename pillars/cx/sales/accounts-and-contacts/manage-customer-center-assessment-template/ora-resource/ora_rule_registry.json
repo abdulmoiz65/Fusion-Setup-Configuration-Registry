@@ -1,0 +1,154 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ZCM_MANAGE_CUSTOMER_CENTER_ASSESSMENT_TEMPLATE",
+      "task_name": "Manage Customer Center Assessment Template",
+      "start_node": "AT.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "AT.VALIDATE_REQUEST",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "AT.VALIDATE_PACKAGE",
+            "invalid": "AT.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before building an export or import preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.VALIDATE_PACKAGE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "AT.APPROVAL",
+            "invalid": "AT.ERROR"
+          },
+          "prerequisites": [
+            "AT.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before import approval",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.APPROVAL",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "AT.READY",
+            "declined": "AT.ISSUES"
+          },
+          "prerequisites": [
+            "AT.VALIDATE_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact validated operation, environment, task code, and archive fingerprint or export scope are displayed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.READY",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AT.APPROVAL"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validation and approval are complete for handoff to repository-selected task CSV workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.ERROR",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "AT.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Package validation, approval, submission, polling, or persistence fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AT.ISSUES",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Request has unresolved package, approval, execution, or persistence issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "canonical_file": "oracle_hcm_goal_management_best_practices.md",
+  "canonical_markdown_sha256": "120c786d63d52c1ec7e0845ad84e353462d1ae18724962f63ec2709fdbafa389",
+  "source_last_updated": "2026-09-10",
+  "source_markdown": "/Users/rajukum/TalentManagement/OracleWork/FDOS/DesignDocsForFDOS/oracle_hcm_goal_management_best_practices.md",
+  "supplemental_source": "Oracle Central Confluence: HCMTALENTINT / Goals and Career Dev configuration (page 7309330296), reviewed 2026-09-10",
+  "html_disposition": "Not applicable; the supplied source consisted of Markdown only.",
+  "copy_policy": "The canonical file must remain a byte-for-byte copy of its maintained source baseline. Update its checksum and source metadata whenever the supplied Markdown source or recorded supplemental source causes a deliberate content change."
+}

@@ -1,0 +1,464 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HRT_MANAGE_FEEDBACK_VISIBILITY",
+      "task_name": "Manage Feedback Visibility",
+      "start_node": "FEEDBACK_VISIBILITY.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "FEEDBACK_VISIBILITY.VALIDATE_REQUEST",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "list": "FEEDBACK_VISIBILITY.LIST_CONFIGURATIONS",
+            "read": "FEEDBACK_VISIBILITY.FIND_EXACT_CONTEXT",
+            "search": "FEEDBACK_VISIBILITY.SEARCH_CONTEXT_TERM",
+            "create": "FEEDBACK_VISIBILITY.FIND_EXACT_CONTEXT",
+            "edit": "FEEDBACK_VISIBILITY.FIND_EXACT_CONTEXT",
+            "delete": "FEEDBACK_VISIBILITY.FIND_EXACT_CONTEXT",
+            "invalid": "FEEDBACK_VISIBILITY.INPUT_INVALID"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.LIST_CONFIGURATIONS",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "listed": "FEEDBACK_VISIBILITY.RESOLVE_LIST_LOOKUPS",
+            "failure": "FEEDBACK_VISIBILITY.READ_FAILED"
+          },
+          "prerequisites": [
+            "FEEDBACK_VISIBILITY.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The requested operation is list",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.FIND_EXACT_CONTEXT",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "read_found": "FEEDBACK_VISIBILITY.READ_DONE",
+            "create_available": "FEEDBACK_VISIBILITY.RESOLVE_COMMON_LOOKUPS",
+            "mutation_found": "FEEDBACK_VISIBILITY.RESOLVE_COMMON_LOOKUPS",
+            "not_found": "FEEDBACK_VISIBILITY.NOT_FOUND",
+            "duplicate": "FEEDBACK_VISIBILITY.AMBIGUOUS",
+            "failure": "FEEDBACK_VISIBILITY.READ_FAILED"
+          },
+          "prerequisites": [
+            "FEEDBACK_VISIBILITY.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The requested operation is exact-context read, create, edit, or delete",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.SEARCH_CONTEXT_TERM",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "searched": "FEEDBACK_VISIBILITY.SEARCH_DONE",
+            "failure": "FEEDBACK_VISIBILITY.READ_FAILED"
+          },
+          "prerequisites": [
+            "FEEDBACK_VISIBILITY.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The requested operation is contains-context search",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.RESOLVE_LIST_LOOKUPS",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FEEDBACK_VISIBILITY.LIST_DONE",
+            "missing": "FEEDBACK_VISIBILITY.READ_FAILED",
+            "failure": "FEEDBACK_VISIBILITY.READ_FAILED"
+          },
+          "prerequisites": [
+            "FEEDBACK_VISIBILITY.LIST_CONFIGURATIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A complete configuration list must be rendered with context and default visibility meanings; Manager Type is resolved only for ORA_NO_CONTEXT and is blank for every other context",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.RESOLVE_COMMON_LOOKUPS",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FEEDBACK_VISIBILITY.RESOLVE_PROFILE_OPTIONS",
+            "not_applicable": "FEEDBACK_VISIBILITY.RESOLVE_PROFILE_OPTIONS",
+            "missing": "FEEDBACK_VISIBILITY.DEPENDENCY_MISSING",
+            "failure": "FEEDBACK_VISIBILITY.READ_FAILED"
+          },
+          "prerequisites": [
+            "FEEDBACK_VISIBILITY.FIND_EXACT_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create, edit, or delete input includes or depends on ContextType, DefaultNoteVisibilityCode, ManagerType, or NotificationManagerTypeList",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.RESOLVE_PROFILE_OPTIONS",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FEEDBACK_VISIBILITY.VERIFY_DATALOADER_CONTRACT",
+            "not_applicable": "FEEDBACK_VISIBILITY.VERIFY_DATALOADER_CONTRACT",
+            "missing": "FEEDBACK_VISIBILITY.DEPENDENCY_MISSING",
+            "failure": "FEEDBACK_VISIBILITY.READ_FAILED"
+          },
+          "prerequisites": [
+            "FEEDBACK_VISIBILITY.RESOLVE_COMMON_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create, edit, or delete input includes or depends on a profile option value",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.VERIFY_DATALOADER_CONTRACT",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "supported": "FEEDBACK_VISIBILITY.ENFORCE_MUTATION_ROUTE",
+            "unsupported": "FEEDBACK_VISIBILITY.ROUTE_UNSUPPORTED",
+            "failure": "FEEDBACK_VISIBILITY.READ_FAILED"
+          },
+          "prerequisites": [
+            "FEEDBACK_VISIBILITY.RESOLVE_PROFILE_OPTIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The requested operation is create, edit, or delete",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.ENFORCE_MUTATION_ROUTE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "dataloader_ready": "FEEDBACK_VISIBILITY.DATALOADER_READY",
+            "direct_rest_requested": "FEEDBACK_VISIBILITY.ROUTE_UNSUPPORTED",
+            "preview_incomplete": "FEEDBACK_VISIBILITY.INPUT_INVALID"
+          },
+          "prerequisites": [
+            "FEEDBACK_VISIBILITY.VERIFY_DATALOADER_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The requested operation is create, edit, or delete",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.LIST_DONE",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FEEDBACK_VISIBILITY.RESOLVE_LIST_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A complete configuration list is returned with current context and default visibility meanings; Manager Type is populated only for ORA_NO_CONTEXT and blank for every other context",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.READ_DONE",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FEEDBACK_VISIBILITY.FIND_EXACT_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One exact-context configuration is returned with Manager Type visible only for ORA_NO_CONTEXT and otherwise blank or hidden",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.SEARCH_DONE",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FEEDBACK_VISIBILITY.SEARCH_CONTEXT_TERM"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A complete contains-context search result is returned with Manager Type populated only for ORA_NO_CONTEXT and blank for every other context",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.DATALOADER_READY",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FEEDBACK_VISIBILITY.ENFORCE_MUTATION_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Data Loader route and immutable preview are ready for the separate execution workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.INPUT_INVALID",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Required input or preview information is missing or invalid",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.NOT_FOUND",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "No exact ContextType configuration matches a read, edit, or delete request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.AMBIGUOUS",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Exact-context target resolution is ambiguous or create would duplicate an existing ContextType configuration",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.DEPENDENCY_MISSING",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A required common lookup or profile option value cannot be resolved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.ROUTE_UNSUPPORTED",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The operation is unsupported by Data Loader metadata or requests a direct Fusion REST mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FEEDBACK_VISIBILITY.READ_FAILED",
+          "node_type": "terminal",
+          "sequence": 19,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A read-only configuration, lookup, profile option, or metadata request failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

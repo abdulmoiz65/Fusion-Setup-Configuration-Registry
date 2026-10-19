@@ -1,0 +1,504 @@
+{
+  "schema_version": "2.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_CONFIGURE_ELASTIC_SEARCHES",
+      "task_name": "Configure Adaptive Search",
+      "start_node": "AS.ENTITY.GET",
+      "nodes": [
+        {
+          "id": "AS.ENTITY.GET",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "rest_get",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "populated": "AS.ENTITY.FILTER",
+            "new_environment": "AS.PUBLISH.PREFLIGHT",
+            "error": "AS.ERROR.HANDLE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every requested-object Adaptive Search publish, including CPQ-only and explicit Full Publish requests; HTTP 400 Could not find active meta model, null, or empty Entities results select the new-environment path; a recognized CPQ alias bypasses catalog validation but not the new-environment check",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 131
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.ENTITY.FILTER",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "filtered": "AS.ENTITY.VALIDATE_REQUEST",
+            "invalid_response": "AS.ERROR.HANDLE"
+          },
+          "prerequisites": [
+            "AS.ENTITY.GET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Entities GET returned HTTP 200",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.ENTITY.VALIDATE_REQUEST",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "AS.ENTITY.REVIEW",
+            "corrected": "AS.ENTITY.REVIEW",
+            "invalid": "AS.END.CORRECTION_REQUIRED"
+          },
+          "prerequisites": [
+            "AS.ENTITY.FILTER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Compare every non-CPQ-alias requested object display name with all nonempty localizedName values returned by the isDocument=true Entities HTTP 200 response, without applying isEnabled; direct CPQ entities are excluded from this comparison; for invalid values suggest up to three nearest matches without displaying the full catalog; require explicit disambiguation when a display name maps to multiple entityName values",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.ENTITY.REVIEW",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "explicit_full_publish": "AS.FULL.SELECTION",
+            "partial_publish": "AS.PUBLISH.PREFLIGHT"
+          },
+          "prerequisites": [
+            "AS.ENTITY.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enabled document entities were resolved and requested names are valid; explicit Full Publish continues to the retention decision and Partial Publish continues to preflight",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.FULL.SELECTION",
+          "node_type": "decision",
+          "sequence": 35,
+          "action_type": "selection_decision",
+          "execution_route": "local",
+          "transitions": {
+            "retain": "AS.PUBLISH.PREFLIGHT",
+            "requested_only": "AS.PUBLISH.PREFLIGHT"
+          },
+          "prerequisites": ["AS.ENTITY.REVIEW"],
+          "on_failure": "stop",
+          "applies_when": "For explicit Full Publish with a nonempty Entities response, show current active objects and newly requested objects, then ask whether to retain active objects with requested objects. This is not live approval.",
+          "source": {"file": "ora_rest_execution.md", "anchor": "object-review-pattern", "line": 89},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "AS.ENTITY.CONFIRM",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "approval_gate",
+          "execution_route": "local",
+          "transitions": {
+            "confirmed": "AS.PUBLISH.PREFLIGHT",
+            "revise": "AS.END.REVISION_REQUIRED"
+          },
+          "prerequisites": [
+            "AS.ENTITY.REVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Legacy compatibility node retained for registry continuity; it has no inbound transition in the single-confirmation flow and must not render a user prompt",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 132
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.NEW_ENV.CONFIRM",
+          "node_type": "decision",
+          "sequence": 45,
+          "action_type": "approval_gate",
+          "execution_route": "local",
+          "transitions": {
+            "confirmed": "AS.PUBLISH.PREFLIGHT",
+            "rejected": "AS.END.REJECTED"
+          },
+          "prerequisites": [
+            "AS.ENTITY.GET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Legacy compatibility node retained for registry continuity; it has no inbound transition in the single-confirmation flow and must not render a user prompt",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 133
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.PUBLISH.PREFLIGHT",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "rest_get",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "ready": "AS.REST.CONTRACT",
+            "blocked": "AS.END.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The requested list is valid, the user explicitly requested Full Publish, or an Entities HTTP 400 Could not find active meta model, null, or empty result selected the new-environment full-publish path. A publishStatus HTTP 404 with exactly {\"Error\":\"Cannot parse null string\"} is an expected no-prior-publish pass; WAIT, RUNNING, and PAUSED block; all other errors stop.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 134
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.REST.CONTRACT",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "rest_describe_attribute_cache",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "AS.REST.PAYLOAD",
+            "blocked": "AS.END.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Semantically validate the bundled publish contract before payload mapping; this local-contract node performs no Fusion describe request",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 135
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.REST.PAYLOAD",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "rest_payload_contract",
+          "execution_route": "local",
+          "transitions": {
+            "mapped": "AS.REST.PREVIEW",
+            "blocked": "AS.END.BLOCKED"
+          },
+          "prerequisites": [
+            "AS.REST.CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved entity input and current contract are available",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 136
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.REST.PREVIEW",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "preview_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "AS.REST.APPROVAL",
+            "rejected": "AS.END.REJECTED"
+          },
+          "prerequisites": [
+            "AS.REST.PAYLOAD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Assemble the combined confirmation content internally; do not render a separate user-facing preview",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 137
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.REST.APPROVAL",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "approval_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "AS.DATALOADER.RELEASE",
+            "rejected": "AS.END.REJECTED"
+          },
+          "prerequisites": [
+            "AS.REST.PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Render the one combined confirmation table after immutable source validation; its approval authorizes both selection and the exact Data Loader source",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 138
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.REST.PUBLISH",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "rest_post",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "accepted": "AS.END.SUBMITTED",
+            "failed": "AS.ERROR.HANDLE"
+          },
+          "prerequisites": [
+            "AS.REST.APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Legacy compatibility node retained for registry continuity. It has no inbound transition and must not execute.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 139
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.DATALOADER.RELEASE",
+          "node_type": "step",
+          "sequence": 105,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "accepted": "AS.END.SUBMITTED",
+            "failed": "AS.ERROR.HANDLE"
+          },
+          "prerequisites": [
+            "AS.REST.APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Submit the approved immutable source through the standard `core.data-loader` import flow for registered business object `publish`. The shared Data Loader upload and initiation flow is sufficient: Fusion resolves the registered business object's REST mapping. Do not require, discover, or block on a publish-specific release adapter.",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 140
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.END.SUBMITTED",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AS.DATALOADER.RELEASE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Data Loader initiation returned ContentId and RequestId; display them as Data Loader identifiers and do not poll or infer an Adaptive Search Publish Job ID",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 141
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.END.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 150,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Preflight, embedded-contract validation, or payload mapping is blocked",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 142
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.END.REVISION_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 160,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AS.ENTITY.CONFIRM"
+          ],
+          "on_failure": "stop",
+          "applies_when": "User declined the combined confirmation; collect a new list and start another review iteration",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 143
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.END.CORRECTION_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 165,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AS.ENTITY.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Invalid names and nearest display-name suggestions were displayed; collect and validate a corrected list before preflight",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 144
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.END.REJECTED",
+          "node_type": "terminal",
+          "sequence": 170,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Final preview or live approval is rejected",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 145
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.ERROR.HANDLE",
+          "node_type": "decision",
+          "sequence": 180,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "failed": "AS.END.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Entity discovery, REST submission, or publish job fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "AS.END.FAILED",
+          "node_type": "terminal",
+          "sequence": 190,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "AS.ERROR.HANDLE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Failure is terminal and diagnostics are captured",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "structure": {"multiple_roots": false, "multiple_active": false, "restrict_set": true, "restrict_date": true, "labeling": "Group"},
+  "sources": {"SYNTHETIC_SOURCE": {"max_depth": 2, "duplicates": false, "parent_sources": ["SYNTHETIC_SOURCE"], "leaves": true, "ranges": false, "use_all": true, "all_keys": [["ROOT_VALUE"], ["CHILD_VALUE"]]}},
+  "version": {"id": "planned-version", "start": "2026-09-13", "end": "2027-01-01", "status": "DRAFT"},
+  "set_id": 0,
+  "nodes": [
+    {"id": "root", "version": "planned-version", "source": "SYNTHETIC_SOURCE", "keys": ["ROOT_VALUE"], "parent": null, "exists": true, "set_id": 0, "label": "EXISTING_LABEL", "label_compatible": true, "start": "2020-01-01", "end": "4712-12-31"},
+    {"id": "child", "version": "planned-version", "source": "SYNTHETIC_SOURCE", "keys": ["CHILD_VALUE"], "parent": "root", "exists": true, "set_id": 0, "label": "EXISTING_LABEL", "label_compatible": true, "start": "2020-01-01", "end": "4712-12-31"}
+  ],
+  "other_active_versions": [],
+  "structure_audited": true,
+  "parameters_complete": true,
+  "source_keys_resolved": true,
+  "ragged_skip_valid": true
+}

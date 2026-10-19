@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.3",
+  "application": "sales",
+  "child_resolution": {
+    "source_operation": "get-setup",
+    "inventory_collection": "objectDetails",
+    "business_object_field": "viewObject",
+    "display_name_field": "viewObjectDisplayName",
+    "parent_membership_field": "parentObjectList",
+    "payload_parent_rule": "live_immediate_parent_on_selected_root_path",
+    "excluded_display_names": [
+      "Customer Account"
+    ]
+  },
+  "objects": {
+    "account": {
+      "display_name": "Account",
+      "allow_child_objects": true,
+      "business_object": "oracle.apps.cdm.foundation.parties.organizationService.view.OrganizationDVO",
+      "parent_business_object": "oracle.apps.cdm.foundation.parties.organizationService.view.OrganizationDVO",
+      "excluded_names": [
+        "Customer Account",
+        "Sales Account"
+      ]
+    },
+    "contact": {
+      "display_name": "Contact",
+      "allow_child_objects": true,
+      "business_object": "oracle.apps.cdm.foundation.parties.personService.view.PersonDVO",
+      "parent_business_object": "oracle.apps.cdm.foundation.parties.personService.view.PersonDVO",
+      "excluded_names": [
+        "Sales Contact"
+      ]
+    },
+    "household": {
+      "display_name": "Household",
+      "allow_child_objects": true,
+      "business_object": "oracle.apps.cdm.foundation.parties.groupService.view.GroupVO",
+      "parent_business_object": "oracle.apps.cdm.foundation.parties.groupService.view.GroupVO",
+      "excluded_names": [
+        "Sales Household"
+      ]
+    }
+  },
+  "application_module": "oracle.apps.crmCommon.salesParties.salesPartiesService.applicationModule.SalesAccountAuditAM"
+}

@@ -1,0 +1,22 @@
+{
+  "tasks": [
+    {
+      "ID": "INV-047",
+      "Phase": "2 - Foundation",
+      "Oracle Setup Task / Activity": "Manage units of measure",
+      "Evidence": "Workbook: Common Setup / Units of Measure; configured codes include EA, KG, and L.",
+      "Source Task Name": "Manage units of measure",
+      "Match Status": "matched",
+      "Match Method": "semantic",
+      "Confidence": 0.93,
+      "Matched Task Code": "INV_MANAGE_UNITS_OF_MEASURE",
+      "Matched Task Name": "Manage Units of Measure",
+      "Match Rationale": "The source evidence describes unit codes and conversions owned by this catalog task.",
+      "Data Paths": [],
+      "Notes": "Selected from supplied implementation evidence.",
+      "Offering": "Product Management",
+      "Functional Area": "Items",
+      "Source Reference": "CLI input"
+    }
+  ]
+}

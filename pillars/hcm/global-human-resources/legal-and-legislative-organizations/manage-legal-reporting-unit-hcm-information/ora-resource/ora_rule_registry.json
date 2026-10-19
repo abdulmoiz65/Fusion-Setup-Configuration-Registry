@@ -1,0 +1,626 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_LEGAL_REPORTING_UNIT_HCM_INFORMATION",
+      "task_name": "Manage Legal Reporting Unit HCM Information",
+      "start_node": "LRU.VALIDATE",
+      "nodes": [
+        {
+          "id": "LRU.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LRU.SEARCH",
+            "missing": "LRU.ERROR",
+            "invalid": "LRU.ERROR",
+            "unsupported": "LRU.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Legal Reporting Unit HCM Information request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.SEARCH",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LRU.SYNC_GATE",
+            "not_found": "LRU.ERROR",
+            "ambiguous": "LRU.ERROR",
+            "failed": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A read or mutation precheck requires one exact fresh LRU",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.SYNC_GATE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "required": "LRU.SYNC_LOADER_READY",
+            "completed": "LRU.CLASSIFICATION_CHECK",
+            "failed": "LRU.ERROR",
+            "uncertain": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.SEARCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One exact fresh LRU is selected and mandatory ManageLegalReportingUnit synchronization readiness must be resolved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.SYNC_LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LRU.SYNC_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A synchronization-only ManageLegalReportingUnit archive is ready for Core Data Loader; after successful completion, refresh search and resume before classification evaluation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.CLASSIFICATION_CHECK",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LRU.TRU_ROOT",
+            "change_requested": "LRU.CLASSIFICATION_INPUT",
+            "failed": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.SYNC_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Mandatory synchronization is recorded complete and refreshed classification properties are available",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.CLASSIFICATION_INPUT",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LRU.CLASSIFICATION_IDENTITY",
+            "missing": "LRU.ERROR",
+            "invalid": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.CLASSIFICATION_CHECK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A classification mutation requires explicit Yes/No answers for Tax Reporting Unit and Reporting Establishment; `Both` or `Yes to both` while these questions are pending is explicit Yes/Yes",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.CLASSIFICATION_IDENTITY",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LRU.CLASSIFICATION_GATE",
+            "not_found": "LRU.ERROR",
+            "ambiguous": "LRU.ERROR",
+            "failed": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.CLASSIFICATION_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A classification change requires the pre-classification OrganizationId before TRU or Reporting Establishment roots can exist",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.CLASSIFICATION_GATE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "loader_ready": "LRU.CLASSIFICATION_LOADER_READY",
+            "missing": "LRU.ERROR",
+            "blocked": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.CLASSIFICATION_IDENTITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A classification change has one organizationsLOV-derived OrganizationId, the advanced-search EstablishmentId, both business-facing Yes/No answers, their internal mapping, and the live ManageLegalReportingUnitHcmClassifications loader contract",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.CLASSIFICATION_LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LRU.CLASSIFICATION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A classification-only ManageLegalReportingUnitHcmClassifications archive is ready for Core Data Loader; when it is a prerequisite for a pending explicit detail read or edit, poll to terminal status, refresh classification facts, and resume that operation without repeating synchronization unless stale; otherwise return the accepted standalone initiation response",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.TRU_ROOT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LRU.RE_ROOT",
+            "not_required": "LRU.RE_ROOT",
+            "missing_identity": "LRU.ERROR",
+            "failed": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.CLASSIFICATION_CHECK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the Tax Reporting Unit root only after synchronization and when its classification property is A",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.RE_ROOT",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LRU.TRU_METADATA",
+            "not_required": "LRU.TRU_METADATA",
+            "missing_identity": "LRU.ERROR",
+            "failed": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.TRU_ROOT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the Reporting Establishment root only after synchronization and when its classification property is A",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.TRU_METADATA",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LRU.RE_METADATA",
+            "not_required": "LRU.RE_METADATA",
+            "failed": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.RE_ROOT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Tax Reporting Unit EFF metadata only for an applicable branch",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.RE_METADATA",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LRU.CONTEXT",
+            "not_required": "LRU.CONTEXT",
+            "failed": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.TRU_METADATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Reporting Establishment EFF metadata only for an applicable branch",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.CONTEXT",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LRU.HISTORY",
+            "empty_view": "LRU.HISTORY",
+            "not_required": "LRU.HISTORY",
+            "ambiguous": "LRU.ERROR",
+            "failed": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.RE_METADATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every read resolves requested or default contexts; edit prechecks and verification reads resolve their targeted contexts",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.HISTORY",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "eligible": "LRU.VALUESET",
+            "not_required": "LRU.VALUESET",
+            "first_or_only": "LRU.ERROR",
+            "missing_identity": "LRU.ERROR",
+            "failed": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Date-effective delete or delete verification is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.VALUESET",
+          "node_type": "decision",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "LRU.DEPENDENCIES",
+            "not_required": "LRU.DEPENDENCIES",
+            "invalid": "LRU.ERROR",
+            "failed": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.HISTORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A proposed segment value has a describe-declared value set",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 17,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LRU.DEFAULTS",
+            "not_required": "LRU.DEFAULTS",
+            "needs_input": "LRU.ERROR",
+            "unresolved": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.VALUESET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After synchronization, target, branch, context, value, and history lookups and before defaulting",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 18,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "LRU.DESIGN",
+            "preserved": "LRU.DESIGN",
+            "not_required": "LRU.DESIGN",
+            "blocked": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation and all applicable resolvers complete",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.DESIGN",
+          "node_type": "decision",
+          "sequence": 19,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "LRU.ROUTE",
+            "not_required": "LRU.ROUTE",
+            "blocked": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After defaults and preservation rules are applied",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.ROUTE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read_or_export": "LRU.DONE",
+            "mutation_ready": "LRU.LOADER_READY",
+            "mutation_blocked": "LRU.ERROR"
+          },
+          "prerequisites": [
+            "LRU.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select a terminal read result or a Core Data Loader handoff without executing a mutation here",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.ERROR",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "blocked": "LRU.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, synchronization, lookup, classification, metadata, loader-readiness, process, persistence, approval, or verification gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.DONE",
+          "node_type": "terminal",
+          "sequence": 22,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LRU.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The requested read or explicit export completes",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 23,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LRU.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A supported EFF or delete mutation is fully mapped to taxReportingUnitsEFF, reportingEstablishmentsEFF, both EFF objects, or DeleteOrganizationUnitForDTDelete as appropriate and is ready for core.data-loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRU.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 24,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request is blocked with sanitized diagnostics and a resume action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

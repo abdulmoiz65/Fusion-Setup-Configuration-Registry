@@ -1,0 +1,383 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_CML_LANDED_COST_CHARGES",
+      "task_name": "Landed Cost Charges",
+      "start_node": "LCC.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "LCC.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LCC.RESOLVE_SET",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A landed cost charge is requested.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCC.RESOLVE_SET",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LCC.RESOLVE_CURRENCY",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCC.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid primary charge request is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCC.RESOLVE_CURRENCY",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LCC.RESOLVE_CONVERSION_TYPE",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCC.RESOLVE_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Procurement BU Set is resolved.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCC.RESOLVE_CONVERSION_TYPE",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LCC.RESOLVE_CHARGE_BASIS",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCC.RESOLVE_CURRENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A charge currency is resolved.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCC.RESOLVE_CHARGE_BASIS",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "per-unit": "LCC.RESOLVE_CHARGE_BASIS_UOM",
+            "not-per-unit": "LCC.RESOLVE_ALLOCATION_BASIS",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCC.RESOLVE_CONVERSION_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A conversion type is resolved.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCC.RESOLVE_CHARGE_BASIS_UOM",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LCC.RESOLVE_ALLOCATION_BASIS",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCC.RESOLVE_CHARGE_BASIS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "ChargeBasisCode is PER_UNIT.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCC.RESOLVE_ALLOCATION_BASIS",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "uom-applicable": "LCC.RESOLVE_ALLOCATION_UOM",
+            "uom-not-applicable": "LCC.CHECK_OPTIONAL_NO_ALLOCATION_UOM",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCC.RESOLVE_CHARGE_BASIS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A charge basis is resolved.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCC.RESOLVE_ALLOCATION_UOM",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LCC.CHECK_OPTIONAL_CHILDREN",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCC.RESOLVE_ALLOCATION_BASIS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An allocation UOM is applicable.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCC.CHECK_OPTIONAL_NO_ALLOCATION_UOM",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "primary-only": "LCC.ENFORCE_PRIMARY_FIRST_NO_ALLOCATION_UOM",
+            "children-selected": "LCC.ENFORCE_PRIMARY_FIRST_NO_ALLOCATION_UOM",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCC.RESOLVE_ALLOCATION_BASIS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Primary LOV values are resolved and no allocation UOM is applicable.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCC.CHECK_OPTIONAL_CHILDREN",
+          "node_type": "decision",
+          "sequence": 100,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "primary-only": "LCC.ENFORCE_PRIMARY_FIRST",
+            "children-selected": "LCC.ENFORCE_PRIMARY_FIRST",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCC.RESOLVE_ALLOCATION_UOM"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Primary LOV values are resolved.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCC.ENFORCE_PRIMARY_FIRST_NO_ALLOCATION_UOM",
+          "node_type": "step",
+          "sequence": 105,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "LCC.DONE_PRIMARY_READY_NO_ALLOCATION_UOM",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCC.CHECK_OPTIONAL_NO_ALLOCATION_UOM"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A primary charge request without an applicable allocation UOM is ready for routed execution.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCC.ENFORCE_PRIMARY_FIRST",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "LCC.DONE_PRIMARY_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "LCC.CHECK_OPTIONAL_CHILDREN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A primary charge request is ready for routed execution.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCC.DONE_PRIMARY_READY_NO_ALLOCATION_UOM",
+          "node_type": "terminal",
+          "sequence": 115,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LCC.ENFORCE_PRIMARY_FIRST_NO_ALLOCATION_UOM"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The request without an applicable allocation UOM passed validation, lookup, and design gates and is ready for the approved execution route.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LCC.DONE_PRIMARY_READY",
+          "node_type": "terminal",
+          "sequence": 120,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LCC.ENFORCE_PRIMARY_FIRST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The request passed validation, lookup, and design gates and is ready for the approved execution route.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A required validation, lookup, dependency, or design gate cannot be satisfied.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

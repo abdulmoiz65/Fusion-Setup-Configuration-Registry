@@ -1,0 +1,423 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HWM_MANAGE_RULE_SETS",
+      "task_name": "Time Rule Sets",
+      "start_node": "RULESET.APPLY_DEFAULTS",
+      "nodes": [
+        {
+          "id": "RULESET.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "RULESET.RESOLVE_MEMBER_PARENT",
+            "not_applicable": "RULESET.RESOLVE_MEMBER_PARENT",
+            "failed": "RULESET.DEFAULT_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Time Rule Set parent CSV row is prepared",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.RESOLVE_MEMBER_PARENT",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RULESET.APPLY_MEMBER_DEFAULTS",
+            "not_applicable": "RULESET.APPLY_MEMBER_DEFAULTS",
+            "missing": "RULESET.INPUT_ERROR",
+            "ambiguous": "RULESET.INPUT_ERROR",
+            "unverified": "RULESET.INPUT_ERROR",
+            "incompatible": "RULESET.INPUT_ERROR",
+            "cycle": "RULESET.INPUT_ERROR",
+            "lookup_failure": "RULESET.INPUT_ERROR"
+          },
+          "prerequisites": [
+            "RULESET.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Time Rule Set member CSV row is prepared",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.APPLY_MEMBER_DEFAULTS",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "RULESET.VALIDATE_INPUT",
+            "not_applicable": "RULESET.VALIDATE_INPUT",
+            "failed": "RULESET.DEFAULT_ERROR"
+          },
+          "prerequisites": [
+            "RULESET.RESOLVE_MEMBER_PARENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Time Rule Set member CSV row is prepared",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RULESET.DEPENDENCY",
+            "invalid": "RULESET.INPUT_ERROR"
+          },
+          "prerequisites": [
+            "RULESET.APPLY_MEMBER_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Time Rule Sets CSV package is prepared",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.DEPENDENCY",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RULESET.COMPLETE_SUMMARY",
+            "blocked": "RULESET.DEPENDENCY_ERROR"
+          },
+          "prerequisites": [
+            "RULESET.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation passed",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.COMPLETE_SUMMARY",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "summary_ready": "RULESET.PRESENT_VALIDATED_PACKAGE",
+            "summary_incomplete": "RULESET.DEPENDENCY_ERROR"
+          },
+          "prerequisites": [
+            "RULESET.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated immutable Time Rule Sets archive is ready for the provider-owned approval process",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.PRESENT_VALIDATED_PACKAGE",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "package_linked": "RULESET.IMPORT_HANDOFF_READY",
+            "package_missing": "RULESET.DEPENDENCY_ERROR"
+          },
+          "prerequisites": [
+            "RULESET.COMPLETE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact stage ZIP has passed validation and must be linked before approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.INPUT_ERROR",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Parent, member, lookup, compatibility, date, or cycle validation failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.DEPENDENCY_ERROR",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RULESET.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependency readiness failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.IMPORT_HANDOFF_READY",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RULESET.COMPLETE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Complete Summary is displayed and the validated immutable FSM CSV ZIP is ready for the provider-owned Data Loader approval preview and import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.FINAL_COMPLETION",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "RULESET.FINAL_COMPLETION_SUCCESS",
+            "failed": "RULESET.FINAL_COMPLETION_ERROR",
+            "timed_out": "RULESET.FINAL_COMPLETION_ERROR",
+            "partial": "RULESET.FINAL_COMPLETION_ERROR",
+            "uncertain": "RULESET.FINAL_COMPLETION_ERROR",
+            "mismatched": "RULESET.FINAL_COMPLETION_ERROR"
+          },
+          "prerequisites": [
+            "RULESET.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An approved asynchronous create, update, import, load, or dependent submission was accepted",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.FINAL_COMPLETION_ERROR",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Task-authorized status monitoring reached failure, timeout, partial success, uncertainty, or read-back mismatch",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.FINAL_COMPLETION_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RULESET.FINAL_COMPLETION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Terminal success status and authoritative read-back verification both passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.EXPORT_MONITOR",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "zip_validated": "RULESET.EXPORT_READY",
+            "failed": "RULESET.EXPORT_ERROR",
+            "timed_out": "RULESET.EXPORT_ERROR",
+            "missing_result": "RULESET.EXPORT_ERROR",
+            "invalid_zip": "RULESET.EXPORT_ERROR",
+            "partial": "RULESET.EXPORT_ERROR",
+            "uncertain": "RULESET.EXPORT_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A task-authorized read-only Time Rule Sets export or authoritative refresh request was accepted",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.EXPORT_READY",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RULESET.EXPORT_MONITOR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Terminal export success, persisted result ZIP, and ZIP validation all passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 112
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.EXPORT_ERROR",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Export monitoring reached failure, timeout, missing result, unusable ZIP, partial status, or uncertainty",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 113
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RULESET.DEFAULT_ERROR",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Runtime defaulting failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

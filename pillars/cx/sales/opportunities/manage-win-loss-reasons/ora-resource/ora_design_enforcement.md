@@ -1,0 +1,54 @@
+# Manage Win/Loss Reasons Design Enforcement
+
+Apply these mandatory gates after parent-first identity resolution and the
+route-aware package/fallback verifier. SingleLookup requires one exact set and,
+when code-specific, one code state. Package Export remains full-task and
+set-less. FSM Package Create, Update, Disable, or Import validates each changed
+row's set, state lock, delta, and impact independently. Package REST_FALLBACK
+validates every ordered REST row before one combined preview.
+
+## Enforcement Order
+
+| Sequence | Step | What Must Happen |
+|---|---|---|
+| 1 | Confirm request and fixed identity | Preserve RequestMode, MOO_SETID_WIN_LOSS_REASON, catalog task MOO_MANAGE_WIN/LOSS_REASONS, and execution task FND_MANAGE_SET_ENABLED_LOOKUPS; require an explicit Common-versus-different set decision and one exact resolved set for SingleLookup, no selector for full coordinator-task Export, and one exact set per changed package row |
+| 2 | Compare operation with current state | For SingleLookup, permit Create only for a missing code and Read, Update, Disable, or Delete only for one existing code; for FSM Package or Package REST_FALLBACK, enforce the matching rule independently on every changed/requested row |
+| 3 | Enforce mutation route | Prefer FSM for Create, Update, or Disable. If its verified same-target export fails, times out or yields an unusable baseline, continue once through direct Apps Common REST fresh-read validation and a separately approved immutable preview; no registered loader capability or session is selected. Delete requires REST_DELETE |
+
+## Design Rules
+
+| Applies When | Severity | Required Lookup | Blocking Condition | Recommendation | Fix Allowed? |
+|---|---|---|---|---|---|
+| SingleLookup | Blocker | resolve_win_loss_reason_reference_set | SetSelectionDecision is missing; Common Set was inferred or resolves to a non-Common set; SetId/SetCode is malformed, unknown, cross-environment, ambiguous, or conflicts with another selector, BU/organization assignment, confirmed request, fresh export, or package row; or the parent reference group is missing/inconsistent/pagination-incomplete | Ask whether Common Set should be used or require a different exact set; complete ORA_MOO_MANAGE_OPPORTUNITY_RECORD_SET_VALUES when needed, then rerun parent-first read-only resolution without substituting a set | Yes |
+| FSM Package Create, Update, Disable, or Import | Blocker | verify_win_loss_reason_fsm_package | Any changed row lacks the fixed lookup type, exact set/code identity, expected-state lock, permitted minimal delta, impact evidence, or complete package validation | Correct the specific row or package evidence; validate all changed rows atomically without forcing one set | Yes |
+| REST_FALLBACK Create, Update, or Disable | Blocker | verify_win_loss_reason_fsm_package | RestFallbackEligible is not true after exact-target receipt and fresh parent/set/requested-row reads, or a completed lookup omission lacks complete nonempty selected-set inventory confirmation | Complete the classified unavailable/unusable export receipt and applicable fresh REST reads before direct REST preview; no Data Loader context, source, capability, or approval is needed | Yes |
+| FSM Create, Update, or Disable with an unavailable or unusable export | Blocker | verify_win_loss_reason_fsm_package | The verified exact-target export attempt failed, timed out, or cannot supply a usable baseline | Return fallback_required with the exact reason and actual evidence before upload/import/mutation; continue once through direct REST validation unless FSM-only or Data Loader-only was explicitly required | Yes |
+| REST_FALLBACK | Blocker | resolve_manage_win_loss_reasons_parent | The exact parent RestAccessSecured, CustomizationLevel, or privilege evidence does not permit the requested direct mutation, or the parent evidence is missing or stale | Use FSM when available or obtain the required privilege/support; never treat REST readability as write authorization | Yes |
+| Package REST_FALLBACK | Blocker | resolve_win_loss_reason_lookup_state | The ordered list is empty, contains duplicate LookupCode/SetId identities, any row lacks an exact set, state lock, permitted operation/delta, impact evidence, method, endpoint/body, or verification GET, or the combined preview omits partial-success and stop-on-first-failure disclosure | Correct all rows, rerun every read, and rebuild one immutable combined preview; do not submit a valid subset under the stale preview | Yes |
+| Package Export | Blocker | verify_win_loss_reason_fsm_package | The request requires a set selector, code, row delta, state lock, or impact; the completed baseline is narrowed below the complete FND_MANAGE_SET_ENABLED_LOOKUPS task; or the slash-containing catalog code is used for the export request | Export and validate the complete FND_MANAGE_SET_ENABLED_LOOKUPS task for the exact target and release, then inventory MOO_SETID_WIN_LOSS_REASON rows locally without inventing row scope | Yes |
+| SingleLookup Create | Blocker | resolve_win_loss_reason_lookup_state | The exact LookupCode already exists in the resolved set | Change the operation to Update or choose a unique code | Yes |
+| SingleLookup Read, Update, Disable, or Delete | Blocker | resolve_win_loss_reason_lookup_state | No exact LookupCode exists in the resolved set | Supply an existing code or use Create when appropriate | Yes |
+| SingleLookup Update, Disable, or Delete | Blocker | resolve_win_loss_reason_lookup_state | The preview is not bound to the returned child item identifier or item link | Rebuild the preview from the exact returned item | Yes |
+| SingleLookup FSM Create, Update, or Disable | Blocker | verify_win_loss_reason_fsm_package | The immutable FND_MANAGE_SET_ENABLED_LOOKUPS package does not contain exactly the reviewed MOO_SETID_WIN_LOSS_REASON set/code row, changes unrelated content, or its baseline, catalog/execution identities, metadata contract, state lock, delta, impact, or PackageSha256 is missing or stale | Rebuild the one-row Win/Loss Reason delta from the complete coordinator-task export, preserve unrelated content, and hand it to Data Loader; Data Loader owns its later preview and approval lifecycle | Yes |
+| FSM Package Create, Update, Disable, or Import | Blocker | verify_win_loss_reason_fsm_package | The execution package task code is not FND_MANAGE_SET_ENABLED_LOOKUPS; the catalog identity is not MOO_MANAGE_WIN/LOSS_REASONS; or the baseline, immutable ZIP, metadata-derived files/headers, unrelated-row preservation, any changed Win/Loss Reason row's set/state/delta/impact, or PackageSha256 is missing, stale, cross-environment, or changed | Rebuild and atomically validate the coordinator-task package while changing only reviewed MOO_SETID_WIN_LOSS_REASON rows; Data Loader owns its later preview and approval lifecycle | Yes |
+| REST_FALLBACK Create | Blocker | resolve_win_loss_reason_lookup_state | The exact LookupCode already exists in its resolved set, the collection endpoint or body is not exact, or Upsert-Mode is not false | Remove or correct the row, use Update when intended, and rebuild the whole combined preview | Yes |
+| REST_FALLBACK Update or Disable | Blocker | resolve_win_loss_reason_lookup_state | No exact row exists, the endpoint is not the fresh canonical returned child link, immutable identity changes are proposed, or Disable changes anything except EnabledFlag=N | Correct the row from fresh state and rebuild the whole combined preview | Yes |
+| Every mutation row | Blocker | resolve_win_loss_reason_lookup_state | Business ownership, affected field, downstream or historical impact, delivered/custom safety, minimal delta, or immediate expected-state re-read is missing | Complete impact review and re-read every exact code immediately before handoff or REST preview | Yes |
+| Approved REST_FALLBACK batch | Blocker | resolve_win_loss_reason_lookup_state | Any row, order, method, endpoint, body, before/after state, verification GET, fallback evidence, target, or fingerprint changed; approval is missing; or execution would continue after a failed/uncertain row | Rebuild and reapprove the whole preview. Execute once in order, verify each success, stop on first failure/uncertainty, report successful/failed/unattempted rows, and never roll back automatically | Yes |
+| SingleLookup Delete | Blocker | resolve_win_loss_reason_lookup_state | FSM is selected, REST was not explicitly selected, metadata does not permit deletion, or impact evidence is incomplete | Use Disable or complete the documented REST exception and separate approval | Yes |
+| Inventory or Read | Blocker | resolve_win_loss_reason_lookup_state | Read-only lookup resolution is being treated as mutation authorization | Return sanitized current state only | Yes |
+
+## Design Lookup Requirements
+
+| Resolver | When Required | Values Needed | Source File |
+|---|---|---|---|
+| resolve_manage_win_loss_reasons_parent | Every request | Exact MOO_SETID_WIN_LOSS_REASON parent, returned nonblank ReferenceGroupName, task-scope and editability evidence, canonical parent link | ora_reference_lookups.md |
+| resolve_win_loss_reason_reference_set | Before SingleLookup inventory/read/preview or Package REST_FALLBACK preview | One exact SetId and SetCode per distinct row, plus assignment evidence when a business unit was supplied | ora_reference_lookups.md |
+| resolve_win_loss_reason_lookup_state | Before returning current state or previewing any mutation | Current code state or confirmed absence and returned canonical child item link when present for every distinct row | ora_reference_lookups.md |
+| verify_win_loss_reason_fsm_package | Before Package Export review, FSM handoff, or REST_FALLBACK preview | For usable FSM, exact catalog/FND identity and validated immutable package/context evidence. For direct REST fallback, a classified verified same-target export-unavailability receipt, fresh exact parent/set/requested-row reads and extra nonempty inventory only for completed lookup omission; no loader capability check | ora_reference_lookups.md |
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| OPP.WIN_LOSS.DESIGN | decision | 7 | design_enforcement | pass->OPP.WIN_LOSS.GATE;blocked->OPP.WIN_LOSS.RETURN_MISSING;failed->OPP.WIN_LOSS.RETURN_FAILED | OPP.WIN_LOSS.VERIFY_PACKAGE | stop | Enforce explicit exact sets, RequestMode, fixed identity, per-row operation/state and impact, minimal deltas, preserved native FSM content and catalog/execution routing. An unavailable/unusable export selects only direct REST fallback after its receipt and fresh reads; bind approval to one immutable REST preview and enforce stop-on-first-failure/no-rollback. FSM-only/Data Loader-only constraints or submitted/uncertain mutations block route changes |

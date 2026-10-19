@@ -1,0 +1,359 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PAY_MANAGE_BALANCE_GROUPS",
+      "task_name": "Balance Groups",
+      "start_node": "BG.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "BG.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "BG.APPLY_DEFAULTS",
+            "invalid": "BG.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Balance Groups FSM archive or creation request is supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BG.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "BG.RESOLVE_REFERENCES",
+            "not_required": "BG.RESOLVE_REFERENCES",
+            "blocked": "BG.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "BG.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply or verify the documented GroupLevelFlag mapping when Employee or Organization is supplied and the remaining defaults only when their stated conditions apply; return not_required only when no documented rule applies and preserve the supplied contract; never mutate an immutable preflight artifact",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BG.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "BG.RESOLVE_GROUP",
+            "blocked": "BG.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "BG.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Execute resolve_legislative_data_group_by_exact_name after input/default validation and environment binding",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 264
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BG.RESOLVE_GROUP",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "BG.RESOLVE_DEFINED_BALANCE",
+            "blocked": "BG.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "BG.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Execute find_balance_group_by_name_and_ldg; verify intended operation and retain a returned parent ID only for an exact match",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 265
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BG.RESOLVE_DEFINED_BALANCE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "BG.RESOLVE_DEFAULT_CATEGORY",
+            "not_required": "BG.RESOLVE_DEFAULT_CATEGORY",
+            "blocked": "BG.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "BG.RESOLVE_GROUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Execute only resolve_defined_balance_by_name_and_dimension for requested existing balance selections; otherwise record not_required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 266
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BG.RESOLVE_DEFAULT_CATEGORY",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "BG.RESOLVE_DEFAULT_DIMENSION",
+            "not_required": "BG.RESOLVE_DEFAULT_DIMENSION",
+            "blocked": "BG.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "BG.RESOLVE_DEFINED_BALANCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Execute resolve_default_inclusion_balance_category for every explicitly requested category restriction or default-inclusion category; otherwise record not_required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 267
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BG.RESOLVE_DEFAULT_DIMENSION",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "BG.RESOLVE_ATTRIBUTE_LINK",
+            "not_required": "BG.RESOLVE_ATTRIBUTE_LINK",
+            "blocked": "BG.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "BG.RESOLVE_DEFAULT_CATEGORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Execute resolve_default_inclusion_employee_dimension for every explicitly requested dimension restriction or default-inclusion dimension; block non-Employee scope before calling; record not_required only when neither requests a dimension",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 268
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BG.RESOLVE_ATTRIBUTE_LINK",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "BG.RESOLVE_DEPENDENCIES",
+            "not_required": "BG.RESOLVE_DEPENDENCIES",
+            "blocked": "BG.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "BG.RESOLVE_DEFAULT_DIMENSION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Execute find_balance_group_attribute_links for existing-group balance-definition, default-inclusion or restriction additions; a complete empty result is resolved with supporting records needed under the matching preparation profile, not blocked; otherwise record not_required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 269
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BG.RESOLVE_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "BG.ENFORCE_DESIGN",
+            "blocked": "BG.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "BG.RESOLVE_ATTRIBUTE_LINK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every applicable reference lookup resolved and every unrequested optional lookup returned not_required",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BG.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "BG.EXECUTION_GATE",
+            "blocked": "BG.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "BG.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input and preparation dependencies passed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BG.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "fsm_preparation_ready": "BG.DONE_FSM_PREPARATION",
+            "blocked": "BG.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "BG.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The final FSM archive has passed task validation and is ready for the Data Loader preview lifecycle",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BG.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A prior node reports a missing contract, invalid artifact, inconsistent task context, failed reference lookup, or failed preparation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BG.DONE_FSM_PREPARATION",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BG.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return evaluated rule results to Task Hook; submission still requires its normal preview, approval and archive verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Return classified blockers without any Fusion mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

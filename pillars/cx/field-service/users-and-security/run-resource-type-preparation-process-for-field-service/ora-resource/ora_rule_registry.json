@@ -1,0 +1,85 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_FFS_RUN_RESOURCE_TYPE_PREPARATION_PROCESS",
+      "task_name": "Run Resource Type Preparation Process for Field Service",
+      "start_node": "FFS.RTP.ERROR_CLASSIFY",
+      "nodes": [
+        {
+          "id": "FFS.RTP.ERROR_CLASSIFY",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "classified": "FFS.RTP.ERROR_DISCLOSE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A preview, submission, polling, or artifact-persistence error occurs.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FFS.RTP.ERROR_DISCLOSE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "FFS.RTP.ERROR_STOP"
+          },
+          "prerequisites": [
+            "FFS.RTP.ERROR_CLASSIFY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An error classification has been recorded.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FFS.RTP.ERROR_STOP",
+          "node_type": "terminal",
+          "sequence": 3,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FFS.RTP.ERROR_DISCLOSE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The classified error and safe next action have been disclosed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,845 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_CATALOG_ADMINISTRATION_PROFILES",
+      "task_name": "Manage Catalog Administration Profiles",
+      "start_node": "CAP-SELECT",
+      "nodes": [
+        {
+          "id": "CAP-SELECT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "draft": "CAP-PROPOSAL",
+            "read": "CAP-R-VALIDATE",
+            "inspect": "CAP-CHECK-VALIDATE",
+            "profile": "CAP-I-VALIDATE",
+            "prepare": "CAP-CREATE-VALIDATE",
+            "update_prepare": "CAP-UPDATE-VALIDATE",
+            "batch_update": "CAP-BATCH-INPUT",
+            "write": "CAP-WRITE-BLOCK"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Dedicated create/loader-update or shared-REST basic-attribute batch preparation; raw mutations still select refusal",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 9
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-PROPOSAL",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-P-DEFAULT"
+          },
+          "prerequisites": [
+            "CAP-SELECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Offline proposal or contributor intake only; no external source reader",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 12
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-P-DEFAULT",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-P-DESIGN"
+          },
+          "prerequisites": [
+            "CAP-PROPOSAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Offline proposal output only",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 7
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-P-DESIGN",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-P-DONE"
+          },
+          "prerequisites": [
+            "CAP-P-DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Review normalized draft and revision diff",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 8
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-P-DONE",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAP-P-DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return draft/revision, source attribution, unknowns, next step and reply example; no external effects",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 11
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-R-VALIDATE",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-R-PREREQ"
+          },
+          "prerequisites": [
+            "CAP-SELECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact lookup or unfiltered listing only",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 13
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-R-PREREQ",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-R-METADATA"
+          },
+          "prerequisites": [
+            "CAP-R-VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before authentication or metadata",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 10
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-R-METADATA",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "passed": "CAP-R-GET"
+          },
+          "prerequisites": [
+            "CAP-R-PREREQ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "GET root describe within60 seconds including auth; validate before collection",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 11
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-R-GET",
+          "node_type": "step",
+          "sequence": 130,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CAP-R-DONE",
+            "partial": "CAP-R-PARTIAL"
+          },
+          "prerequisites": [
+            "CAP-R-METADATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Fetch exact matches or every accessible list page within bounded execution",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 12
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-R-DONE",
+          "node_type": "terminal",
+          "sequence": 140,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAP-R-GET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return complete accessible read result; no write eligibility",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 12
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-R-PARTIAL",
+          "node_type": "terminal",
+          "sequence": 150,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAP-R-GET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return partial/failed list with no total and safe next action; never claim completion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 13
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-CHECK-VALIDATE",
+          "node_type": "step",
+          "sequence": 160,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-CHECK-PREREQ"
+          },
+          "prerequisites": [
+            "CAP-SELECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only write-contract inspection; no data payload or caller endpoint",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-CHECK-PREREQ",
+          "node_type": "step",
+          "sequence": 170,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-CHECK-ROOT"
+          },
+          "prerequisites": [
+            "CAP-CHECK-VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Same source-current graph and configured environment/origin checks before read-only contract inspection",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 11
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-CHECK-ROOT",
+          "node_type": "step",
+          "sequence": 180,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "passed": "CAP-CHECK-LOADER"
+          },
+          "prerequisites": [
+            "CAP-CHECK-PREREQ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read root describe facts for write-contract assessment, never infer privilege/default semantics",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 13
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-CHECK-LOADER",
+          "node_type": "step",
+          "sequence": 190,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "observed": "CAP-CHECK-DONE"
+          },
+          "prerequisites": [
+            "CAP-CHECK-ROOT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read advertised loader metadata and unique CAP registration; no template download, validation, upload or job",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-CHECK-DONE",
+          "node_type": "terminal",
+          "sequence": 195,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAP-CHECK-LOADER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return assessed_writes_blocked with advertised metadata, unknown privileges/defaults and per-operation blockers; never approval-ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-WRITE-BLOCK",
+          "node_type": "step",
+          "sequence": 200,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "unavailable": "CAP-WRITE-UNAVAILABLE"
+          },
+          "prerequisites": [
+            "CAP-SELECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Raw cap_workflow mutation requests stop; create/update use separate preparation and approved submission contracts; lifecycle and child writes unavailable",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-WRITE-UNAVAILABLE",
+          "node_type": "terminal",
+          "sequence": 210,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAP-WRITE-BLOCK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "UNSUPPORTED; report missing operation contract and shared safety requirements, zero side effects",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-CREATE-VALIDATE",
+          "node_type": "step",
+          "sequence": 220,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-CREATE-EVIDENCE"
+          },
+          "prerequisites": [
+            "CAP-SELECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "cap_create_handoff validates one root DAT POST, intended fields, current evidence integrity and target/project/task identity; no approval or submission",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-CREATE-EVIDENCE",
+          "node_type": "step",
+          "sequence": 230,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-CREATE-ARTIFACT"
+          },
+          "prerequisites": [
+            "CAP-CREATE-VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require verified registration/template/writable fields, identity/defaults/dates/contributor-free access, complete duplicate check, pending-processing acceptance and active Run Book; privileges use verified grants or attributed shared-enforcement assessment with no known denial; shared preflight must pass before preview, unproven grants remain a warning",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 12
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-CREATE-ARTIFACT",
+          "node_type": "step",
+          "sequence": 240,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-CREATE-READY"
+          },
+          "prerequisites": [
+            "CAP-CREATE-EVIDENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate exact shared-prepared archive with cap_create_validation and bind inputs/evidence/source/task/target/Run Book; evaluate Task Hook resource results before building unapproved preview; no uploader execution",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-CREATE-READY",
+          "node_type": "terminal",
+          "sequence": 250,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAP-CREATE-ARTIFACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Await exact-load approval only after all evidence and artifact checks pass; write_eligible false; no upload, automatic approval or submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-I-VALIDATE",
+          "node_type": "step",
+          "sequence": 260,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-I-PREREQ"
+          },
+          "prerequisites": [
+            "CAP-SELECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "inspect-profile: exact-number only, confirmed target and read headers, no child selector or payload",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 11
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-I-PREREQ",
+          "node_type": "step",
+          "sequence": 270,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-I-READ"
+          },
+          "prerequisites": [
+            "CAP-I-VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Source-current compiled graph and exact shared configured target; read-only authorization",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 9
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-I-READ",
+          "node_type": "step",
+          "sequence": 280,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "observed": "CAP-I-DONE"
+          },
+          "prerequisites": [
+            "CAP-I-PREREQ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Bounded canonical root/child metadata and counts; unavailable children remain explicit",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 10
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-I-DONE",
+          "node_type": "terminal",
+          "sequence": 290,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAP-I-READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return sanitized root observation and child count completeness/limits; no job/access or write readiness inference",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 10
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-UPDATE-VALIDATE",
+          "node_type": "step",
+          "sequence": 300,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-UPDATE-EVIDENCE"
+          },
+          "prerequisites": [
+            "CAP-SELECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Sparse root PATCH preparation: immutable identity, name/description/visibility allowlist and explicit baseline/diff; no-op stops without a load",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-UPDATE-EVIDENCE",
+          "node_type": "step",
+          "sequence": 310,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-UPDATE-DESIGN"
+          },
+          "prerequisites": [
+            "CAP-UPDATE-VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Current target-bound registration/template/field/key/omission/date evidence, unique complete baseline, rename duplicates, shared privilege assessment and Run Book; GET success is not loader mapping proof",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 13
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-UPDATE-DESIGN",
+          "node_type": "step",
+          "sequence": 320,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-UPDATE-ARTIFACT"
+          },
+          "prerequisites": [
+            "CAP-UPDATE-EVIDENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Sparse supplied fields only; protect identity and seeded visibility; disclose last-writer-wins and pending processing; no lifecycle or child edits",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 9
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-UPDATE-ARTIFACT",
+          "node_type": "step",
+          "sequence": 330,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-UPDATE-READY"
+          },
+          "prerequisites": [
+            "CAP-UPDATE-DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate one PATCH row and final shared ZIP; bind baseline/input/identity/evidence/target/Run Book and evaluate Task Hook results; no upload",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-UPDATE-READY",
+          "node_type": "terminal",
+          "sequence": 340,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAP-UPDATE-ARTIFACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Await exact-load approval with write eligibility false; later submission verifies frozen shared approval and refuses repeat attempts",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-BATCH-INPUT",
+          "node_type": "step",
+          "sequence": 350,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-BATCH-OBSERVE"
+          },
+          "prerequisites": [
+            "CAP-SELECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "cap_batch_update: exact number, confirmed target and explicit name/description/visibility replacement; no caller URL or other mutation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 10
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-BATCH-OBSERVE",
+          "node_type": "step",
+          "sequence": 360,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "passed": "CAP-BATCH-DESIGN"
+          },
+          "prerequisites": [
+            "CAP-BATCH-INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Shared GET root metadata, complete exact-number baseline and fresh canonical item; writable requested attributes; rename duplicate checks; visibility inline enum or source-bound commonLookupsLOV LookupTypeFinder ORA_WLF_CAP_ADMIN_VISIBILITY complete bounded shared GET required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 9
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-BATCH-DESIGN",
+          "node_type": "step",
+          "sequence": 370,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CAP-BATCH-READY"
+          },
+          "prerequisites": [
+            "CAP-BATCH-OBSERVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Attributed update privilege assessment, no known denial, one sparse part and immutable target/key/date/baseline binding; no-op stops; not Data Loader readiness",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 7
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAP-BATCH-READY",
+          "node_type": "terminal",
+          "sequence": 380,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAP-BATCH-DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retain unapproved batch preview; later exact consent before shared REST POST, then part verification and independent readback; no Data Loader approval reuse",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 9
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "FND_MANAGE_ADMINISTRATOR_PROFILE_VALUES",
+      "task_name": "Manage Administrator Profile Values",
+      "start_node": "MAPV.QUERY_PROFILE_OPTION",
+      "nodes": [
+        {
+          "id": "MAPV.QUERY_PROFILE_OPTION",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "evidence": "MAPV.COMPARE_PROVIDER_STATE",
+            "identifier_missing": "MAPV.PROVIDER_GAP",
+            "provider_gap": "MAPV.PROVIDER_GAP"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "An administrator profile-value configuration proposal is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAPV.COMPARE_PROVIDER_STATE",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready_to_propose": "MAPV.PROPOSAL_READY",
+            "provider_gap": "MAPV.PROVIDER_GAP"
+          },
+          "prerequisites": [
+            "MAPV.QUERY_PROFILE_OPTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Provider evidence is available",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAPV.PROPOSAL_READY",
+          "node_type": "terminal",
+          "sequence": 3,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MAPV.COMPARE_PROVIDER_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Current and recommended states are compared and any provider change remains subject to user confirmation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAPV.PROVIDER_GAP",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The runtime profileOptionCode, provider response, validation result, or approval requirement is unresolved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

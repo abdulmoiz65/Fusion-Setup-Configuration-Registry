@@ -1,0 +1,953 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_BALANCE_CODES",
+      "task_name": "Manage Balance Codes",
+      "start_node": "BALCODE.VALIDATE",
+      "nodes": [
+        {
+          "id": "BALCODE.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "item": "BALCODE.LOOKUP",
+            "list": "BALCODE.LIST",
+            "issues": "BALCODE.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Manage Balance Codes request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BALCODE.LIST",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "BALCODE.LIST.RESULTS",
+            "empty": "BALCODE.LIST.EMPTY",
+            "issues": "BALCODE.ISSUES"
+          },
+          "prerequisites": [
+            "BALCODE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving the current balance-code response page when no BalanceCode is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BALCODE.LIST.RESULTS",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BALCODE.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The collection lookup returned one or more balance-code rows with status in the default presentation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BALCODE.LIST.EMPTY",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BALCODE.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The collection lookup returned an empty result set",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BALCODE.LOOKUP",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "BALCODE.SUCCESS",
+            "missing": "BALCODE.ISSUES",
+            "issues": "BALCODE.ISSUES"
+          },
+          "prerequisites": [
+            "BALCODE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving one balance code and its Type and Status values",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BALCODE.SUCCESS",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BALCODE.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The read-only item lookup returned BalanceCode, Type, and Status",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BALCODE.ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "BalanceCode input is missing or a read-only lookup did not return a result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "CUSTOM_MANAGE_BALANCE_PROFILES",
+      "task_name": "Manage Balance Profiles",
+      "start_node": "BALPROFILE.VALIDATE",
+      "nodes": [
+        {
+          "id": "BALPROFILE.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "item": "BALPROFILE.LOOKUP",
+            "list": "BALPROFILE.LIST",
+            "issues": "BALPROFILE.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Manage Balance Profiles request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BALPROFILE.LIST",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "BALPROFILE.LIST.RESULTS",
+            "empty": "BALPROFILE.LIST.EMPTY",
+            "issues": "BALPROFILE.ISSUES"
+          },
+          "prerequisites": [
+            "BALPROFILE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving the current balance-profile response page when no BalanceProfileNumber is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BALPROFILE.LIST.RESULTS",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BALPROFILE.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The collection lookup returned one or more balance-profile rows",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BALPROFILE.LIST.EMPTY",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BALPROFILE.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The collection lookup returned an empty result set",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BALPROFILE.LOOKUP",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "BALPROFILE.GROUP_CRITERIA",
+            "missing": "BALPROFILE.ISSUES",
+            "issues": "BALPROFILE.ISSUES"
+          },
+          "prerequisites": [
+            "BALPROFILE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving one balance profile by BalanceProfileNumber",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BALPROFILE.GROUP_CRITERIA",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "BALPROFILE.SUCCESS",
+            "empty": "BALPROFILE.SUCCESS",
+            "issues": "BALPROFILE.ISSUES"
+          },
+          "prerequisites": [
+            "BALPROFILE.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving grouping criteria for the selected balance profile",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BALPROFILE.SUCCESS",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BALPROFILE.GROUP_CRITERIA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The item lookup returned one balance-profile record and its requested grouping criteria",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BALPROFILE.ISSUES",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A balance-profile input is missing or the lookup did not return a record",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "CUSTOM_MANAGE_USAGE_ENTITLEMENT",
+      "task_name": "Manage Usage Entitlement",
+      "start_node": "USAGEENT.VALIDATE",
+      "nodes": [
+        {
+          "id": "USAGEENT.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "item": "USAGEENT.LOOKUP",
+            "list": "USAGEENT.LIST",
+            "entitlement_plan": "ENTPLAN.LOOKUP",
+            "entitlement_plan_list": "USAGEENT.PLAN.LIST",
+            "entitlement_assignment": "ENTASSIGN.LOOKUP",
+            "entitlement_assignment_list": "ENTASSIGN.LIST",
+            "issues": "USAGEENT.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any Manage Usage Entitlement request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "USAGEENT.LIST",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "USAGEENT.LIST.RESULTS",
+            "empty": "USAGEENT.LIST.EMPTY",
+            "issues": "USAGEENT.ISSUES"
+          },
+          "prerequisites": [
+            "USAGEENT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving the current usage-entitlement response page when no UsageEntitlementNumber is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "USAGEENT.LIST.RESULTS",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "USAGEENT.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The collection lookup returned one or more usage-entitlement rows",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "USAGEENT.LIST.EMPTY",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "USAGEENT.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The collection lookup returned an empty result set",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENTPLAN.LOOKUP",
+          "node_type": "step",
+          "sequence": 45,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "ENTPLAN.SUCCESS",
+            "missing": "ENTPLAN.ISSUES",
+            "issues": "ENTPLAN.ISSUES"
+          },
+          "prerequisites": [
+            "USAGEENT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving one entitlement plan by EntitlementPlanNumber before an entitlement-plan status action",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENTASSIGN.LOOKUP",
+          "node_type": "step",
+          "sequence": 46,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "ENTASSIGN.SUCCESS",
+            "missing": "ENTASSIGN.ISSUES",
+            "issues": "ENTASSIGN.ISSUES"
+          },
+          "prerequisites": [
+            "USAGEENT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving one entitlement assignment by EntitlementAssignmentNumber before an entitlement-assignment status action",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENTASSIGN.LIST",
+          "node_type": "step",
+          "sequence": 47,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "ENTASSIGN.LIST.RESULTS",
+            "empty": "ENTASSIGN.LIST.EMPTY",
+            "issues": "ENTASSIGN.ISSUES"
+          },
+          "prerequisites": [
+            "USAGEENT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Listing entitlement assignments without an EntitlementAssignmentNumber",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "USAGEENT.PLAN.LIST",
+          "node_type": "step",
+          "sequence": 48,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "USAGEENT.PLAN.LIST.RESULTS",
+            "empty": "USAGEENT.PLAN.LIST.EMPTY",
+            "issues": "ENTPLAN.LIST"
+          },
+          "prerequisites": [
+            "USAGEENT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Listing entitlement plans through subscriptionUsageEntitlements",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENTPLAN.LIST",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "ENTASSIGN.FALLBACK.LIST",
+            "empty": "ENTPLAN.LIST.EMPTY",
+            "issues": "ENTPLAN.ISSUES"
+          },
+          "prerequisites": [
+            "USAGEENT.PLAN.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Fallback listing of entitlement plans through subscriptionEntitlementPlans after subscriptionUsageEntitlements fails",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENTASSIGN.FALLBACK.LIST",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "ENTPLAN.COMBINE",
+            "empty": "ENTPLAN.COMBINE",
+            "issues": "ENTPLAN.ISSUES"
+          },
+          "prerequisites": [
+            "ENTPLAN.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Fallback listing of entitlement assignments to resolve linked items",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENTPLAN.COMBINE",
+          "node_type": "step",
+          "sequence": 51,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "returned": "ENTPLAN.LIST.RESULTS",
+            "issues": "ENTPLAN.ISSUES"
+          },
+          "prerequisites": [
+            "ENTPLAN.LIST",
+            "ENTASSIGN.FALLBACK.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Joining fallback entitlement-plan and assignment rows by exact EntitlementPlanNumber",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "USAGEENT.LOOKUP",
+          "node_type": "step",
+          "sequence": 52,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "USAGEENT.SUCCESS",
+            "missing": "USAGEENT.ISSUES",
+            "issues": "USAGEENT.ISSUES"
+          },
+          "prerequisites": [
+            "USAGEENT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieving one usage entitlement by UsageEntitlementNumber",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENTPLAN.SUCCESS",
+          "node_type": "terminal",
+          "sequence": 55,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ENTPLAN.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The item lookup returned one entitlement-plan record with its number and status",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENTASSIGN.SUCCESS",
+          "node_type": "terminal",
+          "sequence": 56,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ENTASSIGN.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The item lookup returned one entitlement-assignment record with its number and status",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "USAGEENT.PLAN.LIST.RESULTS",
+          "node_type": "terminal",
+          "sequence": 57,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "USAGEENT.PLAN.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The subscriptionUsageEntitlements collection returned one or more entitlement-plan rows and final pagination metadata",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "USAGEENT.PLAN.LIST.EMPTY",
+          "node_type": "terminal",
+          "sequence": 58,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "USAGEENT.PLAN.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The subscriptionUsageEntitlements collection returned an empty entitlement-plan result set",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENTPLAN.LIST.EMPTY",
+          "node_type": "terminal",
+          "sequence": 59,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ENTPLAN.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The fallback subscriptionEntitlementPlans collection returned an empty result set",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENTPLAN.LIST.RESULTS",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ENTPLAN.COMBINE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The fallback plan and assignment collections were combined by exact EntitlementPlanNumber",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENTASSIGN.LIST.RESULTS",
+          "node_type": "terminal",
+          "sequence": 61,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ENTASSIGN.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The collection lookup returned one or more entitlement-assignment rows and final pagination metadata",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENTASSIGN.LIST.EMPTY",
+          "node_type": "terminal",
+          "sequence": 62,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ENTASSIGN.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The collection lookup returned an empty entitlement-assignment result set",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "USAGEENT.SUCCESS",
+          "node_type": "terminal",
+          "sequence": 63,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "USAGEENT.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The item lookup returned one usage-entitlement record",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENTPLAN.ISSUES",
+          "node_type": "terminal",
+          "sequence": 65,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "An entitlement-plan input is missing, the item lookup did not return an exact record, or its status cannot support the requested action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ENTASSIGN.ISSUES",
+          "node_type": "terminal",
+          "sequence": 66,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "An entitlement-assignment input is missing, the item lookup did not return an exact record, or its status cannot support the requested action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "USAGEENT.ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A usage-entitlement input is missing or the lookup did not return a record",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

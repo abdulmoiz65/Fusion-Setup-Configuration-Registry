@@ -1,0 +1,161 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_RECEIVING_PARAMETERS",
+      "task_name": "Receiving Parameters",
+      "start_node": "RCV_PARAMS.NORMALIZE_INPUT",
+      "nodes": [
+        {
+          "id": "RCV_PARAMS.NORMALIZE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "normalized": "RCV_PARAMS.CHECK_READINESS",
+            "blocked": "RCV_PARAMS.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Receiving Parameters request contains a documented friendly boolean, receipt generation/type value, standard lookup display value, or Job Set display/name value.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCV_PARAMS.CHECK_READINESS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RCV_PARAMS.RESOLVE_STANDARD_LOOKUPS",
+            "blocked": "RCV_PARAMS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RCV_PARAMS.NORMALIZE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Receiving Parameters request has passed local normalization scope checks.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCV_PARAMS.RESOLVE_STANDARD_LOOKUPS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RCV_PARAMS.RESOLVE_JOB_SET",
+            "not-applicable": "RCV_PARAMS.RESOLVE_JOB_SET",
+            "blocked": "RCV_PARAMS.RETURN_ISSUES",
+            "failure": "RCV_PARAMS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RCV_PARAMS.CHECK_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more supported standard lookup fields are supplied as display values.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCV_PARAMS.RESOLVE_JOB_SET",
+          "node_type": "step",
+          "sequence": 35,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RCV_PARAMS.DATALOADER_HANDOFF",
+            "not-applicable": "RCV_PARAMS.DATALOADER_HANDOFF",
+            "blocked": "RCV_PARAMS.RETURN_ISSUES",
+            "failure": "RCV_PARAMS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RCV_PARAMS.RESOLVE_STANDARD_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Job Set display name or Job Set name is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCV_PARAMS.DATALOADER_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RCV_PARAMS.RESOLVE_JOB_SET"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Local readiness and all applicable standard lookup and Job Set resolution have passed; hand off to `core.data-loader`.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCV_PARAMS.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Local normalization, readiness, or standard lookup resolution is blocked or fails.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

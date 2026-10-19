@@ -1,0 +1,49 @@
+# Gig Descriptive Flexfields Dependency Readiness
+
+For copy, update, and disable, ask only for Segment Name when missing, then validate a fresh exact-task export for this request; if unavailable or empty, use the qualified Global fallback proposal instead of stopping; label older evidence UNVERIFIED. For new create, use a validated matching package or export fresh when absent. Follow the required-values table, confirmation, optional-values table, confirmation sequence in ../SKILL.md.
+
+Global create, copy, update, and disable may use the [verified fallback export contract](ora_gig_global_segment_archive_contract.md), after a selected-environment exact-task export attempt fails, times out, or returns unusable rows. Confirm the complete design and disclose unavailable current-state checks as `UNVERIFIED`. Verification and context-sensitive work require a validated populated current-definition package. Global copy/update/disable use the confirmed fallback rules when fresh evidence is unavailable. Standalone list/inspect still requires a fresh export.
+
+Readiness is limited to the exact Gig DFF task. Start a fresh task CSV export for every explicit read-only segment retrieval and for an unnamed copy source list. For copy, update, and disable, ask only for Segment Name when missing, then validate a fresh exact-task export for this request; if unavailable or empty, use the qualified Global fallback proposal instead of stopping; label older evidence UNVERIFIED. For new create, use a validated matching package or export fresh when absent. Follow the required-values table, confirmation, optional-values table, confirmation sequence in ../SKILL.md. Disable always requires a fresh export for this request. Verification exports when current evidence is needed.
+
+## Required Dependency Order
+
+| Sequence | Dependency | What Must Happen |
+|---|---|---|
+| 1 | Exact task and DFF | Confirm task ORA_IRC_MANAGE_OM_GIG_DESCRIPTIVE_FLEXFIELDS within ORA_RECRUITING / ORA_RECRUITING_CONFIGURATION. Resolve displaySequence and taskListItemShortName from its unique entry in knowledge/setup-task-catalog/effective/offering-functional-area-task-catalog.json. Confirm DFF IRC_MP_GIGS_DFF, application 821, and setup business object FND_APP_DESCRIPTIVE_FLEXFIELD; catalog placement must not set or override the segment SequenceNumber |
+| 2 | Retrieval or source discovery | For copy, update, and disable, ask only for Segment Name when missing, then validate a fresh exact-task export for this request; if unavailable or empty, use the qualified Global fallback proposal instead of stopping; label older evidence UNVERIFIED. For new create, use a validated matching package or export fresh when absent. Follow the required-values table, confirmation, optional-values table, confirmation sequence in ../SKILL.md. Preserve the supported scope and exact-identity guards. |
+| 3 | Segment design | Ask for the segment name first when it was not supplied. Then use the validated package to propose remaining values together, collect confirmation or changes, and validate identities, contexts, compatible storage, sequence, and current values |
+| 4 | Change and deployment readiness | Confirm authorized environment, approval, tests, and deployment plan |
+| 5 | Execution route | Build and validate the requested Gig package without starting another export; after the exact Gig FSM package contract and immutable preview are approved, use core.data-loader to submit once, monitor to terminal state, and read the ProcessLog |
+
+## Dependency Rules
+
+| Dependency ID | Dependency | Mandatory | Applies When | Status | Value Source | Resolver | Why | User Guidance | Values to Fill |
+|---|---|---|---|---|---|---|---|---|---|
+| exact_dff_preflight | Exact catalog and DFF identity | Yes | Every request | Satisfied only for the exact task, offering, functional area, DFF, application, and business object, with catalog-derived task placement | Generated task skill and effective setup-task catalog | | Prevents cross-task or cross-DFF execution | Use exact generated metadata | Task; catalog displaySequence and taskListItemShortName; DFF; application; business object |
+| segment_retrieval_export | Current exact-task CSV segment list | Yes | Inspect/list, create, update, copy, or disable | Attempt a fresh export for copy/update/disable; if unavailable or empty use the confirmed Global fallback. New create follows the matching-package or qualified fallback route | Validated selected-environment task package or routed current-environment task export | resolve_gig_dff_segments_from_task_export | Provides authoritative current segments without a direct DFF API | For copy/update/disable attempt a fresh export, then use the confirmed Global fallback if unavailable or empty; for new create a matching validated package may be reused. Validate exact task/DFF/application and supported contexts | Export artifact identity; retrieved segments; selected source segment when copying |
+| current_definition | Current Gig DFF definition | Yes | PlanCreate, PlanUpdate, PlanDisable, Verify, or copy requires current state | Require usable current evidence or complete operation-specific Global fallback confirmation; stop only for unresolved necessary identity, preservation, or contract gaps | This request's fresh validated task export or confirmed UNVERIFIED Global fallback record for copy/update/disable; matching validated baseline for new create or verification | verify_gig_dff_current_definition | Prevents duplicate identity, occupied storage, duplicate sequence, or accidental overwrite | Use the matching validated package, or obtain a fresh export when none is available | Segments; contexts; columns; sequences; current properties; capture time and environment when applicable |
+| exact_gig_context | Existing Gig context identity | Conditional | A context-sensitive segment is requested | Blocked until one exact context code and label are verified | Context rows from the validated exact-task Gig export or approved local baseline | verify_gig_context_identity | Prevents Referral contexts or guessed contexts from entering Gig scope | Resolve one exact existing Gig context; otherwise use Global only | Context code; label; enabled state |
+| table_column_and_sequence | Available column and unused sequence | Yes | PlanCreate | Blocked until current evidence confirms compatibility and availability | Current Gig DFF definition | verify_gig_dff_current_definition | Prevents storage or sequence collision | Select one available UI column and one positive unused sequence | Column; sequence |
+| value_set_contract | Compatible existing value set or complete new-value-set design | Yes | PlanCreate or PlanUpdate changes validation | Blocked until compatible | core.fusion-api.apps-common.value-sets read-only collection, or requester-confirmed new design routed separately | verify_gig_value_set_compatibility | Protects data, display, and runtime compatibility | Select one exact existing value set or complete the required separate design | Value-set identity; data type; validation type; module; compatibility |
+| change_control | Exact target, preview fingerprint, and standalone approval | Yes | Before save, deployment, or import | Blocked until current approval is bound to the exact preview | Final preview | | Prevents unintended mutation | Do not ask for owner, approval-reference, or acceptance-criteria fields during segment intake. Present the exact delta or immutable artifact and obtain approval immediately before execution. | Environment; preview fingerprint; approval |
+| gig_fsm_package | Exact Gig CSV or ZIP contract | Conditional | PlanCreate or PlanUpdate uses FSM import | Blocked until the package shape and deterministic builder are proven | Confirmed request inputs, validated current-definition package, and an approved deterministic builder or package specification supplied to the workflow | | Catalog flags alone do not define archive members or row contracts | Provide and validate the exact Gig package contract; never substitute a Referral artifact | Members; filenames; headers; parents; translations; metadata; encoding; checksum |
+
+## Dependency Classification
+
+| Result Category | When Used | Can Run Lookup/Create? |
+|---|---|---|
+| READY | All applicable identities, lookups, design checks, execution contracts, and approval gates are complete | Only the declared approved route may submit once, followed by read-only completion monitoring and ProcessLog retrieval |
+| MISSING | A required field, identity, source, or approval is absent | No |
+| AMBIGUOUS | Multiple contexts, segments, or value sets match | No |
+| BLOCKED | A required lookup, compatibility check, package contract or deployment dependency is unresolved | No |
+| UNSUPPORTED | Another task, DFF, Referral context, context lifecycle change, delete, or undeclared route is requested | No |
+| AUTHORIZATION | Required setup, deployment, or import access is absent | No |
+| APPROVAL_REQUIRED | A mutation lacks current approval bound to its exact preview | No |
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| GIG_DFF.RESOLVE_REFERENCES | step | 20 | resolve_dependency | resolved->GIG_DFF.CHECK_READINESS;missing->GIG_DFF.RETURN_ISSUES;ambiguous->GIG_DFF.RETURN_ISSUES;blocked->GIG_DFF.RETURN_ISSUES;unsupported->GIG_DFF.RETURN_ISSUES | GIG_DFF.VALIDATE_INPUT | stop | Every supported request |
+| GIG_DFF.CHECK_READINESS | decision | 30 | resolve_dependency | ready->GIG_DFF.ENFORCE_DESIGN;missing->GIG_DFF.RETURN_ISSUES;blocked->GIG_DFF.RETURN_ISSUES;authorization->GIG_DFF.RETURN_ISSUES;unsupported->GIG_DFF.RETURN_ISSUES | GIG_DFF.RESOLVE_REFERENCES | stop | Every supported request |

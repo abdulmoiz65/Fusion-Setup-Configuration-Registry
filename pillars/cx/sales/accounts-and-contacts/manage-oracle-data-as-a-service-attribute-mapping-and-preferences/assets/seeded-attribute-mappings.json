@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "task_code": "ORA_ZCM_DAAS_ATTRIBUTE_MAPPING_PREFERENCES",
+  "source_archive_label": "Manage Oracle Data as a Service Attribute Mapping.zip",
+  "source_member": "ORA_ZCM_DATA_CLOUD_MAPPING_PREFERENCE.csv",
+  "sanitization": "Only the Oracle-seeded CSV row catalog is retained; environment-specific FSM metadata is excluded.",
+  "row_count": 268,
+  "column_count": 20,
+  "key_fields": [
+    "AttributeCategory",
+    "DaasAttributeName"
+  ],
+  "csv_sha256": "39d5e594680d2192e226ad70c40998b4f342f9acb8b76cb190536061c6d70884",
+  "required_output_members": [
+    "ORA_ZCM_DATA_CLOUD_ENRICH_PREFERENCE.csv",
+    "ORA_ZCM_DATA_CLOUD_MAPPING_PREFERENCE.csv"
+  ]
+}

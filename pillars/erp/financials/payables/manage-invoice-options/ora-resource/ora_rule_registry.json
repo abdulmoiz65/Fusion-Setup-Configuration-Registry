@@ -1,0 +1,200 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "AP_MANAGE_INVOICE_OPTIONS",
+      "task_name": "Manage Invoice Options",
+      "start_node": "INPUT.VALIDATE",
+      "nodes": [
+        {
+          "id": "INPUT.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "LOOKUP.PREFLIGHT",
+            "failure": "ERROR.BLOCK"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LOOKUP.PREFLIGHT",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "DEP.CHECK",
+            "failure": "ERROR.BLOCK"
+          },
+          "prerequisites": [
+            "INPUT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Any populated field has a resolver in the Live Lookups table. Run every applicable read-only REST or SOAP resolver and retain its receipt.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEP.CHECK",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "success": "DESIGN.ENFORCE",
+            "failure": "ERROR.BLOCK"
+          },
+          "prerequisites": [
+            "LOOKUP.PREFLIGHT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DESIGN.ENFORCE",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "success": "INVOICE.EXECUTION_GATE",
+            "failure": "ERROR.BLOCK"
+          },
+          "prerequisites": [
+            "DEP.CHECK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INVOICE.EXECUTION_GATE",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "core.data-loader",
+          "transitions": {
+            "approved_preview": "SUCCESS.DONE",
+            "not_ready": "INVOICE.EXECUTION_BLOCKED"
+          },
+          "prerequisites": [
+            "DESIGN.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A governed execution request exists",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ERROR.BLOCK",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking rule is reached",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INVOICE.EXECUTION_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 75,
+          "action_type": "terminal",
+          "execution_route": "core.data-loader",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Execution approval or preview is absent",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SUCCESS.DONE",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "INVOICE.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A governed immutable preview and approval are available",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

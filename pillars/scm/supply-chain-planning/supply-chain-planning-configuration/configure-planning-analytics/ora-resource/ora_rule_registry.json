@@ -1,0 +1,1368 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_MSC_CONFIGURE_PLANNING_ANALYTICS",
+      "task_name": "Configure Planning Analytics",
+      "start_node": "CPA.SELECT_LOOKUP_SCOPE",
+      "nodes": [
+        {
+          "id": "CPA.SELECT_LOOKUP_SCOPE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "find_dimension_catalogs": "CPA.LOOKUP_DIMENSION_CATALOGS",
+            "find_dimension_catalog_by_id": "CPA.LOOKUP_DIMENSION_CATALOG",
+            "find_dimension_catalog_hierarchies": "CPA.LOOKUP_CATALOG_HIERARCHIES",
+            "find_dimension_catalog_hierarchy_by_id": "CPA.LOOKUP_CATALOG_HIERARCHY",
+            "find_dimensions": "CPA.LOOKUP_DIMENSIONS",
+            "find_dimension_by_code": "CPA.LOOKUP_DIMENSION",
+            "find_dimension_hierarchies": "CPA.LOOKUP_DIMENSION_HIERARCHIES",
+            "find_dimension_hierarchy_by_id": "CPA.LOOKUP_DIMENSION_HIERARCHY",
+            "find_planning_hierarchies": "CPA.LOOKUP_PLANNING_HIERARCHIES",
+            "find_planning_hierarchy_by_id": "CPA.LOOKUP_PLANNING_HIERARCHY",
+            "find_planning_measure_catalog": "CPA.LOOKUP_MEASURE_CATALOG",
+            "find_planning_measure_catalog_by_id": "CPA.LOOKUP_MEASURE_CATALOG_DETAILS",
+            "find_planning_measure_catalog_measures": "CPA.LOOKUP_MEASURE_CATALOG_MEASURES",
+            "find_planning_measure_by_id_or_name": "CPA.LOOKUP_PLANNING_MEASURES",
+            "find_planning_measure_group_by_id_or_name": "CPA.LOOKUP_PLANNING_MEASURE_GROUPS",
+            "list_planning_measures_in_group": "CPA.LOOKUP_GROUP_PLANNING_MEASURES",
+            "find_planning_level_attributes": "CPA.LOOKUP_LEVEL_ATTRIBUTES",
+            "list_planning_levels": "CPA.LIST_PLANNING_LEVELS",
+            "find_planning_level_by_name": "CPA.FIND_PLANNING_LEVEL_BY_NAME",
+            "find_planning_level_by_id": "CPA.FIND_PLANNING_LEVEL_BY_ID",
+            "unsupported": "CPA.LOOKUP_FAILURE",
+            "missing": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Select exactly one resolver from Lookup Routing for the requested object, operation and supplied identity; unsupported or ambiguous intent and missing required inputs stop before lookup",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_DIMENSION_CATALOGS",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_DIMENSION_CATALOGS",
+            "found": "CPA.DONE_LOOKUP_DIMENSION_CATALOGS",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dimension catalogs must be listed or a catalog identity must be selected; use find_dimension_catalogs",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_DIMENSION_CATALOG",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_DIMENSION_CATALOG",
+            "found": "CPA.DONE_LOOKUP_DIMENSION_CATALOG",
+            "delete_requested": "CPA.ENFORCE_CATALOG_DELETION",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A dimension catalog is selected for review or deletion; use find_dimension_catalog_by_id",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_CATALOG_HIERARCHIES",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_CATALOG_HIERARCHIES",
+            "found": "CPA.DONE_LOOKUP_CATALOG_HIERARCHIES",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Hierarchies selected in a known dimension catalog must be listed; use find_dimension_catalog_hierarchies",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_CATALOG_HIERARCHY",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_CATALOG_HIERARCHY",
+            "found": "CPA.DONE_LOOKUP_CATALOG_HIERARCHY",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A selected hierarchy in a known dimension catalog must be reviewed; use find_dimension_catalog_hierarchy_by_id",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_DIMENSIONS",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_DIMENSIONS",
+            "found": "CPA.DONE_LOOKUP_DIMENSIONS",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Planning dimensions must be listed; use find_dimensions",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_DIMENSION",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_DIMENSION",
+            "found": "CPA.DONE_LOOKUP_DIMENSION",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A known planning dimension must be reviewed; use find_dimension_by_code",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_DIMENSION_HIERARCHIES",
+          "node_type": "decision",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_DIMENSION_HIERARCHIES",
+            "found": "CPA.DONE_LOOKUP_DIMENSION_HIERARCHIES",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Hierarchies for a known dimension must be listed; use find_dimension_hierarchies",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_DIMENSION_HIERARCHY",
+          "node_type": "decision",
+          "sequence": 17,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_DIMENSION_HIERARCHY",
+            "found": "CPA.DONE_LOOKUP_DIMENSION_HIERARCHY",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A hierarchy for a known dimension must be reviewed; use find_dimension_hierarchy_by_id",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_PLANNING_HIERARCHIES",
+          "node_type": "decision",
+          "sequence": 18,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_PLANNING_HIERARCHIES",
+            "found": "CPA.DONE_LOOKUP_PLANNING_HIERARCHIES",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Planning hierarchies must be listed; use find_planning_hierarchies",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_PLANNING_HIERARCHY",
+          "node_type": "decision",
+          "sequence": 19,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_PLANNING_HIERARCHY",
+            "found": "CPA.DONE_LOOKUP_PLANNING_HIERARCHY",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A known planning hierarchy must be reviewed; use find_planning_hierarchy_by_id",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_MEASURE_CATALOG",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_MEASURE_CATALOG",
+            "found": "CPA.DONE_LOOKUP_MEASURE_CATALOG",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A planning measure catalog must be identified before item review or deletion evaluation; use find_planning_measure_catalog",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_MEASURE_CATALOG_DETAILS",
+          "node_type": "decision",
+          "sequence": 21,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_MEASURE_CATALOG_DETAILS",
+            "found": "CPA.DONE_LOOKUP_MEASURE_CATALOG_DETAILS",
+            "delete_requested": "CPA.ENFORCE_MEASURE_CATALOG_DELETION",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A planning measure catalog is selected for review or deletion; use find_planning_measure_catalog_by_id",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_MEASURE_CATALOG_MEASURES",
+          "node_type": "decision",
+          "sequence": 22,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_MEASURE_CATALOG_MEASURES",
+            "found": "CPA.DONE_LOOKUP_MEASURE_CATALOG_MEASURES",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Measures for a known planning measure catalog must be reviewed; use find_planning_measure_catalog_measures",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_PLANNING_MEASURES",
+          "node_type": "decision",
+          "sequence": 23,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_PLANNING_MEASURES",
+            "found": "CPA.DONE_LOOKUP_PLANNING_MEASURES",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A MeasureId or Name is supplied, or planning measures must be reviewed; use find_planning_measure_by_id_or_name",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_PLANNING_MEASURE_GROUPS",
+          "node_type": "decision",
+          "sequence": 24,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_PLANNING_MEASURE_GROUPS",
+            "found": "CPA.DONE_LOOKUP_PLANNING_MEASURE_GROUPS",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A GroupId or GroupName is supplied, or planning measure groups must be reviewed; use find_planning_measure_group_by_id_or_name",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_GROUP_PLANNING_MEASURES",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LOOKUP_GROUP_PLANNING_MEASURES",
+            "found": "CPA.DONE_LOOKUP_GROUP_PLANNING_MEASURES",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Measures assigned to a selected planning measure group must be reviewed; use list_planning_measures_in_group",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_LEVEL_ATTRIBUTES",
+          "node_type": "decision",
+          "sequence": 26,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.SELECT_LEVEL_ATTRIBUTE_NAMES",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing level attributes must be listed or reviewed before creation; use find_planning_level_attributes",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LIST_PLANNING_LEVELS",
+          "node_type": "decision",
+          "sequence": 29,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_LIST_PLANNING_LEVELS",
+            "found": "CPA.DONE_LIST_PLANNING_LEVELS",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All planning levels are requested; use list_planning_levels",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.FIND_PLANNING_LEVEL_BY_NAME",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_FIND_PLANNING_LEVEL_BY_NAME",
+            "found": "CPA.DONE_FIND_PLANNING_LEVEL_BY_NAME",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve LevelId from LevelName; use find_planning_level_by_name",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.FIND_PLANNING_LEVEL_BY_ID",
+          "node_type": "decision",
+          "sequence": 31,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.DONE_FIND_PLANNING_LEVEL_BY_ID",
+            "found": "CPA.DONE_FIND_PLANNING_LEVEL_BY_ID",
+            "not_found": "CPA.LOOKUP_FAILURE",
+            "ambiguous": "CPA.LOOKUP_FAILURE",
+            "mismatch": "CPA.LOOKUP_FAILURE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LOOKUP_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve LevelName from LevelId; use find_planning_level_by_id",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.SELECT_LEVEL_ATTRIBUTE_NAMES",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "list_only": "CPA.LEVEL_ATTRIBUTES_COMPLETE",
+            "item": "CPA.LOOKUP_ITEM_ATTRIBUTE_NAMES",
+            "organization": "CPA.LOOKUP_ORGANIZATION_ATTRIBUTE_NAMES",
+            "unsupported": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_LEVEL_ATTRIBUTES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing-attribute read requests return list_only; creation/name-validation requests select item for LevelId 1 or organization for LevelId 40; other validation levels are unsupported",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_ITEM_ATTRIBUTE_NAMES",
+          "node_type": "decision",
+          "sequence": 41,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.VALIDATE_ITEM_ATTRIBUTE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LEVEL_ATTRIBUTE_NAMES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation or attribute-name validation is requested for LevelId 1; use find_item_level_attribute_names",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_ORGANIZATION_ATTRIBUTE_NAMES",
+          "node_type": "decision",
+          "sequence": 42,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CPA.VALIDATE_ORGANIZATION_ATTRIBUTE",
+            "failure": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.SELECT_LEVEL_ATTRIBUTE_NAMES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation or attribute-name validation is requested for LevelId 40; use find_organization_level_attribute_names",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_ITEM_ATTRIBUTE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.ITEM_ATTRIBUTE_VALIDATED",
+            "invalid": "CPA.LOOKUP_FAILURE",
+            "unresolved": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_ITEM_ATTRIBUTE_NAMES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate candidate AttributeName and any supplied DbDataType for LevelId 1 using the completed find_item_level_attribute_names result",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 11
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.VALIDATE_ORGANIZATION_ATTRIBUTE",
+          "node_type": "decision",
+          "sequence": 51,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.ORGANIZATION_ATTRIBUTE_VALIDATED",
+            "invalid": "CPA.LOOKUP_FAILURE",
+            "unresolved": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_ORGANIZATION_ATTRIBUTE_NAMES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate candidate AttributeName and any supplied DbDataType for LevelId 40 using the completed find_organization_level_attribute_names result",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 12
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.ENFORCE_CATALOG_DELETION",
+          "node_type": "decision",
+          "sequence": 52,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.DIMENSION_DELETION_CHECKED",
+            "blocked": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_DIMENSION_CATALOG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate only the dimension-catalog deletion rule for the requested dimension CatalogId",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.ENFORCE_MEASURE_CATALOG_DELETION",
+          "node_type": "decision",
+          "sequence": 53,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CPA.MEASURE_DELETION_CHECKED",
+            "blocked": "CPA.LOOKUP_FAILURE"
+          },
+          "prerequisites": [
+            "CPA.LOOKUP_MEASURE_CATALOG_DETAILS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate only the planning-measure-catalog deletion rule for the requested measure CatalogId",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_DIMENSION_CATALOGS",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_DIMENSION_CATALOGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_dimension_catalogs lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_DIMENSION_CATALOG",
+          "node_type": "terminal",
+          "sequence": 101,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_DIMENSION_CATALOG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_dimension_catalog_by_id lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_CATALOG_HIERARCHIES",
+          "node_type": "terminal",
+          "sequence": 102,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_CATALOG_HIERARCHIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_dimension_catalog_hierarchies lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_CATALOG_HIERARCHY",
+          "node_type": "terminal",
+          "sequence": 103,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_CATALOG_HIERARCHY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_dimension_catalog_hierarchy_by_id lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_DIMENSIONS",
+          "node_type": "terminal",
+          "sequence": 104,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_DIMENSIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_dimensions lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_DIMENSION",
+          "node_type": "terminal",
+          "sequence": 105,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_DIMENSION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_dimension_by_code lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_DIMENSION_HIERARCHIES",
+          "node_type": "terminal",
+          "sequence": 106,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_DIMENSION_HIERARCHIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_dimension_hierarchies lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_DIMENSION_HIERARCHY",
+          "node_type": "terminal",
+          "sequence": 107,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_DIMENSION_HIERARCHY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_dimension_hierarchy_by_id lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_PLANNING_HIERARCHIES",
+          "node_type": "terminal",
+          "sequence": 108,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_PLANNING_HIERARCHIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_planning_hierarchies lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_PLANNING_HIERARCHY",
+          "node_type": "terminal",
+          "sequence": 109,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_PLANNING_HIERARCHY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_planning_hierarchy_by_id lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_MEASURE_CATALOG",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_MEASURE_CATALOG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_planning_measure_catalog lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_MEASURE_CATALOG_DETAILS",
+          "node_type": "terminal",
+          "sequence": 111,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_MEASURE_CATALOG_DETAILS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_planning_measure_catalog_by_id lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_MEASURE_CATALOG_MEASURES",
+          "node_type": "terminal",
+          "sequence": 112,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_MEASURE_CATALOG_MEASURES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_planning_measure_catalog_measures lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_PLANNING_MEASURES",
+          "node_type": "terminal",
+          "sequence": 113,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_PLANNING_MEASURES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_planning_measure_by_id_or_name lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_PLANNING_MEASURE_GROUPS",
+          "node_type": "terminal",
+          "sequence": 114,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_PLANNING_MEASURE_GROUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_planning_measure_group_by_id_or_name lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LOOKUP_GROUP_PLANNING_MEASURES",
+          "node_type": "terminal",
+          "sequence": 115,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LOOKUP_GROUP_PLANNING_MEASURES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested list_planning_measures_in_group lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_LIST_PLANNING_LEVELS",
+          "node_type": "terminal",
+          "sequence": 119,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.LIST_PLANNING_LEVELS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested list_planning_levels lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_FIND_PLANNING_LEVEL_BY_NAME",
+          "node_type": "terminal",
+          "sequence": 120,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.FIND_PLANNING_LEVEL_BY_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_planning_level_by_name lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DONE_FIND_PLANNING_LEVEL_BY_ID",
+          "node_type": "terminal",
+          "sequence": 121,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.FIND_PLANNING_LEVEL_BY_ID"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return only the requested find_planning_level_by_id lookup result; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.ITEM_ATTRIBUTE_VALIDATED",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.VALIDATE_ITEM_ATTRIBUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return successful item-level name and supplied datatype validation; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.ORGANIZATION_ATTRIBUTE_VALIDATED",
+          "node_type": "terminal",
+          "sequence": 131,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.VALIDATE_ORGANIZATION_ATTRIBUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return successful organization-level name and supplied datatype validation; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LEVEL_ATTRIBUTES_COMPLETE",
+          "node_type": "terminal",
+          "sequence": 132,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.SELECT_LEVEL_ATTRIBUTE_NAMES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return existing attributes without creation validation or a write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.DIMENSION_DELETION_CHECKED",
+          "node_type": "terminal",
+          "sequence": 133,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.ENFORCE_CATALOG_DELETION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return dimension-catalog deletion eligibility; no deletion or approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.MEASURE_DELETION_CHECKED",
+          "node_type": "terminal",
+          "sequence": 134,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPA.ENFORCE_MEASURE_CATALOG_DELETION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return measure-catalog deletion eligibility; no deletion or approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPA.LOOKUP_FAILURE",
+          "node_type": "terminal",
+          "sequence": 999,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return missing, unsupported, invalid, ambiguous, failed or blocked details and the corrective action; no write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

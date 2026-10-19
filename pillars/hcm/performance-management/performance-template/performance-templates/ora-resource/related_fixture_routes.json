@@ -1,0 +1,245 @@
+{
+  "schema_version": "1.0",
+  "resource_version": "11.13.18.05",
+  "route": "task_local_related_fixture_rest",
+  "required_headers": {
+    "REST-Framework-Version": "9",
+    "Content-Type": "application/vnd.oracle.adf.resourceitem+json"
+  },
+  "metadata_routes": {
+    "template_describe": {
+      "path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplates/describe",
+      "resource": "talentPerformanceTemplates",
+      "source": "talentPerformanceTemplates target Describe metadata"
+    },
+    "template_sections_describe": {
+      "path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplateSections/describe",
+      "resource": "talentPerformanceTemplateSections",
+      "source": "talentPerformanceTemplateSections target Describe metadata"
+    },
+    "performance_roles_describe": {
+      "path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceRoles/describe",
+      "resource": "talentPerformanceRoles",
+      "source": "talentPerformanceRoles target Describe metadata"
+    },
+    "review_periods_describe": {
+      "path": "/hcmRestApi/resources/11.13.18.05/reviewPeriods/describe",
+      "resource": "reviewPeriods",
+      "source": "reviewPeriods target Describe metadata"
+    },
+    "document_types_describe": {
+      "path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceDocumentTypes/describe",
+      "resource": "talentPerformanceDocumentTypes",
+      "source": "talentPerformanceDocumentTypes target Describe metadata"
+    }
+  },
+  "lookup_routes": {
+    "document_types": {
+      "path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceDocumentTypes",
+      "fields": ["DocumentTypeId", "DocumentTypeName", "DocumentTypeDescription", "DateFrom", "DateTo", "Status", "InUseFlag"],
+      "fixed_query": {"q": "Status='A'", "orderBy": "DocumentTypeName"},
+      "match_fields": ["DocumentTypeId", "DocumentTypeName"],
+      "identity_field": "DocumentTypeId",
+      "status": {"field": "Status", "allowed": ["A"]},
+      "effectivity": {"start": "DateFrom", "end": "DateTo"},
+      "source": "Configured target reference lookup: document_types"
+    },
+    "process_flows": {
+      "path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceProcessFlows",
+      "fields": [
+        "ProcessFlowId",
+        "Name",
+        "Description",
+        "DateFrom",
+        "DateTo",
+        "Status",
+        "InUseFlag",
+        "AssignPcpnsFlag",
+        "MgrSelectPcpnsFlag",
+        "WkrSelectPcpnsFlag",
+        "WkrSelfEvalFlag",
+        "MgrEvalsWkrFlag"
+      ],
+      "fixed_query": {
+        "q": "Status='A'",
+        "expand": "taskNames",
+        "orderBy": "Name"
+      },
+      "omit_fields": true,
+      "match_fields": [
+        "ProcessFlowId",
+        "Name"
+      ],
+      "identity_field": "ProcessFlowId",
+      "status": {
+        "field": "Status",
+        "allowed": [
+          "A"
+        ]
+      },
+      "effectivity": {
+        "start": "DateFrom",
+        "end": "DateTo"
+      },
+      "allow_declared_list": true,
+      "source": "Configured target reference lookup: process_flows"
+    },
+    "review_periods": {
+      "path": "/hcmRestApi/resources/11.13.18.05/reviewPeriodsLOV",
+      "fields": ["ReviewPeriodId", "ReviewPeriodName", "StartDate", "EndDate", "StatusCode"],
+      "fixed_query": {"q": "StatusCode='A'", "orderBy": "ReviewPeriodName"},
+      "match_fields": ["ReviewPeriodId", "ReviewPeriodName"],
+      "identity_field": "ReviewPeriodId",
+      "status": {"field": "StatusCode", "allowed": ["A"]},
+      "effectivity": {"start": "StartDate", "end": "EndDate"},
+      "source": "Configured target reference lookup: review_periods"
+    },
+    "eligibility_profiles": {
+      "path": "/hcmRestApi/resources/11.13.18.05/eligibilityProfilesLOV",
+      "fields": ["EligyPrflId", "Name", "Description", "StatCd", "AsmtToUseCd", "ProfileType"],
+      "fixed_query": {"q": "StatCd='A' and AsmtToUseCd='APS' and ProfileType='PRTP'", "orderBy": "Name"},
+      "match_fields": ["EligyPrflId", "Name"],
+      "identity_field": "EligyPrflId",
+      "status": {"field": "StatCd", "allowed": ["A"]},
+      "required_values": {"AsmtToUseCd": "APS", "ProfileType": "PRTP"},
+      "allow_declared_list": true,
+      "source": "Configured target reference lookup: eligibility_profiles"
+    },
+    "competency_content_type": {
+      "path": "/hcmRestApi/resources/11.13.18.05/contentTypesLOV",
+      "fields": ["ContentTypeId"],
+      "fixed_query": {"finder": "findByContextName;ContextName=COMPETENCY"},
+      "match_fields": ["ContentTypeId"],
+      "identity_field": "ContentTypeId",
+      "required_values": {"ContentTypeId": "104"},
+      "source": "Configured target reference lookup: competency_content_type"
+    },
+    "competency_reference_sections": {
+      "path": "/hcmRestApi/resources/11.13.18.05/profileTypeSectionsLOV",
+      "fields": ["SectionId", "Name", "Description", "ContentTypeId", "ProfileTypeId", "SectionContext", "SubscriberCode", "DefaultFlag"],
+      "fixed_query": {"finder": "findBySubscriberAndContentType;ContentTypeId=104,ProfileTypeId=1,SourceId=103", "orderBy": "Name"},
+      "match_fields": ["SectionId", "Name"],
+      "identity_field": "SectionId",
+      "required_values": {"ContentTypeId": "104", "ProfileTypeId": "1"},
+      "allow_declared_list": true,
+      "source": "Configured target reference lookup: competency_reference_sections"
+    },
+    "template_sections": {
+      "path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplateSections",
+      "fields": ["SectionId", "Name", "Description", "DateFrom", "DateTo", "Status", "SectionType"],
+      "fixed_query": {"orderBy": "Name"},
+      "match_fields": ["SectionId", "Name"],
+      "identity_field": "SectionId",
+      "status": {"field": "Status", "allowed": ["A"]},
+      "effectivity": {"start": "DateFrom", "end": "DateTo"},
+      "allow_declared_list": true,
+      "source": "Configured target reference lookup: template_sections"
+    },
+    "performance_roles": {
+      "path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceRoles",
+      "fields": ["RoleId", "RoleName", "RoleDescription", "DateFrom", "DateTo", "Status", "RoleType", "ManagerType", "MatrixManagerRoleFlag", "InUseFlag"],
+      "fixed_query": {"q": "Status='A'", "orderBy": "RoleName"},
+      "match_fields": ["RoleId", "RoleName", "RoleType"],
+      "identity_field": "RoleId",
+      "status": {"field": "Status", "allowed": ["A"]},
+      "effectivity": {"start": "DateFrom", "end": "DateTo"},
+      "source": "Configured target reference lookup: performance_roles"
+    },
+    "questionnaires": {
+      "path": "/hcmRestApi/resources/11.13.18.05/questionnairesLOV",
+      "fields": ["QuestionnaireId", "QuestionnaireCode", "Name", "QstnrVersionNumber", "SubscriberId", "SubscriberCode", "Status", "LatestVersion", "TemplateFlag", "ScoredFlag"],
+      "fixed_query": {"q": "SubscriberId=1 and Status='A' and LatestVersion='Y' and TemplateFlag=false", "orderBy": "Name"},
+      "match_fields": ["QuestionnaireId", "QuestionnaireCode", "Name"],
+      "identity_field": "QuestionnaireId",
+      "status": {"field": "Status", "allowed": ["A"]},
+      "required_values": {"SubscriberId": "1", "LatestVersion": "Y", "TemplateFlag": false},
+      "allow_declared_list": true,
+      "source": "Configured target reference lookup: questionnaires"
+    },
+    "rating_models": {
+      "path": "/hcmRestApi/resources/11.13.18.05/talentRatingModels",
+      "fields": ["RatingModelId", "RatingModelCode", "RatingName", "RatingDescription", "DateFrom", "DateTo"],
+      "fixed_query": {"orderBy": "RatingName"},
+      "match_fields": ["RatingModelId", "RatingModelCode", "RatingName"],
+      "identity_field": "RatingModelId",
+      "effectivity": {"start": "DateFrom", "end": "DateTo"},
+      "source": "Configured target reference lookup: rating_models"
+    },
+    "rating_levels": {
+      "path": "/hcmRestApi/resources/11.13.18.05/ratingLevelsLOV",
+      "fields": ["RatingLevelId", "RatingLevelCode", "RatingModelId", "RatingModelCode", "RatingModelName", "RatingShortDescr", "NumericRating", "StarRating"],
+      "required_filters": ["RatingModelId"],
+      "filter_templates": {"RatingModelId": "RatingModelId={value}"},
+      "match_fields": ["RatingLevelId", "RatingLevelCode", "RatingShortDescr"],
+      "identity_field": "RatingLevelId",
+      "source": "Configured target reference lookup: rating_levels"
+    },
+    "content_items_for_section": {
+      "path": "/hcmRestApi/resources/11.13.18.05/contentItemsLov",
+      "fields": ["ContentItemId", "Name", "ItemDescription", "RatingModelId", "ContentSectionId", "ContentTypeName"],
+      "required_finder_arguments": ["TemplateSectionId", "DateFrom", "DateTo"],
+      "finder": "findContentItemsForTemplateSection;TemplateSectionId={TemplateSectionId},DateFrom={DateFrom},DateTo={DateTo}",
+      "match_fields": ["ContentItemId", "Name"],
+      "identity_field": "ContentItemId",
+      "source": "Configured target reference lookup: content_items_for_section"
+    },
+    "content_items_for_goal": {
+      "path": "/hcmRestApi/resources/11.13.18.05/contentItemsLov",
+      "fields": ["ContentItemId", "Name", "ItemDescription", "RatingModelId", "ContentSectionId", "ContentTypeName", "GoalSubType"],
+      "required_finder_arguments": ["ItemText9", "DateFrom", "DateTo"],
+      "allowed_finder_values": {"ItemText9": ["DEVELOPMENT", "PERFORMANCE"]},
+      "finder": "findActiveContentItemByDate;ContentTypeId=124,ItemText9={ItemText9},DateFrom={DateFrom},DateTo={DateTo}",
+      "match_fields": ["ContentItemId", "Name"],
+      "identity_field": "ContentItemId",
+      "source": "Configured target reference lookup: content_items_for_goal"
+    }
+  },
+  "setup_routes": {
+    "document_types": {
+      "path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceDocumentTypes",
+      "resource": "talentPerformanceDocumentTypes",
+      "metadata_route": "document_types_describe",
+      "provider_skill": "hcm.performance-management.performance-document-type.performance-document-types",
+      "provider_offering": "Performance Management",
+      "provider_task_code": "HRA_MANAGE_DOCUMENT_TYPES",
+      "provider_catalog_flags": {"export_import_supported": true, "csv_export_import_supported": true},
+      "duplicate_guard": {
+        "match_field": "DocumentTypeName",
+        "fields": ["DocumentTypeId", "DocumentTypeName", "DocumentTypeDescription", "DateFrom", "DateTo", "Status", "InUseFlag"]
+      },
+      "allowed_operations": {"create": "POST", "update": "PATCH", "delete": "DELETE"},
+      "identity_field": "DocumentTypeId"
+    },
+    "template_sections": {
+      "path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceTemplateSections",
+      "resource": "talentPerformanceTemplateSections",
+      "metadata_route": "template_sections_describe",
+      "provider_skill": "hcm.performance-management.performance-template-section.performance-template-sections",
+      "allowed_operations": {"create": "POST", "update": "PATCH", "delete": "DELETE"},
+      "identity_field": "SectionId"
+    },
+    "performance_roles": {
+      "path": "/hcmRestApi/resources/11.13.18.05/talentPerformanceRoles",
+      "resource": "talentPerformanceRoles",
+      "metadata_route": "performance_roles_describe",
+      "provider_skill": "hcm.performance-management.performance-role.performance-roles",
+      "allowed_operations": {"create": "POST", "update": "PATCH", "delete": "DELETE"},
+      "identity_field": "RoleId"
+    },
+    "review_periods": {
+      "path": "/hcmRestApi/resources/11.13.18.05/reviewPeriods",
+      "resource": "reviewPeriods",
+      "metadata_route": "review_periods_describe",
+      "provider_skill": "catalog:ORA_GOAL_MANAGEMENT/ORA_REVIEW_PERIOD/ORA_HRG_MANAGE_REVIEW_PERIODS",
+      "provider_offering": "Goal Management",
+      "provider_task_code": "ORA_HRG_MANAGE_REVIEW_PERIODS",
+      "provider_catalog_flags": {"export_import_supported": true, "csv_export_import_supported": true},
+      "duplicate_guard": {
+        "match_field": "ReviewPeriodName",
+        "fields": ["ReviewPeriodId", "ReviewPeriodName", "StartDate", "EndDate", "StatusCode", "InUseFlag"]
+      },
+      "allowed_operations": {"create": "POST", "update": "PATCH", "delete": "DELETE"},
+      "identity_field": "ReviewPeriodId"
+    }
+  }
+}

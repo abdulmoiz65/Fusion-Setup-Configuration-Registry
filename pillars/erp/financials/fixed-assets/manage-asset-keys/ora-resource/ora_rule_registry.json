@@ -1,0 +1,430 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "FA_MANAGE_ASSET_KEY",
+      "task_name": "Manage Asset Keys",
+      "start_node": "MAK.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "MAK.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MAK.RESOLVE_REFERENCES",
+            "invalid": "MAK.HANDLE_INPUT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Local checks of supplied identity, shape, formats and dates before reference discovery.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "required_skill_routes": [
+            {
+              "resolver": "resolve_asset_key_segment_values",
+              "skill_id": "erp.financials.fixed-assets.manage-fixed-assets-flexfield-value-sets",
+              "purpose": "Validate all KEY# segment values and dependent-parent mappings."
+            }
+          ],
+          "transitions": {
+            "resolved": "MAK.CHECK_DEPENDENCIES",
+            "unresolved_or_ambiguous": "MAK.HANDLE_LOOKUP"
+          },
+          "prerequisites": [
+            "MAK.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Obtain applicable current references after valid intake; record verified findings before dependency evaluation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MAK.RESOLVE_OPERATION",
+            "blocked_or_ambiguous": "MAK.HANDLE_DEPENDENCY"
+          },
+          "prerequisites": [
+            "MAK.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate applicable dependencies from current reference findings before defaults and design.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 119
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.RESOLVE_OPERATION",
+          "node_type": "decision",
+          "sequence": 35,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "create_new": "MAK.APPLY_DEFAULTS",
+            "update_existing": "MAK.APPLY_DEFAULTS",
+            "decision_required": "MAK.HANDLE_OPERATION_DECISION"
+          },
+          "prerequisites": [
+            "MAK.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Compare requested operation with exact existing-key evidence.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "MAK.ENFORCE_DESIGN"
+          },
+          "prerequisites": [
+            "MAK.RESOLVE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolved records contain defaultable technical fields.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "MAK.PREPARE_ARCHIVE",
+            "blocked": "MAK.HANDLE_DESIGN"
+          },
+          "prerequisites": [
+            "MAK.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation, dependencies, and defaults are complete.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.PREPARE_ARCHIVE",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "archive_preparation",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "MAK.IMPORT_GATE",
+            "blocked": "MAK.HANDLE_READINESS"
+          },
+          "prerequisites": [
+            "MAK.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify the completed validation sequence, then obtain and inspect the template/spec package for the immutable FSM artifact.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "validation-and-execution-boundary",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.IMPORT_GATE",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MAK.VALIDATED",
+            "incomplete": "MAK.HANDLE_READINESS"
+          },
+          "prerequisites": [
+            "MAK.PREPARE_ARCHIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only design validation and immutable archive preparation are complete. Approval is owned by the surrounding Data Loader workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.HANDLE_INPUT",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MAK.ISSUES"
+          },
+          "prerequisites": [
+            "MAK.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input is invalid.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.HANDLE_DEPENDENCY",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MAK.ISSUES"
+          },
+          "prerequisites": [
+            "MAK.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A dependency is blocked or ambiguous.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.HANDLE_OPERATION_DECISION",
+          "node_type": "step",
+          "sequence": 95,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "decision_requested": "MAK.OPERATION_DECISION_REQUIRED"
+          },
+          "prerequisites": [
+            "MAK.RESOLVE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Create request matches an existing exact key.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.OPERATION_DECISION_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 145,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MAK.HANDLE_OPERATION_DECISION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Await explicit user operation selection.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.HANDLE_LOOKUP",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MAK.ISSUES"
+          },
+          "prerequisites": [
+            "MAK.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A required reference cannot resolve.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.HANDLE_DESIGN",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MAK.ISSUES"
+          },
+          "prerequisites": [
+            "MAK.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A design rule blocks the request.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.HANDLE_READINESS",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MAK.ISSUES"
+          },
+          "prerequisites": [
+            "MAK.IMPORT_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation evidence or the artifact required at this stage is incomplete.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.VALIDATED",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MAK.IMPORT_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return validated_for_import for the current validation scope; no approval, submission or Fusion completion is implied.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MAK.ISSUES",
+          "node_type": "terminal",
+          "sequence": 140,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A request stopped for correction, dependency, lookup, design, approval, or process issue.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

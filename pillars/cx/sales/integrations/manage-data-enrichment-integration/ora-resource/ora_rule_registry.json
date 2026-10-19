@@ -1,0 +1,231 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_MANAGE_DATA_ENRICHMENT_INTEGRATION",
+      "task_name": "Manage Data Enrichment Integration",
+      "start_node": "DEI.SELECT_OPERATION",
+      "nodes": [
+        {
+          "id": "DEI.SELECT_OPERATION",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DEI.READINESS",
+            "invalid": "DEI.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Normalize the request to configure or check_status and reject secrets or unsupported mutations.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEI.READINESS",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "DEI.DESIGN_GATE",
+            "missing": "DEI.HANDLE_ERROR",
+            "unsupported": "DEI.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DEI.SELECT_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate only the dependencies applicable to the selected configure or check_status operation.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEI.DESIGN_GATE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "configure_ready": "DEI.DONE_GUIDANCE",
+            "status_ready": "DEI.READ_SMART_DATA",
+            "blocked": "DEI.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DEI.READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce credential, authentication, URL, and status-claim boundaries for the selected operation.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEI.READ_SMART_DATA",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "visible": "DEI.DONE_VISIBLE",
+            "not_visible": "DEI.DONE_NOT_VISIBLE",
+            "ambiguous": "DEI.HANDLE_ERROR",
+            "unauthorized": "DEI.HANDLE_ERROR",
+            "not_found": "DEI.HANDLE_ERROR",
+            "failed": "DEI.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DEI.DESIGN_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "operation=check_status and every prior gate passed.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEI.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "classified": "DEI.DONE_FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, dependency, design, lookup, authentication, transport, API, or scope failure occurs.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEI.DONE_GUIDANCE",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEI.DESIGN_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Configuration guidance and checklist are returned without entering credentials or changing Fusion.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEI.DONE_VISIBLE",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEI.READ_SMART_DATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One visible Smart Data configuration record is returned with qualified status fields.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEI.DONE_NOT_VISIBLE",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEI.READ_SMART_DATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The completed collection GET returns zero visible records and the result limitations are disclosed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DEI.DONE_FAILED",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DEI.HANDLE_ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A failure is classified and returned with redacted evidence and one safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

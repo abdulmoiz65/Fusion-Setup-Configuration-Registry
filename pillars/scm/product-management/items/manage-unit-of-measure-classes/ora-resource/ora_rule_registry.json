@@ -1,0 +1,207 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_MANAGE_UNIT_OF_MEASURE_CLASSES",
+      "task_name": "Manage Unit of Measure Classes",
+      "start_node": "UMC.VALIDATE",
+      "nodes": [
+        {
+          "id": "UMC.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "UMC.CHECK_PROBABLE_TYPO",
+            "invalid": "UMC.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Creation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UMC.CHECK_PROBABLE_TYPO",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "clear": "UMC.ASSESS_CLASS_SEMANTICS",
+            "candidate": "UMC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "UMC.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation after input shape validation and before any live lookup or preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UMC.ASSESS_CLASS_SEMANTICS",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "class_category": "UMC.FIND_EXISTING",
+            "individual_uom": "UMC.HANDLE_ISSUE",
+            "uncertain": "UMC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "UMC.CHECK_PROBABLE_TYPO"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation after probable-typo check",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UMC.FIND_EXISTING",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "not_found": "UMC.ENFORCE",
+            "found": "UMC.ENFORCE",
+            "ambiguous": "UMC.HANDLE_ISSUE",
+            "failed": "UMC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "UMC.ASSESS_CLASS_SEMANTICS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation after semantic class-role assessment",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UMC.ENFORCE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "create_allowed": "UMC.DONE",
+            "existing": "UMC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "UMC.FIND_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation after spelling, semantic, and exact class-code checks",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UMC.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Prior node reports invalid, probable typo, individual-unit, uncertain, ambiguous, existing, or failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "UMC.DONE",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "UMC.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creation passed all documented gates",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Error disclosure complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

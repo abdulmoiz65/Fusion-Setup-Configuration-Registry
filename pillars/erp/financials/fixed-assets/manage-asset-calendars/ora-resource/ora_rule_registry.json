@@ -1,0 +1,545 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "FA_MANAGE_CALENDAR",
+      "task_name": "Manage Asset Calendars",
+      "start_node": "CAL.CLASSIFY_REQUEST",
+      "nodes": [
+        {
+          "id": "CAL.CLASSIFY_REQUEST",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "explicit_reuse": "CAL.LOOKUP_EXISTING_REUSE",
+            "create_or_update": "CAL.VALIDATE_FISCAL_YEAR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Calendar request is received",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "fiscal-year-first-gate"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.LOOKUP_EXISTING_REUSE",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "match": "CAL.DONE_REUSE",
+            "absent_or_incomplete": "CAL.HANDLE_LOOKUP"
+          },
+          "prerequisites": [
+            "CAL.CLASSIFY_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An explicit reuse request names one Calendar",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "local-lookups"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.VALIDATE_FISCAL_YEAR",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "CAL.VALIDATE_INPUT",
+            "start_year_confirmation_required": "CAL.CONFIRM_NEAREST_START_YEAR",
+            "not_supplied": "CAL.DISCOVER_FISCAL_YEARS",
+            "invalid_or_unresolved": "CAL.HANDLE_DEPENDENCY"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Fiscal Year Name is supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "fiscal-year-first-gate"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.CONFIRM_NEAREST_START_YEAR",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "business_decision",
+          "execution_route": "local",
+          "transitions": {
+            "confirmed": "CAL.VALIDATE_INPUT",
+            "declined_or_unresolved": "CAL.HANDLE_DEPENDENCY"
+          },
+          "prerequisites": [
+            "CAL.VALIDATE_FISCAL_YEAR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact fiscal year exists but the requested Start Fiscal Year is unavailable",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "fiscal-year-first-gate"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.DISCOVER_FISCAL_YEARS",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "candidates_found": "CAL.CONFIRM_FISCAL_YEAR",
+            "no_qualifying_candidate": "CAL.HANDLE_INPUT",
+            "unresolved": "CAL.HANDLE_LOOKUP"
+          },
+          "prerequisites": [
+            "CAL.VALIDATE_FISCAL_YEAR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Fiscal Year Name is missing after the Input Preview",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "live-lookups"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.CONFIRM_FISCAL_YEAR",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "customer_decision",
+          "execution_route": "local",
+          "transitions": {
+            "candidate_selected": "CAL.VALIDATE_FISCAL_YEAR",
+            "another_exact_name_supplied": "CAL.VALIDATE_FISCAL_YEAR",
+            "fiscal_year_details_needed": "CAL.HANDLE_INPUT"
+          },
+          "prerequisites": [
+            "CAL.DISCOVER_FISCAL_YEARS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more qualifying Fiscal Years were found",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "input-preview-and-fiscal-year-selection"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CAL.RESOLVE_DEPENDENCIES",
+            "invalid": "CAL.HANDLE_INPUT"
+          },
+          "prerequisites": [
+            "CAL.VALIDATE_FISCAL_YEAR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Fiscal Year Name is validated or must be collected",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.RESOLVE_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CAL.LOOKUP_EXISTING",
+            "blocked": "CAL.HANDLE_DEPENDENCY"
+          },
+          "prerequisites": [
+            "CAL.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Valid input",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 122
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.LOOKUP_EXISTING",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "absent": "CAL.APPLY_DEFAULTS",
+            "match": "CAL.DONE_EXISTS",
+            "different": "CAL.DECIDE_UPDATE_OR_NEW",
+            "unresolved": "CAL.HANDLE_LOOKUP"
+          },
+          "prerequisites": [
+            "CAL.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependencies are ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.DECIDE_UPDATE_OR_NEW",
+          "node_type": "decision",
+          "sequence": 35,
+          "action_type": "customer_decision",
+          "execution_route": "local",
+          "transitions": {
+            "update_selected": "CAL.APPLY_DEFAULTS",
+            "create_new_selected": "CAL.VALIDATE_INPUT",
+            "unresolved": "CAL.HANDLE_LOOKUP"
+          },
+          "prerequisites": [
+            "CAL.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One complete existing calendar differs from the proposed definition",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "existing-calendar-lookup-outcomes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CAL.ENFORCE_DESIGN",
+            "blocked": "CAL.HANDLE_DEPENDENCY"
+          },
+          "prerequisites": [
+            "CAL.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "No equal existing calendar was found",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "CAL.IMPORT_GATE",
+            "blocked": "CAL.HANDLE_DESIGN"
+          },
+          "prerequisites": [
+            "CAL.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Defaults and lookup results are available",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.IMPORT_GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "CAL.HANDED_OFF_TO_PARENT",
+            "blocked": "CAL.HANDLE_APPROVAL"
+          },
+          "prerequisites": [
+            "CAL.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A reviewed package is proposed for import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.HANDLE_INPUT",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CAL.ISSUES"
+          },
+          "prerequisites": [
+            "CAL.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input is invalid",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.HANDLE_DEPENDENCY",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CAL.ISSUES"
+          },
+          "prerequisites": [
+            "CAL.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A prerequisite or required decision is unresolved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.HANDLE_LOOKUP",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CAL.ISSUES"
+          },
+          "prerequisites": [
+            "CAL.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Lookup evidence is missing, different, or ambiguous",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.HANDLE_DESIGN",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CAL.ISSUES"
+          },
+          "prerequisites": [
+            "CAL.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A design rule blocks the request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.HANDLE_APPROVAL",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CAL.ISSUES"
+          },
+          "prerequisites": [
+            "CAL.IMPORT_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Import approval is missing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.HANDED_OFF_TO_PARENT",
+          "node_type": "terminal",
+          "sequence": 170,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAL.IMPORT_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Calendar import is accepted — pending parent verification.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.DONE_EXISTS",
+          "node_type": "terminal",
+          "sequence": 121,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAL.LOOKUP_EXISTING"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Matching calendar already exists",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.DONE_REUSE",
+          "node_type": "terminal",
+          "sequence": 122,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CAL.LOOKUP_EXISTING_REUSE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Exact existing Calendar and complete linked rows are verified for reuse",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CAL.ISSUES",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any validation, lookup, dependency, design, or approval issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

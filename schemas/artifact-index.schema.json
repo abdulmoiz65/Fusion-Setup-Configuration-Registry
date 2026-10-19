@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fdos.oracle.example/schemas/artifact-index.schema.json",
+  "title": "Artifact Index",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["project_id", "updated_at", "artifacts"],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "project-artifact.schema.json"
+      }
+    }
+  }
+}

@@ -1,0 +1,255 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "MOT_MANAGE_TERRITORY_GEOGRAPHIES",
+      "task_name": "Manage Territory Geographies",
+      "start_node": "TG.INPUT",
+      "nodes": [
+        {
+          "id": "TG.INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TG.CSV",
+            "invalid": "TG.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate task source identity against the final core CX archive.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TG.CSV",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TG.DEPENDENCIES",
+            "invalid": "TG.ERROR"
+          },
+          "prerequisites": [
+            "TG.INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate final archive CSV headers, hierarchy and preserved values.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TG.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TG.UCM_METADATA",
+            "blocked": "TG.ERROR"
+          },
+          "prerequisites": [
+            "TG.CSV"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before Task Hook preview; native core preflight must already exist.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TG.UCM_METADATA",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "TG.DEFAULTS",
+            "mismatch": "TG.ERROR",
+            "failed": "TG.ERROR"
+          },
+          "prerequisites": [
+            "TG.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "During preapproval Task Hook validation; compare live metadata with core preflight.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TG.DEFAULTS",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "TG.DESIGN",
+            "invalid": "TG.ERROR"
+          },
+          "prerequisites": [
+            "TG.UCM_METADATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preview; retain core native routing and user-requested options.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TG.DESIGN",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "TG.PREFLIGHT",
+            "fail": "TG.ERROR"
+          },
+          "prerequisites": [
+            "TG.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preview; enforce new-record intent and native Data Loader execution ownership.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TG.PREFLIGHT",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "validated": "TG.READY",
+            "blocked": "TG.ISSUES"
+          },
+          "prerequisites": [
+            "TG.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All read-only checks have passed against the final core archive and preflight; approval is not yet required.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TG.ERROR",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "TG.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any preparation, task validation or core execution stage fails.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TG.READY",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TG.PREFLIGHT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validation is complete; Task Hook may build a preview for later core-owned approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TG.ISSUES",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Unresolved validation or workflow uncertainty blocks preview and submission.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

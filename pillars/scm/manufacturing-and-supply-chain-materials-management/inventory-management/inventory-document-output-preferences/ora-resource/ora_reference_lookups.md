@@ -1,0 +1,33 @@
+# Inventory Document Output Preferences Reference Lookups
+
+## Live Lookups
+
+| Resolver | Runs When | Source Values | Request Path or URL | Requested Fields | Match Rule | Values to Fill | If No Match or Many Matches |
+|---|---|---|---|---|---|---|---|
+| resolve_document_job_set | JobSetName or JobSetDisplayName is supplied | JobSetName, JobSetDisplayName | /fscmRestApi/resources/11.13.18.05/shippingDocumentJobSetsLOV | JobSetName, JobSetDisplayName, JobSetPackageName, Description, ProductCode | Trim outer whitespace and require exactly one case-insensitive exact match on supplied backend name or display name; both supplied values must identify the same row | JobSetName, JobSetPackageName, JobSetDescription: Description, ProductCode | Block preparation; do not select the first row or fuzzy-match |
+| resolve_document_job | JobName or JobDisplayName is supplied after job-set resolution | JobName, JobDisplayName, JobSetName, JobSetPackageName | /fscmRestApi/resources/11.13.18.05/shippingJobDefinitionsLOV | JobName, JobDisplayName, JobPackage, Description, ReportXDOPath, JobSetName, JobSetPackageName | Filter to the resolved job set and package; trim outer whitespace and require exactly one case-insensitive exact match on name or display name | JobName, JobPackageName: JobPackage, JobDescription: Description, ReportXDOPath | Block preparation; do not select the first row or fuzzy-match |
+| resolve_report_layout | JobLayout is supplied after ReportXDOPath resolution | JobLayout, ReportXDOPath | /fscmRestApi/resources/11.13.18.05/shippingReportLayoutsLOV | LayoutName, ReportXDOPath | Filter to the resolved report path and require exactly one trim-normalized, case-insensitive LayoutName match | JobLayout: LayoutName | Block preparation; do not select the first row or fuzzy-match |
+| resolve_report_format | JobFormat is supplied after JobLayout and ReportXDOPath resolution | JobFormat, JobLayout, ReportXDOPath | /fscmRestApi/resources/11.13.18.05/shippingReportFormatsLOV | Label, Name, ReportFormat, ReportTemplateId, ReportXDOPath | Filter to resolved layout and report path; require exactly one trim-normalized, case-insensitive match on Label, Name, or ReportFormat | JobFormat: ReportFormat | Block preparation; do not select the first row or fuzzy-match |
+| resolve_inventory_organization | OrganizationId, OrganizationCode, or OrganizationName is supplied | OrganizationId, OrganizationCode, OrganizationName | /fscmRestApi/resources/11.13.18.05/inventoryOrganizationsLOV | OrganizationId, OrganizationCode, OrganizationName, Status | Require exactly one trim-normalized, case-insensitive exact code or name match, or exact identifier match; supplied alternatives must identify the same row | OrganizationId, OrganizationCode, OrganizationName | Block preparation; do not select the first row or fuzzy-match |
+| resolve_active_subinventory | SubinventoryCode or SubinventoryName is supplied | SubinventoryCode, SubinventoryName, OrganizationId | /fscmRestApi/resources/11.13.18.05/activeSubinventories | SecondaryInventoryName, SubinventoryName, OrganizationId, OrganizationCode, DisableDate | Filter to the resolved OrganizationId and require exactly one trim-normalized, case-insensitive exact code or name match | SubinventoryCode: SecondaryInventoryName | Block preparation; do not select the first row or fuzzy-match |
+| resolve_worker | A line user is supplied | PersonId, PersonNumber, Username, DisplayName | /hcmRestApi/resources/11.13.18.05/workersLov | PersonId, PersonNumber, Username, DisplayName | Require exactly one trim-normalized, case-insensitive exact match on supplied person number, username, or display name, or exact PersonId match | UserId: PersonId, UserName: Username | Block preparation; do not select the first row or fuzzy-match |
+| resolve_job_role | A line role is supplied | RoleId, RoleCode, RoleName | /hcmRestApi/resources/11.13.18.05/rolesLOV | RoleId, RoleCode, RoleName, ActiveFlag, JobRole | Require exactly one trim-normalized, case-insensitive exact code or name match, or exact RoleId match; use only active job-role rows | RoleId, RoleName | Block preparation; do not select the first row or fuzzy-match |
+| resolve_printer | PrinterName is supplied | PrinterName | /fscmRestApi/resources/11.13.18.05/printersLOV | PrinterName | Require exactly one trim-normalized, case-insensitive exact PrinterName match | PrinterName | Block preparation; do not select the first row or fuzzy-match |
+| resolve_print_orientation | PrintOrientationCode or orientation meaning is supplied | PrintOrientationCode, PrintOrientation | /fscmRestApi/resources/11.13.18.05/standardLookupsLOV?q=LookupType='ORA_WSH_DOC_ORIENTATION'&fields=Meaning,LookupCode&onlyData=true | LookupCode, Meaning | Require exactly one trim-normalized, case-insensitive exact code or meaning match | PrintOrientationCode: LookupCode | Block preparation when no exact row is available |
+| resolve_print_side | PrintSideCode or side meaning is supplied | PrintSideCode, PrintSide | /fscmRestApi/resources/11.13.18.05/standardLookupsLOV?q=LookupType='ORA_WSH_DOC_PRINT_SIDE_TYPE'&fields=Meaning,LookupCode&onlyData=true | LookupCode, Meaning | Require exactly one trim-normalized, case-insensitive exact code or meaning match | PrintSideCode: LookupCode | Block preparation when no exact row is available |
+| resolve_email_server | EmailServerName is supplied | EmailServerName | /fscmRestApi/resources/11.13.18.05/shippingBIPEmailServersLOV | EmailServerName | Require exactly one trim-normalized, case-insensitive exact EmailServerName match | EmailServerName | Block preparation; do not select the first row or fuzzy-match |
+
+## Lookup Execution Rules
+
+| Situation | What Happens |
+|---|---|
+| A declared resolver is needed | Delegate the declared read-only GET through core.fusion-api.rest-api-client; that core capability owns OAuth, environment identity, and transport. |
+| A direct backend code is supplied | Validate the code through the same resolver before Data Loader preparation. |
+| A code and display value are supplied | Resolve both and block unless they identify the same single returned row. |
+| A lookup fails or is ambiguous | Stop before Data Loader preparation. Do not infer a value or route to direct REST write guidance. |
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| IDOP.RESOLVE_LOOKUPS | decision | 20 | reference_lookup | resolved->IDOP.APPLY_DEFAULT;not_required->IDOP.APPLY_DEFAULT;blocked->IDOP.HANDLE_ERROR;failure->IDOP.HANDLE_ERROR | IDOP.VALIDATE_INPUT | stop | Resolve each supplied LOV value using its declared resolver |

@@ -1,0 +1,229 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_VCS_CONFIG_SETTINGS",
+      "task_name": "Manage Supply Chain Collaboration Settings",
+      "start_node": "CCS.REFERENCE_PARAMETERS",
+      "nodes": [
+        {
+          "id": "CCS.REFERENCE_PARAMETERS",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CCS.VALIDATE_INPUT",
+            "missing": "CCS.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A setting update is prepared.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCS.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CCS.RESOLVE_DEPENDENCIES",
+            "invalid": "CCS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CCS.REFERENCE_PARAMETERS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A setting update is prepared.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCS.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "CCS.REVIEW_DEFAULT_BASELINE",
+            "blocked": "CCS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CCS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A setting update is prepared.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCS.REVIEW_DEFAULT_BASELINE",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "reviewed": "CCS.ENFORCE_DESIGN"
+          },
+          "prerequisites": [
+            "CCS.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A requested value is compared with the seed baseline; no missing Value is filled.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 211
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCS.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CCS.ALL_GOOD",
+            "blocked": "CCS.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CCS.REVIEW_DEFAULT_BASELINE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A setting update has passed validation and dependency readiness.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCS.HANDLE_ERROR",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "missing": "CCS.MISSING",
+            "invalid": "CCS.FAILED",
+            "failed": "CCS.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A prior task node reports a failure.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCS.ALL_GOOD",
+          "node_type": "terminal",
+          "sequence": 91,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCS.ENFORCE_DESIGN"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The setting request is validated and ready for its separate approval-gated import workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCS.MISSING",
+          "node_type": "terminal",
+          "sequence": 92,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCS.HANDLE_ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A required value or unique lookup result is missing.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCS.FAILED",
+          "node_type": "terminal",
+          "sequence": 93,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCS.HANDLE_ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation, dependency, design, or service processing failed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

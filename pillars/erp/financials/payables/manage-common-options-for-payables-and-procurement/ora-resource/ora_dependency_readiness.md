@@ -1,0 +1,38 @@
+# Manage Common Options for Payables and Procurement Dependency Readiness
+
+Validate package and target context before resolving conditional dependencies. Apply the local field checks, then use the governed Data Loader route for any later mutation.
+
+For the four supplemental REST resolvers, an availability warning bound under
+ora_reference_lookups.md permits continuation with the supplied CSV values.
+This exception takes precedence over their successful-receipt requirements
+below only when the API was inaccessible. It does not mark them satisfied or
+waive required inputs, BU/ledger identity, SOAP account validation, local rules
+or Data Loader checks. Missing or invalid evidence without a bound availability
+warning still requires resolution.
+
+## Dependency Rules
+
+| Dependency ID | Dependency | Mandatory | Applies When | Status | Value Source | Resolver | Why | User Guidance | Values to Fill |
+|---|---|---|---|---|---|---|---|---|---|
+| apco_package | Exact AP_FINANCIAL_SYS_PARAM package shape | Yes | Always | Verify | Same-task template and package metadata | | Local adapter shape check, not a lookup | Preserve template headers, 81-field rows, metadata node, and trailing blanks. | None; validate only. |
+| apco_bu_context | Selected enterprise and ERP-derived ledger | Yes | Every candidate row | Lookup | User input, fresh exact-task export, and ERP BU/ledger responses | resolve_bu_context_from_name | Candidate identity must follow the declared precedence and bound receipt | Supply BuName and optionally EnterpriseId; ask for EnterpriseId only if the defaulting rules cannot resolve it. Do not substitute SOBName. | EnterpriseId, SOBName; BU and ledger IDs in evidence. |
+| apco_business_unit | FSM business-unit resolution | Yes | Every candidate row | Verify | Derived BuName and EnterpriseId composite from the BU-context prerequisite | | OrgId resolution is performed inside the FSM import hook, not by a separately declared preflight resolver | Retain the validated composite; do not invent OrgId. Fusion remains authoritative for its internal resolution. | OrgId inside Fusion import only; no additional CSV field. |
+| apco_reference_set | Reference-set context | Conditional | SetCode supplied | Lookup | Bound current reference-set evidence | resolve_reference_set | Set must resolve non-null | Obtain exact set evidence; missing acquisition route/evidence leaves this validation incomplete. A bound additional REST availability warning permits continuation without marking the reference verified. | Validated SetCode; SetId in evidence. |
+| apco_bill_to_location | Bill-to location context | Conditional | Bill-to Location name supplied; or InternalLocationCode explicitly supplied after an HCM error | Lookup | HCM name-resolution and eligibility responses; FSCM code-resolution response only after an HCM access or endpoint error and explicit user-supplied code | resolve_bill_to_location | Use HCM for a name; require the selected record to be active, bill-to enabled, effective, and unambiguous. On HCM access or endpoint error, ask for InternalLocationCode before using FSCM. | Supply the location name normally. If asked because HCM is unavailable, provide the exact InternalLocationCode and, when needed to remove ambiguity, SetCode. A bound additional REST availability warning permits continuation without marking the reference verified. | InternalLocationCode, SetCode, EffectiveStartDate, EffectiveEndDate. |
+| apco_conversion_rate_type | Conversion-rate context | Conditional | Either user rate-type field supplied | Lookup | Current conversion-rate-type response | resolve_conversion_rate_type | Require an exact current match; response cardinality is not a gate | Supply a resolvable rate type. A bound additional REST availability warning permits continuation without marking the reference verified. | Validated supplied user rate-type field; internal type in evidence. |
+| apco_expense_accrual | Expense accrual option | Conditional | ExpenseAccrualCode supplied | Verify | User-approved fixed choices | validate_approved_option_choices | Require list membership without a live receipt | Choose a listed label or exact code. | Canonical ExpenseAccrualCode. |
+| apco_offset_method | Offset segment method | Conditional | LiabilityPostLookupCode supplied | Verify | User-approved fixed choices | validate_approved_option_choices | Require list membership without a live receipt | Choose a listed label or exact code; omit derived flags. | Canonical LiabilityPostLookupCode. |
+| apco_vat_country | VAT territory | Conditional | VatCountryCode supplied | Lookup | Bound current territory evidence | resolve_vat_country | Require an exact enabled, non-obsolete territory; response cardinality is not a gate | Obtain exact territory evidence; missing acquisition route/evidence leaves this validation incomplete. A bound additional REST availability warning permits continuation without marking the reference verified. | Validated VatCountryCode. |
+| apco_account_segments | Account combinations | Conditional | Any account-segment field supplied | Lookup | Governed read-only SOAP preflight receipt | validate_account_segments_read_only | Require a field/value/ledger-bound DynamicInsertion=No receipt | Disclose potential CCID creation during governed import; creation/import approval is separate from read-only validation. | Validated segment string and account result in evidence. |
+| apco_entity_field_rules | Fixed flags and gapless dependency | Conditional | Relevant field supplied | Verify | Adapter field rules, requested values, and fresh target row when needed | | Local flag, length, dependency, and derived-field checks | Enforce the two Y/N flags, Buying Company Identifier length and confirmed-Yes guardrail from ora_design_enforcement.md, and derived-field prohibition. | None beyond declared normalization; never enable gapless numbering automatically. |
+| apco_transport_sanity | Fields without field-specific import validation | Conditional | Any sanity-only field supplied | Verify | Adapter type/length/precision/date checks | | No proven field-specific semantic rule is required | Accept an in-range value or explicit optional clear; do not require a lookup, DFF receipt, fixed enum, or UI equivalence proof. | Preserve the supplied value. |
+| apco_target_context | Nonproduction target readiness | Yes | Before live validation or preview | Verify | Explicit selected nonproduction environment, fresh exact-task export, and validated BU context | | Local workflow gate; not an additional API resolver | Refresh target evidence; require no target row for declared first-time setup or one existing target for update. | Target and operation evidence only. |
+| apco_loader_authorization | Immutable preview and approval | Yes | Before mutation | Approval gate | core/data-loader immutable artifact, Task Hook preview, and contextual approval | | Mutations require the governed loader route | Do not submit from this task resource. | Approved immutable artifact references only. |
+
+`Verify` is local; `Lookup` permits only a declared read-only resolver after its prerequisites. A transport-sanity disclosure is not a blocker. `Approval gate` permits mutation only through `core/data-loader` after its immutable preview and contextual approval.
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| APCO.CHECK_DEPENDENCIES | decision | 30 | resolve_dependency | ready->APCO.APPLY_DEFAULTS;blocked->APCO.HANDLE_ERROR | APCO.RESOLVE_REFERENCES | stop | After package-shape validation |

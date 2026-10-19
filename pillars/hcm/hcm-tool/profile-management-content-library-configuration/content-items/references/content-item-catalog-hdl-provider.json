@@ -1,0 +1,397 @@
+{
+  "schema_version": "1.0",
+  "provider": "CATALOG_CONTENT_ITEM_V2_HDL",
+  "business_object": "ContentItem",
+  "task_code": "HRT_MANAGE_PROFILE_CONTENT_ITEMS",
+  "profile_mode": "enhanced",
+  "source_fusion_releases": [
+    "26C"
+  ],
+  "evidence_provider": "CATALOG_REST",
+  "readback_providers": [
+    "CATALOG_REST",
+    "ITEM_CATALOG_FSM_EXPORT"
+  ],
+  "user_key": [
+    "ContextName",
+    "ContentItemValueSetName",
+    "Name"
+  ],
+  "code_identity": [
+    "ContextName",
+    "ContentItemCode"
+  ],
+  "max_rows_per_package": 1,
+  "date_format": "YYYY/MM/DD",
+  "execution_route": "core.data-loader",
+  "mutation_boundary": "create-only-single-row",
+  "contexts": [
+    {
+      "context_name": "BEHAVIOR",
+      "template_id": 132,
+      "child_relation": "behaviorContentItems",
+      "release_source_file": "fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileContentLibrary/TemplateAttribute_TemplateAttribute_ORA_CONTENT_ITEM_BEHAVIORSSD.xml",
+      "release_template_context": "BEHAVIOR",
+      "lifecycle": {
+        "status": "verified",
+        "reason": "The enhanced-profile 26C BEHAVIOR provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "builder_route": "catalog-provider",
+      "row_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode",
+        "RatingModelCode"
+      ],
+      "required_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode",
+        "RatingModelCode"
+      ],
+      "fixed_values": {
+        "ContextName": "BEHAVIOR",
+        "ContentSupplierCode": "C",
+        "RatingModelCode": "PROFICIENCY"
+      },
+      "blocked_catalog_codes": [],
+      "ownership_restrictions": [
+        "This provider creates one catalog-bound Behavior item only; it does not create a Behavior relationship or alter a Content Section."
+      ]
+    },
+    {
+      "context_name": "CERTIFICATION",
+      "template_id": 103,
+      "child_relation": "certificationContentItems",
+      "release_source_file": "fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileContentLibrary/TemplateAttribute_TemplateAttribute_ORA_CONTENT_ITEM_CERTIFICATIONSSD.xml",
+      "release_template_context": "CERTIFICATION",
+      "lifecycle": {
+        "status": "verified",
+        "reason": "The enhanced-profile 26C CERTIFICATION provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "builder_route": "catalog-provider",
+      "row_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode"
+      ],
+      "required_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode"
+      ],
+      "fixed_values": {
+        "ContextName": "CERTIFICATION",
+        "ContentSupplierCode": "C"
+      },
+      "blocked_catalog_codes": [],
+      "ownership_restrictions": []
+    },
+    {
+      "context_name": "COMPETENCY",
+      "template_id": 104,
+      "child_relation": "competencyContentItems",
+      "release_source_file": "fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileContentLibrary/TemplateAttribute_TemplateAttribute_ORA_CONTENT_ITEM_COMPETENCIESSD.xml",
+      "release_template_context": "COMPETENCY",
+      "lifecycle": {
+        "status": "verified",
+        "reason": "The existing isolated Competency builder has controlled-load, exact readback, and duplicate-lock evidence."
+      },
+      "builder_route": "existing-competency-provider",
+      "row_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode",
+        "RatingModelCode"
+      ],
+      "required_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode",
+        "RatingModelCode"
+      ],
+      "fixed_values": {
+        "ContextName": "COMPETENCY"
+      },
+      "blocked_catalog_codes": [],
+      "ownership_restrictions": [
+        "Use prepare_profile_content_item_hdl_package.py; this catalog-provider builder must not replace the verified Competency package contract."
+      ]
+    },
+    {
+      "context_name": "DEGREE",
+      "template_id": 106,
+      "child_relation": "educationContentItems",
+      "release_source_file": "fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileContentLibrary/TemplateAttribute_TemplateAttribute_ORA_CONTENT_ITEM_DEGREESSD.xml",
+      "release_template_context": "DEGREE",
+      "lifecycle": {
+        "status": "verified",
+        "reason": "The enhanced-profile 26C DEGREE provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "builder_route": "catalog-provider",
+      "row_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode"
+      ],
+      "required_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode"
+      ],
+      "fixed_values": {
+        "ContextName": "DEGREE",
+        "ContentSupplierCode": "C"
+      },
+      "blocked_catalog_codes": [],
+      "ownership_restrictions": []
+    },
+    {
+      "context_name": "EDUCATION_LEVEL",
+      "template_id": 107,
+      "child_relation": "educationLevelContentItems",
+      "release_source_file": "fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileContentLibrary/TemplateAttribute_TemplateAttribute_ORA_CONTENT_ITEM_EDUCATION_LEVELSSD.xml",
+      "release_template_context": "EDUCATION_LEVEL",
+      "lifecycle": {
+        "status": "verified",
+        "reason": "The enhanced-profile 26C EDUCATION_LEVEL provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "builder_route": "catalog-provider",
+      "row_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode"
+      ],
+      "required_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode"
+      ],
+      "fixed_values": {
+        "ContextName": "EDUCATION_LEVEL",
+        "ContentSupplierCode": "C"
+      },
+      "blocked_catalog_codes": [],
+      "ownership_restrictions": []
+    },
+    {
+      "context_name": "EDUCATIONAL_ESTABLISHMENT",
+      "template_id": 135,
+      "child_relation": "establishmentContentItems",
+      "release_source_file": "fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileContentLibrary/TemplateAttribute_TemplateAttribute_ORA_CONTENT_ITEM_ESTABLISHMENTSSD.xml",
+      "release_template_context": "EDUCATIONAL_ESTABLISHMENT",
+      "lifecycle": {
+        "status": "blocked",
+        "reason": "Creation remains owned by HRT_MANAGE_EDUCATIONAL_ESTABLISHMENTS; a catalog read does not authorize a second ContentItem V2 creation route."
+      },
+      "builder_route": "blocked",
+      "row_fields": [],
+      "required_fields": [],
+      "fixed_values": {},
+      "blocked_catalog_codes": [],
+      "ownership_restrictions": [
+        "Use the Educational Establishments setup task and its reviewed provider boundary."
+      ]
+    },
+    {
+      "context_name": "HONOR",
+      "template_id": 108,
+      "child_relation": "honorContentItems",
+      "release_source_file": "fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileContentLibrary/TemplateAttribute_TemplateAttribute_ORA_CONTENT_ITEM_HONORSSD.xml",
+      "release_template_context": "HONOR",
+      "lifecycle": {
+        "status": "verified",
+        "reason": "The enhanced-profile 26C HONOR provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "builder_route": "catalog-provider",
+      "row_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode"
+      ],
+      "required_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode"
+      ],
+      "fixed_values": {
+        "ContextName": "HONOR",
+        "ContentSupplierCode": "C"
+      },
+      "blocked_catalog_codes": [],
+      "ownership_restrictions": [
+        "Release-seeded Honor codes and names must not be replaced."
+      ]
+    },
+    {
+      "context_name": "LANGUAGE",
+      "template_id": 109,
+      "child_relation": "languageContentItems",
+      "release_source_file": "fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileContentLibrary/TemplateAttribute_TemplateAttribute_ORA_CONTENT_ITEM_LANGUAGESSD.xml",
+      "release_template_context": "LANGUAGE",
+      "lifecycle": {
+        "status": "verified",
+        "reason": "The enhanced-profile 26C LANGUAGE provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "builder_route": "catalog-provider",
+      "row_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode",
+        "RatingModelCode"
+      ],
+      "required_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode",
+        "RatingModelCode"
+      ],
+      "fixed_values": {
+        "ContextName": "LANGUAGE",
+        "ContentSupplierCode": "C",
+        "RatingModelCode": "LANGUAGE"
+      },
+      "blocked_catalog_codes": [
+        "CVS_LANGUAGE_109"
+      ],
+      "ownership_restrictions": [
+        "Do not create in the Oracle-seeded Languages catalog or replace a release-seeded language code or name."
+      ]
+    },
+    {
+      "context_name": "MEMBERSHIP",
+      "template_id": 110,
+      "child_relation": "membershipContentItems",
+      "release_source_file": "fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileContentLibrary/TemplateAttribute_TemplateAttribute_ORA_CONTENT_ITEM_MEMBERSHIPSSD.xml",
+      "release_template_context": "MEMBERSHIP",
+      "lifecycle": {
+        "status": "verified",
+        "reason": "The enhanced-profile 26C MEMBERSHIP provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "builder_route": "catalog-provider",
+      "row_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode"
+      ],
+      "required_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode"
+      ],
+      "fixed_values": {
+        "ContextName": "MEMBERSHIP",
+        "ContentSupplierCode": "C"
+      },
+      "blocked_catalog_codes": [],
+      "ownership_restrictions": []
+    },
+    {
+      "context_name": "SKILL",
+      "template_id": 134,
+      "child_relation": "skillContentItems",
+      "release_source_file": null,
+      "release_template_context": null,
+      "lifecycle": {
+        "status": "blocked",
+        "reason": "No catalog-bound ContentItem V2 HDL template or positive live item sample was certified. This historical HDL blocker does not govern the separate Item Catalog new-set FSM capability."
+      },
+      "builder_route": "blocked",
+      "row_fields": [],
+      "required_fields": [],
+      "fixed_values": {},
+      "blocked_catalog_codes": [
+        "ORA_ORACLE_SKILLS_LIBRARY",
+        "ORA_CUSTOM_SKILLS_LIBRARY",
+        "ORA_LIGHTCAST_SKILLS_LIBRARY"
+      ],
+      "ownership_restrictions": [
+        "No HDL creation route is enabled. For a new custom SKILL catalog and items, use the separate certification-only Item Catalog new-set FSM contract; Skills Center configuration remains out of scope."
+      ]
+    },
+    {
+      "context_name": "PROJECT",
+      "template_id": 136,
+      "child_relation": "specialProjectContentItems",
+      "release_source_file": "fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileContentLibrary/TemplateAttribute_TemplateAttribute_ORA_CONTENT_ITEM_PROJECTSSD.xml",
+      "release_template_context": "PROJECT",
+      "lifecycle": {
+        "status": "verified",
+        "reason": "The enhanced-profile 26C PROJECT provider is verified by a controlled non-production load, exact REST and complete unfiltered Item Catalog export readback, and a duplicate rerun blocked before package creation; exact run identifiers remain in project evidence."
+      },
+      "builder_route": "catalog-provider",
+      "row_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode"
+      ],
+      "required_fields": [
+        "ContentItemCode",
+        "ContextName",
+        "ContentItemValueSetName",
+        "Name",
+        "DateFrom",
+        "ContentSupplierCode"
+      ],
+      "fixed_values": {
+        "ContextName": "PROJECT",
+        "ContentSupplierCode": "C"
+      },
+      "blocked_catalog_codes": [],
+      "ownership_restrictions": [
+        "This route creates one catalog-bound Projects item only; it does not create a free-form Special Projects profile entry."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,377 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_EVENT_NOTIFICATION_RULES_AND_TEMPLATES_SET",
+      "task_name": "Event Notification Rules and Templates Set",
+      "start_node": "NOTIFICATION.LIST",
+      "nodes": [
+        {
+          "id": "NOTIFICATION.LIST",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "NOTIFICATION.DONE",
+            "detail_requested": "NOTIFICATION.DETAIL",
+            "empty": "NOTIFICATION.EMPTY",
+            "issues": "NOTIFICATION.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Listing notification templates",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTIFICATION.DETAIL",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "NOTIFICATION.DETAIL_DONE",
+            "issues": "NOTIFICATION.ISSUES"
+          },
+          "prerequisites": [
+            "NOTIFICATION.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Showing details for one identified notification template and its children",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTIFICATION.DONE",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "NOTIFICATION.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The notification-template lookup returned one or more rows",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTIFICATION.DETAIL_DONE",
+          "node_type": "terminal",
+          "sequence": 25,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "NOTIFICATION.DETAIL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The notification-template detail lookup returned the identified template and its children",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTIFICATION.EMPTY",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "NOTIFICATION.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The notification-template lookup returned no rows",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTIFICATION.ISSUES",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The notification-template lookup failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "CUSTOM_MANAGE_SUBSCRIPTION_PROFILES",
+      "task_name": "Manage Subscription Profiles",
+      "start_node": "SUBPROFILE.LIST",
+      "nodes": [
+        {
+          "id": "SUBPROFILE.LIST",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "SUBPROFILE.BILL_SERVICE",
+            "empty": "SUBPROFILE.EMPTY",
+            "issues": "SUBPROFILE.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Listing subscription profiles or reviewing an exact supplied profile name",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SUBPROFILE.BILL_SERVICE",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SUBPROFILE.DONE",
+            "skipped": "SUBPROFILE.DONE",
+            "issues": "SUBPROFILE.ISSUES"
+          },
+          "prerequisites": [
+            "SUBPROFILE.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolving the Bill Service display value for each returned profile with a nonblank BillService code",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SUBPROFILE.DONE",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SUBPROFILE.BILL_SERVICE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The profile lookup returned one or more rows and their Bill Service values were resolved or skipped when blank",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SUBPROFILE.EMPTY",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SUBPROFILE.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The profile lookup returned no rows",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SUBPROFILE.ISSUES",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The profile lookup failed or an exact name was ambiguous",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "CUSTOM_MANAGE_SUBSCRIPTION_VALIDATIONS",
+      "task_name": "Manage Subscription Validations",
+      "start_node": "SUBVALID.LIST",
+      "nodes": [
+        {
+          "id": "SUBVALID.LIST",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "returned": "SUBVALID.DONE",
+            "empty": "SUBVALID.EMPTY",
+            "issues": "SUBVALID.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Listing or reviewing subscription validations",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SUBVALID.DONE",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SUBVALID.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The validation lookup returned one or more rows",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SUBVALID.EMPTY",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SUBVALID.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The validation lookup returned no rows",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SUBVALID.ISSUES",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The validation lookup failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

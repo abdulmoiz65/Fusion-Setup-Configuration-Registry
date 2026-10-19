@@ -1,0 +1,2 @@
+PartySourceSystem,PartySourceSystemReferenceValue,TeamMemberId,ResourceId,AccessLevelCode,LockAssignmentFlag,SalesProfileId,PartyNumber,MemberFunctionCode,AssignmentTypeCode,StartDateActive,EndDateActive,CurrencyCode,ResourcePartyNumber,ResourceEmailAddress,OwnerFlag,PartyId
+PartySourceSystem,PartySourceSystemReferenceValue,Sales Account Resource ID,Resource ID,Access,Locked,Sales Account ID,PartyNumber,Function,Assignment Type,Start Date,Archived Date,Currency Code,Resource Party Number,Resource Email,Owner,PartyId

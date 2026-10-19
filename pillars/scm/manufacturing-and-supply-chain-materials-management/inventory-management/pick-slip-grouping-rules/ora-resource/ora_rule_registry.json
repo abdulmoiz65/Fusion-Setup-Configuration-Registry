@@ -1,0 +1,108 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PICK_SLIP_GROUPING_RULES",
+      "task_name": "Pick Slip Grouping Rules",
+      "start_node": "PICKSLIPGROUPING.NORMALIZE_INPUT",
+      "nodes": [
+        {
+          "id": "PICKSLIPGROUPING.NORMALIZE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PICKSLIPGROUPING.CHECK_HANDOFF_READINESS",
+            "clarification_required": "PICKSLIPGROUPING.RETURN_ISSUES",
+            "invalid": "PICKSLIPGROUPING.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every task-routed request with supplied grouping options, catalog value, or active dates.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PICKSLIPGROUPING.CHECK_HANDOFF_READINESS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PICKSLIPGROUPING.DATALOADER_HANDOFF",
+            "blocked": "PICKSLIPGROUPING.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PICKSLIPGROUPING.NORMALIZE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Local normalization and any required date clarification have completed.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PICKSLIPGROUPING.DATALOADER_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PICKSLIPGROUPING.CHECK_HANDOFF_READINESS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Local normalization and readiness checks passed; hand off the normalized source to core.data-loader for its governed validation, approval, and import workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PICKSLIPGROUPING.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any local input validation, clarification, or handoff-readiness condition is blocked.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

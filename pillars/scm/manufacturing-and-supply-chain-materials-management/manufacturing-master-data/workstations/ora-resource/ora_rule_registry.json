@@ -1,0 +1,133 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_WIS_WORKSTATIONS",
+      "task_name": "Workstations",
+      "start_node": "WORKSTATIONS.VALIDATE_DOCUMENTED_HEADERS",
+      "nodes": [
+        {
+          "id": "WORKSTATIONS.VALIDATE_DOCUMENTED_HEADERS",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "WORKSTATIONS.FSM_PREPARE",
+            "incomplete": "WORKSTATIONS.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "When assessing Workstations CSV template input using the supplied evidence manifest.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WORKSTATIONS.FSM_PREPARE",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "WORKSTATIONS.DESIGN_CREATE_CONTRACT",
+            "missing": "WORKSTATIONS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WORKSTATIONS.VALIDATE_DOCUMENTED_HEADERS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before an FSM Workstations package is prepared or imported.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WORKSTATIONS.DESIGN_CREATE_CONTRACT",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "WORKSTATIONS.DONE",
+            "failure": "WORKSTATIONS.RETURN_ISSUES",
+            "incomplete": "WORKSTATIONS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WORKSTATIONS.FSM_PREPARE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "When source-backed Workstation creation checks can be evaluated.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WORKSTATIONS.DONE",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WORKSTATIONS.DESIGN_CREATE_CONTRACT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The documented input and design checks pass. This terminal does not authorize FSM package assembly or a Fusion write.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WORKSTATIONS.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A validation or design check fails, or a required FSM contract remains undocumented.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

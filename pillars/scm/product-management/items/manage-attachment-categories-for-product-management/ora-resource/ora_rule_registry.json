@@ -1,0 +1,107 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_EGP_MANAGE_ATTACH_CAT_FOR_PIM",
+      "task_name": "Manage Attachment Categories for Product Management",
+      "start_node": "VALIDATE_ATTACHMENT_CATEGORY_INPUTS",
+      "nodes": [
+        {
+          "id": "VALIDATE_ATTACHMENT_CATEGORY_INPUTS",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid_or_default_approved": "APPLY_PRODUCT_MODEL_DEFAULTS",
+            "missing_or_invalid_or_default_rejected": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "After the skill's New Category Preflight confirms the Category Name is available; default an omitted Entity Name to ITEM_ENTITY and wait for user approval before passing validation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPLY_PRODUCT_MODEL_DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "RETURN_SUCCESS",
+            "preserved": "RETURN_SUCCESS"
+          },
+          "prerequisites": [
+            "VALIDATE_ATTACHMENT_CATEGORY_INPUTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After category availability and input validation pass",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 14
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "APPLY_PRODUCT_MODEL_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All checks pass, including approval when Entity Name was defaulted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Local input validation or approval fails after the skill's preflight",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

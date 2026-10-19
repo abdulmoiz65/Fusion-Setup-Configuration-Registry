@@ -1,0 +1,231 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_FOS_DEFINE_TRANSFER_PRICING_RULES_NEW",
+      "task_name": "Transfer Pricing Rules",
+      "start_node": "TPR.CONFIRM_BO_CONTRACT",
+      "nodes": [
+        {
+          "id": "TPR.CONFIRM_BO_CONTRACT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TPR.VALIDATE_INPUT",
+            "incomplete": "TPR.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every create or update request, including ordinary updates, InsertRecord, and EndDate",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPR.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid_create": "TPR.ENFORCE_DESIGN",
+            "valid_update": "TPR.FIND_RULE_BY_NAME",
+            "invalid": "TPR.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "TPR.CONFIRM_BO_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After the current create or update contract is confirmed",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPR.FIND_RULE_BY_NAME",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TPR.ENFORCE_UPDATE_DESIGN",
+            "not_found": "TPR.HANDLE_ISSUE",
+            "ambiguous": "TPR.HANDLE_ISSUE",
+            "lookup_failed": "TPR.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "TPR.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An existing Transfer Pricing Rule is updated by name",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPR.ENFORCE_DESIGN",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "TPR.DONE_READY",
+            "blocked": "TPR.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "TPR.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Transfer Pricing Rule create request is validated",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPR.ENFORCE_UPDATE_DESIGN",
+          "node_type": "step",
+          "sequence": 35,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "TPR.DONE_UPDATE_READY",
+            "blocked": "TPR.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "TPR.FIND_RULE_BY_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Transfer Pricing Rule update request is validated and the target PricingId is resolved",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPR.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "TPR.DONE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, readiness, or design rule returns a blocker",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPR.DONE_READY",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TPR.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation and design enforcement pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPR.DONE_UPDATE_READY",
+          "node_type": "terminal",
+          "sequence": 55,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TPR.ENFORCE_UPDATE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Update validation, target resolution, and design enforcement pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TPR.DONE_ISSUES",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TPR.HANDLE_ISSUE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An issue has been classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

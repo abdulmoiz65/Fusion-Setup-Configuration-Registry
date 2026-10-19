@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fdos.oracle.example/schemas/setup-task.schema.json",
+  "title": "Setup Task",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "name", "pillar", "offering", "execution_mode"],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "skill_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$"
+    },
+    "skill_path": {
+      "type": "string"
+    },
+    "pillar": {
+      "type": "string",
+      "enum": ["ERP", "HCM", "SCM", "CX", "Common"]
+    },
+    "offering": {
+      "type": "string"
+    },
+    "functional_area": {
+      "type": "string"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "depends_on": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "execution_mode": {
+      "type": "string",
+      "enum": ["advisory", "assisted", "automated", "hybrid"]
+    },
+    "load_method": {
+      "type": "string",
+      "enum": ["fsm_csv", "rest_api", "fbdi", "hdl", "manual", "not_applicable"]
+    }
+  }
+}

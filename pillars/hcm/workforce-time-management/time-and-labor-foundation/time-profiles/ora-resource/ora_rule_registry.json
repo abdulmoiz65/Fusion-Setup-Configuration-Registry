@@ -1,0 +1,963 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "SUPPLEMENTAL_TIME_PROFILES",
+      "task_name": "Time Profiles",
+      "start_node": "TP.INPUT",
+      "nodes": [
+        {
+          "id": "TP.INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TP.FEATURE_AVAILABILITY",
+            "missing": "TP.ERROR",
+            "invalid": "TP.ERROR",
+            "unsupported": "TP.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Time Profiles request; when a Time Profile may be needed, derive the intended population, required Layout Set, required Time Card Period, and applicable optional processing configuration from the plain-language requirement before continuing",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 143
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.FEATURE_AVAILABILITY",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "enabled": "TP.FIND_PROFILE",
+            "not_enabled": "TP.ERROR",
+            "unavailable": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify Enable Time Profile through verify_time_profile_feature_enabled before any Time Profiles activity",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.FIND_PROFILE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.READ",
+            "listed": "TP.DONE_READ",
+            "reuse_decision_required": "TP.ERROR",
+            "not_applicable": "TP.READ",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.FEATURE_AVAILABILITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search or browse Time Profiles through search_time_profiles. For a name search, retrieve all 25-record pages and apply case-insensitive contains matching to ProfileName; fetch the one match when exactly one exists, otherwise display every match and require selection. For a browse request, return all business results. When a create request has no exact name match, run find_similar_time_profiles_for_reuse and require the user's reuse-or-create decision before proceeding.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.READ",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.PERIOD",
+            "not_applicable": "TP.PERIOD",
+            "not_found": "TP.ERROR",
+            "mismatched": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.FIND_PROFILE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Load fresh state through read_worker_time_profile when an existing profile operation requires it. For update or correction, also retrieve and display effective-dated history and current group assignments through read_time_profile_history as non-blocking impact information.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.PERIOD",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.LAYOUT",
+            "not_applicable": "TP.LAYOUT",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search Time Card Period or Overtime Period through resolve_time_card_period and present available or closest choices",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.LAYOUT",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.CONSUMER",
+            "not_applicable": "TP.CONSUMER",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.PERIOD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search Layout Set through resolve_time_card_layout_set and present available or closest choices",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.CONSUMER",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.PAYROLL",
+            "not_applicable": "TP.PAYROLL",
+            "stale": "TP.ERROR",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.LAYOUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search Consumer Set through resolve_time_consumer_set with only RepeatingTimePeriodId in finder and a Name contains filter in q; present similar same-period choices only for user selection",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 112
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.PAYROLL",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.ONCALL_CATEGORY",
+            "not_applicable": "TP.ONCALL_CATEGORY",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.CONSUMER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Payroll Elements through resolve_payroll_time_type using a broad Payroll Time Type finder SearchTerm, then require a normalized exact result or user selection from similar values before splitting its Code into LDGId and PayrollTimeTypeCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 113
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.ONCALL_CATEGORY",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.CALENDAR_CATEGORY",
+            "not_applicable": "TP.CALENDAR_CATEGORY",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.PAYROLL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search on-call Time Category through resolve_on_call_time_category and present available or closest choices",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 114
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.CALENDAR_CATEGORY",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.YES_NO",
+            "not_applicable": "TP.YES_NO",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.ONCALL_CATEGORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search Calendar Event Category through resolve_calendar_event_category and present available or closest choices",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 115
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.YES_NO",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.RULE_SET",
+            "not_applicable": "TP.RULE_SET",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.CALENDAR_CATEGORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search Include Ineligible Pattern Days through resolve_yes_no_lookup and present available or closest choices",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 116
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.RULE_SET",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.MAPPING_SET",
+            "not_applicable": "TP.MAPPING_SET",
+            "expired": "TP.ERROR",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.YES_NO"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve each applicable Rule Set through resolve_workforce_rule_set using its required RuleType, current-date eligibility, and caller-supplied bounded RuleSetName search text; present eligible or closest choices when selection is required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 117
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.MAPPING_SET",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.EXPORT_DEF",
+            "not_applicable": "TP.EXPORT_DEF",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.RULE_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search the active Time Device Event Mapping Set selector through resolve_time_device_mapping_set and present eligible Mapping Set choices",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 118
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.EXPORT_DEF",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.TIME_ATTRIBUTE",
+            "not_applicable": "TP.TIME_ATTRIBUTE",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.MAPPING_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search Export Data through resolve_time_device_export_definition and present available or closest choices",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 119
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.TIME_ATTRIBUTE",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.AUDIT_MODE",
+            "not_applicable": "TP.AUDIT_MODE",
+            "too_many": "TP.ERROR",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.EXPORT_DEF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search ordered Time Attributes through resolve_time_attribute_field and present available or closest choices",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 120
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.AUDIT_MODE",
+          "node_type": "decision",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.ATTESTATION",
+            "not_applicable": "TP.ATTESTATION",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.TIME_ATTRIBUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search Change Audit mode through resolve_change_audit_mode and present available or closest choices",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 121
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.ATTESTATION",
+          "node_type": "decision",
+          "sequence": 17,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.GEOFENCE_MODE",
+            "not_applicable": "TP.GEOFENCE_MODE",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.AUDIT_MODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search Attestation Set through resolve_attestation_set and present available or closest choices",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 122
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.GEOFENCE_MODE",
+          "node_type": "decision",
+          "sequence": 18,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.GROUP",
+            "not_applicable": "TP.GROUP",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.ATTESTATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search geofencing Validation Mode through resolve_geofence_validation_mode and present available or closest choices",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 123
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.GROUP",
+          "node_type": "decision",
+          "sequence": 19,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TP.ASSIGN_VALIDATE",
+            "not_applicable": "TP.ASSIGN_VALIDATE",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.GEOFENCE_MODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Group Name through resolve_hcm_group using the documented bounded GroupName contains search; retain GrpId as ObjectId and preserve the returned GroupName and AssignmentToUseCd as selection evidence",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 124
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.ASSIGN_VALIDATE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "TP.DEPENDENCIES",
+            "not_applicable": "TP.DEPENDENCIES",
+            "messages": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.GROUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate assignments through validate_profile_assignments",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 125
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 21,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TP.DEFAULTS",
+            "not_required": "TP.DEFAULTS",
+            "needs_input": "TP.ERROR",
+            "unresolved": "TP.ERROR",
+            "blocked": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.ASSIGN_VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After all applicable identity, reference, assignment-validation, selected-feature prerequisites, and Data Loader provider requirements complete; the metadata preflight is evaluated before DAT creation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 22,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "TP.DESIGN",
+            "preserved": "TP.DESIGN",
+            "not_required": "TP.DESIGN",
+            "blocked": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation and all applicable resolvers complete",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.DESIGN",
+          "node_type": "decision",
+          "sequence": 23,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "TP.DATALOADER_METADATA",
+            "not_required": "TP.DATALOADER_METADATA",
+            "blocked": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation, reference resolution, all selected-feature prerequisite checks, defaults, and Complete Summary generation complete",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 164
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.DATALOADER_METADATA",
+          "node_type": "decision",
+          "sequence": 24,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "TP.ROUTE",
+            "not_applicable": "TP.ROUTE",
+            "missing": "TP.ERROR",
+            "stale": "TP.ERROR",
+            "mismatched": "TP.ERROR",
+            "failed": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before any Data Loader DAT is created, review the selected task guidance and fresh live timeProfiles Data Loader sample headers and attribute details through review_time_profiles_dataloader_metadata",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 126
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.ROUTE",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read_complete": "TP.DONE_READ",
+            "mutation_ready": "TP.PROVIDER_SUBMISSION",
+            "mutation_blocked": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.DATALOADER_METADATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select read-only completion or the provider-owned approved mutation handoff after the required Data Loader metadata preflight passes",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 146
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.DONE_READ",
+          "node_type": "terminal",
+          "sequence": 27,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TP.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Requested read, history, or validation completed without a configuration change",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 150
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.PROVIDER_SUBMISSION",
+          "node_type": "decision",
+          "sequence": 28,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "accepted": "TP.FINAL_STATUS",
+            "not_accepted": "TP.ERROR",
+            "approval_invalidated": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Route normalized verified fields to core.data-loader for DAT generation, immutable archive validation, preview, approval, and one submission; proceed only when the provider reports that the approved asynchronous request was accepted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 147
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.FINAL_STATUS",
+          "node_type": "decision",
+          "sequence": 29,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "terminal_success": "TP.VERIFY_SUBMISSION",
+            "failed": "TP.ERROR",
+            "timed_out": "TP.ERROR",
+            "partial": "TP.ERROR",
+            "uncertain": "TP.ERROR",
+            "not_available": "TP.ERROR",
+            "unsupported": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.PROVIDER_SUBMISSION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Start task-authorized provider status monitoring immediately after approved asynchronous submission is accepted and follow the documented provider flow until its terminal result",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 127
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.VERIFY_SUBMISSION",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "TP.PARENT_CONTEXT",
+            "verification_mismatch": "TP.ERROR",
+            "selection_required": "TP.ERROR",
+            "failed": "TP.ERROR",
+            "provider_gap": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.FINAL_STATUS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read back the terminal-success Time Profile and verify all persisted supported approved values, applied defaults, and selected features through verify_submitted_time_profile",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 128
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.PARENT_CONTEXT",
+          "node_type": "decision",
+          "sequence": 31,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "standalone": "TP.DONE_MUTATION",
+            "parent_ready": "TP.RESUME_PROMPT",
+            "ambiguous_context": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.VERIFY_SUBMISSION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Identify a parent only from exactly one current active documented workflow that explicitly establishes this task as its prerequisite",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 129
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.RESUME_PROMPT",
+          "node_type": "decision",
+          "sequence": 32,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "awaiting_confirmation": "TP.AWAITING_RESUME_CONFIRMATION",
+            "confirmed": "TP.RESUME_REQUESTED",
+            "approval_invalidated": "TP.ERROR"
+          },
+          "prerequisites": [
+            "TP.PARENT_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Present exactly: Would you like to resume {parent workflow}? On confirmation, return resume_requested with the retained parent identity and safe resume stage; never start the parent here",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 148
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.DONE_MUTATION",
+          "node_type": "terminal",
+          "sequence": 33,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TP.PARENT_CONTEXT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Verified standalone configuration: submission accepted, terminal success status, and persisted supported approved values verified; no dependent workflow exists",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 151
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.AWAITING_RESUME_CONFIRMATION",
+          "node_type": "terminal",
+          "sequence": 34,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TP.RESUME_PROMPT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Prerequisite verified and ready to resume one documented parent workflow; the resume prompt is awaiting user confirmation and the parent has not started or been resubmitted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 152
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.RESUME_REQUESTED",
+          "node_type": "terminal",
+          "sequence": 35,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TP.RESUME_PROMPT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return resume_requested with retained parent identity and safe resume stage; the parent workflow has not started or been resubmitted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 153
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.ERROR",
+          "node_type": "step",
+          "sequence": 36,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "stopped": "TP.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any prior node returns missing, invalid, unsupported, unresolved, selection_required, ambiguous, blocked, failed, partial, timed-out, stale, mismatched, uncertain, unavailable, or provider_gap",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 149
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TP.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 37,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request cannot safely continue without correction, provider reconciliation, or documented read-back verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 154
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

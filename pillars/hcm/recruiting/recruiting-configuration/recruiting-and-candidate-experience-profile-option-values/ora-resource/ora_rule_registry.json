@@ -1,0 +1,586 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_MANAGE_RECRUITING_AND_CANDIDATE_EXPERIENCE_PROFILE_OPTION_VALUES",
+      "task_name": "Recruiting and Candidate Experience Profile Option Values",
+      "start_node": "RPO.VALIDATE",
+      "nodes": [
+        {
+          "id": "RPO.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "effective": "RPO.CHECK_EVIDENCE",
+            "definition": "RPO.CHECK_EVIDENCE",
+            "configured": "RPO.CHECK_EVIDENCE",
+            "create": "RPO.CHECK_EVIDENCE",
+            "update": "RPO.CHECK_EVIDENCE",
+            "delete": "RPO.CHECK_EVIDENCE",
+            "post_change": "RPO.VERIFY_VALUE",
+            "issues": "RPO.INPUT_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Recruiting and Candidate Experience Profile Option Values request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.CHECK_EVIDENCE",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "effective": "RPO.READ_EFFECTIVE",
+            "exact": "RPO.MATCH_OWNERSHIP",
+            "blocked": "RPO.EVIDENCE_ISSUES"
+          },
+          "prerequisites": [
+            "RPO.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Ownership and scope dependencies must be evaluated before profile reads or mutations",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.READ_EFFECTIVE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "RPO.MATCH_OWNERSHIP",
+            "issues": "RPO.LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "RPO.CHECK_EVIDENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Effective profile values are requested for the authenticated current session",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 137
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.MATCH_OWNERSHIP",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "effective_review": "RPO.DONE_EFFECTIVE",
+            "exact": "RPO.READ_DEFINITION",
+            "blocked": "RPO.OWNERSHIP_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Profile identities must be matched to one approved current crosswalk row",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 138
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.READ_DEFINITION",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "definition_review": "RPO.DONE_DEFINITION",
+            "configured": "RPO.RESOLVE_SCOPE",
+            "create": "RPO.RESOLVE_SCOPE",
+            "update": "RPO.RESOLVE_SCOPE",
+            "delete": "RPO.RESOLVE_SCOPE",
+            "issues": "RPO.LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "RPO.MATCH_OWNERSHIP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An exact approved definition and current level metadata are required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 139
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.RESOLVE_SCOPE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "RPO.DONE_CONFIGURED",
+            "create": "RPO.ENFORCE",
+            "update": "RPO.ENFORCE",
+            "delete": "RPO.ENFORCE",
+            "issues": "RPO.LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "RPO.READ_DEFINITION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Site, Product, or User configured-value scope and current state are required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 140
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.ENFORCE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "create": "RPO.PREVIEW",
+            "update": "RPO.PREVIEW",
+            "delete": "RPO.PREVIEW",
+            "blocked": "RPO.DESIGN_ISSUES"
+          },
+          "prerequisites": [
+            "RPO.RESOLVE_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A configured-value mutation has exact approved ownership, current definition, level capability, scope, and state evidence",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.PREVIEW",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved_create": "RPO.READY_CREATE",
+            "approved_update": "RPO.READY_UPDATE",
+            "approved_delete": "RPO.READY_DELETE",
+            "missing": "RPO.APPROVAL_ISSUES"
+          },
+          "prerequisites": [
+            "RPO.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported configured-value mutation has a complete immutable preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.VERIFY_VALUE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "RPO.DONE_CHANGE",
+            "mismatch": "RPO.POST_CHANGE_ISSUES",
+            "uncertain": "RPO.POST_CHANGE_ISSUES"
+          },
+          "prerequisites": [
+            "RPO.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A delegated configured-value mutation requires fresh exact verification",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 141
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.INPUT_ISSUES",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RPO.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Business intake, exact identity, environment, level, scope, operation, or delta is incomplete or ambiguous",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.EVIDENCE_ISSUES",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RPO.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Required baseline, crosswalk, definition, scope, current-value, or verification dependency is unavailable",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.OWNERSHIP_ISSUES",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RPO.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Exact ProfileOptionName ownership cannot be established from the approved crosswalk and complete baseline",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.LOOKUP_ISSUES",
+          "node_type": "step",
+          "sequence": 13,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RPO.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Effective-value, definition, configured-item, Product scope, User identity, or verification resolution fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.DESIGN_ISSUES",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RPO.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Definition boundary, level capability, scope, preservation, sensitive-data, or route enforcement fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.APPROVAL_ISSUES",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RPO.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Exact immutable approval is absent or stale",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.POST_CHANGE_ISSUES",
+          "node_type": "step",
+          "sequence": 16,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RPO.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Post-mutation verification is missing, mismatched, or uncertain",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.DONE_EFFECTIVE",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RPO.MATCH_OWNERSHIP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Current-session Recruiting-owned effective-value review is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.DONE_DEFINITION",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RPO.READ_DEFINITION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact approved profile-definition review is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.DONE_CONFIGURED",
+          "node_type": "terminal",
+          "sequence": 19,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RPO.RESOLVE_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact approved configured-value review is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.READY_CREATE",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RPO.PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact approval authorizes one delegated configured-value create followed by fresh verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.READY_UPDATE",
+          "node_type": "terminal",
+          "sequence": 21,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RPO.PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact approval authorizes one delegated configured-value update followed by fresh verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.READY_DELETE",
+          "node_type": "terminal",
+          "sequence": 22,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RPO.PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact approval authorizes one delegated configured-value delete followed by fresh verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.DONE_CHANGE",
+          "node_type": "terminal",
+          "sequence": 23,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RPO.VERIFY_VALUE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The approved configured-value mutation has been freshly verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RPO.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 24,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Business-language error disclosure is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

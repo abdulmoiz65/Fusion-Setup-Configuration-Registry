@@ -1,0 +1,583 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_INV_CONFIGURE_SUBINVENTORIES",
+      "task_name": "Configure Subinventories",
+      "start_node": "CSUBINV.APPLY_SUBINVENTORY_IDENTITY_DEFAULT",
+      "nodes": [
+        {
+          "id": "CSUBINV.APPLY_SUBINVENTORY_IDENTITY_DEFAULT",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CSUBINV.VALIDATE_LOOKUP_INPUTS",
+            "not_applicable": "CSUBINV.VALIDATE_LOOKUP_INPUTS"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before Configure Subinventories normalization, validation, and LOV resolution.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.VALIDATE_LOOKUP_INPUTS",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CSUBINV.VALIDATE_IMPORT_ROUTE",
+            "invalid": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.APPLY_SUBINVENTORY_IDENTITY_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After Subinventory Code and Translatable Subinventory Name defaulting; before checkbox normalization, LOV resolution, and import-route selection.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 112
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.VALIDATE_IMPORT_ROUTE",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CSUBINV.RESOLVE_HEADER_SUBINVENTORY_TYPE",
+            "invalid": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.VALIDATE_LOOKUP_INPUTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before artifact preparation. Classify locators as FSM-only, validate empty-template provenance when locators are requested, and route the three registered business objects to REST by default unless FSM is explicitly selected.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 113
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.RESOLVE_HEADER_SUBINVENTORY_TYPE",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSUBINV.RESOLVE_HEADER_CANCEL_BACKORDERS",
+            "not_applicable": "CSUBINV.RESOLVE_HEADER_CANCEL_BACKORDERS",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.VALIDATE_LOOKUP_INPUTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied Subinventory Type display value.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.RESOLVE_HEADER_CANCEL_BACKORDERS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSUBINV.RESOLVE_HEADER_LOCATOR_CONTROL",
+            "not_applicable": "CSUBINV.RESOLVE_HEADER_LOCATOR_CONTROL",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.RESOLVE_HEADER_SUBINVENTORY_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied header Cancel Backorders display value.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.RESOLVE_HEADER_LOCATOR_CONTROL",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSUBINV.RESOLVE_HEADER_COUNT_METHOD",
+            "not_applicable": "CSUBINV.RESOLVE_HEADER_COUNT_METHOD",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.RESOLVE_HEADER_CANCEL_BACKORDERS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied header Locator Control Type display value.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.RESOLVE_HEADER_COUNT_METHOD",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSUBINV.RESOLVE_HEADER_DEFAULT_COUNT_TYPE",
+            "not_applicable": "CSUBINV.RESOLVE_HEADER_DEFAULT_COUNT_TYPE",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.RESOLVE_HEADER_LOCATOR_CONTROL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied header Replenishment Count Method display value.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.RESOLVE_HEADER_DEFAULT_COUNT_TYPE",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSUBINV.RESOLVE_HEADER_SOURCING_TYPE",
+            "not_applicable": "CSUBINV.RESOLVE_HEADER_SOURCING_TYPE",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.RESOLVE_HEADER_COUNT_METHOD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied header Default Replenishment Count Type display value.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.RESOLVE_HEADER_SOURCING_TYPE",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSUBINV.RESOLVE_LOCATOR_STRUCTURE_INSTANCE",
+            "not_applicable": "CSUBINV.RESOLVE_LOCATOR_STRUCTURE_INSTANCE",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.RESOLVE_HEADER_DEFAULT_COUNT_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied header Sourcing Type display value.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.RESOLVE_LOCATOR_STRUCTURE_INSTANCE",
+          "node_type": "step",
+          "sequence": 75,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSUBINV.RESOLVE_LOCATOR_TYPE",
+            "not_applicable": "CSUBINV.RESOLVE_LOCATOR_TYPE",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.RESOLVE_HEADER_SOURCING_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied Locator Structure value for REST or FSM Subinventories and FSM locator rows; it is not applicable only when no Locator Structure value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.RESOLVE_LOCATOR_TYPE",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSUBINV.RESOLVE_LOCATOR_LPN_ENABLED",
+            "not_applicable": "CSUBINV.RESOLVE_LOCATOR_LPN_ENABLED",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.RESOLVE_LOCATOR_STRUCTURE_INSTANCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied Locator Type display value in a locator row.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.RESOLVE_LOCATOR_LPN_ENABLED",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSUBINV.RESOLVE_ITEM_PLANNING_METHOD",
+            "not_applicable": "CSUBINV.RESOLVE_ITEM_PLANNING_METHOD",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.RESOLVE_LOCATOR_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied LPN Enabled search-facet display value.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.RESOLVE_ITEM_PLANNING_METHOD",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSUBINV.RESOLVE_ITEM_DEFAULT_COUNT_TYPE",
+            "not_applicable": "CSUBINV.RESOLVE_ITEM_DEFAULT_COUNT_TYPE",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.RESOLVE_LOCATOR_LPN_ENABLED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied Inventory Planning Method display value in a subinventory item association row.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.RESOLVE_ITEM_DEFAULT_COUNT_TYPE",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSUBINV.RESOLVE_ITEM_SOURCING_TYPE",
+            "not_applicable": "CSUBINV.RESOLVE_ITEM_SOURCING_TYPE",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.RESOLVE_ITEM_PLANNING_METHOD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied Default Replenishment Count Type display value in a subinventory item association row.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.RESOLVE_ITEM_SOURCING_TYPE",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSUBINV.RESOLVE_ITEM_MINMAX_ENABLED",
+            "not_applicable": "CSUBINV.RESOLVE_ITEM_MINMAX_ENABLED",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.RESOLVE_ITEM_DEFAULT_COUNT_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied Sourcing Type display value in a subinventory item association row.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.RESOLVE_ITEM_MINMAX_ENABLED",
+          "node_type": "step",
+          "sequence": 130,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSUBINV.RESOLVE_LOCATOR_ITEM_DEFAULT_COUNT_TYPE",
+            "not_applicable": "CSUBINV.RESOLVE_LOCATOR_ITEM_DEFAULT_COUNT_TYPE",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.RESOLVE_ITEM_SOURCING_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied Min-Max Enabled search-facet display value.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.RESOLVE_LOCATOR_ITEM_DEFAULT_COUNT_TYPE",
+          "node_type": "step",
+          "sequence": 140,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSUBINV.CHECK_DEPENDENCIES",
+            "not_applicable": "CSUBINV.CHECK_DEPENDENCIES",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.RESOLVE_ITEM_MINMAX_ENABLED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied locator-item Default Replenishment Count Type display value.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 170,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CSUBINV.DATA_LOADER_HANDOFF",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.RESOLVE_LOCATOR_ITEM_DEFAULT_COUNT_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All applicable route, empty-template provenance, artifact, and Configure Subinventories standard-lookup dependencies have completed.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.DATA_LOADER_HANDOFF",
+          "node_type": "decision",
+          "sequence": 180,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CSUBINV.DONE",
+            "blocked": "CSUBINV.HANDLE_LOOKUP_ERROR",
+            "failure": "CSUBINV.HANDLE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "CSUBINV.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before handing the selected REST source or FSM ZIP to core.data-loader. Locators may proceed only through the FSM route.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.DONE",
+          "node_type": "terminal",
+          "sequence": 190,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSUBINV.DATA_LOADER_HANDOFF"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Local task rules passed and core.data-loader owns final validation and execution for the selected REST or FSM route.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSUBINV.HANDLE_LOOKUP_ERROR",
+          "node_type": "step",
+          "sequence": 900,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Configure Subinventories normalization, standard-lookup, route, or FSM template-validation node returns blocked or failure.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 910,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A normalization, route, lookup, or FSM template-provenance issue prevents import handoff.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

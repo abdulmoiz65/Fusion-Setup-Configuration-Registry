@@ -1,0 +1,255 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CMS_MANAGE_GLOBAL_OPTIONS",
+      "task_name": "Configure Global Settings",
+      "start_node": "TCSGS.READ_METADATA",
+      "nodes": [
+        {
+          "id": "TCSGS.READ_METADATA",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "metadata_ready": "TCSGS.DESCRIBE_STOCK_CURRENCY_LOV",
+            "metadata_gap": "TCSGS.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before validating any Configure Global Settings value",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TCSGS.DESCRIBE_STOCK_CURRENCY_LOV",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "contract_ready": "TCSGS.RESOLVE_STOCK_CURRENCY",
+            "not_supplied": "TCSGS.VALIDATE_INPUT",
+            "contract_gap": "TCSGS.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "TCSGS.READ_METADATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before querying currenciesLOV for a supplied StockCurrencyCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TCSGS.RESOLVE_STOCK_CURRENCY",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "TCSGS.VALIDATE_INPUT",
+            "not_supplied": "TCSGS.VALIDATE_INPUT",
+            "invalid": "TCSGS.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "TCSGS.DESCRIBE_STOCK_CURRENCY_LOV"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before validating a supplied StockCurrencyCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TCSGS.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TCSGS.CHECK_DEPENDENCIES",
+            "invalid": "TCSGS.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "TCSGS.READ_METADATA",
+            "TCSGS.RESOLVE_STOCK_CURRENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After current metadata and any supplied stock currency resolve",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TCSGS.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TCSGS.ROUTE",
+            "blocked": "TCSGS.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "TCSGS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After supplied values pass input validation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TCSGS.ROUTE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "validated_only": "TCSGS.DONE_VALIDATED",
+            "create_or_update_or_import_ready": "TCSGS.LOADER_READY",
+            "mutation_blocked": "TCSGS.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "TCSGS.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select validation completion or the Core Data Loader handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TCSGS.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "TCSGS.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any metadata, scope, input, currency, or Fusion API issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TCSGS.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was classified and disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TCSGS.DONE_VALIDATED",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TCSGS.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Allowed Configure Global Settings values are validated; no mutation was requested",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TCSGS.LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TCSGS.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Mutation rules passed; invoke core.data-loader and follow it through immutable ZIP preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

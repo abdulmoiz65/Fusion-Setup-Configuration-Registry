@@ -1,0 +1,307 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "AR_MANAGE_RECEIVABLES_PAYMENT_TERMS",
+      "task_name": "Manage Receivables Payment Terms",
+      "start_node": "PT.VALIDATE",
+      "nodes": [
+        {
+          "id": "PT.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PT.DEPENDENCIES",
+            "invalid": "PT.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every normalized Payment Terms request, including single, mixed, and up-to-100-operation batch shape, update-patch, split-term, discount, date, numeric, lookup, translation, semantic-intent, and metadata-contract checks",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PT.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PT.LOOKUP_PACKAGE",
+            "blocked": "PT.BLOCKED"
+          },
+          "prerequisites": [
+            "PT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation passed",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PT.LOOKUP_PACKAGE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "continue": "PT.LOOKUP_SET",
+            "blocked": "PT.BLOCKED"
+          },
+          "prerequisites": [
+            "PT.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate current local package metadata when applicable; otherwise continue without a package result",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PT.LOOKUP_SET",
+          "node_type": "decision",
+          "sequence": 31,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "continue": "PT.LOOKUP_EXISTING",
+            "blocked": "PT.BLOCKED"
+          },
+          "prerequisites": [
+            "PT.LOOKUP_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the reference data set from current local task evidence when the request changes or verifies a payment term; otherwise continue",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PT.LOOKUP_EXISTING",
+          "node_type": "decision",
+          "sequence": 32,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "continue": "PT.LOOKUP_BILLING",
+            "blocked": "PT.BLOCKED"
+          },
+          "prerequisites": [
+            "PT.LOOKUP_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the exact current parent and all child state from the current local export when applicable; otherwise continue",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PT.LOOKUP_BILLING",
+          "node_type": "decision",
+          "sequence": 33,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "continue": "PT.LOOKUP_PARTIAL",
+            "blocked": "PT.BLOCKED"
+          },
+          "prerequisites": [
+            "PT.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a billing cycle from supplied current local task context only for balance-forward behavior; otherwise continue",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PT.LOOKUP_PARTIAL",
+          "node_type": "decision",
+          "sequence": 34,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "continue": "PT.DEFAULTS",
+            "blocked": "PT.BLOCKED"
+          },
+          "prerequisites": [
+            "PT.LOOKUP_BILLING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify the partial-payment discount option from supplied current local task context only when requested; otherwise continue",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PT.DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "normalized": "PT.ENFORCE",
+            "blocked": "PT.BLOCKED"
+          },
+          "prerequisites": [
+            "PT.LOOKUP_PARTIAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Required lookups completed or were not applicable",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PT.ENFORCE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "PT.EXECUTION_GATE",
+            "blocked": "PT.BLOCKED"
+          },
+          "prerequisites": [
+            "PT.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every normalized single or atomic batch request after all operations and business choices resolve and update preservation, translatable base text, semantic candidate intent, and every known offline-evaluable product validator have executable evidence",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PT.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PT.READY",
+            "blocked": "PT.BLOCKED"
+          },
+          "prerequisites": [
+            "PT.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm supported scope, semantic candidate match, complete task-rule evidence, standalone local-design confirmation when generating a ZIP, Core Data Loader ownership, reconciliation, and stop-before-retry boundaries before handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 172
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PT.READY",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PT.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Request is validated and ready for its owning read-only workflow or Core Data Loader preview; this terminal does not authorize a write or claim setup completion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 173
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PT.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 999,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Validation, dependency, lookup, design, routing, approval, process, or persisted-state evidence is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 174
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

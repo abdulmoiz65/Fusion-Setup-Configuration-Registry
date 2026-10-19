@@ -1,0 +1,71 @@
+{
+  "ade_label": "FUSIONAPPS_PT.V2MIBHCMBRONZE_LINUX.X64_260902.1104.S",
+  "catalog_kind": "oracle-seeded-profile-content-types",
+  "files": {
+    "content-type-properties.csv": {
+      "columns": [
+        "ContextName",
+        "FieldName",
+        "AttributeLabel",
+        "ColumnName",
+        "DefaultValue",
+        "RequiredFlag",
+        "DisplayCode",
+        "ViewAttrbName"
+      ],
+      "row_count": 176,
+      "sha256": "c8d18753254776b9b1cf9e14064738b24132c44f9c5260963be58cbff138181b"
+    },
+    "content-type-relationships.csv": {
+      "columns": [
+        "ContentTypeContextName",
+        "RelatedContentTypeContextName",
+        "RelationshipCode",
+        "DateFrom",
+        "DateTo",
+        "RatingInteractionType"
+      ],
+      "row_count": 14,
+      "sha256": "2803b46e262f8e72f79d1a9fcb1c65c33f4039e393234d899dbac391acdab82f"
+    },
+    "content-types.csv": {
+      "columns": [
+        "ContextName",
+        "ContentTypeName",
+        "ContentDescription",
+        "FreeFormFlag"
+      ],
+      "row_count": 39,
+      "sha256": "087eb8748b72dee6e1e45757a1bb59bc1eb76327bb03dce15df13acc7a4a2976"
+    }
+  },
+  "fusion_release": "26C",
+  "generated_on": "2026-09-03",
+  "key_fields": {
+    "content-type-properties.csv": [
+      "ContextName",
+      "FieldName"
+    ],
+    "content-type-relationships.csv": [
+      "ContentTypeContextName",
+      "RelatedContentTypeContextName",
+      "RelationshipCode",
+      "DateFrom"
+    ],
+    "content-types.csv": [
+      "ContextName"
+    ]
+  },
+  "sanitization": "Retains only provider keys and business fields required for seeded evidence resolution; excludes database identifiers, who columns, customer data, and credentials.",
+  "schema_version": "1.0",
+  "source_files": [
+    {
+      "path": "fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileContentLibrary/ContentTypeRelationshipSD.xml",
+      "sha256": "39b760e7d5fc62551ba97cea8688b12b42a0befa869c832ec93287807ec0ceb1"
+    },
+    {
+      "path": "fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileContentLibrary/ContentTypeSD.xml",
+      "sha256": "9203aa7a6fe59f0f06c7a883f83ba2b9ca9552a5a5ae29b34254eb644a09315b"
+    }
+  ]
+}

@@ -1,0 +1,329 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_EMP_CAMP_DEEP_LINKS",
+      "task_name": "Manage Predefined Links",
+      "start_node": "MPL.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "MPL.VALIDATE_REQUEST",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "query": "MPL.CHECK_REQUEST_READINESS",
+            "mutation": "MPL.CHECK_MUTATION_BASELINE",
+            "invalid": "MPL.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A current active-link count, Draft-link activation, or Draft-link rename is requested",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPL.CHECK_REQUEST_READINESS",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MPL.ENFORCE_EXPORT_SCOPE",
+            "blocked": "MPL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MPL.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A current active-link count has valid query inputs",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPL.CHECK_MUTATION_BASELINE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MPL.ENFORCE_MUTATION_SCOPE",
+            "blocked": "MPL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MPL.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An activation or rename target is resolved from a current export",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPL.ENFORCE_EXPORT_SCOPE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "MPL.EXPORT_GATE",
+            "blocked": "MPL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MPL.CHECK_REQUEST_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A current active-link count is prepared through FSM export",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPL.EXPORT_GATE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "evidence_available": "MPL.EVALUATE_EXPORT_RESULT",
+            "blocked": "MPL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MPL.ENFORCE_EXPORT_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A current FSM export archive and process evidence are available for inspection",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPL.EVALUATE_EXPORT_RESULT",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "MPL.RETURN_SUCCESS",
+            "issues": "MPL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MPL.EXPORT_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A downloaded Manage Predefined Links FSM export is inspected",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPL.ENFORCE_MUTATION_SCOPE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "MPL.MUTATION_GATE",
+            "blocked": "MPL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MPL.CHECK_MUTATION_BASELINE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Draft-link activation or rename archive is prepared",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPL.MUTATION_GATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "preview_ready": "MPL.EVALUATE_MUTATION_RESULT",
+            "blocked": "MPL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MPL.ENFORCE_MUTATION_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An immutable activation or rename archive has an exact Data Loader preview and fresh approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPL.EVALUATE_MUTATION_RESULT",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "MPL.RETURN_MUTATION_SUCCESS",
+            "issues": "MPL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MPL.MUTATION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A submitted FSM activation or rename import is verified",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPL.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MPL.EVALUATE_EXPORT_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Current active-link count is derived from inspected export evidence",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPL.RETURN_MUTATION_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MPL.EVALUATE_MUTATION_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact Draft-link activation or rename import is verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPL.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "MPL.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input, catalog, export, archive, or verification behavior is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MPL.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MPL.HANDLE_ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A blocked export query or mutation result is disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

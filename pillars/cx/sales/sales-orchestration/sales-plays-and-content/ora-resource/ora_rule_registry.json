@@ -1,0 +1,333 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_SALES_PLAYS_AND_CONTENT",
+      "task_name": "Sales Plays and Content",
+      "start_node": "SPC.VALIDATE",
+      "nodes": [
+        {
+          "id": "SPC.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SPC.ACCESS",
+            "invalid": "SPC.ERROR",
+            "unsupported": "SPC.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Sales Play, content bundle, or Content Intelligence search request has been normalized.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPC.ACCESS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "SPC.SELECT_READ",
+            "blocked": "SPC.ERROR"
+          },
+          "prerequisites": [
+            "SPC.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "LIST, GET, QUERY, or CONTENT_SEARCH input validation passed.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPC.SELECT_READ",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "list": "SPC.LIST",
+            "get": "SPC.GET",
+            "query": "SPC.QUERY",
+            "content_search": "SPC.CONTENT_SEARCH",
+            "blocked": "SPC.ERROR",
+            "unsupported": "SPC.ERROR"
+          },
+          "prerequisites": [
+            "SPC.ACCESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Environment and authentication dependencies are ready; select LIST, GET, QUERY, or CONTENT_SEARCH only.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPC.LIST",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "SPC.LIST_DONE",
+            "empty": "SPC.LIST_DONE",
+            "unauthorized": "SPC.ERROR",
+            "failed": "SPC.ERROR"
+          },
+          "prerequisites": [
+            "SPC.SELECT_READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected read operation is LIST, with an exact type predicate only when explicitly requested.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPC.GET",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "SPC.GET_DONE",
+            "not_found": "SPC.NOT_FOUND",
+            "unauthorized": "SPC.ERROR",
+            "failed": "SPC.ERROR"
+          },
+          "prerequisites": [
+            "SPC.SELECT_READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected read operation is GET by exact ID, with optional returned-type verification.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPC.QUERY",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "SPC.QUERY_DONE",
+            "empty": "SPC.QUERY_DONE",
+            "unauthorized": "SPC.ERROR",
+            "failed": "SPC.ERROR"
+          },
+          "prerequisites": [
+            "SPC.SELECT_READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected read operation is QUERY, with every requested type or status predicate in collection.filter.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPC.LIST_DONE",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SPC.LIST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The LIST result was returned successfully, including an empty list.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPC.GET_DONE",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SPC.GET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact Sales Play or content bundle record was returned successfully, with any expected-type mismatch disclosed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPC.NOT_FOUND",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SPC.GET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "No record exists for the exact supplied ID.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPC.QUERY_DONE",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SPC.QUERY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The bounded QUERY result was returned successfully, including an empty list.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPC.CONTENT_SEARCH",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "SPC.CONTENT_SEARCH_DONE",
+            "empty": "SPC.CONTENT_SEARCH_DONE",
+            "unauthorized": "SPC.ERROR",
+            "failed": "SPC.ERROR"
+          },
+          "prerequisites": [
+            "SPC.SELECT_READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected read operation is CONTENT_SEARCH.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPC.CONTENT_SEARCH_DONE",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SPC.CONTENT_SEARCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The CONTENT_SEARCH result was returned as WORKING_WITH_RESULTS or WORKING_NO_RESULTS.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPC.ERROR",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request was unsupported, invalid, unauthorized, or failed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

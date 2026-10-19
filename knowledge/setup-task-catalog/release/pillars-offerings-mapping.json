@@ -1,0 +1,263 @@
+{
+  "catalogName": "effective-pillars-offerings-mapping",
+  "description": "Pillar-to-offering folder mapping used to regenerate offering subfolders under pillars/.",
+  "sourceCatalog": "knowledge/setup-task-catalog/release/offering-functional-area-task-catalog.json",
+  "folderPathTemplate": "pillars/{pillarSlug}/{offeringSlug}",
+  "counts": {
+    "pillars": 4,
+    "offerings": 27,
+    "items": 27
+  },
+  "pillarOrder": [
+    "Common",
+    "CX",
+    "HCM",
+    "ERP",
+    "SCM"
+  ],
+  "items": [
+    {
+      "itemType": "offering",
+      "pillar": "ERP",
+      "pillarSlug": "erp",
+      "offeringShortName": "ORA_PSC_OFR_PERMITS",
+      "offeringName": "Public Sector Permits",
+      "offeringSlug": "public-sector-permits",
+      "folderPath": "pillars/erp/public-sector-permits"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "ERP",
+      "pillarSlug": "erp",
+      "offeringShortName": "ORA_PSCR_OFR_BUSINESS_LICENSES",
+      "offeringName": "Public Sector Business Licenses",
+      "offeringSlug": "public-sector-business-licenses",
+      "folderPath": "pillars/erp/public-sector-business-licenses"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "ERP",
+      "pillarSlug": "erp",
+      "offeringShortName": "ORA_PSCR_OFR_CODE_ENFORCEMENT",
+      "offeringName": "Public Sector Code Enforcement",
+      "offeringSlug": "public-sector-code-enforcement",
+      "folderPath": "pillars/erp/public-sector-code-enforcement"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "ERP",
+      "pillarSlug": "erp",
+      "offeringShortName": "ORA_PSCR_OFR_PLANNING_ZONING",
+      "offeringName": "Public Sector Planning and Zoning",
+      "offeringSlug": "public-sector-planning-and-zoning",
+      "folderPath": "pillars/erp/public-sector-planning-and-zoning"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "CX",
+      "pillarSlug": "cx",
+      "offeringShortName": "PRM_OFFERING",
+      "offeringName": "PRM Offering",
+      "offeringSlug": "prm-offering",
+      "folderPath": "pillars/cx/prm-offering"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "CX",
+      "pillarSlug": "cx",
+      "offeringShortName": "ORA_CONFIGURE_PRICE_QUOTE",
+      "offeringName": "Configure Price Quote",
+      "offeringSlug": "configure-price-quote",
+      "folderPath": "pillars/cx/configure-price-quote"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "CX",
+      "pillarSlug": "cx",
+      "offeringShortName": "ORA_MIDSIZE_SALES",
+      "offeringName": "Sales",
+      "offeringSlug": "sales",
+      "folderPath": "pillars/cx/sales"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "CX",
+      "pillarSlug": "cx",
+      "offeringShortName": "ZCH_CDM",
+      "offeringName": "Customer Data Management",
+      "offeringSlug": "customer-data-management",
+      "folderPath": "pillars/cx/customer-data-management"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "CX",
+      "pillarSlug": "cx",
+      "offeringShortName": "ORA_SVC",
+      "offeringName": "Service",
+      "offeringSlug": "service",
+      "folderPath": "pillars/cx/service"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "CX",
+      "pillarSlug": "cx",
+      "offeringShortName": "ORA_SVC_HELP_DESK",
+      "offeringName": "Help Desk",
+      "offeringSlug": "help-desk",
+      "folderPath": "pillars/cx/help-desk"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "CX",
+      "pillarSlug": "cx",
+      "offeringShortName": "ORA_CUSTOMER_LOYALTY",
+      "offeringName": "Customer Loyalty",
+      "offeringSlug": "customer-loyalty",
+      "folderPath": "pillars/cx/customer-loyalty"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "CX",
+      "pillarSlug": "cx",
+      "offeringShortName": "MKT_MARKETING",
+      "offeringName": "Sales Marketing",
+      "offeringSlug": "sales-marketing",
+      "folderPath": "pillars/cx/sales-marketing"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "CX",
+      "pillarSlug": "cx",
+      "offeringShortName": "ORA_FMK_MARKETING",
+      "offeringName": "Marketing",
+      "offeringSlug": "marketing",
+      "folderPath": "pillars/cx/marketing"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "ERP",
+      "pillarSlug": "erp",
+      "offeringShortName": "ORA_GMS_GRANTS_MANAGEMENT",
+      "offeringName": "Grants Management",
+      "offeringSlug": "grants-management",
+      "folderPath": "pillars/erp/grants-management"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "ERP",
+      "pillarSlug": "erp",
+      "offeringShortName": "ORA_RISK_AND_CONTROLS",
+      "offeringName": "Risk Management",
+      "offeringSlug": "risk-management",
+      "folderPath": "pillars/erp/risk-management"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "ERP",
+      "pillarSlug": "erp",
+      "offeringShortName": "XLE_FINANCIALS_JUR",
+      "offeringName": "Financials",
+      "offeringSlug": "financials",
+      "folderPath": "pillars/erp/financials"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "SCM",
+      "pillarSlug": "scm",
+      "offeringShortName": "PO_PROCUREMENT",
+      "offeringName": "Procurement",
+      "offeringSlug": "procurement",
+      "folderPath": "pillars/scm/procurement"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "ERP",
+      "pillarSlug": "erp",
+      "offeringShortName": "XLE_FIN_CONTROL_JUR",
+      "offeringName": "Fusion Accounting Hub",
+      "offeringSlug": "fusion-accounting-hub",
+      "folderPath": "pillars/erp/fusion-accounting-hub"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "ERP",
+      "pillarSlug": "erp",
+      "offeringShortName": "PJT_PROJECT_EXECUTION_MGMT",
+      "offeringName": "Project Execution Management",
+      "offeringSlug": "project-execution-management",
+      "folderPath": "pillars/erp/project-execution-management"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "CX",
+      "pillarSlug": "cx",
+      "offeringShortName": "OKC_CONTRACTS",
+      "offeringName": "Enterprise Contracts",
+      "offeringSlug": "enterprise-contracts",
+      "folderPath": "pillars/cx/enterprise-contracts"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "ERP",
+      "pillarSlug": "erp",
+      "offeringShortName": "PJF_PROJ_MNG",
+      "offeringName": "Project Financial Management",
+      "offeringSlug": "project-financial-management",
+      "folderPath": "pillars/erp/project-financial-management"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "SCM",
+      "pillarSlug": "scm",
+      "offeringShortName": "ORA_MSC_VALUE_CHAIN_PLANNING",
+      "offeringName": "Supply Chain Planning",
+      "offeringSlug": "supply-chain-planning",
+      "folderPath": "pillars/scm/supply-chain-planning"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "SCM",
+      "pillarSlug": "scm",
+      "offeringShortName": "ORA_MANUFACTURING_AND_SUPPLY_C",
+      "offeringName": "Manufacturing and Supply Chain Materials Management",
+      "offeringSlug": "manufacturing-and-supply-chain-materials-management",
+      "folderPath": "pillars/scm/manufacturing-and-supply-chain-materials-management"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "SCM",
+      "pillarSlug": "scm",
+      "offeringShortName": "PIM_PROD_MNG",
+      "offeringName": "Product Management",
+      "offeringSlug": "product-management",
+      "folderPath": "pillars/scm/product-management"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "SCM",
+      "pillarSlug": "scm",
+      "offeringShortName": "DOO_ORCHESTRATION",
+      "offeringName": "Order Management",
+      "offeringSlug": "order-management",
+      "folderPath": "pillars/scm/order-management"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "HCM",
+      "pillarSlug": "hcm",
+      "offeringShortName": "ORA_GLOBAL_HUMAN_RESOURCES",
+      "offeringName": "Global Human Resources",
+      "offeringSlug": "global-human-resources",
+      "folderPath": "pillars/hcm/global-human-resources"
+    },
+    {
+      "itemType": "offering",
+      "pillar": "HCM",
+      "pillarSlug": "hcm",
+      "offeringShortName": "ORA_HCM_SECURITY",
+      "offeringName": "HCM Security",
+      "offeringSlug": "hcm-security",
+      "folderPath": "pillars/hcm/hcm-security"
+    }
+  ]
+}

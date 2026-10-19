@@ -1,0 +1,250 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_EMP_EXT_INTEGRATIONS",
+      "task_name": "Manage External Integrations",
+      "start_node": "MEI.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "MEI.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "status": "MEI.READ_STATUS",
+            "export": "MEI.ROUTE_EXPORT",
+            "change": "MEI.GUIDE_CHANGE",
+            "invalid": "MEI.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Microsoft Teams or Slack external-integration request is supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MEI.READ_STATUS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "received": "MEI.EVALUATE_STATUS",
+            "failed": "MEI.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MEI.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read the requested current integration status with get_communicate_integration_status",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MEI.EVALUATE_STATUS",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "reported": "MEI.RETURN_STATUS",
+            "issues": "MEI.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MEI.READ_STATUS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Map each exact GET result to Enabled, Disabled, or Unknown",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MEI.RETURN_STATUS",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MEI.EVALUATE_STATUS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return the live status result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MEI.ROUTE_EXPORT",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MEI.RETURN_EXPORT_ROUTE",
+            "blocked": "MEI.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MEI.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An FSM export is requested",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MEI.RETURN_EXPORT_ROUTE",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MEI.ROUTE_EXPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return the FSM export route or routed export result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MEI.GUIDE_CHANGE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "guidance_ready": "MEI.RETURN_GUIDANCE",
+            "blocked": "MEI.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MEI.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An enable or disable request is supplied for Microsoft Teams or Slack",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MEI.RETURN_GUIDANCE",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MEI.GUIDE_CHANGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return the matching public Oracle document without changing Fusion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MEI.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "MEI.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input, status, export, documentation, or security handling is required",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MEI.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocker or unknown result prevents successful completion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

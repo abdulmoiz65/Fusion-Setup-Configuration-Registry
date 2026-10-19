@@ -1,0 +1,155 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HZ_MANAGE_RELATIONSHIP_TYPES",
+      "task_name": "Manage Relationship Types",
+      "start_node": "MRT.VALIDATE-DOCUMENTED-INPUT",
+      "nodes": [
+        {
+          "id": "MRT.VALIDATE-DOCUMENTED-INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MRT.FIND-RELATIONSHIP-TYPE",
+            "invalid": "MRT.HANDLE-MISSING-INPUT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Editing a relationship type using the documented Oracle guide",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRT.FIND-RELATIONSHIP-TYPE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "selected": "MRT.DONE-DOCUMENTED-FLOW",
+            "lookup_contract_tbd": "MRT.HANDLE-LOOKUP-CONTRACT-GAP"
+          },
+          "prerequisites": [
+            "MRT.VALIDATE-DOCUMENTED-INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated relationship type is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRT.HANDLE-MISSING-INPUT",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MRT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MRT.VALIDATE-DOCUMENTED-INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Documented input is incomplete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRT.HANDLE-LOOKUP-CONTRACT-GAP",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MRT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MRT.FIND-RELATIONSHIP-TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The lookup contract is not documented",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRT.DONE-DOCUMENTED-FLOW",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MRT.FIND-RELATIONSHIP-TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The documented UI workflow has selected the relationship type for editing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MRT.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A documented input or lookup-contract issue is handled",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

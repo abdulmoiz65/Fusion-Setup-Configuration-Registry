@@ -1,0 +1,401 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "FA_MANAGE_SYSTEM_CONTROL",
+      "task_name": "Manage System Controls",
+      "start_node": "SYS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "SYS.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SYS.LOOKUP_EXISTING",
+            "invalid": "SYS.HANDLE_INPUT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Enterprise Name is supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "field-validation",
+            "line": 11
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.RESOLVE_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 38,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "SYS.PRESENT_REFERENCE_PREVIEW",
+            "blocked": "SYS.HANDLE_DEPENDENCY"
+          },
+          "prerequisites": [
+            "SYS.COLLECT_CREATE_INPUTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing System Controls absence is confirmed and creation inputs are valid",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "dependency-rules",
+            "line": 10
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.LOOKUP_EXISTING",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "create_path": "SYS.COLLECT_CREATE_INPUTS",
+            "already_configured": "SYS.DONE_READ_ONLY",
+            "unresolved": "SYS.HANDLE_LOOKUP"
+          },
+          "prerequisites": [
+            "SYS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enterprise Name is valid",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "live-lookups",
+            "line": 9
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.COLLECT_CREATE_INPUTS",
+          "node_type": "decision",
+          "sequence": 35,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SYS.RESOLVE_DEPENDENCIES",
+            "invalid": "SYS.HANDLE_INPUT"
+          },
+          "prerequisites": [
+            "SYS.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing System Controls absence is confirmed",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "field-validation",
+            "line": 11
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.DONE_READ_ONLY",
+          "node_type": "terminal",
+          "sequence": 36,
+          "action_type": "present_read_only_state",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SYS.LOOKUP_EXISTING"
+          ],
+          "on_failure": "continue",
+          "applies_when": "One exact Enterprise Name row already exists",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "existing-state-boss-lookup",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.PRESENT_REFERENCE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 39,
+          "action_type": "render_reference_validation_preview",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "SYS.APPLY_DEFAULTS",
+            "incomplete": "SYS.HANDLE_LOOKUP"
+          },
+          "prerequisites": [
+            "SYS.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The System Controls create path is confirmed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "mandatory-reference-validation-preview-gate",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "SYS.ENFORCE_DESIGN",
+            "blocked": "SYS.HANDLE_DEPENDENCY"
+          },
+          "prerequisites": [
+            "SYS.PRESENT_REFERENCE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirmed create path and export metadata are resolved",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "standard-defaults",
+            "line": 3
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SYS.IMPORT_GATE",
+            "blocked": "SYS.HANDLE_DESIGN"
+          },
+          "prerequisites": [
+            "SYS.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Defaults and lookup results are available",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "design-rules",
+            "line": 3
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.IMPORT_GATE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "SYS.DONE_READY",
+            "blocked": "SYS.HANDLE_APPROVAL"
+          },
+          "prerequisites": [
+            "SYS.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A reviewed package is proposed for import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "refusal-rules",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.HANDLE_INPUT",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "SYS.ISSUES"
+          },
+          "prerequisites": [
+            "SYS.VALIDATE_INPUT",
+            "SYS.COLLECT_CREATE_INPUTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Identity or creation input is invalid",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "failure-classes",
+            "line": 3
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.HANDLE_DEPENDENCY",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "SYS.ISSUES"
+          },
+          "prerequisites": [
+            "SYS.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A prerequisite is unresolved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "failure-classes",
+            "line": 3
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.HANDLE_LOOKUP",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "SYS.ISSUES"
+          },
+          "prerequisites": [
+            "SYS.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Lookup evidence is missing or ambiguous",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "failure-classes",
+            "line": 3
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.HANDLE_DESIGN",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "SYS.ISSUES"
+          },
+          "prerequisites": [
+            "SYS.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A design rule blocks the request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "failure-classes",
+            "line": 3
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.HANDLE_APPROVAL",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "SYS.ISSUES"
+          },
+          "prerequisites": [
+            "SYS.IMPORT_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Import approval is missing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "refusal-rules",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.DONE_READY",
+          "node_type": "terminal",
+          "sequence": 120,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SYS.IMPORT_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Package is ready for approved import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "disclosure-rules",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SYS.ISSUES",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any validation, lookup, dependency, design, or approval issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "failure-classes",
+            "line": 3
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

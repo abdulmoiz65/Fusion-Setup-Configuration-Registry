@@ -1,0 +1,339 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_MANAGE_AGENCIES",
+      "task_name": "Recruiting Agencies",
+      "start_node": "RA.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "RA.VALIDATE_REQUEST",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "retrieve": "RA.VERIFY_EXPORT_ROUTE",
+            "create": "RA.APPLY_STATUS_DEFAULT",
+            "update": "RA.RESOLVE_REFERENCES",
+            "import": "RA.RESOLVE_REFERENCES",
+            "invalid": "RA.HANDLE_ISSUES",
+            "unsupported": "RA.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Recruiting Agencies request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RA.APPLY_STATUS_DEFAULT",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "RA.RESOLVE_REFERENCES",
+            "preserved": "RA.RESOLVE_REFERENCES",
+            "blocked": "RA.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "RA.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RA.VERIFY_EXPORT_ROUTE",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RA.DONE_RETRIEVE",
+            "blocked": "RA.HANDLE_ISSUES",
+            "failed": "RA.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "RA.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Retrieve",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RA.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "create": "RA.VERIFY_CREATE_IDENTITY",
+            "update": "RA.VERIFY_UPDATE_IDENTITY",
+            "import": "RA.CHECK_DEPENDENCIES",
+            "invalid": "RA.HANDLE_ISSUES",
+            "ambiguous": "RA.HANDLE_ISSUES",
+            "failed": "RA.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Create, Update, or Import",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RA.VERIFY_CREATE_IDENTITY",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "unique": "RA.CHECK_DEPENDENCIES",
+            "existing": "RA.HANDLE_ISSUES",
+            "ambiguous": "RA.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "RA.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RA.VERIFY_UPDATE_IDENTITY",
+          "node_type": "decision",
+          "sequence": 45,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "found": "RA.CHECK_DEPENDENCIES",
+            "not_found": "RA.HANDLE_ISSUES",
+            "ambiguous": "RA.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "RA.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Update",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RA.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RA.CHECK_DESIGN",
+            "needs_input": "RA.HANDLE_ISSUES",
+            "blocked": "RA.HANDLE_ISSUES",
+            "failed": "RA.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Create, Update, or Import after reference resolution and identity validation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RA.CHECK_DESIGN",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RA.PREVIEW_IMPORT",
+            "blocked": "RA.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "RA.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create, Update, or Import after dependency readiness",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RA.PREVIEW_IMPORT",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "RA.IMPORT_READY",
+            "blocked": "RA.HANDLE_ISSUES",
+            "changed": "RA.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "RA.CHECK_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before any import handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RA.HANDLE_ISSUES",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RA.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, identity, dependency, design, approval, process, or unsupported outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RA.DONE_RETRIEVE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RA.VERIFY_EXPORT_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Fresh agency export was verified and requested details were returned",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RA.IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 95,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RA.PREVIEW_IMPORT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The unchanged candidate ZIP and exact approval are ready for core.data-loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RA.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RA.HANDLE_ISSUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A customer-friendly outcome and safe next action were returned",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

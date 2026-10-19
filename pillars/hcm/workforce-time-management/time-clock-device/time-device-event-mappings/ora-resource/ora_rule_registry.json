@@ -1,0 +1,406 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HWM_MANAGE_TIME_DEVICE_EVENT_MAPPING",
+      "task_name": "Time Device Event Mappings",
+      "start_node": "TDEM.VALIDATE_MAPPING",
+      "nodes": [
+        {
+          "id": "TDEM.VALIDATE_MAPPING",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TDEM.SEARCH_TIME_DEVICE_MAPPINGS",
+            "invalid": "TDEM.INPUT_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Search, Create, or Update",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.SEARCH_TIME_DEVICE_MAPPINGS",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "search-single": "TDEM.SEARCH_MATCH",
+            "search-multiple": "TDEM.SELECTION_REQUIRED",
+            "search-none": "TDEM.NO_MATCHES",
+            "update-single": "TDEM.LOOKUP_DEVICE_SUPPLIER",
+            "update-multiple": "TDEM.SELECTION_REQUIRED",
+            "update-none": "TDEM.NO_MATCHES",
+            "create-match": "TDEM.CREATE_MATCH_DECISION",
+            "create-none": "TDEM.LOOKUP_DEVICE_SUPPLIER",
+            "create-new-confirmed": "TDEM.LOOKUP_DEVICE_SUPPLIER",
+            "create-use-existing": "TDEM.SEARCH_MATCH",
+            "unresolved": "TDEM.INPUT_ISSUES"
+          },
+          "prerequisites": [
+            "TDEM.VALIDATE_MAPPING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search, Create, or Update",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.LOOKUP_DEVICE_SUPPLIER",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "TDEM.LOOKUP_SUPPLIER_EVENT",
+            "unresolved": "TDEM.INPUT_ISSUES"
+          },
+          "prerequisites": [
+            "TDEM.SEARCH_TIME_DEVICE_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create, or Update after exactly one mapping is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.LOOKUP_SUPPLIER_EVENT",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "TDEM.LOOKUP_APPLICATION_EVENT",
+            "unresolved": "TDEM.INPUT_ISSUES"
+          },
+          "prerequisites": [
+            "TDEM.LOOKUP_DEVICE_SUPPLIER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.LOOKUP_APPLICATION_EVENT",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "TDEM.LOOKUP_TIME_ATTRIBUTES",
+            "unresolved": "TDEM.INPUT_ISSUES"
+          },
+          "prerequisites": [
+            "TDEM.LOOKUP_SUPPLIER_EVENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.LOOKUP_TIME_ATTRIBUTES",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "TDEM.LOOKUP_DEFAULT_VALUES",
+            "not-applicable": "TDEM.GENERATE_COMPLETE_SUMMARY",
+            "unresolved": "TDEM.INPUT_ISSUES"
+          },
+          "prerequisites": [
+            "TDEM.LOOKUP_APPLICATION_EVENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An Event Attribute Detail row is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.LOOKUP_DEFAULT_VALUES",
+          "node_type": "step",
+          "sequence": 55,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "TDEM.VALIDATE_CHILD_ROWS",
+            "not-applicable": "TDEM.VALIDATE_CHILD_ROWS",
+            "unresolved": "TDEM.INPUT_ISSUES"
+          },
+          "prerequisites": [
+            "TDEM.LOOKUP_TIME_ATTRIBUTES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more child rows have a default value for an LOV-backed time attribute",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.VALIDATE_CHILD_ROWS",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TDEM.GENERATE_COMPLETE_SUMMARY",
+            "invalid": "TDEM.INPUT_ISSUES"
+          },
+          "prerequisites": [
+            "TDEM.LOOKUP_DEFAULT_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more Event Attribute Details are supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.GENERATE_COMPLETE_SUMMARY",
+          "node_type": "step",
+          "sequence": 65,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "TDEM.PROVIDER_APPROVAL",
+            "blocked": "TDEM.INPUT_ISSUES"
+          },
+          "prerequisites": [
+            "TDEM.LOOKUP_TIME_ATTRIBUTES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validation, lookup resolution, and defaulting have completed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.PROVIDER_APPROVAL",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TDEM.READY_FOR_APPROVED_EXECUTION",
+            "blocked": "TDEM.INPUT_ISSUES"
+          },
+          "prerequisites": [
+            "TDEM.GENERATE_COMPLETE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A valid business-only Complete Summary is present; provider execution and approval ownership remain unchanged",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.READY_FOR_APPROVED_EXECUTION",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEM.PROVIDER_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Complete Summary, Defaults Applied, and all declared validation, lookup, defaulting, and design gates passed for handoff to the provider-owned approval process",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.INPUT_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A required or dependent field is missing or invalid",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.SEARCH_MATCH",
+          "node_type": "terminal",
+          "sequence": 91,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEM.SEARCH_TIME_DEVICE_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search returns one candidate, or Create uses one selected existing candidate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.SELECTION_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 92,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEM.SEARCH_TIME_DEVICE_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search or Update returns multiple candidates and the user must select one",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.NO_MATCHES",
+          "node_type": "terminal",
+          "sequence": 93,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEM.SEARCH_TIME_DEVICE_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search or Update returns no candidates",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TDEM.CREATE_MATCH_DECISION",
+          "node_type": "terminal",
+          "sequence": 94,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TDEM.SEARCH_TIME_DEVICE_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create finds one or more candidates and the user must choose an existing record or confirm creation of a new record",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

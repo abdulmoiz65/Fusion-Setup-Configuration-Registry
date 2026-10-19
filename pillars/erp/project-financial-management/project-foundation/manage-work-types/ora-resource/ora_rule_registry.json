@@ -1,0 +1,288 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PJF_MANAGE_WORK_TYPES",
+      "task_name": "Manage Work Types",
+      "start_node": "WTYPE.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "WTYPE.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "WTYPE.APPLY_DEFAULTS",
+            "warning": "WTYPE.APPLY_DEFAULTS",
+            "invalid": "WTYPE.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Work Types request; retain nonblocking warnings while completing supported checks",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WTYPE.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "WTYPE.FIND_WORK_TYPE",
+            "warning": "WTYPE.FIND_WORK_TYPE",
+            "failure": "WTYPE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WTYPE.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Valid input with any retained nonblocking warnings",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WTYPE.FIND_WORK_TYPE",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WTYPE.RESOLVE_CHILDREN",
+            "warning": "WTYPE.RESOLVE_CHILDREN",
+            "failure": "WTYPE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WTYPE.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve work type and sets; validate required consumer-impact handoff for existing-identity impact diffs; missing/invalid handoff uses failure, never warning",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 213
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WTYPE.RESOLVE_CHILDREN",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WTYPE.ROUTE_OPERATION",
+            "warning": "WTYPE.ROUTE_OPERATION",
+            "failure": "WTYPE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WTYPE.FIND_WORK_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve translations, check translated-name collisions, DFFs, and semantic impact; complete required collision evidence and supported reads before returning warnings",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 214
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WTYPE.ROUTE_OPERATION",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "supported": "WTYPE.RESOLVE_DEPENDENCIES",
+            "unsupported": "WTYPE.RETURN_REFUSAL",
+            "invalid": "WTYPE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WTYPE.RESOLVE_CHILDREN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After identity/set/child/use resolution",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WTYPE.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "WTYPE.ENFORCE_DESIGN",
+            "warning": "WTYPE.ENFORCE_DESIGN",
+            "missing": "WTYPE.RETURN_ISSUES",
+            "conflict": "WTYPE.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "WTYPE.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preview/validation completes; required consumer-impact gaps use missing; only optional reference-authority warnings remain nonblocking",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WTYPE.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "WTYPE.EXECUTION_GATE",
+            "warning": "WTYPE.EXECUTION_GATE",
+            "blocked": "WTYPE.RETURN_REFUSAL",
+            "failure": "WTYPE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WTYPE.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before import approval; block unsatisfied required consumer-impact evidence and unsafe impact; optional reference warnings never waive this gate",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WTYPE.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "WTYPE.RETURN_SUCCESS",
+            "warning": "WTYPE.RETURN_SUCCESS",
+            "not_ready": "WTYPE.RETURN_ISSUES",
+            "declined": "WTYPE.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "WTYPE.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return supported validation only with required impact evidence satisfied or not applicable; warnings and approval never clear a missing dependency",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WTYPE.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WTYPE.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Supported validation/preparation complete before loader approval; return retained warnings and skipped checks without authorizing submission or claiming full reference validation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WTYPE.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Correctable issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WTYPE.RETURN_REFUSAL",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Unsupported/unsafe/declined action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

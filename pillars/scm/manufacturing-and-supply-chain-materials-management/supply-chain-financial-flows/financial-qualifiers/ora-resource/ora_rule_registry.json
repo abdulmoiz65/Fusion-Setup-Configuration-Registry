@@ -1,0 +1,287 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_FOS_MANAGE_TRADE_QUALIFIER_NEW",
+      "task_name": "Financial Qualifiers",
+      "start_node": "FOS.FQ.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "FOS.FQ.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "validated": "FOS.FQ.RESOLVE_BUSINESS_FLOW",
+            "blocked": "FOS.FQ.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Financial Qualifiers request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.FQ.RESOLVE_BUSINESS_FLOW",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FOS.FQ.RESOLVE_USER_CATALOG",
+            "blocked": "FOS.FQ.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "FOS.FQ.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A business process type is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 128
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.FQ.RESOLVE_USER_CATALOG",
+          "node_type": "step",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FOS.FQ.RESOLVE_PARAMETER",
+            "not-applicable": "FOS.FQ.RESOLVE_PARAMETER",
+            "blocked": "FOS.FQ.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "FOS.FQ.RESOLVE_BUSINESS_FLOW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A user defined catalog is supplied or required by the Data Loader REST schema",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 129
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.FQ.RESOLVE_PARAMETER",
+          "node_type": "step",
+          "sequence": 17,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FOS.FQ.RESOLVE_OPERATOR",
+            "not-applicable": "FOS.FQ.RESOLVE_OPERATOR",
+            "blocked": "FOS.FQ.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "FOS.FQ.RESOLVE_USER_CATALOG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A qualifier parameter is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 130
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.FQ.RESOLVE_OPERATOR",
+          "node_type": "step",
+          "sequence": 18,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FOS.FQ.RESOLVE_CONJUNCTION",
+            "blocked": "FOS.FQ.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "FOS.FQ.RESOLVE_PARAMETER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A qualifier operator is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 131
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.FQ.RESOLVE_CONJUNCTION",
+          "node_type": "step",
+          "sequence": 19,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FOS.FQ.CHECK_EXECUTION_CONTRACT",
+            "not-applicable": "FOS.FQ.CHECK_EXECUTION_CONTRACT",
+            "blocked": "FOS.FQ.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "FOS.FQ.RESOLVE_OPERATOR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A conjunction is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 132
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.FQ.CHECK_EXECUTION_CONTRACT",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "FOS.FQ.CHECK_DELETE_ELIGIBILITY",
+            "blocked": "FOS.FQ.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "FOS.FQ.RESOLVE_BUSINESS_FLOW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After the requested business flow is resolved",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.FQ.CHECK_DELETE_ELIGIBILITY",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "allowed": "FOS.FQ.DONE",
+            "not-applicable": "FOS.FQ.DONE",
+            "blocked": "FOS.FQ.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "FOS.FQ.CHECK_EXECUTION_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A qualifier delete is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 133
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.FQ.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "FOS.FQ.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOS.FQ.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An input or execution-contract blocker occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.FQ.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FOS.FQ.HANDLE_ISSUE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A blocker was disclosed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.FQ.DONE",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FOS.FQ.CHECK_DELETE_ELIGIBILITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A source-backed qualifier execution contract and all required request values are validated",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

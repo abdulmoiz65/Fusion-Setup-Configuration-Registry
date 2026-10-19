@@ -1,0 +1,285 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HWM_MANAGE_CUSTOM_TIME_ATTRIBUTES",
+      "task_name": "Custom Time Attributes",
+      "start_node": "CTA.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "CTA.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CTA.RESOLVE_FILTERED_DATA_SOURCE",
+            "blocked": "CTA.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Custom Time Attributes Create or Edit is requested",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CTA.RESOLVE_FILTERED_DATA_SOURCE",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CTA.RESOLVE_UNFILTERED_DATA_SOURCE",
+            "not_applicable": "CTA.RESOLVE_UNFILTERED_DATA_SOURCE",
+            "blocked": "CTA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CTA.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve required filtered source for parent and each dependent attribute; defer with not_applicable before export, then revisit after export before preview",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CTA.RESOLVE_UNFILTERED_DATA_SOURCE",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CTA.RESOLVE_ATTRIBUTE_CATEGORY",
+            "not_applicable": "CTA.RESOLVE_ATTRIBUTE_CATEGORY",
+            "blocked": "CTA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CTA.RESOLVE_FILTERED_DATA_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve required unfiltered source for parent and each dependent attribute; defer with not_applicable before export, then revisit after export before preview",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CTA.RESOLVE_ATTRIBUTE_CATEGORY",
+          "node_type": "step",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CTA.RESOLVE_VALUE_LOCATION",
+            "not_applicable": "CTA.RESOLVE_VALUE_LOCATION",
+            "blocked": "CTA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CTA.RESOLVE_UNFILTERED_DATA_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve required parent category; do not require a category on dependents; defer with not_applicable before export, then revisit after export before preview",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CTA.RESOLVE_VALUE_LOCATION",
+          "node_type": "decision",
+          "sequence": 17,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CTA.APPLY_DEFAULTS",
+            "not_applicable": "CTA.APPLY_DEFAULTS",
+            "blocked": "CTA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CTA.RESOLVE_ATTRIBUTE_CATEGORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve new attribute locations after fresh export; not_applicable before export or when no new attributes are added; invoking workflow must revisit after export before preview",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CTA.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 18,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "CTA.ENFORCE_FSM",
+            "blocked": "CTA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CTA.RESOLVE_VALUE_LOCATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Generate Name; derive Value Location for new parent and dependent attributes only at the post-export stage",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CTA.COMPLETE_SUMMARY",
+          "node_type": "step",
+          "sequence": 19,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "summary_ready": "CTA.ENFORCE_FSM",
+            "summary_incomplete": "CTA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CTA.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated Custom Time Attribute proposal is ready for the provider-owned approval process",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CTA.ENFORCE_FSM",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CTA.RETURN_HANDOFF",
+            "blocked": "CTA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CTA.COMPLETE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply the baseline gates at their stated stages; completion does not authorize a mutation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CTA.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CTA.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, design, export, approval, import, or reconciliation failure is reported",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CTA.RETURN_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CTA.ENFORCE_FSM"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Complete Summary is displayed and the validated package is ready for the provider-owned approval preview and import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CTA.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 91,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CTA.HANDLE_ISSUE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return the specific blocker and safe next action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

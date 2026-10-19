@@ -1,0 +1,1101 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "ORA_CJM_MANAGE_ADJ_TYPES",
+      "task_name": "Manage Channel Adjustment Types",
+      "start_node": "CJMAT.RESOLVE_REFERENCE_DATA_SET",
+      "nodes": [
+        {
+          "id": "CJMAT.RESOLVE_REFERENCE_DATA_SET",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "CJMAT.FIND_REFERENCE_DATA_SET",
+            "not_applicable": "CJMAT.FIND_ADJUSTMENT_TYPE_BY_CODE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Channel Adjustment Types archive is prepared for validation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMAT.FIND_REFERENCE_DATA_SET",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMAT.FIND_ADJUSTMENT_TYPE_BY_CODE",
+            "not_found": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMAT.RESOLVE_REFERENCE_DATA_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A SetName is supplied and the Reference Data Set dependency must be resolved before the adjustment-type archive is validated",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMAT.FIND_ADJUSTMENT_TYPE_BY_CODE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMAT.RESOLVE_ADJUSTMENT_REASON_PARENTS",
+            "not_found": "CJMAT.RESOLVE_ADJUSTMENT_REASON_PARENTS",
+            "ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMAT.FIND_REFERENCE_DATA_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Data Loader must select create or update by exact AdjustmentTypeCode after the Reference Data Set is resolved",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMAT.RESOLVE_ADJUSTMENT_REASON_PARENTS",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CJMAT.FIND_ADJUSTMENT_REASONS",
+            "not_applicable": "CJMAT.FIND_ADJUSTMENT_REASONS",
+            "not_found": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMAT.FIND_ADJUSTMENT_TYPE_BY_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every adjustmentReasons row targeting an existing adjustment type must have its parent-reference carrier populated from one exact AdjustmentTypeId before archive validation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMAT.FIND_ADJUSTMENT_REASONS",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMAT.VALIDATE_WORKBOOK",
+            "not_found": "CJMAT.VALIDATE_WORKBOOK",
+            "not_applicable": "CJMAT.VALIDATE_WORKBOOK",
+            "ambiguous": "RETURN_ISSUES",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMAT.RESOLVE_ADJUSTMENT_REASON_PARENTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Generate every adjustmentReasons RestAction from an exact reason lookup under its resolved existing parent, or POST for a child of a same-archive new parent",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMAT.VALIDATE_WORKBOOK",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CJMAT.CONFIRM_ARCHIVE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMAT.FIND_ADJUSTMENT_REASONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Data Loader-orchestrated Manage Channel Adjustment Types REST upload is requested",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMAT.CONFIRM_ARCHIVE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "CJMAT.RETURN_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMAT.VALIDATE_WORKBOOK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact channelAdjustmentTypes REST Data Loader archive has passed live-schema validation and awaits explicit approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMAT.RETURN_READY",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMAT.CONFIRM_ARCHIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "core.data-loader may upload and initiate the explicitly approved immutable channelAdjustmentTypes archive",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any workbook validation, child parent-reference, operation selection, dependency, archive approval, upload, or initiation gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_CJM_MANAGE_CHANNEL_DESCRIPTIVE_FLEXFIELDS",
+      "task_name": "Manage Channel Descriptive Flexfields",
+      "start_node": "CJMDF.VALIDATE_DFF_INPUT",
+      "nodes": [
+        {
+          "id": "CJMDF.VALIDATE_DFF_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CJMDF.RESOLVE_DFF_PARENT",
+            "invalid": "CJMDF.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A DFF segment import source is supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMDF.RESOLVE_DFF_PARENT",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "CJMDF.RESOLVE_VALUE_SET_CODE",
+            "not_found": "CJMDF.RETURN_ISSUES",
+            "ambiguous": "CJMDF.RETURN_ISSUES",
+            "blocked": "CJMDF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMDF.VALIDATE_DFF_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A DFF segment import source identifies a target DFF code",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMDF.RESOLVE_VALUE_SET_CODE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CJMDF.RETURN_RESOLVED",
+            "not_found": "CJMDF.RETURN_ISSUES",
+            "ambiguous": "CJMDF.RETURN_ISSUES",
+            "blocked": "CJMDF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMDF.RESOLVE_DFF_PARENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A DFF segment supplies a value-set name or description and ValueSetCode is blank",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMDF.RETURN_RESOLVED",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMDF.RESOLVE_VALUE_SET_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A single current parent DFF, ValueSetCode, and validation contract resolved for FSM CSV preparation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMDF.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "DFF parent or value-set resolution is missing, ambiguous, or unavailable",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_CJM_MANAGE_CHANNEL_LOOKUPS",
+      "task_name": "Manage Channel Lookups",
+      "start_node": "CJMLOOK.VALIDATE_FSM_PACKAGE",
+      "nodes": [
+        {
+          "id": "CJMLOOK.VALIDATE_FSM_PACKAGE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CJMLOOK.APPLY_ENABLED_DEFAULT",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Data Loader-orchestrated Manage Channel Lookups FSM package is prepared for validation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMLOOK.APPLY_ENABLED_DEFAULT",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CJMLOOK.CONFIRM_ARCHIVE",
+            "unchanged": "CJMLOOK.CONFIRM_ARCHIVE"
+          },
+          "prerequisites": [
+            "CJMLOOK.VALIDATE_FSM_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated new lookup-code candidate omits EnabledFlag; stage EnabledFlag=Y and disclose the default before the package approval gate",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMLOOK.CONFIRM_ARCHIVE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "CJMLOOK.RETURN_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMLOOK.APPLY_ENABLED_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact Manage Channel Lookups FSM package, including any disclosed EnabledFlag default, has passed core.data-loader validation and awaits explicit approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMLOOK.RETURN_READY",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMLOOK.CONFIRM_ARCHIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "core.data-loader may upload and initiate the explicitly approved immutable Manage Channel Lookups FSM package",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any existing-parent, new-parent, package validation, archive approval, upload, or initiation gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_CJM_MANAGE_CHANNEL_PROFILE_OPTIONS",
+      "task_name": "Manage Channel Profile Options",
+      "start_node": "CJMPO.VALIDATE_SUPPORTED_PROFILE_INPUT",
+      "nodes": [
+        {
+          "id": "CJMPO.VALIDATE_SUPPORTED_PROFILE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "currency": "CJMPO.RESOLVE_CURRENCY_CONVERSION_TYPE",
+            "installment": "CJMPO.NORMALIZE_INSTALLMENT_CREDIT_METHOD",
+            "generic": "CJMPO.RETURN_GENERIC_PROFILE_ROUTE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate a Channel Revenue Management profile-value request. Select the documented currency or installment rule only for its exact ProfileOptionCode; otherwise select the generic Apps Common profile-options route.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMPO.RESOLVE_CURRENCY_CONVERSION_TYPE",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CJMPO.RETURN_RESOLVED",
+            "not_found": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMPO.VALIDATE_SUPPORTED_PROFILE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The supported-profile validation selected the CJM_CURRENCY_CONVERSION_TYPE route; resolve one canonical conversion_type before a profile-value preview",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMPO.RETURN_RESOLVED",
+          "node_type": "terminal",
+          "sequence": 3,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMPO.RESOLVE_CURRENCY_CONVERSION_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A single canonical conversion_type has been resolved; the task's configured Apps Common route may prepare a separate profile-value preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMPO.RETURN_GENERIC_PROFILE_ROUTE",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMPO.VALIDATE_SUPPORTED_PROFILE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A profile code without a CJM-specific mapping was supplied; core.fusion-api.apps-common.profile-options must read the current profile definition, validate the requested level and updateability, and prepare the standard profile-value preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMPO.NORMALIZE_INSTALLMENT_CREDIT_METHOD",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CJMPO.RETURN_INSTALLMENT_CREDIT_METHOD_RESOLVED",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMPO.VALIDATE_SUPPORTED_PROFILE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The supported-profile validation selected ORA_CJM_AR_CR_MTHD_FOR_INSTL; normalize the requested profile value",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMPO.RETURN_INSTALLMENT_CREDIT_METHOD_RESOLVED",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMPO.NORMALIZE_INSTALLMENT_CREDIT_METHOD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A canonical installment credit-method ProfileOptionValue has been derived; the task's configured Apps Common route may prepare a separate profile-value preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Profile-option input, lookup contract, or lookup result is invalid or incomplete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_CJM_MANAGE_CHANNEL_USER_STATUSES",
+      "task_name": "Manage Channel User Statuses",
+      "start_node": "CJMUS.VALIDATE_REST_INPUT",
+      "nodes": [
+        {
+          "id": "CJMUS.VALIDATE_REST_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CJMUS.FIND_BY_CODE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Data Loader-orchestrated Manage Channel User Statuses REST create or update is requested",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMUS.FIND_BY_CODE",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMUS.CONFIRM_UPDATE_GATE",
+            "not_found": "CJMUS.DERIVE_USER_STATUS_FOR_CODE",
+            "ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMUS.VALIDATE_REST_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Data Loader must select create or update by exact UserStatusCode before enforcing create-only fields",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMUS.DERIVE_USER_STATUS_FOR_CODE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMUS.DERIVE_SYSTEM_STATUS_CODE",
+            "not_found": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMUS.FIND_BY_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Derive UserStatusForCode for a create candidate from a case-insensitive exact UserStatusFor lookup before preview",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMUS.DERIVE_SYSTEM_STATUS_CODE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMUS.APPLY_DOCUMENTED_DEFAULTS",
+            "not_found": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMUS.DERIVE_USER_STATUS_FOR_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Derive SystemStatusCode for a create candidate from a case-insensitive exact SystemStatus lookup selected by resolved UserStatusForCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMUS.APPLY_DOCUMENTED_DEFAULTS",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CJMUS.CONFIRM_CREATE_GATE",
+            "unchanged": "CJMUS.CONFIRM_CREATE_GATE"
+          },
+          "prerequisites": [
+            "CJMUS.DERIVE_SYSTEM_STATUS_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated create candidate omits one or more boolean attributes with Oracle-documented defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMUS.CONFIRM_CREATE_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "CJMUS.RETURN_CREATE_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMUS.APPLY_DOCUMENTED_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "No record exists and an exact core.data-loader channelUserStatuses create preview awaits explicit approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMUS.CONFIRM_UPDATE_GATE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "CJMUS.RETURN_UPDATE_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMUS.FIND_BY_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exactly one record exists and an exact core.data-loader channelUserStatuses update preview awaits explicit approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMUS.RETURN_CREATE_READY",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMUS.CONFIRM_CREATE_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "core.data-loader may authorize one approved channelUserStatuses create and subsequent read-only verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMUS.RETURN_UPDATE_READY",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMUS.CONFIRM_UPDATE_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "core.data-loader may authorize the approved documented update and subsequent read-only verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, dependency, lookup, defaulting, operation-selection, or approval gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_CJM_MANAGE_CHANNEL_VALUE_SETS",
+      "task_name": "Manage Channel Value Sets",
+      "start_node": "CJMVS.VALIDATE_FSM_INPUT",
+      "nodes": [
+        {
+          "id": "CJMVS.VALIDATE_FSM_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CJMVS.RESOLVE_PARENT_CARRIER",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Data Loader-orchestrated Manage Channel Value Sets FSM package is prepared for validation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMVS.RESOLVE_PARENT_CARRIER",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "CJMVS.RESOLVE_VALUE_SET",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMVS.VALIDATE_FSM_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A value-set source identifies its parent code and selected FSM template",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMVS.RESOLVE_VALUE_SET",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMVS.PRESERVE_PARENT_CARRIER",
+            "not_found": "CJMVS.PRESERVE_PARENT_CARRIER",
+            "ambiguous": "RETURN_ISSUES",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMVS.RESOLVE_PARENT_CARRIER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the exact supplied value-set code before package preview",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMVS.PRESERVE_PARENT_CARRIER",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CJMVS.CONFIRM_ARCHIVE",
+            "unchanged": "CJMVS.CONFIRM_ARCHIVE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMVS.RESOLVE_VALUE_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An existing value set has one current FSM parent carrier or a new parent has all required template-supported fields",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMVS.CONFIRM_ARCHIVE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "CJMVS.RETURN_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMVS.PRESERVE_PARENT_CARRIER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact Manage Channel Value Sets FSM package has passed core.data-loader validation and awaits explicit approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMVS.RETURN_READY",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMVS.CONFIRM_ARCHIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "core.data-loader may upload and initiate the explicitly approved immutable Manage Channel Value Sets FSM package",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any value-set identity, parent-carrier, child-value, package-validation, or approval gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "$comment": "Controls optional FSCR pillar-skill selection while creating task context. A unique exact task-code-and-name skill is canonical and may be reused across Oracle offering and functional-area contexts; skill_selection records that relationship explicitly. Oracle task matching is unaffected.",
+  "schema_version": "1.0",
+  "include_missing_skill": true,
+  "$comment.include_missing_skill": "When true, keep a catalog-matched task even when no pillar SKILL.md is found; its skill_path is null and Task Validation skips that task. When false, omit that task from Task Validator context.",
+  "multiple_skill_policy": "SELECT_BY_PRIORITY",
+  "$comment.multiple_skill_policy": "SELECT_BY_PRIORITY chooses one candidate using priority_order. SELECT_LEXICOGRAPHIC_PATH always selects the alphabetically first path. FAIL stops task-context generation when more than one candidate exists.",
+  "priority_order": [
+    "EXACT_TASK_CODE_AND_NAME",
+    "PROJECT_OFFERING_OR_PILLAR",
+    "LEXICOGRAPHIC_PATH"
+  ],
+  "$comment.priority_order": "Applied from first to last only when multiple candidates remain. LEXICOGRAPHIC_PATH guarantees a deterministic final selection."
+}

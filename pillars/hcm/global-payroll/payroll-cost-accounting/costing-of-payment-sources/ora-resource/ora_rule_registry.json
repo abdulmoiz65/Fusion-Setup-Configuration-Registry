@@ -1,0 +1,1550 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_PAYMENT_SOURCE_COSTING",
+      "task_name": "Costing of Payment Sources",
+      "start_node": "CPS.SEARCH.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "CPS.SEARCH.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "search": "CPS.SEARCH.APPLY_DEFAULTS",
+            "hdl_input": "CPS.HDL.VALIDATE_INPUT",
+            "end_date_input": "CPS.END_DATE.VALIDATE_TARGET",
+            "zap_input": "CPS.ZAP.VALIDATE_TARGET",
+            "needs_input": "CPS.SEARCH.NEEDS_INPUT",
+            "invalid": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Entry for Search and Create/Update/End Date/Zap. End Date first validates its separate source/LDG/start/end inputs; missing inputs yield needs_input before GETs. Apply only the requirements for the selected phase; discover display-name identities before enforcing HDL-only fields",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.SEARCH.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CPS.SEARCH.RESOLVE_LDG",
+            "unchanged": "CPS.SEARCH.RESOLVE_LDG",
+            "invalid": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.SEARCH.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply only the search date and costing-state defaults before search. Do not require or default any HDL field during Search",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.SEARCH.RESOLVE_LDG",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CPS.SEARCH.FIND_SOURCES",
+            "skipped": "CPS.SEARCH.FIND_SOURCES",
+            "needs_selection": "CPS.SEARCH.LDG_SELECTION",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.SEARCH.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run only resolve_ldg_for_payment_source_search when an LDG filter needs resolution. If no LDG filter is supplied, record skipped; zero or ambiguous LDGs yield needs_selection",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 359
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.SEARCH.FIND_SOURCES",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "received": "CPS.SEARCH.SELECT_RESULT",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.SEARCH.RESOLVE_LDG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run only search_payment_sources after resolved or skipped LDG lookup; retain the full response for selection",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 360
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.SEARCH.SELECT_RESULT",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "search_complete": "CPS.SEARCH.DONE",
+            "needs_selection": "CPS.SEARCH.SOURCE_SELECTION",
+            "hdl_selected": "CPS.SEARCH.RESOLVE_ORG_METHOD",
+            "end_date_selected": "CPS.SEARCH.RESOLVE_ORG_METHOD",
+            "zap_selected": "CPS.SEARCH.RESOLVE_ORG_METHOD",
+            "recovery_selected": "CPS.ZAP.VALIDATE_TARGET",
+            "code_selected": "CPS.SEARCH.RESOLVE_ORG_METHOD",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.SEARCH.FIND_SOURCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Lookup Execution Rules to the returned collection. A complete plain Search list, including an empty list, returns search_complete. An unresolved operation/code request, partial collection or single-record ambiguity returns needs_selection. A unique selection for Create/Update returns hdl_selected; for End Date return end_date_selected; for a new Zap return zap_selected; for an explicitly requested CostInfo-only recovery with saved accepted-run evidence return recovery_selected; for explicitly requested method-code enrichment of Search, return code_selected. Neither outcome asserts HDL readiness",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 361
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.SEARCH.RESOLVE_ORG_METHOD",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved_hdl": "CPS.HDL.VALIDATE_INPUT",
+            "resolved_end_date": "CPS.END_DATE.VALIDATE_TARGET",
+            "resolved_zap": "CPS.ZAP.VALIDATE_TARGET",
+            "resolved_search": "CPS.SEARCH.CODE_DONE",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.SEARCH.SELECT_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run resolve_organization_payment_method_code for the uniquely selected source and apply the common automatic parent-binding gate. Valid relationship evidence returns resolved_hdl for Create/Update, resolved_zap for full Zap, resolved_end_date for End Date, otherwise resolved_search. Missing/ambiguous relationship evidence, explicit conflicts, transport or contract failures return failed; never request parent-association confirmation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 362
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.ZAP.VALIDATE_TARGET",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CPS.ZAP.HISTORY",
+            "invalid": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.SEARCH.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate only Zap identity and selector inputs, including method binding after discovery for a new full Zap; recovery instead requires saved accepted-run identity and the PM CostInfo-Only Recovery contract; skip all Create/Update flag and account-value groups",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.ZAP.HISTORY",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CPS.ZAP.DETAILS",
+            "blocked": "CPS.HDL.HANDLE_ERROR",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.ZAP.VALIDATE_TARGET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply PM CostInfo-Only Recovery when that branch is selected; otherwise run query_payment_source_costing_history for the bound PM source and exact selector; retain the complete selected logical history",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 363
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.ZAP.DETAILS",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CPS.ZAP.VALIDATE_SOURCE",
+            "blocked": "CPS.HDL.HANDLE_ERROR",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.ZAP.HISTORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply PM CostInfo-Only Recovery for saved scope and current detail reconciliation when that branch is selected; otherwise run query_payment_source_costing_details across all selected history starts and any exclusivity checks; require aligned CostInfo and complete accounts",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 364
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.HDL.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CPS.UPDATE.RESOLVE_STATE",
+            "invalid": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.SEARCH.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For Create apply its HDL input requirements; for Update apply Update scope's delta-first checks without demanding derived end dates or complete user-supplied accounts. Preserve normalized requested flags and reject conflicting role/proportion inputs. Require current automatic parent binding; no reference attachments",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.ZAP.VALIDATE_SOURCE",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CPS.ZAP.CHECK_DEPENDENCIES",
+            "invalid": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.ZAP.DETAILS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply only Zap evidence and DAT shape checks to the three-component DELETE plan or reconciled CostInfo-only recovery plan; preparation is not permission to submit",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.UPDATE.RESOLVE_STATE",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CPS.UPDATE.VALIDATE_STATE",
+            "skipped": "CPS.UPDATE.VALIDATE_STATE",
+            "blocked": "CPS.HDL.HANDLE_ERROR",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.HDL.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run resolve_payment_source_update_state for Update before full-input validation and defaults. Create records skipped without a history/detail call. Search and Zap never enter this node",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 365
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.UPDATE.VALIDATE_STATE",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CPS.HDL.APPLY_DEFAULTS",
+            "invalid": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.UPDATE.RESOLVE_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For Update apply resulting-state, date alignment, PM identity, effective flag and required-account checks using live evidence; retain component deltas for runtime mapping. For Create apply its full input and required-account checks unchanged after the state node records skipped. Do not treat a partial business delta as an incomplete full-account input",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.VALIDATE_TARGET",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CPS.END_DATE.RESOLVE_STATE",
+            "invalid": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.SEARCH.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply End Date required selectors, distinct date roles, PM HDL identity and automatic parent binding; no account or flag input. Missing source base code is a business-key gap, never a display-name substitution",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.HDL.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CPS.HDL.RESOLVE_KFF_LDG",
+            "skipped": "CPS.HDL.RESOLVE_KFF_LDG",
+            "invalid": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.UPDATE.VALIDATE_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Assign Standard Defaults after complete state validation and before Full Flexfield lookups. Create retains its date default; Update consumes its resolved end date and complete account order. Apply role, fixed Proportion and consecutive sequence defaults without user confirmation; reject conflicts",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.HDL.RESOLVE_KFF_LDG",
+          "node_type": "decision",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CPS.HDL.RESOLVE_FULL_KFF",
+            "skipped": "CPS.HDL.RESOLVE_FULL_KFF",
+            "blocked": "CPS.HDL.HANDLE_ERROR",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.HDL.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run resolve_payment_source_kff_ldg for every Create/Update account snapshot, including unchanged Update rows. Skip only for a proven empty Update set permitted by effective flags",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 366
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.HDL.RESOLVE_FULL_KFF",
+          "node_type": "decision",
+          "sequence": 17,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CPS.HDL.VALIDATE_FULL_KFF",
+            "skipped": "CPS.HDL.VALIDATE_FULL_KFF",
+            "blocked": "CPS.HDL.HANDLE_ERROR",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.HDL.RESOLVE_KFF_LDG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run resolve_payment_source_full_kff, map Update's stored full accounts and component deltas under Full Flexfield Contract, and preserve all unedited values. Skip only when the prior node skipped a proven empty Update set",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 367
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.HDL.VALIDATE_FULL_KFF",
+          "node_type": "decision",
+          "sequence": 18,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "validated": "CPS.HDL.CHECK_DEPENDENCIES",
+            "skipped": "CPS.HDL.CHECK_DEPENDENCIES",
+            "blocked": "CPS.HDL.HANDLE_ERROR",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.HDL.RESOLVE_FULL_KFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run validate_payment_source_full_kff_values for the complete resulting account set, including Update carry-forward rows; retain validated_full_kff_accounts. Skip only for a proven empty Update set. Invalid old/new values or incomplete evidence blocks preparation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 368
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.RESOLVE_STATE",
+          "node_type": "decision",
+          "sequence": 19,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CPS.END_DATE.VALIDATE_STATE",
+            "blocked": "CPS.HDL.HANDLE_ERROR",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.END_DATE.VALIDATE_TARGET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run resolve_payment_source_end_date_state for exact-start, complete-history and aligned CostInfo/account evidence. No Update delta, DELETE target construction or KFF validation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 373
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.HDL.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPS.HDL.ENFORCE_ROUTE",
+            "blocked": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.HDL.VALIDATE_FULL_KFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After inputs/defaults, resulting payment-account presence and applicable Full Flexfield checks pass. Update requires its live baseline and validation of all rendered carry-forward accounts; only a proven permitted empty account set skips KFF. Evaluate only the declared dependencies within task scope",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.ZAP.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 21,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPS.ZAP.ENFORCE",
+            "blocked": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.ZAP.VALIDATE_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate only Zap dependencies and the shared immutable-archive requirement. Complete source/schema and Task Hook preparation before the final loader approval; skip Create/Update account-write dependencies",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.VALIDATE_STATE",
+          "node_type": "decision",
+          "sequence": 22,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CPS.END_DATE.APPLY_DEFAULTS",
+            "invalid": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.END_DATE.RESOLVE_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply End Date state and date-only input checks against the sealed last interval and aligned CostInfo, not Update's new-split rule",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.APPLY_DEFAULTS",
+          "node_type": "decision",
+          "sequence": 23,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CPS.END_DATE.CHECK_DEPENDENCIES",
+            "unchanged": "CPS.END_DATE.CHECK_DEPENDENCIES",
+            "invalid": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.END_DATE.VALIDATE_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply ReplaceLastEffectiveEndDate=Y to both members of the same archive when a change is needed. Preserve S/F; CostInfoV3 carries the four observed flags, never defaults them. Skip account and Create/Update date defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 24,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPS.END_DATE.ENFORCE",
+            "blocked": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.END_DATE.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate End Date identity, baseline and both components' loader/date-effectivity support for one combined archive. For F=E skip template/capability/upload. No prior CostInfo-only load or intermediate date difference is required",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.HDL.ENFORCE_ROUTE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready_create": "CPS.HDL.GATE_CREATE",
+            "ready_update": "CPS.UPDATE.REFRESH",
+            "no_change": "CPS.UPDATE.NO_CHANGE",
+            "blocked": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.HDL.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce the selected HDL route. Update requires the complete validated snapshot and exact delta; if all resulting business values equal the baseline, return no_change without an archive. Otherwise continue through preparation and freshness to the single loader approval gate",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.ZAP.ENFORCE",
+          "node_type": "decision",
+          "sequence": 31,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPS.ZAP.REFRESH",
+            "blocked": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.ZAP.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply only Zap policies: three explicit components for full Zap, or only the reconciled failed CostInfo targets for recovery, full logical history, preserved source/method, validated loader route and immutable preview; approval occurs once at the loader gate after refresh",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.ZAP.REFRESH",
+          "node_type": "decision",
+          "sequence": 32,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "unchanged": "CPS.ZAP.GATE",
+            "changed": "CPS.HDL.HANDLE_ERROR",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.ZAP.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For CostInfo-only recovery, repeat its source/history/detail reconciliation and compare the recovery baseline; otherwise apply Freshness using the history/detail resolvers against the immutable archive baseline before fresh destructive approval; changes require new preparation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 369
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.UPDATE.REFRESH",
+          "node_type": "decision",
+          "sequence": 33,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "unchanged": "CPS.HDL.GATE_UPDATE",
+            "changed": "CPS.HDL.HANDLE_ERROR",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.HDL.ENFORCE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Update freshness through the declared source/parent and resolve_payment_source_update_state lookups during preparation, before approval. Changed state blocks the archive; approval resume restores this completed evidence without rerunning GETs",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 370
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.ENFORCE",
+          "node_type": "decision",
+          "sequence": 34,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CPS.END_DATE.REFRESH",
+            "no_change": "CPS.END_DATE.NO_CHANGE",
+            "blocked": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.END_DATE.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce the combined End Date archive and both component capabilities; F=E returns verified no change. Otherwise proceed to freshness and the single loader gate for CostInfoV3 and CostAllocationV3 together",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.REFRESH",
+          "node_type": "decision",
+          "sequence": 35,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "unchanged": "CPS.END_DATE.GATE",
+            "changed": "CPS.HDL.HANDLE_ERROR",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.END_DATE.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply End Date freshness through the source/parent and resolve_payment_source_end_date_state contracts before preview. Restore this completed evidence on intact approval resume without new GETs",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 374
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.HDL.GATE_CREATE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "CPS.HDL.READY_CREATE",
+            "blocked": "CPS.HDL.HANDLE_ERROR",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.HDL.ENFORCE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Create archive passed validation and has fresh approval for core.data-loader handoff.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.ZAP.GATE",
+          "node_type": "decision",
+          "sequence": 41,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "validated_only": "CPS.ZAP.VALIDATED",
+            "awaiting_approval": "CPS.ZAP.AWAITING_APPROVAL",
+            "initiated": "CPS.ZAP.RESULT",
+            "blocked": "CPS.HDL.HANDLE_ERROR",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.ZAP.REFRESH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply the Zap preparation and resume gates in ora_design_enforcement.md. For validation-only intent, return validated_only with no upload. For requested execution, require the persisted preflight and Task Hook preview before awaiting_approval; this expected wait is not a failure. A later contextual approval resumes this node with the saved preapproval evidence, verifies the approved artifacts without repeating live checks, hands off once through core.data-loader and returns initiated only after acceptance. Missing or mismatched control artifacts yield blocked, never another execution route",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 121
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.GATE",
+          "node_type": "decision",
+          "sequence": 42,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "validated_only": "CPS.END_DATE.VALIDATED",
+            "awaiting_approval": "CPS.END_DATE.AWAITING_APPROVAL",
+            "initiated": "CPS.END_DATE.RESULT",
+            "blocked": "CPS.HDL.HANDLE_ERROR",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.END_DATE.REFRESH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Complete core.data-loader validation of one immutable ZIP containing CostInfoV3.dat and CostAllocationV3.dat, persisted preflight and Task Hook preview with unchanged live flags. Validation-only stops; execution awaits one exact-archive approval. Resume intact controls without GETs/rebuilds, approve/verify envelope and submit both members together once",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 126
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.HDL.GATE_UPDATE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "validated_only": "CPS.UPDATE.VALIDATED",
+            "awaiting_approval": "CPS.UPDATE.AWAITING_APPROVAL",
+            "initiated": "CPS.UPDATE.RESULT",
+            "blocked": "CPS.HDL.HANDLE_ERROR",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.UPDATE.REFRESH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Finish DAT/source/schema validation and immutable ZIP preparation. For execution, require the persisted loader preflight and Task Hook preview before awaiting approval; resume that gate with intact controls and exact-byte approval verification, then submit once through core.data-loader. Validation-only returns validated_only without upload or approval prompt. Restore completed preapproval evidence on resume, never rebuild or repeat GETs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.ZAP.RESULT",
+          "node_type": "decision",
+          "sequence": 51,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "pending": "CPS.ZAP.PENDING",
+            "terminal_succeeded": "CPS.ZAP.VERIFY",
+            "terminal_failed": "CPS.HDL.HANDLE_ERROR",
+            "unknown": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.ZAP.GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return pending on accepted initiation. Resume the same accepted run only on explicit status/verification request, restoring gate evidence; never revisit the submit gate or resubmit. All included component/row results must succeed before terminal_succeeded",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.ZAP.VERIFY",
+          "node_type": "decision",
+          "sequence": 52,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "CPS.ZAP.DONE",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.ZAP.RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply PM Zap Verification only after terminal success of every included loader component; use saved source and history, never require the deleted record to resolve",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 371
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.UPDATE.RESULT",
+          "node_type": "decision",
+          "sequence": 53,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "pending": "CPS.UPDATE.PENDING",
+            "terminal_succeeded": "CPS.UPDATE.VERIFY",
+            "terminal_failed": "CPS.HDL.HANDLE_ERROR",
+            "unknown": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.HDL.GATE_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return pending after accepted initiation; resume the same run only on explicit status/verification request. Require all submitted objects and rows to succeed before verification, never revisit the upload gate",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.UPDATE.VERIFY",
+          "node_type": "decision",
+          "sequence": 54,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "CPS.HDL.READY_UPDATE",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.UPDATE.RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply PM Update State and Verification using resolve_payment_source_update_state after all submitted rows succeed on an explicit follow-up. Compare both sides of the new date boundary and preserve earlier/later history; no automatic import retry",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 372
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.RESULT",
+          "node_type": "decision",
+          "sequence": 55,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "pending": "CPS.END_DATE.PENDING",
+            "terminal_succeeded": "CPS.END_DATE.VERIFY",
+            "terminal_failed": "CPS.HDL.HANDLE_ERROR",
+            "unknown": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.END_DATE.GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Accepted initiation returns pending. Explicit status uses the same core.data-loader run and all error checks; require both CostInfoV3 and CostAllocationV3 rows to succeed before final read-back. Partial or unknown outcomes stop without replay or a separate-object continuation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.VERIFY",
+          "node_type": "decision",
+          "sequence": 59,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "CPS.END_DATE.DONE",
+            "failed": "CPS.HDL.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CPS.END_DATE.RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After both included objects reach terminal success on explicit verification, apply final PM End Date State and Verification with the saved baseline, inclusive end, next day and all earlier values",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 375
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.HDL.READY_CREATE",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.HDL.GATE_CREATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The approved Create archive is ready for core.data-loader handoff.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.ZAP.PENDING",
+          "node_type": "terminal",
+          "sequence": 61,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.ZAP.RESULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The approved Zap was initiated or remains pending; return the exact saved handoff reference. Resume only at CPS.ZAP.RESULT on explicit status/verification request, never at the submit gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 122
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.ZAP.DONE",
+          "node_type": "terminal",
+          "sequence": 62,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.ZAP.VERIFY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "All included loader objects succeeded and PM Zap Verification passed for the complete approved costing scope; preserve source/method and disclose the CostInfo verification boundary",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 123
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.ZAP.AWAITING_APPROVAL",
+          "node_type": "terminal",
+          "sequence": 63,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.ZAP.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The full-Zap or CostInfo-only recovery artifact, preflight and Task Hook preview are complete. Return the loader approval-required report. Resume CPS.ZAP.GATE only on contextual approval of that exact load; do not repeat preapproval GETs or ask for a second confirmation when the artifacts and context remain intact",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 124
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.ZAP.VALIDATED",
+          "node_type": "terminal",
+          "sequence": 64,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.ZAP.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Only preparation/validation was requested and completed. Return the loader validation report and requested artifacts with no approval prompt or upload. A later request to execute requires the loader preflight and approval workflow; do not treat this terminal as a prepared submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 125
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.DONE",
+          "node_type": "terminal",
+          "sequence": 65,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.END_DATE.VERIFY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Both objects in the combined load succeeded and final End Date checks passed: aligned S..F, next-day absence, original physical accounts and unchanged earlier history/flags",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 127
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.PENDING",
+          "node_type": "terminal",
+          "sequence": 66,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.END_DATE.RESULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the combined load's accepted/pending report. Resume only on explicit status/verification at CPS.END_DATE.RESULT with its saved baseline and IDs; no automatic polling, replay or separate-object submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 128
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.VALIDATED",
+          "node_type": "terminal",
+          "sequence": 67,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.END_DATE.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Preparation and loader validation of the combined archive finished without a write or approval prompt. A later execution request requires persisted preflight and the exact archive's approval workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 129
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.AWAITING_APPROVAL",
+          "node_type": "terminal",
+          "sequence": 68,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.END_DATE.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the combined CostInfoV3/CostAllocationV3 preview and its single loader approval requirement. Approval restores CPS.END_DATE.GATE only for those exact bytes and context; no separate-object approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 130
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.END_DATE.NO_CHANGE",
+          "node_type": "terminal",
+          "sequence": 69,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.END_DATE.ENFORCE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Complete live state proves the selected last CostInfo/CostAllocation slice already ends on F. Return no change and no import; no template/capability gate or approval is needed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 131
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.HDL.READY_UPDATE",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.UPDATE.VERIFY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The Update is complete: all submitted components succeeded and the requested new split, changed values and preserved scope passed read-back. This terminal no longer means merely ready to submit",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.SEARCH.NEEDS_INPUT",
+          "node_type": "terminal",
+          "sequence": 71,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.SEARCH.VALIDATE_INPUT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Search needs its minimum source-name fragment or LDG, or Zap needs its start-date selector. Retain supplied inputs and ask only for the missing value; no lookup has run",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.SEARCH.LDG_SELECTION",
+          "node_type": "terminal",
+          "sequence": 72,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.SEARCH.RESOLVE_LDG"
+          ],
+          "on_failure": "continue",
+          "applies_when": "LDG lookup needs refinement or explicit candidate selection; preserve the returned names and search context",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.SEARCH.SOURCE_SELECTION",
+          "node_type": "terminal",
+          "sequence": 73,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.SEARCH.SELECT_RESULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Source lookup needs refinement/selection, is incomplete, or cannot resolve the target of a requested operation or method-code request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 112
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.SEARCH.DONE",
+          "node_type": "terminal",
+          "sequence": 74,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.SEARCH.SELECT_RESULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return a complete plain Search/list result, including zero matches, or one selected search row. No HDL execution or approval is implied",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 113
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.SEARCH.CODE_DONE",
+          "node_type": "terminal",
+          "sequence": 75,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.SEARCH.RESOLVE_ORG_METHOD"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the source with its resolved organization-method code and association provenance for an explicitly code-enriched Search; no HDL validation, archive or approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 114
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.UPDATE.PENDING",
+          "node_type": "terminal",
+          "sequence": 76,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.UPDATE.RESULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the accepted Update Content ID/Request ID and pending result. Resume only on an explicit status/verification request at CPS.UPDATE.RESULT; do not poll automatically or resubmit",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 115
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.UPDATE.VALIDATED",
+          "node_type": "terminal",
+          "sequence": 77,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.HDL.GATE_UPDATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Requested preparation/validation completed without a Fusion write. A later execution request still requires loader preflight and exact-artifact approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 116
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.UPDATE.AWAITING_APPROVAL",
+          "node_type": "terminal",
+          "sequence": 78,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.HDL.GATE_UPDATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the immutable Update preview and single loader approval requirement. Contextual approval resumes the saved gate without rebuilding; no second pillar approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 117
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.UPDATE.NO_CHANGE",
+          "node_type": "terminal",
+          "sequence": 79,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.HDL.ENFORCE_ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The live validated resulting accounts and flags equal current values. Report no change and no import; no effective split was created",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 118
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.HDL.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "CPS.HDL.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any search contract/transport, validation, dependency, design, approval, loader, artifact, or unsupported-operation failure. Apply only the diagnosis for the current phase",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 119
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CPS.HDL.FAILED",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CPS.HDL.HANDLE_ERROR"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The request stopped with a classified diagnostic and safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 120
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

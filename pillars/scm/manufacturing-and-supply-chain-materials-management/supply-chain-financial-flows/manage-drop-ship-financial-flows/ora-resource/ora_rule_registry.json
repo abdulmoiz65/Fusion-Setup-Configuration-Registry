@@ -1,0 +1,413 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_FOS_MANAGE_DROP_SHIP_AGREEMENTS",
+      "task_name": "Manage Drop Ship Financial Flows",
+      "start_node": "FOS.DSF.VALIDATE-CONTRACT-SOURCE",
+      "nodes": [
+        {
+          "id": "FOS.DSF.VALIDATE-CONTRACT-SOURCE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "create_valid": "FOS.DSF.CHECK-NAME-AVAILABLE",
+            "update_valid": "FOS.DSF.RESOLVE-HEADER-SURROGATE",
+            "child_create_valid": "FOS.DSF.RESOLVE-HEADER-SURROGATE",
+            "child_correction_valid": "FOS.DSF.RESOLVE-HEADER-SURROGATE",
+            "invalid": "RETURN-ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every supported agreement-header, child-create, or child-correction request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.DSF.CHECK-NAME-AVAILABLE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "available": "FOS.DSF.APPLY-CREATE-DEFAULTS",
+            "duplicate": "RETURN-ISSUES",
+            "lookup_failed": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FOS.DSF.VALIDATE-CONTRACT-SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every agreement header create request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.DSF.APPLY-CREATE-DEFAULTS",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "FOS.DSF.CONFIRM-LOADER-READINESS",
+            "invalid_override": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FOS.DSF.CHECK-NAME-AVAILABLE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every agreement header create request",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.DSF.CONFIRM-LOADER-READINESS",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RETURN-SUCCESS",
+            "incomplete": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FOS.DSF.APPLY-CREATE-DEFAULTS",
+            "FOS.DSF.CHECK-NAME-AVAILABLE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every agreement header create request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.DSF.RESOLVE-HEADER-SURROGATE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "header_resolved": "FOS.DSF.CONFIRM-HEADER-UPDATE-READINESS",
+            "child_parent_resolved": "FOS.DSF.RESOLVE-SELLING-BUSINESS-UNIT",
+            "child_correction_parent_resolved": "FOS.DSF.RESOLVE-CHILD-SURROGATE",
+            "not_found": "RETURN-ISSUES",
+            "ambiguous": "RETURN-ISSUES",
+            "lookup_failed": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FOS.DSF.VALIDATE-CONTRACT-SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supported header update, child primary trade relation create, or child correction request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.DSF.CONFIRM-HEADER-UPDATE-READINESS",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RETURN-UPDATE-SUCCESS",
+            "incomplete": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FOS.DSF.RESOLVE-HEADER-SURROGATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supported header update",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.DSF.RESOLVE-SELLING-BUSINESS-UNIT",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FOS.DSF.RESOLVE-RECEIVING-TRADE-ORGANIZATION",
+            "not_found": "RETURN-ISSUES",
+            "ambiguous": "RETURN-ISSUES",
+            "lookup_failed": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FOS.DSF.RESOLVE-HEADER-SURROGATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every child primary trade relation create request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.DSF.RESOLVE-RECEIVING-TRADE-ORGANIZATION",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FOS.DSF.CONFIRM-CHILD-CREATE-READINESS",
+            "not_found": "RETURN-ISSUES",
+            "ambiguous": "RETURN-ISSUES",
+            "lookup_failed": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FOS.DSF.RESOLVE-SELLING-BUSINESS-UNIT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every child primary trade relation create request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.DSF.CONFIRM-CHILD-CREATE-READINESS",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RETURN-CHILD-CREATE-SUCCESS",
+            "incomplete": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FOS.DSF.RESOLVE-RECEIVING-TRADE-ORGANIZATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every child primary trade relation create request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.DSF.RESOLVE-CHILD-SURROGATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FOS.DSF.CONFIRM-CHILD-CORRECTION-READINESS",
+            "not_found": "RETURN-ISSUES",
+            "ambiguous": "RETURN-ISSUES",
+            "lookup_failed": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FOS.DSF.RESOLVE-HEADER-SURROGATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every child primary trade relation correction request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOS.DSF.CONFIRM-CHILD-CORRECTION-READINESS",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RETURN-CHILD-CORRECTION-SUCCESS",
+            "incomplete": "RETURN-ISSUES"
+          },
+          "prerequisites": [
+            "FOS.DSF.RESOLVE-CHILD-SURROGATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every child primary trade relation correction request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN-ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any blocking outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN-SUCCESS",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FOS.DSF.CONFIRM-LOADER-READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated task-plan outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN-UPDATE-SUCCESS",
+          "node_type": "terminal",
+          "sequence": 101,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FOS.DSF.CONFIRM-HEADER-UPDATE-READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated header-update outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN-CHILD-CREATE-SUCCESS",
+          "node_type": "terminal",
+          "sequence": 102,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FOS.DSF.CONFIRM-CHILD-CREATE-READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated child primary trade relation create outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN-CHILD-CORRECTION-SUCCESS",
+          "node_type": "terminal",
+          "sequence": 103,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FOS.DSF.CONFIRM-CHILD-CORRECTION-READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated child primary trade relation correction outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

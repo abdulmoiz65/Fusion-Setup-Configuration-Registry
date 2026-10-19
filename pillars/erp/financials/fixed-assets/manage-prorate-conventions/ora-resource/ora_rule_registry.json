@@ -1,0 +1,394 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "FA_MANAGE_PRORATE_CONVENTION",
+      "task_name": "Manage Prorate Conventions",
+      "start_node": "PRC.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "PRC.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PRC.LOOKUP_CONTEXT",
+            "invalid": "PRC.HANDLE_INPUT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Apply Required Groups, Field Validation, and Prorate Basis Resolution for the selected operation. Export-only bypasses this registry.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.LOOKUP_CONTEXT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PRC.GENERATE_DATES",
+            "matches_listed": "PRC.DONE_FISCAL_YEARS",
+            "not_found_or_failed": "PRC.HANDLE_LOOKUP"
+          },
+          "prerequisites": [
+            "PRC.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Lookup Execution Rules and Fiscal-Year Lookup Freshness for the route selected by Required Dependency Order in ora_dependency_readiness.md. Under Fiscal-Year Selection Rules, return matches_listed for a complete nonempty inquiry finding, resolved for completed generation context and all applicable lookups, or not_found_or_failed for invalid, unresolved, or failed lookups.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.GENERATE_DATES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "generated": "PRC.ENFORCE_DESIGN",
+            "generation_failed": "PRC.HANDLE_GENERATION"
+          },
+          "prerequisites": [
+            "PRC.LOOKUP_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Standard Defaults and Generation Contract to the resolved context, including immutable-archive candidate matching when applicable. Apply Audit-Field Defaults only to proposed create/update rows, without creating a ZIP. Pass any audit mapping conflict forward as a technical package gap.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "checked": "PRC.RESOLVE_PACKAGE",
+            "generation_failed": "PRC.HANDLE_DESIGN"
+          },
+          "prerequisites": [
+            "PRC.GENERATE_DATES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply applicable Design Rules before readiness. A date-integrity failure selects generation_failed. Pass an audit or package_gap to PRC.RESOLVE_PACKAGE for its blocked outcome. Parent-directed actual-package validation reuses these checks at the stage specified by Enforcement Order.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.RESOLVE_PACKAGE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "create_verified": "PRC.DONE_CREATE",
+            "update_verified": "PRC.DONE_UPDATE",
+            "existing_zip_validated": "PRC.DONE_EXISTING_ZIP",
+            "already_exists": "PRC.DONE_EXISTS",
+            "blocked": "PRC.HANDLE_PACKAGE"
+          },
+          "prerequisites": [
+            "PRC.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Consume the applicable Dependency Rules and Design Enforcement result, then resolve_existing_prorate_convention for create/update. Any technical package gap selects blocked. Successful outcomes use Validation-Graph Handoff.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.DONE_CREATE",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PRC.RESOLVE_PACKAGE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Verified create readiness; continue through Validation-Graph Handoff in ora_dependency_readiness.md.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.DONE_UPDATE",
+          "node_type": "terminal",
+          "sequence": 41,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PRC.RESOLVE_PACKAGE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Verified update readiness; continue through Validation-Graph Handoff in ora_dependency_readiness.md.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.DONE_EXISTING_ZIP",
+          "node_type": "terminal",
+          "sequence": 42,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PRC.RESOLVE_PACKAGE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Supplied archive passed task-local validation; continue through Validation-Graph Handoff in ora_dependency_readiness.md.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.DONE_EXISTS",
+          "node_type": "terminal",
+          "sequence": 43,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PRC.RESOLVE_PACKAGE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Equivalent existing convention; use Validation-Graph Handoff in ora_dependency_readiness.md.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.DONE_FISCAL_YEARS",
+          "node_type": "terminal",
+          "sequence": 44,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PRC.LOOKUP_CONTEXT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Complete nonempty inquiry finding; use Validation-Graph Handoff in ora_dependency_readiness.md.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.HANDLE_INPUT",
+          "node_type": "step",
+          "sequence": 45,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "PRC.ISSUES"
+          },
+          "prerequisites": [
+            "PRC.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input is missing or invalid; use Error Situations.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.HANDLE_LOOKUP",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "PRC.ISSUES"
+          },
+          "prerequisites": [
+            "PRC.LOOKUP_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An applicable lookup is invalid, unresolved, or failed; use Error Situations.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.HANDLE_GENERATION",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "PRC.ISSUES"
+          },
+          "prerequisites": [
+            "PRC.GENERATE_DATES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Basis matching or date calculation failed; use Error Situations.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.HANDLE_DESIGN",
+          "node_type": "step",
+          "sequence": 65,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "PRC.ISSUES"
+          },
+          "prerequisites": [
+            "PRC.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Date-integrity checks failed; use the generation-failure Error Situations.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.HANDLE_PACKAGE",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "PRC.ISSUES"
+          },
+          "prerequisites": [
+            "PRC.RESOLVE_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Package readiness, evidence, or target-state decision is unresolved; use Error Situations.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRC.ISSUES",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "An input, lookup, generation, or package-readiness issue remains",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

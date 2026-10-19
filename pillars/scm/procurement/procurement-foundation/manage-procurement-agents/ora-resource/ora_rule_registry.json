@@ -1,0 +1,202 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PO_MANAGE_PROCUREMENT_AGENTS",
+      "task_name": "Manage Procurement Agents",
+      "start_node": "PAG.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "PAG.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "create_valid": "PAG.APPLY_DEFAULTS",
+            "update_valid": "PAG.ENFORCE_UPDATE",
+            "invalid": "PAG.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before a procurement-agent create, update, or DFF maintenance proposal",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PAG.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "PAG.ENFORCE_CREATE",
+            "unchanged": "PAG.ENFORCE_CREATE"
+          },
+          "prerequisites": [
+            "PAG.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A client-side create form has passed required-field validation and any available duplicate check",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PAG.ENFORCE_CREATE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "PAG.READY_CREATE",
+            "blocked": "PAG.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "PAG.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A client-side create candidate has been validated and defaulted",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PAG.ENFORCE_UPDATE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "PAG.READY_UPDATE",
+            "blocked": "PAG.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "PAG.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A client-side update or DFF maintenance proposal has been validated",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PAG.HANDLE_ISSUES",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "PAG.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Client-side validation, duplicate checking, design enforcement, privilege, or DFF readiness is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PAG.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A client-side blocking issue has been disclosed with a safe next action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PAG.READY_CREATE",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PAG.ENFORCE_CREATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The client-side create preview is complete; any environment verification or mutation belongs to a separate workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PAG.READY_UPDATE",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PAG.ENFORCE_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The client-side update or DFF maintenance preview is complete; any environment verification or mutation belongs to a separate workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

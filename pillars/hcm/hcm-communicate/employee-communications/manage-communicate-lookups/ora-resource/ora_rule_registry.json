@@ -1,0 +1,592 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_COMMUNICATE_LOOKUPS",
+      "task_name": "Manage Communicate Lookups",
+      "start_node": "CCL.VALIDATE",
+      "nodes": [
+        {
+          "id": "CCL.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "list_types": "CCL.LIST_TYPES",
+            "exact_type": "CCL.CLASSIFY_SCOPE",
+            "codes": "CCL.CLASSIFY_SCOPE",
+            "translations": "CCL.CLASSIFY_SCOPE",
+            "create_type": "CCL.CLASSIFY_SCOPE",
+            "update_type": "CCL.CLASSIFY_SCOPE",
+            "delete_type": "CCL.CLASSIFY_SCOPE",
+            "create_code": "CCL.CLASSIFY_SCOPE",
+            "update_code": "CCL.CLASSIFY_SCOPE",
+            "delete_code": "CCL.CLASSIFY_SCOPE",
+            "post_change": "CCL.VERIFY_RESOURCE",
+            "issues": "CCL.INPUT_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Communicate Lookups request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.LIST_TYPES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "complete": "CCL.CLASSIFY_SCOPE",
+            "issues": "CCL.LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "CCL.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A complete HCM Communicate Common Lookup inventory is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.CLASSIFY_SCOPE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "list_review": "CCL.DONE_LIST",
+            "exact": "CCL.READ_PARENT",
+            "blocked": "CCL.OWNERSHIP_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Requested or returned LookupTypes require ownership classification",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.READ_PARENT",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "parent_review": "CCL.DONE_PARENT",
+            "codes": "CCL.READ_CODE",
+            "translations": "CCL.READ_CODE",
+            "create_type": "CCL.ENFORCE",
+            "update_type": "CCL.ENFORCE",
+            "delete_type": "CCL.ENFORCE",
+            "create_code": "CCL.READ_CODE",
+            "update_code": "CCL.READ_CODE",
+            "delete_code": "CCL.READ_CODE",
+            "issues": "CCL.LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "CCL.CLASSIFY_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An exact eligible Common Lookup type must be read or checked for absence",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.READ_CODE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "CCL.DONE_CODES",
+            "translations": "CCL.READ_TRANSLATIONS",
+            "create": "CCL.ENFORCE",
+            "update": "CCL.ENFORCE",
+            "delete": "CCL.ENFORCE",
+            "issues": "CCL.LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "CCL.READ_PARENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Codes are listed, read, translated, or prepared for mutation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.ENFORCE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "create": "CCL.PREVIEW",
+            "update": "CCL.PREVIEW",
+            "delete": "CCL.PREVIEW",
+            "blocked": "CCL.DESIGN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "An owned parent or code mutation has current or absence evidence",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.READ_TRANSLATIONS",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "CCL.DONE_TRANSLATIONS",
+            "issues": "CCL.LOOKUP_ISSUES"
+          },
+          "prerequisites": [
+            "CCL.READ_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read-only translations are requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.PREVIEW",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved_create": "CCL.READY_CREATE",
+            "approved_update": "CCL.READY_UPDATE",
+            "approved_delete": "CCL.READY_DELETE",
+            "missing": "CCL.APPROVAL_ISSUES"
+          },
+          "prerequisites": [
+            "CCL.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported type or code mutation has a complete immutable preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.VERIFY_RESOURCE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "CCL.DONE_CHANGE",
+            "mismatch": "CCL.POST_CHANGE_ISSUES",
+            "uncertain": "CCL.POST_CHANGE_ISSUES"
+          },
+          "prerequisites": [
+            "CCL.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A delegated type or code mutation requires fresh verification",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.INPUT_ISSUES",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Business intake, identity, target, or delta is incomplete or ambiguous",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.LOOKUP_ISSUES",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Collection, parent, code, or translation resolution fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.OWNERSHIP_ISSUES",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "LookupType does not match the approved ownership prefix baseline",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.DESIGN_ISSUES",
+          "node_type": "step",
+          "sequence": 13,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Field support, protection, preservation, translation, or route enforcement fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.APPROVAL_ISSUES",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Exact immutable approval is absent or stale",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.POST_CHANGE_ISSUES",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Post-mutation verification is missing, mismatched, or uncertain",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.DONE_LIST",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCL.CLASSIFY_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Complete owned Common Lookup type review is ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.DONE_PARENT",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCL.READ_PARENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact owned parent review is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.DONE_CODES",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCL.READ_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Requested owned lookup-code review is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.DONE_TRANSLATIONS",
+          "node_type": "terminal",
+          "sequence": 19,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCL.READ_TRANSLATIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Requested read-only translations are returned",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.READY_CREATE",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCL.PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact approval authorizes one delegated Common Lookups type or code create followed by verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.READY_UPDATE",
+          "node_type": "terminal",
+          "sequence": 21,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCL.PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact approval authorizes one delegated Common Lookups type or code update followed by verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.READY_DELETE",
+          "node_type": "terminal",
+          "sequence": 22,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCL.PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact approval authorizes one delegated Common Lookups type or code delete followed by verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCL.DONE_CHANGE",
+          "node_type": "terminal",
+          "sequence": 23,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCL.VERIFY_RESOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The approved Common Lookup mutation has been freshly verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 24,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Business-language error disclosure is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

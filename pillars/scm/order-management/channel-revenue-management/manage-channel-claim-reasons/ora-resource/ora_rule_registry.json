@@ -1,0 +1,304 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_CJM_MANAGE_CLAIM_REASONS",
+      "task_name": "Manage Channel Claim Reasons",
+      "start_node": "CJMCR.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "CJMCR.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CJMCR.RESOLVE_REFERENCE_DATA_SET",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate operation-specific supplied input and mapping before lookup; defer checks requiring current Fusion values to CJMCR.VALIDATE_UPDATE",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 129
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCR.RESOLVE_REFERENCE_DATA_SET",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "CJMCR.FIND_REFERENCE_DATA_SET",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCR.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated channel claim reason create or update candidate requires one reference data set",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCR.FIND_REFERENCE_DATA_SET",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMCR.APPLY_DOCUMENTED_DEFAULTS",
+            "not_found": "RETURN_ISSUES",
+            "ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCR.RESOLVE_REFERENCE_DATA_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve one reference data set before the channel claim reason is prepared for Data Loader preview",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCR.APPLY_DOCUMENTED_DEFAULTS",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CJMCR.FIND_BY_CODE",
+            "unchanged": "CJMCR.FIND_BY_CODE"
+          },
+          "prerequisites": [
+            "CJMCR.FIND_REFERENCE_DATA_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply documented defaults only to create candidates; return unchanged for updates or when no create default applies",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCR.FIND_BY_CODE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CJMCR.VALIDATE_UPDATE",
+            "not_found": "CJMCR.CONFIRM_CREATE_GATE",
+            "ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCR.APPLY_DOCUMENTED_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run find_claim_reason_by_code for the exact code and set; preserve explicit operation intent and reject conflicting supplied IDs",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCR.VALIDATE_UPDATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CJMCR.CONFIRM_UPDATE_GATE",
+            "unchanged": "CJMCR.RETURN_NO_CHANGE",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCR.FIND_BY_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require update intent and evaluate current-value, immutable-field, sparse-update, null, effective-date, and repeated-target checks after an exact match; create intent returns DUPLICATE via invalid",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 130
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCR.CONFIRM_CREATE_GATE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CJMCR.RETURN_CREATE_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCR.FIND_BY_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require create intent and zero exact matches plus POST in the final artifact; ready means eligible for Task Hook preview, never prior user approval. Update intent with no match is NOT_FOUND",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCR.RETURN_CREATE_READY",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMCR.CONFIRM_CREATE_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return create validation success to Task Hook; core.data-loader must still obtain and verify approval bound to its immutable artifact before submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCR.CONFIRM_UPDATE_GATE",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CJMCR.RETURN_UPDATE_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CJMCR.VALIDATE_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require PATCH, resolved existing identity, only supported intended changes and verified loader omission/null semantics in the final artifact; ready means eligible for Task Hook before/after preview, not permission to write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCR.RETURN_UPDATE_READY",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMCR.CONFIRM_UPDATE_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return update validation success to Task Hook; require its normal immutable-artifact approval and verification before core.data-loader submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CJMCR.RETURN_NO_CHANGE",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CJMCR.VALIDATE_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return NO_CHANGE without submission; if part of a batch, any archive removing no-op rows requires fresh preflight and Task Hook validation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, dependency, lookup, duplicate, missing-target, contract, or approval requirement fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

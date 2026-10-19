@@ -1,0 +1,252 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "MOO_MANAGE_SALES_METHODS_AND_SALES_STAGES",
+      "task_name": "Manage Sales Methods and Sales Stages",
+      "start_node": "OPP.SALES_METHODS.VALIDATE",
+      "nodes": [
+        {
+          "id": "OPP.SALES_METHODS.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "OPP.SALES_METHODS.DEFAULT",
+            "incomplete": "OPP.SALES_METHODS.DEFAULT",
+            "invalid": "OPP.SALES_METHODS.RETURN_FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every sales-method or sales-stage setup request; incomplete non-set intake may continue to a review-only draft, but missing, malformed, unknown, or conflicting set identity must be returned to the user",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.SALES_METHODS.DEFAULT",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "OPP.SALES_METHODS.DESIGN",
+            "not_applicable": "OPP.SALES_METHODS.DESIGN",
+            "set_choice_missing": "OPP.SALES_METHODS.RETURN_MISSING"
+          },
+          "prerequisites": [
+            "OPP.SALES_METHODS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before design validation; fill review-only proposal values by precedence, but never default Set and stop when the user has not confirmed Common Set or selected a different exact set",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.SALES_METHODS.DESIGN",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "review_ready": "OPP.SALES_METHODS.RETURN_READY",
+            "package_candidate": "OPP.SALES_METHODS.PACKAGE_READY",
+            "blocked": "OPP.SALES_METHODS.RETURN_MISSING"
+          },
+          "prerequisites": [
+            "OPP.SALES_METHODS.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate the complete proposal, including wrong or conflicting set identity; return a reviewed design when no package exists, or send a final package candidate through executable readiness before handoff",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.SALES_METHODS.PACKAGE_READY",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "OPP.SALES_METHODS.GATE",
+            "missing": "OPP.SALES_METHODS.RETURN_MISSING",
+            "failed": "OPP.SALES_METHODS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.SALES_METHODS.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After design review and immediately before immutable package handoff to Core Data Loader",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.SALES_METHODS.GATE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "package_validated": "OPP.SALES_METHODS.RETURN_DATALOADER",
+            "accepted_initiation": "OPP.SALES_METHODS.RETURN_ACCEPTED",
+            "missing": "OPP.SALES_METHODS.RETURN_MISSING",
+            "failed": "OPP.SALES_METHODS.RETURN_FAILED"
+          },
+          "prerequisites": [
+            "OPP.SALES_METHODS.PACKAGE_READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Route an executable package-readiness receipt to Core Data Loader without child approval, or an accepted Data Loader initiation to its terminal result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.SALES_METHODS.RETURN_READY",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.SALES_METHODS.DESIGN"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The design proposal is reviewed and ready for fresh-baseline package preparation; no live-import or package approval has been granted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.SALES_METHODS.RETURN_DATALOADER",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.SALES_METHODS.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The exact immutable package passed executable validation for fixed task identity, target/release/task export, ASM/member/header receipt, reviewed delta/state lock/preservation, persisted TaskContextPath, positive TaskSequence, exact context resolution, final path, and reopened SHA-256 and is ready for Core Data Loader preview ownership",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.SALES_METHODS.RETURN_ACCEPTED",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OPP.SALES_METHODS.GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Core Data Loader returned accepted initiation; end this request without polling, ProcessLog retrieval, result retrieval, or verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.SALES_METHODS.RETURN_MISSING",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "The user requested design changes or required executable package/handoff evidence is missing; regenerate and revalidate without a child approval gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OPP.SALES_METHODS.RETURN_FAILED",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Validation, review, package readiness, handoff, initiation, later process/result retrieval, or verification failed; return the detailed failure disclosure and safe next action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

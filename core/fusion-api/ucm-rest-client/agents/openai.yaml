@@ -1,0 +1,4 @@
+interface:
+  display_name: "UCM REST Client"
+  short_description: "Call Fusion UCM HTTP IdcService APIs."
+  default_prompt: "Use $ucm-rest-client to upload, search, inspect, or download Fusion UCM documents."

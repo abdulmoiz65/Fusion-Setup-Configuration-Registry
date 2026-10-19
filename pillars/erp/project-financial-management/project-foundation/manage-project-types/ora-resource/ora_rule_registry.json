@@ -1,0 +1,284 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PJF_MANAGE_PROJECT_TYPES",
+      "task_name": "Manage Project Types",
+      "start_node": "PTYPE.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "PTYPE.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PTYPE.FIND_TYPE",
+            "invalid": "PTYPE.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate input shape and column intent; value resolution follows",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 122
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTYPE.FIND_TYPE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PTYPE.RESOLVE_REFERENCES",
+            "deferred": "PTYPE.RESOLVE_REFERENCES",
+            "failure": "PTYPE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PTYPE.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve required baseline; unavailable offline use-state may be explicitly deferred",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 190
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTYPE.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PTYPE.APPLY_DEFAULTS",
+            "deferred": "PTYPE.APPLY_DEFAULTS",
+            "failure": "PTYPE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PTYPE.FIND_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve changed references and conditional options before dependent defaults",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 191
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTYPE.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "PTYPE.ROUTE_OPERATION",
+            "failure": "PTYPE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PTYPE.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply evidence-backed defaults after references resolve or are explicitly deferred; leave unknown dynamic defaults to Fusion",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTYPE.ROUTE_OPERATION",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "supported": "PTYPE.RESOLVE_DEPENDENCIES",
+            "unsupported": "PTYPE.RETURN_REFUSAL",
+            "invalid": "PTYPE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PTYPE.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After identity/reference resolution and evidence-backed defaults",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 123
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTYPE.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PTYPE.ENFORCE_DESIGN",
+            "deferred": "PTYPE.ENFORCE_DESIGN",
+            "missing": "PTYPE.RETURN_ISSUES",
+            "conflict": "PTYPE.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "PTYPE.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preview/validation completes",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTYPE.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "PTYPE.EXECUTION_GATE",
+            "blocked": "PTYPE.RETURN_REFUSAL",
+            "failure": "PTYPE.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PTYPE.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before import approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTYPE.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PTYPE.RETURN_SUCCESS",
+            "not_ready": "PTYPE.RETURN_ISSUES",
+            "declined": "PTYPE.RETURN_REFUSAL"
+          },
+          "prerequisites": [
+            "PTYPE.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return validation or require approved preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTYPE.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PTYPE.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Pre-upload checks complete with deferred fields disclosed; package approval is not proof of service validation or import success",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTYPE.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Correctable issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PTYPE.RETURN_REFUSAL",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Unsupported/protected/declined action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

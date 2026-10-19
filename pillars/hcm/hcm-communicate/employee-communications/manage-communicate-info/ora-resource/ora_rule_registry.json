@@ -1,0 +1,206 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_EMP_CAMP_INFORMATION",
+      "task_name": "Manage Communicate Info",
+      "start_node": "MCI.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "MCI.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "MCI.CHECK_DEPENDENCIES",
+            "invalid": "MCI.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Campaign-number generation values are reviewed",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCI.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MCI.ENFORCE_DESIGN",
+            "blocked": "MCI.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCI.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Campaign-number input validation passed",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCI.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MCI.EXECUTION_GATE",
+            "blocked": "MCI.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCI.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Campaign-number input and dependency checks passed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCI.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "evidence_available": "MCI.EVALUATE_RESULT",
+            "blocked": "MCI.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCI.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An exact immutable FSM archive and its current approval or verification evidence are evaluated",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCI.EVALUATE_RESULT",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "verified": "MCI.RETURN_SUCCESS",
+            "issues": "MCI.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "MCI.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported FSM import result or task-level CSV readback is evaluated",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCI.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "MCI.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any required input, dependency, design, approval, execution, or verification condition is blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCI.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MCI.EVALUATE_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The routed FSM action or requested readback completed with the required source-backed evidence",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MCI.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MCI.HANDLE_ERROR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One or more blockers prevent safe completion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

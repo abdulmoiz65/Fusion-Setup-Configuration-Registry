@@ -1,0 +1,207 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PROFIT_CENTER_PARTY_RELATIONSHIPS_NEW",
+      "task_name": "Profit Center Party Relationships",
+      "start_node": "PCBU.CHECK_INPUT",
+      "nodes": [
+        {
+          "id": "PCBU.CHECK_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "PCBU.RESOLVE_REFERENCES",
+            "failure": "PCBU.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before any PCBU task validation or import preparation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCBU.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "PCBU.CHECK_DEPENDENCIES",
+            "failure": "PCBU.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PCBU.CHECK_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve operation-specific parent, buyer or seller references; reject unsupported scope",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCBU.CHECK_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "success": "PCBU.CHECK_DEFAULTS",
+            "failure": "PCBU.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PCBU.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After operation-specific reference resolution",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCBU.CHECK_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "success": "PCBU.CHECK_DESIGN",
+            "failure": "PCBU.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PCBU.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation-specific scope: preserve unspecified fields without changing the prepared artifact",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCBU.CHECK_DESIGN",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "success": "PCBU.CHECK_HANDOFF",
+            "failure": "PCBU.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PCBU.CHECK_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After reference resolution and before handing back validation of the exact operation-specific artifact",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCBU.CHECK_HANDOFF",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "success": "PCBU.RETURN_RULE_RESULTS",
+            "failure": "PCBU.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PCBU.CHECK_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return rule results only; this node never submits Data Loader work",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCBU.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any failed rule; return issues without mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PCBU.RETURN_RULE_RESULTS",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PCBU.CHECK_HANDOFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return validated rule results only; never claim import success",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+# Manage Expenses System Options Input Validation
+
+The executable validation boundary is deliberately limited to confirmed FSM
+option edits. It validates a locally produced intake-validation result and the
+fresh export it binds; it does not infer mappings for dynamic references,
+inheritance, or creates.
+
+## Sources
+
+- [Oracle Fusion Cloud Applications: Using Functional Setup Manager](https://docs.oracle.com/en/cloud/saas/applications-common/26b/oafsm/using-functional-setup-manager.pdf)
+- [Oracle 26D: Compare Task Setup Data](https://docs.oracle.com/en/cloud/saas/applications-common/26d/oafsm/compare-task-setup-data.html) (CSV import does not delete existing target records)
+- Task-local `scripts/expense_system_options_intake.mjs` validation and package builder
+
+## Required Groups
+
+| Requirement Group | Accepted Fields | If Missing | How to Resolve | Applies When | Resolver |
+|---|---|---|---|---|---|
+| Validated intake evidence | intake-validation.json with task_code EXM_MANAGE_EXPENSES_SYSTEM_OPTIONS, source workbook SHA-256, baseline environment, ProcessId, CSV SHA-256 values, ready_for_import true, records, no issues, and no pending_checks | Block package preparation | Revalidate the unchanged workbook against a fresh completed target data export | Every confirmed FSM option-edit package | |
+| Supported requested edits | One or more Edit records whose changes have source EXM_SETUP_OPTION, an exact OptionCode, and an exact ValueCode | Block package preparation | Remove or separately source dynamic, unmapped, inherited, or Create changes | Every confirmed FSM option-edit package | |
+| Fresh baseline package | ASM_SETUP_CSV_METADATA.xml plus EXM_SETUP_OPTION.csv, EXM_ORG_SETTING.csv, and EXM_CASH_ADV_SETUP_AND_POLICY.csv from the validation result's completed export | Block package preparation | Export the exact task again from the intended target and revalidate | Every confirmed FSM option-edit package | |
+
+## Field Validation
+
+| Check | What Happens | Applies When | Resolver |
+|---|---|---|---|
+| Task and environment binding | Require the validation task code, metadata ObjectShortName, ProcessType, ProcessStatus, ProcessEnv, and CSV digests to agree with the supplied baseline. Match the metadata ProcessId to the export job ID, or accept the observed `-999` placeholder only when the unchanged exporter ZIP has the expected environment/task/job filename and all four members match the extracted files byte for byte | Every confirmed FSM option-edit package | |
+| Workbook immutability | Require the workbook's current SHA-256 to equal the digest in intake-validation.json | Every confirmed FSM option-edit package | |
+| Exact option identity | Require exactly one row in each option CSV for every normalized BuName and OptionCode pair; change only ValueCode | Every confirmed FSM option-edit package | |
+| Package member preservation | Retain the four exported member names and preserve every unrelated row and non-value column | Every confirmed FSM option-edit package | |
+
+## Task Nodes
+
+| Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|
+| EXMSO.VALIDATE_EDIT_INPUT | step | 1 | validate_input | valid->EXMSO.CONFIRM_BASELINE;invalid->EXMSO.RETURN_ISSUES | none | stop | A confirmed FSM option-edit package is requested |

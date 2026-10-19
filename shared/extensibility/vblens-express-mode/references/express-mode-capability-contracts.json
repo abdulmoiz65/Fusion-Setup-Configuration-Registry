@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "documentationBaseline": "2026-08-10",
+  "classifications": [
+    "supported-writable",
+    "supported-restricted",
+    "setup-dependent",
+    "source-visible-not-express-writable",
+    "unsupported",
+    "unknown"
+  ],
+  "artifacts": {
+    "metadata-rules-x.json": {
+      "artifactType": "express-business-rules",
+      "classification": "supported-restricted",
+      "counterpartAlternatives": ["metadata-rules.json", "data-description.json"],
+      "counterpartRequired": true,
+      "recognizedRootKeys": ["addMetadataRules"],
+      "workflows": [
+        "form-rule",
+        "collection-rule",
+        "nested-rule",
+        "if-else-rule",
+        "switch-rule",
+        "default-value",
+        "validation-message",
+        "region-properties"
+      ]
+    },
+    "page-x.json": {
+      "artifactType": "express-page-properties",
+      "classification": "supported-restricted",
+      "counterpart": "page.json",
+      "counterpartRequired": true,
+      "recognizedRootKeys": ["properties"],
+      "workflows": ["static-page-property", "guided-journey-property"]
+    },
+    "page-r-x.json": {
+      "artifactType": "express-page-property-rules",
+      "classification": "supported-restricted",
+      "counterpart": "page-r.json",
+      "counterpartRequired": true,
+      "recognizedRootKeys": ["rules", "addRules", "addPagePropertyRules"],
+      "workflows": ["conditional-page-property", "guided-journey-property"]
+    },
+    "layout-x.json": {
+      "artifactType": "express-rule-set-layout",
+      "classification": "supported-restricted",
+      "counterpart": "layout.json",
+      "counterpartRequired": true,
+      "recognizedRootKeys": ["layouts", "addLayouts", "layoutTypes"],
+      "workflows": [
+        "field-selection",
+        "field-ordering",
+        "field-grouping",
+        "conditional-layout",
+        "container-sections"
+      ]
+    },
+    "data-description-x.json": {
+      "artifactType": "express-supporting-metadata",
+      "classification": "source-visible-not-express-writable",
+      "counterpart": "data-description.json",
+      "counterpartRequired": false,
+      "workflows": ["field-and-service-discovery"]
+    }
+  },
+  "advancedModePathPrefixes": ["extension1/sources/ui/"],
+  "protectedOracleArtifacts": [
+    "metadata-rules.json",
+    "page.json",
+    "page-r.json",
+    "layout.json",
+    "data-description.json"
+  ]
+}

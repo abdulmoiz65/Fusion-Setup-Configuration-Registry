@@ -1,0 +1,1755 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HRG_MANAGE_GOAL_PLANS",
+      "task_name": "Goal Plans",
+      "start_node": "GOAL_PLANS.INTAKE",
+      "nodes": [
+        {
+          "id": "GOAL_PLANS.INTAKE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "GOAL_PLANS.VALIDATE",
+            "missing": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Goal Plan request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 215
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.VALIDATE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "read_item": "GOAL_PLANS.READ",
+            "read_search": "GOAL_PLANS.SEARCH",
+            "assignee_search": "GOAL_PLANS.ASSIGNEE_SEARCH",
+            "csv": "GOAL_PLANS.CSV_READY",
+            "hdl": "GOAL_PLANS.HDL_VALIDATE",
+            "worker_create": "GOAL_PLANS.WORKER_ROUTE",
+            "continue": "GOAL_PLANS.DEPENDENCIES",
+            "invalid": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.INTAKE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Intake is complete and one operation is selected",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.HDL_VALIDATE",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "GOAL_PLANS.HDL_READY",
+            "invalid": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A DAT/ZIP source and explicit HDL intent both exist",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.READ",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "GOAL_PLANS.DONE_READ",
+            "missing": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "get is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 538
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.SEARCH",
+          "node_type": "step",
+          "sequence": 26,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "GOAL_PLANS.DONE_SEARCH",
+            "empty": "GOAL_PLANS.DONE_SEARCH",
+            "unavailable": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "list/search is selected, including creation-time filters",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 149
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "GOAL_PLANS.LOOKUPS",
+            "missing": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Goal Plan write or assignment handoff is requested",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.LOOKUPS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "GOAL_PLANS.DEFAULTS",
+            "unresolved": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Operation-specific references must be resolved",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 148
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DEFAULTS",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "GOAL_PLANS.DESIGN"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Lookups are resolved",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DESIGN",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "rest": "GOAL_PLANS.REST_DESCRIBE",
+            "assignment": "GOAL_PLANS.ASSIGNMENT_PREVIEW",
+            "blocked": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Dependencies and defaults are ready",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.REST_DESCRIBE",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "ready": "GOAL_PLANS.REST_PAYLOAD",
+            "unavailable": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A REST mutation is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 539
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.REST_PAYLOAD",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "mapped": "GOAL_PLANS.WRITE_ROUTE",
+            "rejected": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.REST_DESCRIBE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Current Goal Plan metadata is available",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 540
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.WRITE_ROUTE",
+          "node_type": "decision",
+          "sequence": 95,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "create": "GOAL_PLANS.CREATE_PREVIEW",
+            "update": "GOAL_PLANS.UPDATE_PREVIEW",
+            "activate": "GOAL_PLANS.ACTIVATE_PREVIEW",
+            "inactivate": "GOAL_PLANS.INACTIVATE_PREVIEW",
+            "include_worker": "GOAL_PLANS.INCLUDE_WORKER_PREVIEW",
+            "exclude_worker": "GOAL_PLANS.EXCLUDE_WORKER_PREVIEW",
+            "associate_profile": "GOAL_PLANS.ASSOCIATE_PROFILE_PREVIEW",
+            "remove_population": "GOAL_PLANS.REMOVE_POPULATION_PREVIEW",
+            "functional_change": "GOAL_PLANS.FUNCTIONAL_PREVIEW",
+            "no_change": "GOAL_PLANS.NO_CHANGE",
+            "unsupported": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.REST_PAYLOAD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mapped Goal Plan or regular-plan population write contract exists",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.CREATE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 100,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_PLANS.CREATE_APPROVAL",
+            "blocked": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.REST_PAYLOAD",
+            "GOAL_PLANS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "create is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 541
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.CREATE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 110,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_PLANS.CREATE",
+            "declined": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.CREATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final inactive-create preview is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 542
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.CREATE",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_PLANS.CREATE_POST_WRITE_ROUTE",
+            "ambiguous": "GOAL_PLANS.UNKNOWN",
+            "failed": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.CREATE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved create is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 543
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.CREATE_POST_WRITE_ROUTE",
+          "node_type": "decision",
+          "sequence": 121,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "GOAL_PLANS.DONE_CREATED",
+            "maximum_persisted_enforcement_pending": "GOAL_PLANS.ENFORCE_MAXIMUM"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.CREATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The approved create is verified and the staged maximum-enforcement plan is evaluated",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 544
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.ENFORCE_MAXIMUM",
+          "node_type": "step",
+          "sequence": 122,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_PLANS.DONE_CREATED",
+            "ambiguous": "GOAL_PLANS.UNKNOWN",
+            "failed": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.CREATE_POST_WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One approved staged create verified the requested maximum and explicit enforcement remains pending",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 545
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.UPDATE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 130,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_PLANS.UPDATE_APPROVAL",
+            "blocked": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.REST_PAYLOAD",
+            "GOAL_PLANS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "update is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 546
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.UPDATE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 140,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_PLANS.UPDATE",
+            "declined": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.UPDATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final update preview is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 547
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.UPDATE",
+          "node_type": "step",
+          "sequence": 150,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_PLANS.DONE_UPDATED",
+            "ambiguous": "GOAL_PLANS.UNKNOWN",
+            "failed": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.UPDATE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved update is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 548
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.ACTIVATE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 160,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_PLANS.ACTIVATE_APPROVAL",
+            "blocked": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.REST_PAYLOAD",
+            "GOAL_PLANS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "activate is independently selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 549
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.ACTIVATE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 170,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_PLANS.ACTIVATE",
+            "declined": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.ACTIVATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final activation preview is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 550
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.ACTIVATE",
+          "node_type": "step",
+          "sequence": 180,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_PLANS.DONE_ACTIVATED",
+            "ambiguous": "GOAL_PLANS.UNKNOWN",
+            "failed": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.ACTIVATE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved activation is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 551
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.INACTIVATE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 190,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_PLANS.INACTIVATE_APPROVAL",
+            "blocked": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.REST_PAYLOAD",
+            "GOAL_PLANS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "inactivate is independently selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 552
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.INACTIVATE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 200,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_PLANS.INACTIVATE",
+            "declined": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.INACTIVATE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final inactivation preview is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 553
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.INACTIVATE",
+          "node_type": "step",
+          "sequence": 210,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_PLANS.DONE_INACTIVATED",
+            "ambiguous": "GOAL_PLANS.UNKNOWN",
+            "failed": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.INACTIVATE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved inactivation is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 554
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.INCLUDE_WORKER_PREVIEW",
+          "node_type": "decision",
+          "sequence": 220,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_PLANS.INCLUDE_WORKER_APPROVAL",
+            "blocked": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.REST_PAYLOAD",
+            "GOAL_PLANS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "include_worker is selected for a regular plan",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 555
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.INCLUDE_WORKER_APPROVAL",
+          "node_type": "decision",
+          "sequence": 230,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_PLANS.INCLUDE_WORKER",
+            "declined": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.INCLUDE_WORKER_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final included-worker change is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 556
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.INCLUDE_WORKER",
+          "node_type": "step",
+          "sequence": 240,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_PLANS.DONE_INCLUDED_WORKER",
+            "ambiguous": "GOAL_PLANS.UNKNOWN",
+            "failed": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.INCLUDE_WORKER_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved included-worker child create is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 557
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.EXCLUDE_WORKER_PREVIEW",
+          "node_type": "decision",
+          "sequence": 250,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_PLANS.EXCLUDE_WORKER_APPROVAL",
+            "blocked": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.REST_PAYLOAD",
+            "GOAL_PLANS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "exclude_worker is selected for a regular plan",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 558
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.EXCLUDE_WORKER_APPROVAL",
+          "node_type": "decision",
+          "sequence": 260,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_PLANS.EXCLUDE_WORKER",
+            "declined": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.EXCLUDE_WORKER_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final excluded-worker change is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 559
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.EXCLUDE_WORKER",
+          "node_type": "step",
+          "sequence": 270,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_PLANS.DONE_EXCLUDED_WORKER",
+            "ambiguous": "GOAL_PLANS.UNKNOWN",
+            "failed": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.EXCLUDE_WORKER_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved excluded-worker child create is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 560
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.ASSOCIATE_PROFILE_PREVIEW",
+          "node_type": "decision",
+          "sequence": 280,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_PLANS.ASSOCIATE_PROFILE_APPROVAL",
+            "blocked": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.REST_PAYLOAD",
+            "GOAL_PLANS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "associate_profile is selected for a regular plan",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 561
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.ASSOCIATE_PROFILE_APPROVAL",
+          "node_type": "decision",
+          "sequence": 290,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_PLANS.ASSOCIATE_PROFILE",
+            "declined": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.ASSOCIATE_PROFILE_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final profile association is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 562
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.ASSOCIATE_PROFILE",
+          "node_type": "step",
+          "sequence": 300,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_PLANS.DONE_PROFILE_ASSOCIATED",
+            "ambiguous": "GOAL_PLANS.UNKNOWN",
+            "failed": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.ASSOCIATE_PROFILE_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved Eligibility Profile child create is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 563
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.REMOVE_POPULATION_PREVIEW",
+          "node_type": "decision",
+          "sequence": 310,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_PLANS.REMOVE_POPULATION_APPROVAL",
+            "blocked": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.REST_PAYLOAD",
+            "GOAL_PLANS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "remove_population is selected for a returned regular-plan child row",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 564
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.REMOVE_POPULATION_APPROVAL",
+          "node_type": "decision",
+          "sequence": 320,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_PLANS.REMOVE_POPULATION",
+            "declined": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.REMOVE_POPULATION_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final population-child removal is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 565
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.REMOVE_POPULATION",
+          "node_type": "step",
+          "sequence": 330,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_PLANS.DONE_POPULATION_REMOVED",
+            "ambiguous": "GOAL_PLANS.UNKNOWN",
+            "failed": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.REMOVE_POPULATION_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved returned child deletion is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 566
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.ASSIGNEE_SEARCH",
+          "node_type": "step",
+          "sequence": 335,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "GOAL_PLANS.DONE_ASSIGNEE_SEARCH",
+            "empty": "GOAL_PLANS.DONE_ASSIGNEE_SEARCH",
+            "unavailable": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A bounded Goal Plan assignee search is selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 567
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.FUNCTIONAL_PREVIEW",
+          "node_type": "decision",
+          "sequence": 336,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_PLANS.FUNCTIONAL_APPROVAL",
+            "blocked": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.REST_PAYLOAD",
+            "GOAL_PLANS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One plan-goal, document association, assignee removal, or performance-document sync action has a verified contract",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 568
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.FUNCTIONAL_APPROVAL",
+          "node_type": "decision",
+          "sequence": 337,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_PLANS.FUNCTIONAL_MUTATION",
+            "declined": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.FUNCTIONAL_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Final functional-flow preview is reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 569
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.FUNCTIONAL_MUTATION",
+          "node_type": "step",
+          "sequence": 338,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "GOAL_PLANS.DONE_FUNCTIONAL_CHANGE",
+            "assignees_removed": "GOAL_PLANS.DONE_ASSIGNEES_REMOVED",
+            "document_associated": "GOAL_PLANS.DONE_DOCUMENT_ASSOCIATED",
+            "document_removed": "GOAL_PLANS.DONE_DOCUMENT_REMOVED",
+            "sync_submitted": "GOAL_PLANS.DONE_PD_SYNC_SUBMITTED",
+            "sync_no_change": "GOAL_PLANS.DONE_PD_SYNC_NO_CHANGE",
+            "ambiguous": "GOAL_PLANS.UNKNOWN",
+            "failed": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.FUNCTIONAL_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Approved current-metadata functional action is ready",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 570
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.ASSIGNMENT_PREVIEW",
+          "node_type": "decision",
+          "sequence": 340,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reviewed": "GOAL_PLANS.ASSIGNMENT_APPROVAL",
+            "blocked": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "regular-plan prepare_assignment is selected and the ESS contract is verified",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 571
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.ASSIGNMENT_APPROVAL",
+          "node_type": "decision",
+          "sequence": 350,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "approved": "GOAL_PLANS.ASSIGNMENT_READY",
+            "declined": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.ASSIGNMENT_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Configured population selector and ESS parameters are reviewed",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 572
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.CSV_READY",
+          "node_type": "terminal",
+          "sequence": 500,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "CSV route is ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.HDL_READY",
+          "node_type": "terminal",
+          "sequence": 505,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.HDL_VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Error-free HDL task preflight is ready for `core.data-loader` preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.WORKER_ROUTE",
+          "node_type": "terminal",
+          "sequence": 510,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Worker creation must route to GHR/HDL",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.NO_CHANGE",
+          "node_type": "terminal",
+          "sequence": 520,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Fresh values already match",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_READ",
+          "node_type": "terminal",
+          "sequence": 530,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.READ"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_SEARCH",
+          "node_type": "terminal",
+          "sequence": 531,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.SEARCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Bounded search completed, including an empty result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_CREATED",
+          "node_type": "terminal",
+          "sequence": 540,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.CREATE_POST_WRITE_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Inactive create, including any approved staged maximum enforcement, verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_UPDATED",
+          "node_type": "terminal",
+          "sequence": 550,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Update verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_ACTIVATED",
+          "node_type": "terminal",
+          "sequence": 560,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.ACTIVATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Activation verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_INACTIVATED",
+          "node_type": "terminal",
+          "sequence": 570,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.INACTIVATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Inactivation verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_INCLUDED_WORKER",
+          "node_type": "terminal",
+          "sequence": 580,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.INCLUDE_WORKER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Included-worker child create verified without ESS",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_EXCLUDED_WORKER",
+          "node_type": "terminal",
+          "sequence": 590,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.EXCLUDE_WORKER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Excluded-worker child create verified without ESS",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_PROFILE_ASSOCIATED",
+          "node_type": "terminal",
+          "sequence": 600,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.ASSOCIATE_PROFILE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Eligibility Profile child association verified without ESS",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_POPULATION_REMOVED",
+          "node_type": "terminal",
+          "sequence": 610,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.REMOVE_POPULATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Returned population child delete verified without ESS",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_DOCUMENT_ASSOCIATED",
+          "node_type": "terminal",
+          "sequence": 611,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.FUNCTIONAL_MUTATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Returned document association create verified by fresh collection read",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_DOCUMENT_REMOVED",
+          "node_type": "terminal",
+          "sequence": 612,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.FUNCTIONAL_MUTATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Returned document association delete verified by fresh collection read",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_ASSIGNEE_SEARCH",
+          "node_type": "terminal",
+          "sequence": 615,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.ASSIGNEE_SEARCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Bounded Goal Plan assignee search completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_FUNCTIONAL_CHANGE",
+          "node_type": "terminal",
+          "sequence": 616,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.FUNCTIONAL_MUTATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One approved functional-flow mutation was verified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_PD_SYNC_SUBMITTED",
+          "node_type": "terminal",
+          "sequence": 617,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.FUNCTIONAL_MUTATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "PD synchronization action returned a non-empty ESS request ID",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_PD_SYNC_NO_CHANGE",
+          "node_type": "terminal",
+          "sequence": 618,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.FUNCTIONAL_MUTATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "PD synchronization action completed with an empty result and no ESS submission",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.DONE_ASSIGNEES_REMOVED",
+          "node_type": "terminal",
+          "sequence": 619,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.FUNCTIONAL_MUTATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Assignee batch delete result `0` was verified by fresh assignee read",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.ASSIGNMENT_READY",
+          "node_type": "decision",
+          "sequence": 620,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "checkpointed": "GOAL_PLANS.ASSIGNMENT_SUBMITTED",
+            "uncertain": "GOAL_PLANS.UNKNOWN",
+            "failed": "GOAL_PLANS.BLOCKED"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.ASSIGNMENT_APPROVAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verified ESS handoff is approved and the Goal Management adapter owns the attempt/checkpoint while unchanged Core submits once",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.ASSIGNMENT_SUBMITTED",
+          "node_type": "decision",
+          "sequence": 621,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "terminal_success": "GOAL_PLANS.ASSIGNMENT_VERIFIED",
+            "timeout": "GOAL_PLANS.ASSIGNMENT_PENDING",
+            "terminal_failure": "GOAL_PLANS.BLOCKED",
+            "uncertain": "GOAL_PLANS.UNKNOWN"
+          },
+          "prerequisites": [
+            "GOAL_PLANS.ASSIGNMENT_READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The accepted request ID is durably checkpointed and only request-ID status tracking may continue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.ASSIGNMENT_PENDING",
+          "node_type": "terminal",
+          "sequence": 622,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.ASSIGNMENT_SUBMITTED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Bounded polling ended before terminal status; retain request ID for read-only resume and leave the Run Book task incomplete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.ASSIGNMENT_VERIFIED",
+          "node_type": "terminal",
+          "sequence": 623,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "GOAL_PLANS.ASSIGNMENT_SUBMITTED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The same checkpointed request has persisted terminal success and fresh verified assignee reconciliation before the dependent Run Book task may complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.UNKNOWN",
+          "node_type": "terminal",
+          "sequence": 630,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A submitted operation has an ambiguous outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "GOAL_PLANS.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 640,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A dependency, approval, impact, or contract blocks the request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 112
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

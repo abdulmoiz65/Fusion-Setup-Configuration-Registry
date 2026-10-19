@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "scm.manufacturing-and-supply-chain-materials-management.product-recall-management.manage-product-recall-parameters",
+  "task_code": "ORA_MANAGE_PRODUCT_RECALL_PARAMETERS",
+  "format": "json",
+  "artifact_contracts": {
+    "setup_task_plan": {
+      "artifact_type": "configuration_blueprint",
+      "required_fields": [
+        "task_code",
+        "business_objects",
+        "requested_operations",
+        "preconditions",
+        "approval_gate"
+      ]
+    },
+    "setup_data_routing": {
+      "artifact_type": "setup_data_routing",
+      "required_fields": [
+        "export_route",
+        "validation_routes",
+        "import_route",
+        "business_objects"
+      ]
+    },
+    "validation_checkpoints": {
+      "artifact_type": "validation_result",
+      "required_fields": [
+        "status",
+        "checks",
+        "blocking_issues",
+        "evidence_references"
+      ]
+    }
+  },
+  "constraints": {
+    "allowed_business_objects": [
+      "recallGlobalParams",
+      "recallItemValidationOrganizations",
+      "recallInventoryOrganizations",
+      "recallContainmentTaskOwners",
+      "recallProductTraceabilityGroupings",
+      "recallSubinventories"
+    ],
+    "import_route": "core.data-loader",
+    "approval_required_before_live_import": true
+  }
+}

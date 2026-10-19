@@ -1,0 +1,456 @@
+{
+  "schema_version": "3.0",
+  "source_layout": "ManageExpenseReportTemplateSeparateSheets_Blank - V3.xlsx",
+  "sections": [
+    {
+      "key": "templates",
+      "title": "Report Templates",
+      "fields": [
+        {
+          "label": "Template Name",
+          "key": "name",
+          "kind": "text",
+          "note": "Required for every populated Create or Edit row. Enter text, at most 80 characters.",
+          "maximum": 80,
+          "requiredFor": "always",
+          "nullable": false
+        },
+        {
+          "label": "Template Description",
+          "key": "description",
+          "kind": "text",
+          "note": "Optional. For Edit, blank preserves the existing value. Text, at most 240 characters.",
+          "maximum": 240,
+          "requiredFor": "optional",
+          "nullable": true
+        },
+        {
+          "label": "Business Unit",
+          "key": "business_unit",
+          "kind": "text",
+          "note": "Required for every populated Create or Edit row. Enter the Business Unit name, not an ID.",
+          "maximum": 240,
+          "requiredFor": "always",
+          "nullable": false
+        },
+        {
+          "label": "Set as Default?",
+          "key": "default_template_intent",
+          "kind": "text",
+          "note": "Optional. For Edit, blank preserves the existing value. Select Yes, No.",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "unsupportedValues": [
+            "Yes"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        },
+        {
+          "label": "Effective Start Date",
+          "key": "start_date",
+          "kind": "date",
+          "note": "Required for Create. For Edit, blank preserves the existing value. Use YYYY-MM-DD, a real calendar date. End dates cannot precede the start date.",
+          "requiredFor": "create",
+          "nullable": false
+        },
+        {
+          "label": "Effective End Date",
+          "key": "inactive_date",
+          "kind": "date",
+          "note": "Optional. For Edit, blank preserves the existing value. Use YYYY-MM-DD, a real calendar date. End dates cannot precede the start date.",
+          "requiredFor": "optional",
+          "nullable": true
+        },
+        {
+          "label": "Require Cash Receipts?",
+          "key": "receipt_rules.cash_receipt_required",
+          "kind": "text",
+          "note": "Optional. For Edit, blank preserves the existing value. Select Yes, No.",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        },
+        {
+          "label": "Cash Receipt Threshold",
+          "key": "receipt_rules.cash_receipt_threshold",
+          "kind": "number",
+          "note": "Conditionally required. Required when Require Cash Receipts? is Yes in the resulting configuration. On Edit, an existing valid threshold may be retained. Enter a finite number without currency symbols.",
+          "requiredWhen": "cash_receipt_required=Yes",
+          "requiredFor": "conditional",
+          "nullable": true
+        },
+        {
+          "label": "Apply Receipt Rules to Negative Lines?",
+          "key": "receipt_rules.negative_line_receipt_required",
+          "kind": "text",
+          "note": "Optional. For Edit, blank preserves the existing value. Select Yes, No.",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        },
+        {
+          "label": "Allow Missing Receipts?",
+          "key": "receipt_rules.allow_missing_receipt",
+          "kind": "text",
+          "note": "Optional. For Edit, blank preserves the existing value. Select Yes, No.",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        },
+        {
+          "label": "Display Missing Receipt Warning?",
+          "key": "receipt_rules.receipt_warning",
+          "kind": "text",
+          "note": "Optional. For Edit, blank preserves the existing value. Select Yes, No.",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        },
+        {
+          "label": "Description Field Behavior",
+          "key": "field_behaviors.description",
+          "kind": "text",
+          "note": "Optional. For Edit, blank or Blank preserves the existing value. Select Required, Optional, Hidden, or Blank. Blank is handled as an empty cell.",
+          "options": [
+            "Required",
+            "Optional",
+            "Hidden",
+            "Blank"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        },
+        {
+          "label": "Expense Location Field Behavior",
+          "key": "field_behaviors.expense_location",
+          "kind": "text",
+          "note": "Optional. For Edit, blank or Blank preserves the existing value. Select Required, Optional, Hidden, or Blank. Blank is handled as an empty cell.",
+          "options": [
+            "Required",
+            "Optional",
+            "Hidden",
+            "Blank"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        },
+        {
+          "label": "Merchant Name Field Behavior",
+          "key": "field_behaviors.merchant_name",
+          "kind": "text",
+          "note": "Optional. For Edit, blank or Blank preserves the existing value. Select Required, Optional, Hidden, or Blank. Blank is handled as an empty cell.",
+          "options": [
+            "Required",
+            "Optional",
+            "Hidden",
+            "Blank"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        },
+        {
+          "label": "Number of Days Field Behavior",
+          "key": "field_behaviors.number_of_days",
+          "kind": "text",
+          "note": "Optional. For Edit, blank or Blank preserves the existing value. Select Required, Optional, Hidden, or Blank. Blank is handled as an empty cell.",
+          "options": [
+            "Required",
+            "Optional",
+            "Hidden",
+            "Blank"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        }
+      ],
+      "sheet_name": "Report Templates",
+      "description": "Add one row per expense report template. The fresh target export determines the operation: an existing Business Unit + Template Name is updated; an absent combination is created.\nFor a new template, enter the identity, all † fields, and applicable ‡ values; optional blanks mean no value. For an existing template, blank values preserve the target value, entered values update it, and Clear removes an optional, nullable value. Selecting Blank for a field behavior is treated exactly as an empty cell."
+    },
+    {
+      "key": "types",
+      "title": "Expense Types",
+      "fields": [
+        {
+          "label": "Template Name",
+          "key": "template_name",
+          "kind": "text",
+          "note": "Required for every populated Create or Edit row. Enter text, at most 80 characters.",
+          "maximum": 80,
+          "requiredFor": "always",
+          "nullable": false
+        },
+        {
+          "label": "Expense Type Name",
+          "key": "name",
+          "kind": "text",
+          "note": "Required for every populated Create or Edit row. Enter text, at most 80 characters.",
+          "maximum": 80,
+          "requiredFor": "always",
+          "nullable": false
+        },
+        {
+          "label": "Expense Type Description",
+          "key": "description",
+          "kind": "text",
+          "note": "Optional. For Edit, blank preserves the existing value. Text, at most 240 characters.",
+          "maximum": 240,
+          "requiredFor": "optional",
+          "nullable": true
+        },
+        {
+          "label": "Category",
+          "key": "category_value",
+          "kind": "text",
+          "note": "Optional. For Edit, blank preserves the existing value. Select a source-supported category label. Code resolution must be exact; no guessed category codes.",
+          "maximum": 80,
+          "requiredFor": "optional",
+          "nullable": true
+        },
+        {
+          "label": "Effective Start Date",
+          "key": "start_date",
+          "kind": "date",
+          "note": "Required for Create. For Edit, blank preserves the existing value. Use YYYY-MM-DD, a real calendar date. End dates cannot precede the start date.",
+          "requiredFor": "create",
+          "nullable": false
+        },
+        {
+          "label": "Effective End Date",
+          "key": "end_date",
+          "kind": "date",
+          "note": "Optional. For Edit, blank preserves the existing value. Use YYYY-MM-DD, a real calendar date. End dates cannot precede the start date.",
+          "requiredFor": "optional",
+          "nullable": true
+        },
+        {
+          "label": "Itemization Behavior",
+          "key": "itemization",
+          "kind": "text",
+          "note": "Optional. For Edit, blank preserves the existing value. Select Disabled, Enabled, Required.",
+          "options": [
+            "Disabled",
+            "Enabled",
+            "Required"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        },
+        {
+          "label": "Itemization Only Type?",
+          "key": "itemization_only",
+          "kind": "text",
+          "note": "Optional. For Edit, blank preserves the existing value. Select Yes, No.",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        },
+        {
+          "label": "Require Cash Receipts?",
+          "key": "receipt_rules.cash_receipt_required",
+          "kind": "text",
+          "note": "Optional. For Edit, blank preserves the existing value. Select Yes, No.",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        },
+        {
+          "label": "Cash Receipt Threshold",
+          "key": "receipt_rules.cash_receipt_threshold",
+          "kind": "number",
+          "note": "Conditionally required. Required when Require Cash Receipts? is Yes in the resulting configuration. On Edit, an existing valid threshold may be retained. Enter a finite number without currency symbols.",
+          "requiredWhen": "cash_receipt_required=Yes",
+          "requiredFor": "conditional",
+          "nullable": true
+        },
+        {
+          "label": "Apply Receipt Rules to Negative Lines?",
+          "key": "receipt_rules.negative_line_receipt_required",
+          "kind": "text",
+          "note": "Optional. For Edit, blank preserves the existing value. Select Yes, No.",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        },
+        {
+          "label": "Display Missing Receipt Warning?",
+          "key": "receipt_rules.receipt_warning",
+          "kind": "text",
+          "note": "Optional. For Edit, blank preserves the existing value. Select Yes, No.",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        },
+        {
+          "label": "Allow Prepaid Expense Items?",
+          "key": "prepaid",
+          "kind": "text",
+          "note": "Optional. For Edit, blank preserves the existing value. Select Yes, No.",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "requiredFor": "optional",
+          "nullable": false
+        },
+        {
+          "label": "Description Field Behavior",
+          "key": "field_behaviors.description",
+          "kind": "text",
+          "note": "Optional. For Edit, blank or Blank preserves the existing value. Select Required, Optional, Hidden, No override, or Blank. No override restores the parent template setting. Blank is handled as an empty cell.",
+          "options": [
+            "Required",
+            "Optional",
+            "Hidden",
+            "No override",
+            "Blank"
+          ],
+          "requiredFor": "optional",
+          "nullable": true
+        },
+        {
+          "label": "Expense Location Field Behavior",
+          "key": "field_behaviors.expense_location",
+          "kind": "text",
+          "note": "Optional. For Edit, blank or Blank preserves the existing value. Select Required, Optional, Hidden, No override, or Blank. No override restores the parent template setting. Blank is handled as an empty cell.",
+          "options": [
+            "Required",
+            "Optional",
+            "Hidden",
+            "No override",
+            "Blank"
+          ],
+          "requiredFor": "optional",
+          "nullable": true
+        },
+        {
+          "label": "Merchant Name Field Behavior",
+          "key": "field_behaviors.merchant_name",
+          "kind": "text",
+          "note": "Optional. For Edit, blank or Blank preserves the existing value. Select Required, Optional, Hidden, No override, or Blank. No override restores the parent template setting. Blank is handled as an empty cell.",
+          "options": [
+            "Required",
+            "Optional",
+            "Hidden",
+            "No override",
+            "Blank"
+          ],
+          "requiredFor": "optional",
+          "nullable": true
+        },
+        {
+          "label": "Number of Days Field Behavior",
+          "key": "field_behaviors.number_of_days",
+          "kind": "text",
+          "note": "Optional. For Edit, blank or Blank preserves the existing value. Select Required, Optional, Hidden, No override, or Blank. No override restores the parent template setting. Blank is handled as an empty cell.",
+          "options": [
+            "Required",
+            "Optional",
+            "Hidden",
+            "No override",
+            "Blank"
+          ],
+          "requiredFor": "optional",
+          "nullable": true
+        }
+      ],
+      "sheet_name": "Expense Types",
+      "description": "Add one row per expense type. Template Name must identify one parent template; Business Unit is inherited from it. Accounts and tax values are imported as null, and Projects is imported as Disabled. The fresh target export determines the operation: an existing Business Unit + Template Name + Expense Type Name is updated; an absent combination is created.\nFor a new expense type, enter the identity, all † fields, and applicable ‡ values; optional blanks mean no value. For an existing expense type, blank values preserve the target value, entered values update it, and Clear removes an optional, nullable value. For field behaviors, No override restores the template setting and Blank is treated exactly as an empty cell."
+    },
+    {
+      "key": "itemizations",
+      "title": "Expense Type Itemizations",
+      "condition": "The values below only need to be entered if Itemization is Enabled or Required.",
+      "fields": [
+        {
+          "label": "Business Unit",
+          "key": "business_unit",
+          "kind": "text",
+          "maximum": 240,
+          "note": "Required for every populated Create or Edit row. Required for a populated mapping. Enter the Business Unit of the owning template to distinguish same-named templates.",
+          "requiredFor": "always",
+          "nullable": false
+        },
+        {
+          "label": "Template Name",
+          "key": "template_name",
+          "kind": "text",
+          "note": "Required for every populated Create or Edit row. Enter text, at most 80 characters.",
+          "maximum": 80,
+          "requiredFor": "always",
+          "nullable": false
+        },
+        {
+          "label": "Parent Expense Type Name",
+          "key": "parent_type_name",
+          "kind": "text",
+          "note": "Required for every populated Create or Edit row. Enter text, at most 80 characters.",
+          "maximum": 80,
+          "requiredFor": "always",
+          "nullable": false
+        },
+        {
+          "label": "Itemization Expense Type Name",
+          "key": "child_type_name",
+          "kind": "text",
+          "note": "Required for every populated Create or Edit row. Enter text, at most 80 characters.",
+          "maximum": 80,
+          "requiredFor": "always",
+          "nullable": false
+        },
+        {
+          "label": "Include?",
+          "key": "include",
+          "kind": "text",
+          "note": "Required for Create. For Edit, blank preserves the existing value. Select Yes, No.",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "requiredFor": "create",
+          "nullable": false
+        },
+        {
+          "label": "Effective End Date",
+          "key": "end_date",
+          "kind": "date",
+          "note": "Optional. For Edit, blank preserves the existing value. Use YYYY-MM-DD, a real calendar date. End dates cannot precede the start date.",
+          "requiredFor": "optional",
+          "nullable": true
+        }
+      ],
+      "pooled": true,
+      "sheet_name": "Expense Type Itemizations",
+      "description": "Add one row per itemization mapping, only when the parent type’s Itemization Behavior is Enabled or Required. The fresh target export determines the operation from the Business Unit, Template Name, parent type, and itemization type.\nFor a new mapping, enter the identity and all † fields. For an existing mapping, blank values preserve the target value and entered values update it. Clear and Include No remain unsupported because the verified FSM route has no deletion contract."
+    }
+  ],
+  "header_row": 4,
+  "first_data_row": 5,
+  "entry_rows": 500
+}

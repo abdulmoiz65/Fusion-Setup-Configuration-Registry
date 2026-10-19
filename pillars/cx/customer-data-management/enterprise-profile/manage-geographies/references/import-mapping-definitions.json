@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0",
+  "mapping_set": "manage-geographies-v1",
+  "fusion_resource_path": "/crmRestApi/resources/11.13.18.05/importMappings",
+  "transport_requirement": "data_loader_authorized_cx_adapter",
+  "mappings": [
+    {
+      "stage": "structure",
+      "Name": "FDOS_MANAGE_GEOGRAPHIES_STRUCTURE_V1",
+      "Description": "FSCR Manage Geographies country structure mapping version 1",
+      "ObjectCode": "GeoStructureInterface",
+      "ImportMappingColumns": [
+        {
+          "ColumnHeader": "CountryCode",
+          "AttributeCode": "CountryCode"
+        },
+        {
+          "ColumnHeader": "LevelNumber",
+          "AttributeCode": "LevelNumber"
+        },
+        {
+          "ColumnHeader": "GeographyType",
+          "AttributeCode": "GeographyType"
+        }
+      ]
+    },
+    {
+      "stage": "hierarchy",
+      "Name": "FDOS_MANAGE_GEOGRAPHIES_HIERARCHY_V1",
+      "Description": "FSCR Manage Geographies geography hierarchy mapping version 1",
+      "ObjectCode": "GeographyInterface",
+      "ImportMappingColumns": [
+        {
+          "ColumnHeader": "GeographyIdentifierId",
+          "AttributeCode": "GeographyIdentifierId"
+        },
+        {
+          "ColumnHeader": "PrimaryGeographyCodeType",
+          "AttributeCode": "PrimaryGeographyCodeType"
+        },
+        {
+          "ColumnHeader": "PrimaryGeographyName",
+          "AttributeCode": "PrimaryGeographyName"
+        },
+        {
+          "ColumnHeader": "RecordTypeCode",
+          "AttributeCode": "RecordTypeCode"
+        },
+        {
+          "ColumnHeader": "SourceId",
+          "AttributeCode": "SourceId"
+        },
+        {
+          "ColumnHeader": "StartDate",
+          "AttributeCode": "StartDate"
+        },
+        {
+          "ColumnHeader": "ParentGeographyType",
+          "AttributeCode": "ParentGeographyType"
+        },
+        {
+          "ColumnHeader": "CountryCode",
+          "AttributeCode": "CountryCode"
+        },
+        {
+          "ColumnHeader": "EndDate",
+          "AttributeCode": "EndDate"
+        },
+        {
+          "ColumnHeader": "GeographyId",
+          "AttributeCode": "GeographyId"
+        },
+        {
+          "ColumnHeader": "GeographyType",
+          "AttributeCode": "GeographyType"
+        },
+        {
+          "ColumnHeader": "GeoDataProvider",
+          "AttributeCode": "GeoDataProvider"
+        },
+        {
+          "ColumnHeader": "IdentifierSubtype",
+          "AttributeCode": "IdentifierSubtype"
+        },
+        {
+          "ColumnHeader": "IdentifierType",
+          "AttributeCode": "IdentifierType"
+        },
+        {
+          "ColumnHeader": "IdentifierValue",
+          "AttributeCode": "IdentifierValue"
+        },
+        {
+          "ColumnHeader": "LanguageCode",
+          "AttributeCode": "LanguageCode"
+        },
+        {
+          "ColumnHeader": "LevelNumber",
+          "AttributeCode": "LevelNumber"
+        },
+        {
+          "ColumnHeader": "ParentSourceId",
+          "AttributeCode": "ParentSourceId"
+        },
+        {
+          "ColumnHeader": "PrimaryGeographyCode",
+          "AttributeCode": "PrimaryGeographyCode"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_RECEIVING_DOCUMENT_OUTPUT_PREFERENCES",
+      "task_name": "Receiving Document Output Preferences",
+      "start_node": "RCDOP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "RCDOP.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RCDOP.RESOLVE_LOVS",
+            "invalid": "RCDOP.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Receiving Document Output Preferences input is prepared for the selected FSM or Data Loader route",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCDOP.RESOLVE_LOVS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RCDOP.DATA_LOADER_GATE",
+            "unresolved": "RCDOP.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RCDOP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supplied field has a resolver in this file",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCDOP.DATA_LOADER_GATE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "RCDOP.DONE",
+            "blocked": "RCDOP.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RCDOP.RESOLVE_LOVS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validated task input is handed to the selected FSM import or Data Loader workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCDOP.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any input, lookup, FSM, Data Loader, or approval issue exists",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RCDOP.DONE",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RCDOP.DATA_LOADER_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Task input is ready for the selected governed FSM or Data Loader workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

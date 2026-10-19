@@ -1,0 +1,472 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "BEN_MANAGE_BENEFIT_REPORTING_GROUPS",
+      "task_name": "Benefit Reporting Groups",
+      "start_node": "BEN_RPTG.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "BEN_RPTG.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "BEN_RPTG.APPLY_DEFAULTS",
+            "invalid": "BEN_RPTG.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate request context, supplied parent and child shape, and each included section's date-effectivity and effectiveOf availability before derivation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "BEN_RPTG.DERIVE_EFFECTIVE_OF"
+          },
+          "prerequisites": [
+            "BEN_RPTG.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Preserve absent fields and child collections; derive CompensationObjectType and default an omitted create, update, or correction EffectiveEndDate to 4712/12/31",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.DERIVE_EFFECTIVE_OF",
+          "node_type": "step",
+          "sequence": 23,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "derived": "BEN_RPTG.CHECK_READINESS"
+          },
+          "prerequisites": [
+            "BEN_RPTG.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Derive YYYY-MM-DD effectiveOf per supported date-effective child row from its own operation and date; omit it from sections that do not expose it",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.CHECK_READINESS",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "BEN_RPTG.LOOKUP_USAGE",
+            "missing": "BEN_RPTG.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_RPTG.DERIVE_EFFECTIVE_OF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Confirm the selected task, target, date-effective contract, and applicable metadata and Run Book gates",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.LOOKUP_USAGE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "BEN_RPTG.LOOKUP_BODY",
+            "skipped": "BEN_RPTG.LOOKUP_BODY",
+            "forbidden": "BEN_RPTG.LOOKUP_BODY",
+            "invalid": "BEN_RPTG.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_RPTG.CHECK_READINESS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "When benefitReportingGroups.Usage is supplied, validate it with its LookupTypeFinder result; otherwise skip; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.LOOKUP_BODY",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "BEN_RPTG.LOOKUP_PURPOSE",
+            "skipped": "BEN_RPTG.LOOKUP_PURPOSE",
+            "forbidden": "BEN_RPTG.LOOKUP_PURPOSE",
+            "invalid": "BEN_RPTG.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_RPTG.LOOKUP_USAGE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "When regulatoryBodies.RegulatoryBodyName is supplied, validate it with q=Name equality as of that row's EffectiveStartDate; otherwise skip; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.LOOKUP_PURPOSE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "BEN_RPTG.LOOKUP_REGULATION",
+            "skipped": "BEN_RPTG.LOOKUP_REGULATION",
+            "forbidden": "BEN_RPTG.LOOKUP_REGULATION",
+            "invalid": "BEN_RPTG.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_RPTG.LOOKUP_BODY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "When regulatoryBodies.regulatoryPurposes.RegulatoryPurpose is supplied, validate it with its LookupTypeFinder result as of that row's EffectiveStartDate; otherwise skip; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.LOOKUP_REGULATION",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "BEN_RPTG.LOOKUP_REGULATORY_PLAN_TYPE",
+            "skipped": "BEN_RPTG.LOOKUP_REGULATORY_PLAN_TYPE",
+            "forbidden": "BEN_RPTG.LOOKUP_REGULATORY_PLAN_TYPE",
+            "invalid": "BEN_RPTG.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_RPTG.LOOKUP_PURPOSE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "When regulations.RegulationName is supplied, validate it with q=Name equality as of that row's EffectiveStartDate; otherwise skip; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.LOOKUP_REGULATORY_PLAN_TYPE",
+          "node_type": "decision",
+          "sequence": 65,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "BEN_RPTG.LOOKUP_PROGRAM",
+            "skipped": "BEN_RPTG.LOOKUP_PROGRAM",
+            "forbidden": "BEN_RPTG.LOOKUP_PROGRAM",
+            "invalid": "BEN_RPTG.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_RPTG.LOOKUP_REGULATION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "When regulations.RegulatoryPlanType is supplied, validate it with its LookupTypeFinder result as of that row's EffectiveStartDate; otherwise skip; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.LOOKUP_PROGRAM",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "BEN_RPTG.LOOKUP_PLAN",
+            "skipped": "BEN_RPTG.LOOKUP_PLAN",
+            "forbidden": "BEN_RPTG.LOOKUP_PLAN",
+            "invalid": "BEN_RPTG.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_RPTG.LOOKUP_REGULATORY_PLAN_TYPE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "When reportingGroupForProgramsOrPlans.ProgramName is supplied, validate it with q=Name equality as of that row's EffectiveStartDate; otherwise skip; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.LOOKUP_PLAN",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "BEN_RPTG.LOOKUP_LANGUAGE",
+            "skipped": "BEN_RPTG.LOOKUP_LANGUAGE",
+            "forbidden": "BEN_RPTG.LOOKUP_LANGUAGE",
+            "invalid": "BEN_RPTG.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_RPTG.LOOKUP_PROGRAM"
+          ],
+          "on_failure": "continue",
+          "applies_when": "When reportingGroupForProgramsOrPlans.PlanName is supplied, validate it with q=Name equality as of that row's EffectiveStartDate; otherwise skip; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.LOOKUP_LANGUAGE",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "BEN_RPTG.LOOKUP_SOURCE_LANGUAGE",
+            "skipped": "BEN_RPTG.LOOKUP_SOURCE_LANGUAGE",
+            "forbidden": "BEN_RPTG.LOOKUP_SOURCE_LANGUAGE",
+            "invalid": "BEN_RPTG.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_RPTG.LOOKUP_PLAN"
+          ],
+          "on_failure": "continue",
+          "applies_when": "When translations.LanguageName is supplied, validate it with q=Description equality; otherwise skip; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.LOOKUP_SOURCE_LANGUAGE",
+          "node_type": "decision",
+          "sequence": 100,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "BEN_RPTG.ENFORCE_DESIGN",
+            "skipped": "BEN_RPTG.ENFORCE_DESIGN",
+            "forbidden": "BEN_RPTG.ENFORCE_DESIGN",
+            "invalid": "BEN_RPTG.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_RPTG.LOOKUP_LANGUAGE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "When translations.SourceLanguageName is supplied, validate it with q=Description equality; otherwise skip; 403 records unverified_forbidden",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 105,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "BEN_RPTG.EVALUATE",
+            "blocked": "BEN_RPTG.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_RPTG.LOOKUP_SOURCE_LANGUAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce one program or plan per association, derived CompensationObjectType and effectiveOf, and preserved child rows; for live load only, block unresolved references or missing metadata, Run Book, or loader approval; a validation-only 403 continues to results",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.EVALUATE",
+          "node_type": "decision",
+          "sequence": 110,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "recorded": "BEN_RPTG.RETURN_RESULT",
+            "invalid": "BEN_RPTG.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "BEN_RPTG.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Aggregate every supplied field result; retain unverified_forbidden without throwing",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "BEN_RPTG.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A field is invalid or a blocking preflight condition occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.RETURN_RESULT",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BEN_RPTG.EVALUATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return field-level validation results and unresolved 403 statuses; this is not load approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "BEN_RPTG.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 140,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "BEN_RPTG.HANDLE_ISSUE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return blocking issues and safe next actions",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

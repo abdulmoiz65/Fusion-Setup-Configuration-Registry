@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "capability_id": "item-catalog-existing-skill-canary-v1",
+  "task_code": "ORA_MANAGE_PROFILE_ITEM_CATALOG",
+  "lifecycle": "certification-only",
+  "parent_strategy": "one-existing-custom-catalog",
+  "child_strategy": "one-portable-child",
+  "contexts": ["SKILL"],
+  "allowed_supplier_codes": ["C"],
+  "excluded_catalog_codes": {
+    "SKILL": ["ORA_ORACLE_SKILLS_LIBRARY", "ORA_CUSTOM_SKILLS_LIBRARY", "ORA_LIGHTCAST_SKILLS_LIBRARY"]
+  },
+  "source_basis": "Existing ItemCatalogMigrationService parent-anchor/portable-child graph is a controlled test candidate, not live SKILL acceptance evidence.",
+  "runtime_verification": "not-established",
+  "promotion": "Requires separately reviewed successful import, exact child readback, unchanged parent and existing children, and duplicate prevention evidence. No automatic promotion or multi-child authority."
+}

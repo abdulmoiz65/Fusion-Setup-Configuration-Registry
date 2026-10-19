@@ -1,0 +1,790 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_HWM_MANAGE_RULES",
+      "task_name": "Time Rules",
+      "start_node": "TIMERULE.VALIDATE_REQUIREMENTS",
+      "nodes": [
+        {
+          "id": "TIMERULE.VALIDATE_REQUIREMENTS",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "TIMERULE.FIND_MATCH",
+            "invalid": "TIMERULE.INPUT_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.FIND_MATCH",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "exact_match": "TIMERULE.REUSE_READY",
+            "multiple_exact_matches": "TIMERULE.SELECTION_REQUIRED",
+            "derivable_family_match": "TIMERULE.PRESENT_DERIVABLE_RULE",
+            "compatible_matches": "TIMERULE.FIND_TEMPLATE",
+            "no_match": "TIMERULE.FIND_TEMPLATE",
+            "lookup_failure": "TIMERULE.LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "TIMERULE.VALIDATE_REQUIREMENTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After normalized input is valid",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.PRESENT_DERIVABLE_RULE",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "proposed_create_new": "TIMERULE.FIND_TEMPLATE",
+            "update_existing_requested": "TIMERULE.FIND_TEMPLATE"
+          },
+          "prerequisites": [
+            "TIMERULE.FIND_MATCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exactly one derivable same-family Time Rule candidate was found",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.FIND_TEMPLATE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "fully_compatible": "TIMERULE.CHECK_TEMPLATE_REUSE",
+            "multiple_fully_compatible": "TIMERULE.PRESENT_TEMPLATE_CANDIDATES",
+            "partial_matches": "TIMERULE.PRESENT_TEMPLATE_CANDIDATES",
+            "no_match": "TIMERULE.PREPARE_TEMPLATE_PROPOSAL",
+            "lookup_failure": "TIMERULE.TEMPLATE_LOOKUP_ERROR"
+          },
+          "prerequisites": [
+            "TIMERULE.FIND_MATCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A non-exact create or update proposal needs a verified template",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.CHECK_TEMPLATE_REUSE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "TIMERULE.CREATE_DEPENDENCY",
+            "noncompliant": "TIMERULE.TEMPLATE_SELECTION_REQUIRED"
+          },
+          "prerequisites": [
+            "TIMERULE.FIND_TEMPLATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exactly one fully compatible template candidate was found",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.PREPARE_TEMPLATE_PROPOSAL",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "proposal_complete": "TIMERULE.TEMPLATE_COMPLETE_SUMMARY",
+            "proposal_incomplete": "TIMERULE.TEMPLATE_PROPOSAL_ERROR"
+          },
+          "prerequisites": [
+            "TIMERULE.FIND_TEMPLATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "No fully compatible template was found",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.TEMPLATE_COMPLETE_SUMMARY",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "summary_ready": "TIMERULE.TEMPLATE_APPROVAL_GATE",
+            "summary_incomplete": "TIMERULE.TEMPLATE_PROPOSAL_ERROR"
+          },
+          "prerequisites": [
+            "TIMERULE.PREPARE_TEMPLATE_PROPOSAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A complete joint Time Rule Template and Time Rule proposal is ready for the provider-owned approval process",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.TEMPLATE_APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "TIMERULE.TEMPLATE_CREATION_HANDOFF_READY",
+            "missing": "TIMERULE.TEMPLATE_APPROVAL_REQUIRED",
+            "rejected": "TIMERULE.TEMPLATE_APPROVAL_DECLINED",
+            "changed": "TIMERULE.TEMPLATE_APPROVAL_STALE"
+          },
+          "prerequisites": [
+            "TIMERULE.TEMPLATE_COMPLETE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Complete Summary is displayed for a complete joint Time Rule Template and Time Rule proposal",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.CREATE_DEPENDENCY",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "TIMERULE.RULE_COMPLETE_SUMMARY",
+            "blocked": "TIMERULE.DEPENDENCY_ERROR"
+          },
+          "prerequisites": [
+            "TIMERULE.FIND_TEMPLATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A non-exact Time Rule proposal has an explicit operation when needed and exactly one fully compatible template is verified",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.RULE_COMPLETE_SUMMARY",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "summary_ready": "TIMERULE.CREATION_HANDOFF_READY",
+            "summary_incomplete": "TIMERULE.DEPENDENCY_ERROR"
+          },
+          "prerequisites": [
+            "TIMERULE.CREATE_DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A verified template and validated immutable Time Rule archive are ready for the provider-owned approval process",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.PRESENT_TEMPLATE_CANDIDATES",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "candidates_disclosed": "TIMERULE.TEMPLATE_SELECTION_REQUIRED",
+            "evidence_incomplete": "TIMERULE.TEMPLATE_CANDIDATE_DISCLOSURE_REQUIRED"
+          },
+          "prerequisites": [
+            "TIMERULE.FIND_TEMPLATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Multiple fully compatible or partial-only template candidates were found",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.REUSE_READY",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.FIND_MATCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exactly one verified exact Time Rule match exists",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.SELECTION_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Multiple exact or compatible Time Rule candidates exist",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.TEMPLATE_SELECTION_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Multiple fully compatible or partial-only template candidates require user direction",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.TEMPLATE_CREATION_HANDOFF_READY",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.TEMPLATE_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact joint proposal is approved; invoke the separate Time Rule Templates task first, verify it, then rerun this Time Rules workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.CREATION_HANDOFF_READY",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.RULE_COMPLETE_SUMMARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Complete Summary is displayed and the verified template and validated immutable FSM CSV ZIP are ready for the provider-owned Data Loader approval preview and import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.INPUT_ERROR",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.VALIDATE_REQUIREMENTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.LOOKUP_ERROR",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.FIND_MATCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Time Rule export lookup fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.TEMPLATE_LOOKUP_ERROR",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.FIND_TEMPLATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Time Rule Template export lookup fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.TEMPLATE_PROPOSAL_ERROR",
+          "node_type": "terminal",
+          "sequence": 19,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.PREPARE_TEMPLATE_PROPOSAL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The joint proposal is incomplete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 112
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.TEMPLATE_APPROVAL_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.TEMPLATE_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit approval for the exact joint proposal is missing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 114
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.TEMPLATE_APPROVAL_DECLINED",
+          "node_type": "terminal",
+          "sequence": 21,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.TEMPLATE_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The user rejected the joint proposal",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 115
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.TEMPLATE_APPROVAL_STALE",
+          "node_type": "terminal",
+          "sequence": 22,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.TEMPLATE_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The proposal or target environment changed after approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 116
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.DEPENDENCY_ERROR",
+          "node_type": "terminal",
+          "sequence": 23,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.CREATE_DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Conditional Time Rule creation cannot proceed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 117
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.TEMPLATE_CANDIDATE_DISCLOSURE_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 24,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.PRESENT_TEMPLATE_CANDIDATES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Candidate template evidence must be disclosed before user selection",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 113
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.EXPORT_MONITOR",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "zip_validated": "TIMERULE.EXPORT_READY",
+            "failed": "TIMERULE.EXPORT_ERROR",
+            "timed_out": "TIMERULE.EXPORT_ERROR",
+            "missing_result": "TIMERULE.EXPORT_ERROR",
+            "invalid_zip": "TIMERULE.EXPORT_ERROR",
+            "partial": "TIMERULE.EXPORT_ERROR",
+            "uncertain": "TIMERULE.EXPORT_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A task-authorized read-only Time Rules export or authoritative refresh request was accepted",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.EXPORT_READY",
+          "node_type": "terminal",
+          "sequence": 26,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.EXPORT_MONITOR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Terminal export success, persisted result ZIP, and ZIP validation all passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 118
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.EXPORT_ERROR",
+          "node_type": "terminal",
+          "sequence": 27,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Export monitoring reached failure, timeout, missing result, unusable ZIP, partial status, or uncertainty",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 119
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.FINAL_COMPLETION",
+          "node_type": "step",
+          "sequence": 28,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified_standalone": "TIMERULE.FINAL_COMPLETION_SUCCESS",
+            "verified_parent_ready": "TIMERULE.FINAL_COMPLETION_PARENT_RESUME",
+            "failed": "TIMERULE.FINAL_COMPLETION_ERROR",
+            "timed_out": "TIMERULE.FINAL_COMPLETION_ERROR",
+            "partial": "TIMERULE.FINAL_COMPLETION_ERROR",
+            "uncertain": "TIMERULE.FINAL_COMPLETION_ERROR",
+            "mismatched": "TIMERULE.FINAL_COMPLETION_ERROR",
+            "parent_context_ambiguous": "TIMERULE.PARENT_CONTEXT_REQUIRED"
+          },
+          "prerequisites": [
+            "TIMERULE.CREATE_DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An approved asynchronous Time Rules create, update, import, load, or documented dependent submission was accepted",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.FINAL_COMPLETION_ERROR",
+          "node_type": "terminal",
+          "sequence": 29,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Task-authorized status monitoring reached failure, timeout, partial success, uncertainty, or read-back mismatch",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 120
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.FINAL_COMPLETION_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 30,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.FINAL_COMPLETION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Terminal success status and authoritative read-back verification passed for a standalone Time Rules flow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 121
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.FINAL_COMPLETION_PARENT_RESUME",
+          "node_type": "terminal",
+          "sequence": 31,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.FINAL_COMPLETION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The prerequisite is verified and ready to resume exactly one active documented parent workflow; present the resume prompt and do not start the parent",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 122
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "TIMERULE.PARENT_CONTEXT_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 32,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "TIMERULE.FINAL_COMPLETION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Parent workflow context is multiple, conflicting, stale, incomplete, or undocumented",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 123
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

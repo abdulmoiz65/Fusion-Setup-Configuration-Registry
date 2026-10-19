@@ -1,0 +1,792 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_WHATSAPP_TEMPLATE_LIB",
+      "task_name": "WhatsApp Notification Template Library",
+      "start_node": "WATL.VALIDATE.REQUEST",
+      "nodes": [
+        {
+          "id": "WATL.VALIDATE.REQUEST",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "structured_valid": "WATL.ENFORCE.DUPLICATES",
+            "natural_language_valid": "WATL.ENFORCE.DUPLICATES",
+            "translation_valid": "WATL.LOOKUP.LANGUAGE",
+            "invalid": "WATL.ERROR.INPUT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Safely extract any readable user-provided format, normalize it into canonical structured rows or one natural-language request, preserve source locators, and validate the complete input atomically",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.ENFORCE.DUPLICATES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "structured_passed": "WATL.LOOKUP.EXISTING_BASE_BATCH",
+            "natural_language_passed": "WATL.LOOKUP.AVAILABLE_NL_NAME",
+            "blocked": "WATL.ERROR.POLICY"
+          },
+          "prerequisites": [
+            "WATL.VALIDATE.REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A structured request contains rows or a natural-language request contains one proposed base template",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.LOOKUP.AVAILABLE_NL_NAME",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WATL.DEFAULT.NL_META_CATEGORY",
+            "no_candidate": "WATL.ERROR.LOOKUP",
+            "unavailable": "WATL.ERROR.LOOKUP"
+          },
+          "prerequisites": [
+            "WATL.ENFORCE.DUPLICATES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select and finalize a meaningful natural-language template name only after confirming zero existing matches",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.DEFAULT.NL_META_CATEGORY",
+          "node_type": "decision",
+          "sequence": 27,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "WATL.LOOKUP.NL_CATEGORY"
+          },
+          "prerequisites": [
+            "WATL.LOOKUP.AVAILABLE_NL_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classify the natural-language proposal as Authentication for authentication, Marketing for promotional outreach or campaigns, and Utility for every other expected transactional message",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 17
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.LOOKUP.NL_CATEGORY",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WATL.LOOKUP.NL_TOKENS",
+            "no_match": "WATL.ERROR.LOOKUP",
+            "ambiguous": "WATL.ERROR.LOOKUP",
+            "unavailable": "WATL.ERROR.LOOKUP"
+          },
+          "prerequisites": [
+            "WATL.DEFAULT.NL_META_CATEGORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Derive one supported Recruiting category for a natural-language base request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.LOOKUP.NL_TOKENS",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WATL.ENFORCE.META_CONTENT_STANDARDS",
+            "no_match": "WATL.ERROR.LOOKUP",
+            "ambiguous": "WATL.ERROR.LOOKUP",
+            "unavailable": "WATL.ERROR.LOOKUP"
+          },
+          "prerequisites": [
+            "WATL.LOOKUP.NL_CATEGORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Build proposed content only from exact tokens supported by the derived category",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.ENFORCE.META_CONTENT_STANDARDS",
+          "node_type": "decision",
+          "sequence": 42,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "WATL.GATE.NL_CONFIRMATION",
+            "blocked": "WATL.ERROR.POLICY"
+          },
+          "prerequisites": [
+            "WATL.LOOKUP.NL_TOKENS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify category purpose, opt-in and sender clarity, front-loaded concise copy, professional tone, spam avoidance, timing and outreach cadence, focused CTA use, contextualized tokens and samples, candidate safety, and factual hiring-decision language before showing a natural-language proposal for confirmation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.GATE.NL_CONFIRMATION",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "confirmed": "WATL.LOOKUP.EXISTING_BASE_BATCH",
+            "corrected": "WATL.ERROR.INPUT",
+            "declined": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "WATL.ENFORCE.META_CONTENT_STANDARDS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Present the unique, purpose-categorized, standards-compliant natural-language proposal with realistic samples and require explicit confirmation before base-template handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.LOOKUP.EXISTING_BASE_BATCH",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "structured_classified": "WATL.LOOKUP.STRUCTURED_LANGUAGES",
+            "natural_language_create": "WATL.DEPENDENCY.UPSERT",
+            "explicit_base_update": "WATL.DEPENDENCY.UPSERT",
+            "name_collision": "WATL.ERROR.POLICY",
+            "non_draft": "WATL.ERROR.POLICY",
+            "ambiguous": "WATL.ERROR.LOOKUP",
+            "unavailable": "WATL.ERROR.LOOKUP"
+          },
+          "prerequisites": [
+            "WATL.ENFORCE.DUPLICATES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classify every structured name group by Fusion existence and recheck every confirmed natural-language name before handoff",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.LOOKUP.STRUCTURED_LANGUAGES",
+          "node_type": "decision",
+          "sequence": 61,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WATL.LOOKUP.SESSION_LANGUAGE",
+            "no_match": "WATL.ERROR.LOOKUP",
+            "unavailable": "WATL.ERROR.LOOKUP"
+          },
+          "prerequisites": [
+            "WATL.LOOKUP.EXISTING_BASE_BATCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve every automatically classified structured Language before base or translation routing",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.LOOKUP.SESSION_LANGUAGE",
+          "node_type": "decision",
+          "sequence": 62,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "base_selected": "WATL.DEPENDENCY.UPSERT",
+            "translations_only": "WATL.LOOKUP.BASE_TEMPLATE",
+            "missing": "WATL.ERROR.INPUT",
+            "no_unique_match": "WATL.ERROR.INPUT"
+          },
+          "prerequisites": [
+            "WATL.LOOKUP.STRUCTURED_LANGUAGES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate the named local active-session language source to select one base row per zero-match structured name group, or route existing-name groups as translations",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.LOOKUP.LANGUAGE",
+          "node_type": "decision",
+          "sequence": 63,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WATL.LOOKUP.BASE_TEMPLATE",
+            "no_match": "WATL.ERROR.LOOKUP",
+            "unavailable": "WATL.ERROR.LOOKUP"
+          },
+          "prerequisites": [
+            "WATL.VALIDATE.REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve every explicit translation-only language or automatically classified existing-name row language",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.LOOKUP.BASE_TEMPLATE",
+          "node_type": "decision",
+          "sequence": 64,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WATL.LOOKUP.TRANSLATION_CATEGORY",
+            "no_match": "WATL.ERROR.INPUT",
+            "ambiguous": "WATL.ERROR.LOOKUP",
+            "unavailable": "WATL.ERROR.LOOKUP"
+          },
+          "prerequisites": [
+            "WATL.VALIDATE.REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the existing base and target recruitingWhatsappLangTemplates for every explicit or automatically classified translation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.DEPENDENCY.UPSERT",
+          "node_type": "decision",
+          "sequence": 65,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "WATL.LOOKUP.META_CATEGORY",
+            "blocked": "WATL.ERROR.POLICY"
+          },
+          "prerequisites": [
+            "WATL.LOOKUP.EXISTING_BASE_BATCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "At least one row is classified as a session-language base create, confirmed natural-language create, or explicitly permitted Draft update and is ready for category resolution",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.LOOKUP.TRANSLATION_CATEGORY",
+          "node_type": "decision",
+          "sequence": 66,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WATL.LOOKUP.TRANSLATION_TOKENS",
+            "no_match": "WATL.ERROR.LOOKUP",
+            "ambiguous": "WATL.ERROR.LOOKUP",
+            "unavailable": "WATL.ERROR.LOOKUP"
+          },
+          "prerequisites": [
+            "WATL.LOOKUP.BASE_TEMPLATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve the required Recruiting content category for translation token validation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.LOOKUP.TRANSLATION_TOKENS",
+          "node_type": "decision",
+          "sequence": 68,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WATL.RETURN.TRANSLATION_READY",
+            "no_match": "WATL.ERROR.LOOKUP",
+            "ambiguous": "WATL.ERROR.LOOKUP",
+            "unavailable": "WATL.ERROR.LOOKUP"
+          },
+          "prerequisites": [
+            "WATL.LOOKUP.TRANSLATION_CATEGORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate every translation token against the resolved Recruiting content category",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.LOOKUP.META_CATEGORY",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WATL.LOOKUP.RECRUITING_CATEGORY",
+            "no_match": "WATL.ERROR.LOOKUP",
+            "ambiguous": "WATL.ERROR.LOOKUP",
+            "unavailable": "WATL.ERROR.LOOKUP"
+          },
+          "prerequisites": [
+            "WATL.DEPENDENCY.UPSERT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve every base row's Meta category",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.LOOKUP.RECRUITING_CATEGORY",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WATL.LOOKUP.CREATE_TOKENS",
+            "no_match": "WATL.ERROR.LOOKUP",
+            "ambiguous": "WATL.ERROR.LOOKUP",
+            "unavailable": "WATL.ERROR.LOOKUP"
+          },
+          "prerequisites": [
+            "WATL.LOOKUP.META_CATEGORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve every base row's Recruiting category",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.LOOKUP.CREATE_TOKENS",
+          "node_type": "decision",
+          "sequence": 90,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WATL.DEFAULT.PRODUCT_CONTEXT",
+            "no_match": "WATL.ERROR.LOOKUP",
+            "ambiguous": "WATL.ERROR.LOOKUP",
+            "unavailable": "WATL.ERROR.LOOKUP"
+          },
+          "prerequisites": [
+            "WATL.LOOKUP.RECRUITING_CATEGORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate every structured base token and revalidate every confirmed natural-language proposal token against the resolved Recruiting content category",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.DEFAULT.PRODUCT_CONTEXT",
+          "node_type": "decision",
+          "sequence": 100,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "WATL.DEFAULT.RECRUITING_SOURCE"
+          },
+          "prerequisites": [
+            "WATL.LOOKUP.CREATE_TOKENS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Set productContext to HCM_RECRUITING for every base-template create or Draft update; do not collect it as user input",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.DEFAULT.RECRUITING_SOURCE",
+          "node_type": "decision",
+          "sequence": 101,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "WATL.ENFORCE.CONVERSATION_STARTER"
+          },
+          "prerequisites": [
+            "WATL.DEFAULT.PRODUCT_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Set recruitingSource to ORA_FSM_UI for every base-template create or Draft update; do not collect it as user input",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.ENFORCE.CONVERSATION_STARTER",
+          "node_type": "decision",
+          "sequence": 110,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "WATL.ENFORCE.BATCH_PHASES",
+            "blocked": "WATL.ERROR.POLICY"
+          },
+          "prerequisites": [
+            "WATL.DEFAULT.RECRUITING_SOURCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Base-template validation, lookup, and defaulting completed; enforce Conversation Starter rules when applicable",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.ENFORCE.BATCH_PHASES",
+          "node_type": "decision",
+          "sequence": 120,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "base_only": "WATL.RETURN.CREATE_READY",
+            "mixed": "WATL.RETURN.BASE_PHASE_READY",
+            "blocked": "WATL.ERROR.POLICY"
+          },
+          "prerequisites": [
+            "WATL.ENFORCE.CONVERSATION_STARTER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Stage session-language base rows through recruitingWhatsappBaseTemplates before deferred recruitingWhatsappLangTemplates rows and return both phases without executing either phase",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.RETURN.CREATE_READY",
+          "node_type": "terminal",
+          "sequence": 200,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WATL.ENFORCE.BATCH_PHASES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Base create or explicit Draft-update mappings are validated for recruitingWhatsappBaseTemplates handoff; no Data Loader or Fusion operation occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 115
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.RETURN.BASE_PHASE_READY",
+          "node_type": "terminal",
+          "sequence": 201,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WATL.ENFORCE.BATCH_PHASES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Session-language base mappings are ready for recruitingWhatsappBaseTemplates and recruitingWhatsappLangTemplates rows are deferred until verified base Data Loader completion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 116
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.RETURN.TRANSLATION_READY",
+          "node_type": "terminal",
+          "sequence": 202,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WATL.LOOKUP.TRANSLATION_TOKENS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Translation mappings are validated for recruitingWhatsappLangTemplates handoff after the base exists; no Data Loader or Fusion operation occurred",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 117
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.ERROR.INPUT",
+          "node_type": "step",
+          "sequence": 240,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input extraction or normalization is unreadable or ambiguous, a required value, session-language base selection, or user base-language preference is missing, or any supplied or derived field fails validation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.ERROR.LOOKUP",
+          "node_type": "step",
+          "sequence": 241,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A required live lookup returns no match, multiple matches, or unavailable",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.ERROR.POLICY",
+          "node_type": "step",
+          "sequence": 242,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Duplicate, row-role, name-availability, explicitly base-only existing-status, category-purpose, Meta content, confirmation, business-object routing, phase-order, or Conversation Starter policy blocks the request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 112
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WATL.ERROR.AUTHORING",
+          "node_type": "step",
+          "sequence": 243,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "An unresolved source contract prevents safe validation, defaulting, or handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 113
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 250,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A documented issue, declined proposal, or authoring blocker was disclosed with one safe next action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 114
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

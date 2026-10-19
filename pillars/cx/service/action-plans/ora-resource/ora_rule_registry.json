@@ -1,0 +1,962 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "ORA_SVC_MANAGE_ACTION_CATEGORIES_FOR_ACTION_PLANS",
+      "task_name": "Manage Action Categories for Action Plans",
+      "start_node": "APACAT.VALIDATE",
+      "nodes": [
+        {
+          "id": "APACAT.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "APACAT.LOOKUP_CODES",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any supported action-category use case",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APACAT.LOOKUP_CODES",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "APACAT.DESIGN",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APACAT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A category lookup-code identity or candidate code is required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APACAT.DESIGN",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "APACAT.EXEC",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APACAT.LOOKUP_CODES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating, updating, or disabling an action category",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APACAT.EXEC",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "APACAT.DONE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APACAT.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A package import is requested",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APACAT.DONE",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "APACAT.EXEC"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Fresh export verifies the change",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any failed gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_ACTION_PLAN_ACTIONS",
+      "task_name": "Manage Action Plan Actions",
+      "start_node": "APACT.VALIDATE",
+      "nodes": [
+        {
+          "id": "APACT.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "APACT.ATTRIBUTE_METADATA",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any supported action use case",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APACT.ATTRIBUTE_METADATA",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved_or_not_requested": "APACT.LOOKUP_CODES",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APACT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Attribute mappings are requested for an action",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APACT.LOOKUP_CODES",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved_or_not_requested": "APACT.DESIGN",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APACT.ATTRIBUTE_METADATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Any code-valued root or child action field is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APACT.DESIGN",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "APACT.EXEC",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APACT.LOOKUP_CODES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating an action",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APACT.EXEC",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "APACT.DONE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APACT.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A package import is requested",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APACT.DONE",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "APACT.EXEC"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Fresh export verifies the action and mappings",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any failed gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_ACTION_PLAN_ACTION_STATUS_MAPPING",
+      "task_name": "Manage Mapping of Action Plan Status Values",
+      "start_node": "APSTAT.VALIDATE",
+      "nodes": [
+        {
+          "id": "APSTAT.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "APSTAT.LOOKUP_CODES",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any supported status-mapping use case",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APSTAT.LOOKUP_CODES",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "APSTAT.DESIGN",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APSTAT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Any code-valued status-mapping field is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APSTAT.DESIGN",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "APSTAT.EXEC",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APSTAT.LOOKUP_CODES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a status mapping",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APSTAT.EXEC",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "APSTAT.DONE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APSTAT.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A package import is requested",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APSTAT.DONE",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "APSTAT.EXEC"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Fresh export verifies the mapping",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any failed gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_ACTION_PLAN_PROFILE_OPTIONS",
+      "task_name": "Manage Action Plan Profile Options",
+      "start_node": "APPROP.VALIDATE",
+      "nodes": [
+        {
+          "id": "APPROP.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "APPROP.READ_CURRENT",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any supported profile-option use case",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROP.READ_CURRENT",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "APPROP.DESIGN",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APPROP.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A profile option and scope are selected",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROP.DESIGN",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "APPROP.EXEC",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APPROP.READ_CURRENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A configuration change is requested",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROP.EXEC",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "APPROP.DONE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APPROP.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A configuration change is requested",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APPROP.DONE",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "APPROP.EXEC"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Approved route completes with same-scope read-back",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any failed gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_ACTION_PLAN_TEMPLATES",
+      "task_name": "Manage Action Plan Templates",
+      "start_node": "APTPL.VALIDATE",
+      "nodes": [
+        {
+          "id": "APTPL.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "APTPL.VERIFY_ACTIONS",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any supported template use case",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APTPL.VERIFY_ACTIONS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified_or_not_requested": "APTPL.LOOKUP_CODES",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APTPL.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Template Actions are requested after explicit choice and action selection",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APTPL.LOOKUP_CODES",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved_or_not_requested": "APTPL.DESIGN",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APTPL.VERIFY_ACTIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Any code-valued template, child-action, or relation field is supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APTPL.DESIGN",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "APTPL.EXEC",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APTPL.LOOKUP_CODES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating or updating a template or template action",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APTPL.EXEC",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "APTPL.DONE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APTPL.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported template package import is requested",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APTPL.DONE",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "APTPL.EXEC"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Fresh export verifies the template and action flow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any failed gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_TEMPLATE_CATEGORIES_FOR_ACTION_PLANS",
+      "task_name": "Manage Template Categories for Action Plans",
+      "start_node": "APTCAT.VALIDATE",
+      "nodes": [
+        {
+          "id": "APTCAT.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "APTCAT.LOOKUP_CODES",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any supported template-category use case",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APTCAT.LOOKUP_CODES",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "APTCAT.DESIGN",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APTCAT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A template-category lookup-code identity or candidate code is required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APTCAT.DESIGN",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "APTCAT.EXEC",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APTCAT.LOOKUP_CODES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Creating, updating, or disabling a template category",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APTCAT.EXEC",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "APTCAT.DONE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "APTCAT.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A hash-bound package import is requested",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "APTCAT.DONE",
+          "node_type": "terminal",
+          "sequence": 5,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "APTCAT.EXEC"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Terminal status and fresh export verify the change",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any failed gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

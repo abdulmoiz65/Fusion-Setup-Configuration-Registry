@@ -1,0 +1,4 @@
+interface:
+  display_name: "Manage Duties"
+  short_description: "Export and safely import duty-role setup data"
+  default_prompt: "Use $manage-duties to export or safely import Manage Duties setup data."

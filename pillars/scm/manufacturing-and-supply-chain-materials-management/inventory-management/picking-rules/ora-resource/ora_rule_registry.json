@@ -1,0 +1,231 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PICKING_RULES",
+      "task_name": "Picking Rules",
+      "start_node": "PICKRULES.CLASSIFY_IMPORT_ROUTE",
+      "nodes": [
+        {
+          "id": "PICKRULES.CLASSIFY_IMPORT_ROUTE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "rest": "PICKRULES.NORMALIZE_BOOLEAN_FLAGS",
+            "fsm": "PICKRULES.VALIDATE_FSM_ARCHIVE",
+            "blocked": "PICKRULES.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request. REST is the task default; FSM applies only to an explicitly selected package or an archive containing `ASM_SETUP_CSV_METADATA.xml`.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PICKRULES.NORMALIZE_BOOLEAN_FLAGS",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PICKRULES.CHECK_DEPENDENCIES",
+            "invalid": "PICKRULES.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PICKRULES.CLASSIFY_IMPORT_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classified REST requests with one or more supported boolean fields.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PICKRULES.VALIDATE_FSM_ARCHIVE",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "validated": "PICKRULES.CHECK_FSM_READINESS",
+            "blocked": "PICKRULES.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PICKRULES.CLASSIFY_IMPORT_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classified FSM package. Validate the native member/header and boolean contract; do not apply REST priority or boolean transformations.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PICKRULES.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PICKRULES.RESOLVE_PRIORITY",
+            "blocked": "PICKRULES.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PICKRULES.NORMALIZE_BOOLEAN_FLAGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classified REST requests proceed to the priority node after registered-BO and metadata-visibility readiness checks.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PICKRULES.RESOLVE_PRIORITY",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PICKRULES.REST_DATALOADER_HANDOFF",
+            "not_applicable": "PICKRULES.REST_DATALOADER_HANDOFF",
+            "failed": "PICKRULES.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PICKRULES.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "REST requests only, after dependency readiness and before Data Loader handoff. Display Meanings resolve; supplied LookupCodes are not applicable.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PICKRULES.CHECK_FSM_READINESS",
+          "node_type": "step",
+          "sequence": 41,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PICKRULES.FSM_DATALOADER_HANDOFF",
+            "blocked": "PICKRULES.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PICKRULES.VALIDATE_FSM_ARCHIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classified FSM package passed native archive validation and its template/receipt checks.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PICKRULES.REST_DATALOADER_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PICKRULES.RESOLVE_PRIORITY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Classified REST validation, dependency readiness, and priority resolution passed; hand off the REST source to core.data-loader for its normal approval and import workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PICKRULES.FSM_DATALOADER_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 51,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PICKRULES.CHECK_FSM_READINESS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Classified FSM archive and template readiness passed; hand off the unchanged FSM ZIP to core.data-loader for its normal approval and import workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PICKRULES.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any route classification, input, lookup, dependency, template, or Data Loader handoff prerequisite is blocked or fails.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

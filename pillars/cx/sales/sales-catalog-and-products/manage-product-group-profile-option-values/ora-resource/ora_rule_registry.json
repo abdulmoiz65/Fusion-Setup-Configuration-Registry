@@ -1,0 +1,348 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "QSC_MANAGE_PRODUCT_GROUP_PROFILE_OPTIONS",
+      "task_name": "Manage Product Group Profile Option Values",
+      "start_node": "QSC.PROFILE.INPUT",
+      "nodes": [
+        {
+          "id": "QSC.PROFILE.INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "report": "QSC.PROFILE.VALUE_NAME",
+            "value_change": "QSC.PROFILE.ITEM_ORGANIZATION",
+            "removal": "QSC.PROFILE.UNSET_EXECUTION_GATE",
+            "invalid": "QSC.PROFILE.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Run when QSC_SALES_PRODUCTS_INVENTORY_ORG_ID is selected; classify the request intent, then validate a returned profile-value code for reporting, the Site level and proposed item-master code or name for a value change, or the Site level for a removal",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QSC.PROFILE.VALUE_NAME",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "QSC.PROFILE.REPORTED",
+            "unresolved": "QSC.PROFILE.BLOCKED",
+            "failure": "QSC.PROFILE.FAILED"
+          },
+          "prerequisites": [
+            "QSC.PROFILE.INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run when a QSC profile value from ProfileOptions REST or an FSM export is reported; resolve the returned OrganizationCode to OrganizationName",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QSC.PROFILE.REPORTED",
+          "node_type": "terminal",
+          "sequence": 3,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QSC.PROFILE.VALUE_NAME"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Report the QSC profile value as the resolved OrganizationCode and OrganizationName pair",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QSC.PROFILE.ITEM_ORGANIZATION",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "QSC.PROFILE.DEPENDENCY",
+            "not_found": "QSC.PROFILE.MASTER_ORG_MISSING",
+            "blocked": "QSC.PROFILE.BLOCKED",
+            "failure": "QSC.PROFILE.FAILED"
+          },
+          "prerequisites": [
+            "QSC.PROFILE.INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run only when a direct QSC request provides an organization for QSC_SALES_PRODUCTS_INVENTORY_ORG_ID; resolve the proposed item-master organization code or name before profile-value execution planning",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QSC.PROFILE.MASTER_ORG_MISSING",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "prompted": "QSC.PROFILE.BLOCKED"
+          },
+          "prerequisites": [
+            "QSC.PROFILE.ITEM_ORGANIZATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run only when a direct QSC request provides an organization for QSC_SALES_PRODUCTS_INVENTORY_ORG_ID; disclose the missing item-master prerequisite before retrying validation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QSC.PROFILE.DEPENDENCY",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "QSC.PROFILE.DESIGN",
+            "blocked": "QSC.PROFILE.BLOCKED"
+          },
+          "prerequisites": [
+            "QSC.PROFILE.ITEM_ORGANIZATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run only when a direct QSC request provides an organization for QSC_SALES_PRODUCTS_INVENTORY_ORG_ID; confirm the resolved item master exists before profile-value execution planning",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QSC.PROFILE.DESIGN",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "QSC.PROFILE.EXECUTION_GATE",
+            "blocked": "QSC.PROFILE.BLOCKED"
+          },
+          "prerequisites": [
+            "QSC.PROFILE.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run only when a direct QSC request provides an organization for QSC_SALES_PRODUCTS_INVENTORY_ORG_ID; enforce the direct Site-level design before the execution gate",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QSC.PROFILE.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "QSC.PROFILE.READY",
+            "blocked": "QSC.PROFILE.BLOCKED"
+          },
+          "prerequisites": [
+            "QSC.PROFILE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run only for a direct QSC_SALES_PRODUCTS_INVENTORY_ORG_ID Site-value mutation; require an approved execution route and current approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QSC.PROFILE.READY",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QSC.PROFILE.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "All documented direct QSC planning and approval gates are satisfied; hand off the unchanged approved request to Apps Common",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QSC.PROFILE.UNSET_EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "QSC.PROFILE.UNSET_READY",
+            "already_unset": "QSC.PROFILE.ALREADY_UNSET",
+            "blocked": "QSC.PROFILE.BLOCKED"
+          },
+          "prerequisites": [
+            "QSC.PROFILE.INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run only when a direct QSC request asks to remove QSC_SALES_PRODUCTS_INVENTORY_ORG_ID; read the Site child, require an approved DELETE preview when it exists, and require current approval",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QSC.PROFILE.UNSET_READY",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QSC.PROFILE.UNSET_EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The existing Site child has an unchanged approved DELETE preview; hand off the deletion to Apps Common and verify its absence afterward",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QSC.PROFILE.ALREADY_UNSET",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "QSC.PROFILE.UNSET_EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The QSC Site child is absent; report the profile value as already unset without issuing a DELETE",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QSC.PROFILE.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "An input, lookup, dependency, design, execution-route, or approval requirement blocks the direct request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "QSC.PROFILE.FAILED",
+          "node_type": "terminal",
+          "sequence": 14,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A documented validation or lookup operation fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

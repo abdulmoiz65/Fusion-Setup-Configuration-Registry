@@ -1,0 +1,845 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_CONFIGURE_LEGISLATIONS_FOR_HUMAN_RESOURCES",
+      "task_name": "Configure Legislations for Human Resources",
+      "start_node": "CLHR.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "CLHR.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CLHR.CHECK_READINESS",
+            "invalid": "CLHR.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validate operation and supplied shapes only; Create may omit its target or rule inputs until available-legislation selection and options; Delete retains its required target; defer resolved-value checks to the selected branch",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.CHECK_READINESS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CLHR.SELECT_OPERATION",
+            "blocked": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every request; evaluate only applicable prerequisites without making external calls",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.SELECT_OPERATION",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "search": "CLHR.SEARCH_DEFAULTS",
+            "create": "CLHR.ENFORCE_CREATE_SCOPE",
+            "delete": "CLHR.ENFORCE_DELETE_SCOPE",
+            "verify_delete": "CLHR.ENFORCE_VERIFY_SCOPE",
+            "unsupported": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.CHECK_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply the Operation selection field rule to the normalized business operation; RestAction never selects a branch",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.SEARCH_DEFAULTS",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CLHR.ENFORCE_SEARCH_SCOPE",
+            "unchanged": "CLHR.ENFORCE_SEARCH_SCOPE",
+            "invalid": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.SELECT_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search only; initialize omissions and page-start controls without changing supplied filters",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.ENFORCE_SEARCH_SCOPE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "allowed": "CLHR.SEARCH",
+            "unsupported": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.SEARCH_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search only; preserve its read-only scope without applying Delete prerequisites",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.SEARCH",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matches": "CLHR.COMPLETE",
+            "no_matches": "CLHR.COMPLETE",
+            "multiple_matches": "CLHR.COMPLETE",
+            "error": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.ENFORCE_SEARCH_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Search only; run find_installed_legislations and all its applicable pages and diagnostics",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 284
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.ENFORCE_DELETE_SCOPE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "allowed": "CLHR.RESOLVE_DELETE_TARGET",
+            "unsupported": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.SELECT_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Delete only; pre-lookup scope and route gate, not the post-lookup target check",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.RESOLVE_DELETE_TARGET",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "CLHR.DELETE_DEFAULTS",
+            "no_matches": "CLHR.ERROR",
+            "selection_required": "CLHR.ERROR",
+            "conflict": "CLHR.ERROR",
+            "error": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.ENFORCE_DELETE_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Delete only; run resolve_installed_legislation_for_delete and retain the selected code/environment without constructing or loading a file",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 285
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.DELETE_DEFAULTS",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CLHR.VALIDATE_DELETE_CONTRACT",
+            "unchanged": "CLHR.VALIDATE_DELETE_CONTRACT",
+            "invalid": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.RESOLVE_DELETE_TARGET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Delete only after unique target resolution; compute fixed values without changing a prepared immutable archive",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.VALIDATE_DELETE_CONTRACT",
+          "node_type": "step",
+          "sequence": 13,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CLHR.ENFORCE_DELETE_DESIGN",
+            "invalid": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.DELETE_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate resolved values and prospective DAT shape in phase=prepare; in phase=validate_artifact inspect the actual final archive without changing its bytes",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.ENFORCE_DELETE_DESIGN",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "allowed": "CLHR.DELETE_READY",
+            "blocked": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.VALIDATE_DELETE_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Delete only; consume resolved target evidence and the validated draft or final archive; return readiness without granting upload approval",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.ENFORCE_VERIFY_SCOPE",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "allowed": "CLHR.VERIFY_DELETED",
+            "unsupported": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.SELECT_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify Delete only; read-only continuation after successful-load and original-target prerequisites",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.VERIFY_DELETED",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "absent": "CLHR.DELETE_CONFIRMED",
+            "present": "CLHR.DELETE_PRESENT",
+            "error": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.ENFORCE_VERIFY_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit Verify Delete only; run verify_installed_legislation_deleted after the loader-status prerequisites",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 286
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.ENFORCE_CREATE_SCOPE",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "allowed": "CLHR.RESOLVE_CREATE_LEGISLATION",
+            "unsupported": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.SELECT_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Create selection and Legislation Rules preparation only; declared GETs, no Delete BO reuse or direct mutations",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.RESOLVE_CREATE_LEGISLATION",
+          "node_type": "decision",
+          "sequence": 51,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "selected": "CLHR.RESOLVE_CREATE_RULE_OPTIONS",
+            "choice_required": "CLHR.CREATE_SELECTION_REQUIRED",
+            "unavailable": "CLHR.CLASSIFY_UNAVAILABLE",
+            "error": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.ENFORCE_CREATE_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run resolve_available_legislation_for_create first; establish one shared selection or return choices",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 287
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.CLASSIFY_UNAVAILABLE",
+          "node_type": "decision",
+          "sequence": 52,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "classified": "CLHR.CREATE_UNAVAILABLE",
+            "error": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.RESOLVE_CREATE_LEGISLATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Run classify_unavailable_legislation only for a target absent from complete available results; classify installed versus unavailable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 288
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.RESOLVE_CREATE_RULE_OPTIONS",
+          "node_type": "step",
+          "sequence": 53,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CLHR.RESOLVE_CREATE_CURRENCY",
+            "error": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.RESOLVE_CREATE_LEGISLATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For normal preparation run resolve_payroll_relationship_rule and resolve_deduction_card_tru_rule; options-only runs only requested rule resolvers or skips this node with resolved; collect choices and missing/invalid flags, no defaults",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 289
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.RESOLVE_CREATE_CURRENCY",
+          "node_type": "step",
+          "sequence": 54,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CLHR.RESOLVE_CREATE_MAPPINGS",
+            "error": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.RESOLVE_CREATE_RULE_OPTIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For normal preparation use resolve_default_currency when currency omitted or resolve_currency_override when supplied; options-only runs just resolve_currency_override if currency was requested, otherwise skip with resolved",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 290
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.RESOLVE_CREATE_MAPPINGS",
+          "node_type": "step",
+          "sequence": 55,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CLHR.CREATE_OPTION_REQUEST",
+            "error": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.RESOLVE_CREATE_CURRENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For normal preparation resolve needed default rows/crosswalk and live edited-row options; options-only runs only requested person/relationship LOVs without default mappings, otherwise skips with resolved; preserve ordered pairs and read-only ProcessInRun",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 291
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.CREATE_OPTION_REQUEST",
+          "node_type": "decision",
+          "sequence": 56,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "choices_requested": "CLHR.CREATE_OPTIONS_RETURNED",
+            "continue": "CLHR.CREATE_DEFAULTS"
+          },
+          "prerequisites": [
+            "CLHR.RESOLVE_CREATE_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "If requested_options is nonempty, return its resolved choices and ask for the desired selection without applying omission defaults; otherwise continue preparation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 108
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.CREATE_DEFAULTS",
+          "node_type": "step",
+          "sequence": 63,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CLHR.VALIDATE_CREATE_RULE_INPUTS",
+            "unchanged": "CLHR.VALIDATE_CREATE_RULE_INPUTS",
+            "invalid": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.CREATE_OPTION_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply only omitted Create values from resolved candidates; preserve invalid explicit values for validation, edited rows and explicit empty replacement; never default date or TRU rule",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.VALIDATE_CREATE_RULE_INPUTS",
+          "node_type": "step",
+          "sequence": 64,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CLHR.ENFORCE_CREATE_DESIGN",
+            "missing": "CLHR.CREATE_INPUT_REQUIRED",
+            "invalid": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.CREATE_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate required date and TRU choice, resolved explicit options and final paired-row output; report only missing or invalid business inputs",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.ENFORCE_CREATE_DESIGN",
+          "node_type": "step",
+          "sequence": 65,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "CLHR.CREATE_DATA_PREPARED",
+            "blocked": "CLHR.ERROR"
+          },
+          "prerequisites": [
+            "CLHR.VALIDATE_CREATE_RULE_INPUTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Enforce shared identity, validated logical mapping and default disclosure; stop at prepared data because Create BO integration is deferred",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.ERROR",
+          "node_type": "step",
+          "sequence": 900,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "reported": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A preceding node failed or rejected the request; classify and disclose its recorded reason",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.COMPLETE",
+          "node_type": "terminal",
+          "sequence": 1000,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CLHR.SEARCH"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Search completed consistently; preserve MATCHES, MULTIPLE_MATCHES, or NO_MATCHES without any mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.DELETE_READY",
+          "node_type": "terminal",
+          "sequence": 1001,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CLHR.ENFORCE_DELETE_DESIGN"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Delete rules passed; return selected code and contract values for preparation, or validated final-artifact evidence to Task Hook; this is neither upload approval nor a completed deletion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.DELETE_CONFIRMED",
+          "node_type": "terminal",
+          "sequence": 1002,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CLHR.VERIFY_DELETED"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Successful load followed by complete consistent lookup with absent outcome; return DELETE_CONFIRMED in the confirmed environment/access context",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.DELETE_PRESENT",
+          "node_type": "terminal",
+          "sequence": 1003,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CLHR.VERIFY_DELETED"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Verification returned present; report DELETE_NOT_CONFIRMED and do not submit another deletion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.CREATE_SELECTION_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 1051,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CLHR.RESOLVE_CREATE_LEGISLATION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Available choices returned; await one legislation and restart eligibility; no dependent lookup or mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.CREATE_UNAVAILABLE",
+          "node_type": "terminal",
+          "sequence": 1052,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CLHR.CLASSIFY_UNAVAILABLE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Explain ALREADY_EXISTS or LEGISLATION_UNAVAILABLE from complete evidence; no implicit Edit or Create",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.CREATE_OPTIONS_RETURNED",
+          "node_type": "terminal",
+          "sequence": 1056,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CLHR.CREATE_OPTION_REQUEST"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Display requested live options and ask the intended selection; no omission default applied for that choice, no claim that preparation is complete",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 107
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.CREATE_INPUT_REQUIRED",
+          "node_type": "terminal",
+          "sequence": 1064,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CLHR.VALIDATE_CREATE_RULE_INPUTS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Ask only missing required business values with relevant choices; retain shared selection and resume Create validation with current evidence",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CLHR.CREATE_DATA_PREPARED",
+          "node_type": "terminal",
+          "sequence": 1065,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CLHR.ENFORCE_CREATE_DESIGN"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Validated Legislation Rules data and logical action parameters prepared; disclose defaults and CREATE_BO_CONTRACT_PENDING; no DAT or Fusion write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 106
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 1099,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "CLHR.ERROR reported the blocker; no claim of completed Search, upload, or deletion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

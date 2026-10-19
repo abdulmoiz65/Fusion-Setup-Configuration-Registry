@@ -1,0 +1,1082 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_FOS_MANAGE_SUPPLY_CHAIN_FINANCIAL_TRADE_AGREEMENTS_NEW",
+      "task_name": "Financial Orchestration Flows",
+      "start_node": "FOF.CHECK_SCOPE",
+      "nodes": [
+        {
+          "id": "FOF.CHECK_SCOPE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "success": "FOF.CHECK_INPUT",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Evaluate only Every request and Explicit flexfield request scope rules before lookups; other design rules run at FOF.CHECK_DESIGN",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.CHECK_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "FOF.LOOKUP_BUSINESS_PROCESS",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.CHECK_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate supplied input shape and required intake groups; resolved-field checks run at FOF.CHECK_RESOLVED_INPUT",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_BUSINESS_PROCESS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_AGREEMENT",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.CHECK_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_business_process when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_AGREEMENT",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_AGREEMENT_VERSION",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_BUSINESS_PROCESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_agreement when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_AGREEMENT_VERSION",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_CHILD_TARGET",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_AGREEMENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_agreement_version when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_CHILD_TARGET",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_ROUTE_BU",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_AGREEMENT_VERSION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_child_target when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_ROUTE_BU",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_PTR_TARGET",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_CHILD_TARGET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_route_bu when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_PTR_TARGET",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_FTR_TARGET",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_ROUTE_BU"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_ptr_target when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_FTR_TARGET",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_EXISTING_ROUTE_CONTEXT",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_PTR_TARGET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_ftr_target when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_EXISTING_ROUTE_CONTEXT",
+          "node_type": "step",
+          "sequence": 85,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_FINANCIAL_QUALIFIER",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_FTR_TARGET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_route_bu for existing route side IDs needed by requested FTR corrections after target readback; skip for PTR deletion or already resolved unchanged contexts",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_FINANCIAL_QUALIFIER",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_STATUS",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_EXISTING_ROUTE_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_financial_qualifier when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_STATUS",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_TRADE_ORG",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_FINANCIAL_QUALIFIER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_status when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_TRADE_ORG",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_FTR_PRICING",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_STATUS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve explicit FTR trade organizations and applicable process-specific selling/buying defaults or inheritance; skip PTR trade organizations and record not applicable when no FTR value needs resolution",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_FTR_PRICING",
+          "node_type": "step",
+          "sequence": 130,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_DOCUMENT_PRICE_PROFILE",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_TRADE_ORG"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_ftr_pricing when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_DOCUMENT_PRICE_PROFILE",
+          "node_type": "step",
+          "sequence": 140,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_DOCUMENT_PRICE_FEATURE",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_FTR_PRICING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_document_price_profile when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_DOCUMENT_PRICE_FEATURE",
+          "node_type": "step",
+          "sequence": 150,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_FTR_ACCOUNTING",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_DOCUMENT_PRICE_PROFILE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_document_price_feature when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_FTR_ACCOUNTING",
+          "node_type": "step",
+          "sequence": 160,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_ACCOUNTING_DOCUMENTS",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_DOCUMENT_PRICE_FEATURE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_ftr_accounting when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_ACCOUNTING_DOCUMENTS",
+          "node_type": "step",
+          "sequence": 170,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.CHECK_INVOICING",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_FTR_ACCOUNTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_accounting_documents when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.CHECK_INVOICING",
+          "node_type": "step",
+          "sequence": 175,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "FOF.LOOKUP_RECEIVABLES_ASSIGNMENT",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_ACCOUNTING_DOCUMENTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate FTR invoicing terms from resolved documents before dependent term/type lookups; record not applicable for nonfinancial operations",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_RECEIVABLES_ASSIGNMENT",
+          "node_type": "step",
+          "sequence": 180,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_FTR_TERMS",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.CHECK_INVOICING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_receivables_assignment when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_FTR_TERMS",
+          "node_type": "step",
+          "sequence": 190,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_INVOICE_TYPE",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_RECEIVABLES_ASSIGNMENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_ftr_terms when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_INVOICE_TYPE",
+          "node_type": "step",
+          "sequence": 200,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_CREDIT_MEMO_TYPE",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_FTR_TERMS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_invoice_type when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_CREDIT_MEMO_TYPE",
+          "node_type": "step",
+          "sequence": 210,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_CHARGE_ACCOUNT",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_INVOICE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_credit_memo_type when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_CHARGE_ACCOUNT",
+          "node_type": "step",
+          "sequence": 215,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_FTR_INCOTERM",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_CREDIT_MEMO_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_charge_account when ChargeAccount is supplied; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_FTR_INCOTERM",
+          "node_type": "step",
+          "sequence": 220,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_FTR_LOCATION",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_CHARGE_ACCOUNT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_ftr_incoterm when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_FTR_LOCATION",
+          "node_type": "step",
+          "sequence": 230,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_TAX_COUNTRY",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_FTR_INCOTERM"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_ftr_location when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_TAX_COUNTRY",
+          "node_type": "step",
+          "sequence": 240,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_TAX_INTENDED_USE",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_FTR_LOCATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_tax_country when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_TAX_INTENDED_USE",
+          "node_type": "step",
+          "sequence": 250,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_TAX_BUSINESS_CATEGORY",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_TAX_COUNTRY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_tax_intended_use when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_TAX_BUSINESS_CATEGORY",
+          "node_type": "step",
+          "sequence": 260,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_TAX_DOCUMENT_CLASS",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_TAX_INTENDED_USE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_tax_business_category when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_TAX_DOCUMENT_CLASS",
+          "node_type": "step",
+          "sequence": 270,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_TAX_USER_CLASS",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_TAX_BUSINESS_CATEGORY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_tax_document_class when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_TAX_USER_CLASS",
+          "node_type": "step",
+          "sequence": 280,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_FIRST_PARTY_REGISTRATION",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_TAX_DOCUMENT_CLASS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_tax_user_class when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_FIRST_PARTY_REGISTRATION",
+          "node_type": "step",
+          "sequence": 290,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_THIRD_PARTY_REGISTRATION",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_TAX_USER_CLASS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_first_party_registration when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_THIRD_PARTY_REGISTRATION",
+          "node_type": "step",
+          "sequence": 300,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_PRODUCT_CLASS",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_FIRST_PARTY_REGISTRATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_third_party_registration when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_PRODUCT_CLASS",
+          "node_type": "step",
+          "sequence": 310,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.LOOKUP_PAYABLES_SEQUENCE",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_THIRD_PARTY_REGISTRATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_product_class when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_PAYABLES_SEQUENCE",
+          "node_type": "step",
+          "sequence": 320,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.CHECK_DEPENDENCIES",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_PRODUCT_CLASS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_payables_sequence when its Runs When applies; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.CHECK_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 350,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "success": "FOF.CHECK_DEFAULTS",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_PAYABLES_SEQUENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Check applicable resolved dependencies and fresh deployed registration; deletion skips financial create dependencies",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.CHECK_DEFAULTS",
+          "node_type": "step",
+          "sequence": 360,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "success": "FOF.LOOKUP_PROCUREMENT_OWNERSHIP_EVENT",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply applicable Agreement and new-FTR trade-organization defaults/preservation; never default creation fields for PTR deletion",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.LOOKUP_PROCUREMENT_OWNERSHIP_EVENT",
+          "node_type": "step",
+          "sequence": 365,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "success": "FOF.CHECK_RESOLVED_INPUT",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.CHECK_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate resolve_flow_procurement_ownership_event only for PROCUREMENT Agreement create with an explicitly supplied event; otherwise record not applicable and follow success",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.CHECK_RESOLVED_INPUT",
+          "node_type": "step",
+          "sequence": 370,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "success": "FOF.CHECK_DESIGN",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.LOOKUP_PROCUREMENT_OWNERSHIP_EVENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate applicable resolved identity, fields, context invalidation, invoicing requiredness and live-template schema",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.CHECK_DESIGN",
+          "node_type": "step",
+          "sequence": 380,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "success": "FOF.CHECK_HANDOFF",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.CHECK_RESOLVED_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply scope, effective-version, route topology, deletion-impact and artifact design gates",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.CHECK_HANDOFF",
+          "node_type": "step",
+          "sequence": 390,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "success": "FOF.RETURN_RULE_RESULTS",
+            "failure": "FOF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FOF.CHECK_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return applicable validation results to core.data-loader; do not perform submission from this node",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 400,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Return blockers using Error Situations; no mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FOF.RETURN_RULE_RESULTS",
+          "node_type": "terminal",
+          "sequence": 410,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FOF.CHECK_HANDOFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return validated rule results; live result verification uses the documented readback contracts",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,334 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PICKING_RULE_ASSIGNMENTS",
+      "task_name": "Picking Rule Assignments",
+      "start_node": "PRA.CLASSIFY_IMPORT_ROUTE",
+      "nodes": [
+        {
+          "id": "PRA.CLASSIFY_IMPORT_ROUTE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "rest": "PRA.VALIDATE_INPUT",
+            "fsm": "PRA.VALIDATE_FSM_ARCHIVE",
+            "blocked": "PRA.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request. REST is the default; FSM applies only to an explicitly selected ZIP or an archive containing `ASM_SETUP_CSV_METADATA.xml`.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRA.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PRA.RESOLVE_ITEM_TYPE",
+            "invalid": "PRA.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PRA.CLASSIFY_IMPORT_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classified REST request before Data Loader preparation.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRA.VALIDATE_FSM_ARCHIVE",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "validated": "PRA.CHECK_FSM_READINESS",
+            "blocked": "PRA.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PRA.CLASSIFY_IMPORT_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classified FSM request/archive. Map supplied native request values to the criterion row; validate update identity when applicable, criterion-row merge, archive eligibility, and replacement-target ambiguity; do not apply REST lookup normalization.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRA.RESOLVE_ITEM_TYPE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PRA.RESOLVE_DATE_TYPE",
+            "not_required": "PRA.RESOLVE_DATE_TYPE",
+            "blocked": "PRA.HANDLE_ERROR",
+            "failure": "PRA.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PRA.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied Item Type input when required.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRA.RESOLVE_DATE_TYPE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PRA.RESOLVE_TRANSACTION_ACTION",
+            "not_required": "PRA.RESOLVE_TRANSACTION_ACTION",
+            "blocked": "PRA.HANDLE_ERROR",
+            "failure": "PRA.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PRA.RESOLVE_ITEM_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied Date Type input when required.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRA.RESOLVE_TRANSACTION_ACTION",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PRA.CHECK_READINESS",
+            "not_required": "PRA.CHECK_READINESS",
+            "blocked": "PRA.HANDLE_ERROR",
+            "failure": "PRA.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PRA.RESOLVE_DATE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied Transaction Action input when required.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRA.CHECK_READINESS",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PRA.DATA_LOADER_HANDOFF",
+            "blocked": "PRA.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PRA.RESOLVE_TRANSACTION_ACTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before Data Loader preparation.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRA.CHECK_FSM_READINESS",
+          "node_type": "step",
+          "sequence": 51,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PRA.FSM_DATALOADER_HANDOFF",
+            "blocked": "PRA.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PRA.VALIDATE_FSM_ARCHIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classified FSM archive passed export-baseline and package-readiness checks.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRA.DATA_LOADER_HANDOFF",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PRA.DONE",
+            "blocked": "PRA.HANDLE_ERROR",
+            "failure": "PRA.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "PRA.CHECK_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before handing normalized data to `core.data-loader`.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRA.FSM_DATALOADER_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 61,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PRA.CHECK_FSM_READINESS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Classified FSM archive passed native validation and readiness; hand off the unchanged ZIP to `core.data-loader` for its approval and import workflow.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRA.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "PRA.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any local lookup, readiness, BO, or Data Loader issue.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRA.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was classified and disclosed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PRA.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PRA.DATA_LOADER_HANDOFF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Local task rules passed and Data Loader owns final validation and execution.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

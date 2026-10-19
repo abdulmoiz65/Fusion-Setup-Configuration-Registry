@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fdos.oracle.example/schemas/product-guidance-reference-entry.schema.json",
+  "title": "Product Guidance Reference Entry",
+  "description": "Metadata contract for one reference entry in a product-guidance Markdown file.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "url",
+    "type",
+    "category",
+    "relevance",
+    "authority",
+    "freshness",
+    "use_when",
+    "do_not_use_for"
+  ],
+  "properties": {
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://\\S+$",
+      "description": "Canonical URL for the reference."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "oracle documentation",
+        "oracle support",
+        "oracle community",
+        "external documentation"
+      ]
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1
+    },
+    "relevance": {
+      "type": "string",
+      "enum": ["high", "medium", "low"]
+    },
+    "authority": {
+      "type": "string",
+      "enum": [
+        "product documentation",
+        "support documentation",
+        "community guidance",
+        "external source"
+      ]
+    },
+    "freshness": {
+      "type": "string",
+      "enum": ["version-sensitive", "time-sensitive", "stable"],
+      "description": "Content-derived sensitivity to product releases, dates, or other change triggers."
+    },
+    "use_when": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Best-effort applicability derived from developer intent and the reference content."
+    },
+    "do_not_use_for": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Best-effort exclusion derived from explicit constraints or the inverse boundary of the reference scope."
+    }
+  }
+}

@@ -1,0 +1,861 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_CAND_SRCH_SEC_PROFILES",
+      "task_name": "Candidate Security Profiles",
+      "start_node": "CSP.CHECK_READINESS",
+      "nodes": [
+        {
+          "id": "CSP.CHECK_READINESS",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "CSP.PROTECT_SEEDED_PROFILE",
+            "read_details": "CSP.READ_VALIDATE_NAME",
+            "blocked": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "First step for every configuration request and every read-details request: export and verify the current-run FSM baseline before classification, defaulting, configuration questions, or policy checks; no profile Name is required for this task-level export. After verification, requests to get, show, view, or inspect an existing profile's details select read_details and must traverse the read graph through label resolution and evidence evaluation; export completion alone never completes a details request. Configuration intent retains satisfied. On failure generate no configuration rows",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.PROTECT_SEEDED_PROFILE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "eligible_remaining": "CSP.VALIDATE_IDENTITY",
+            "protected_only": "CSP.PROTECTED_ONLY"
+          },
+          "prerequisites": [
+            "CSP.CHECK_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After fresh export validation, partition protected-name requests using supplied Name, old name, and new name. No modification is performed. An empty or missing-name request follows eligible_remaining for input validation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.VALIDATE_IDENTITY",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CSP.CLASSIFY_PROFILE",
+            "missing_or_invalid": "CSP.HANDLE_ISSUES",
+            "deletion_requested": "CSP.HANDLE_DELETION"
+          },
+          "prerequisites": [
+            "CSP.PROTECT_SEEDED_PROFILE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After fresh export and protected-scope handling, validate Name or old name for inspecting explicit rename intent. Preserve intent and reject conflicting or blank identities; do not add a new-name CSV column",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.CLASSIFY_PROFILE",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "create_only": "CSP.CHECK_CHANGE_INTENT",
+            "includes_update": "CSP.CHECK_CHANGE_INTENT",
+            "ambiguous": "CSP.HANDLE_ISSUES",
+            "unresolved": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.VALIDATE_IDENTITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact Name with zero header matches is create; one match is existing-profile updates, retaining includes_update as the routing outcome only. Preserve original intent, including update wording, replacements, and renames, for the next gate",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.CHECK_CHANGE_INTENT",
+          "node_type": "decision",
+          "sequence": 25,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "allowed": "CSP.VALIDATE_INPUTS",
+            "unsupported": "CSP.HANDLE_ISSUES",
+            "clarification_required": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.CLASSIFY_PROFILE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Reject requested replacements, differing new names, and any supplied setting different from an existing header except EnabledFlag and supported SecureBy flags. Identical supplied settings are unchanged. Missing-name update wording requires clarification that a new profile would be created. Never reinterpret unsupported intent; only a clarified create, allowed flag update, or additive request may resume",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.VALIDATE_INPUTS",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CSP.APPLY_DEFAULTS",
+            "missing_or_invalid": "CSP.HANDLE_ISSUES",
+            "deletion_requested": "CSP.HANDLE_DELETION"
+          },
+          "prerequisites": [
+            "CSP.CHECK_CHANGE_INTENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After classification and allowed change intent, validate create fields or existing-profile flag-update and additive input shape",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 35,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "CSP.CHECK_VIEW_ALL",
+            "not_applicable": "CSP.CHECK_VIEW_ALL"
+          },
+          "prerequisites": [
+            "CSP.VALIDATE_INPUTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After classification and field validation; preserve omitted update data and apply only applicable create defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 18
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.CHECK_VIEW_ALL",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "allowed": "CSP.CHECK_CRITERIA_FLAGS",
+            "blocked": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After create defaults or update baseline preservation, require effective ViewAllFlag=N before delta classification, including otherwise unchanged updates",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.CHECK_CRITERIA_FLAGS",
+          "node_type": "decision",
+          "sequence": 42,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "consistent": "CSP.RESOLVE_VALUES",
+            "conflict": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.CHECK_VIEW_ALL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Reject explicit N with supplied criteria. On creates and updates, derive omitted selected supported flags Y even when exported N. Preserve omitted flags without supplied criteria and retain all existing criterion rows",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.RESOLVE_VALUES",
+          "node_type": "step",
+          "sequence": 45,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSP.CHECK_DIMENSION_VALUES",
+            "not_required": "CSP.CHECK_DIMENSION_VALUES",
+            "unresolved": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.CHECK_CRITERIA_FLAGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied additive criterion labels or codes before comparison. Preserve omitted stored values without reselecting them. No supplied criteria uses not_required; unsupported replacement intent must have stopped earlier",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.CHECK_DIMENSION_VALUES",
+          "node_type": "decision",
+          "sequence": 48,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "CSP.CLASSIFY_DELTA",
+            "not_applicable": "CSP.CLASSIFY_DELTA",
+            "missing": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.RESOLVE_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply the selected-security-dimension value rule to every create with a supported SecureBy flag Y and every existing N-to-Y security dimension update, whether explicit or derived from supplied criteria. Match baseline entries from find_candidate_security_profile_by_name to the exact profile and corresponding dimension; alternatively require newly supplied values with successful existing lookup and validation evidence. An empty or absent corresponding value fails. If no such activation is requested, return not_applicable. Do not infer this requirement from profile EnabledFlag alone; preserve existing supported-dimension restrictions and other design rules",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.CLASSIFY_DELTA",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "changes": "CSP.COUNT_CAPACITY",
+            "unchanged": "CSP.NO_CHANGE",
+            "deletion_required": "CSP.HANDLE_DELETION",
+            "issues": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.CHECK_DIMENSION_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Compare canonical values after lookup resolution: existing tuples are no-ops, absent tuples are additions. Allowed flag differences are changes even with no new criteria; unchanged requires no flag differences and no new criteria. A create has changes. Never classify a requested replacement or rename as an addition or new profile; report conflicts and preserve omitted settings",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.COUNT_CAPACITY",
+          "node_type": "step",
+          "sequence": 55,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "counted": "CSP.ENFORCE_DESIGN",
+            "invalid": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.CLASSIFY_DELTA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Execute count_active_candidate_security_profiles against the authoritative local current-request export and the full merged batch; reject duplicate headers before counting, include dimensionless enabled headers and the default exactly once, and retain current, activation, and projected counts for the design gate",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.ENFORCE_DESIGN",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CSP.VALIDATE_OUTGOING_IDS",
+            "deletion_requested": "CSP.HANDLE_DELETION",
+            "blocked": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.COUNT_CAPACITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply all Design Rules, including the enabled-profile capacity rule using count_active_candidate_security_profiles results for the entire batch. Validate creates, EnabledFlag and supported SecureBy flag updates, and criterion insertions; no identity, other setting, or existing criterion value may change",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.VALIDATE_OUTGOING_IDS",
+          "node_type": "decision",
+          "sequence": 75,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CSP.PACKAGE_GATE",
+            "invalid": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Outgoing Grade and Business Unit IDs and Flag-only criterion preservation to the exact final immutable upload artifact, including copied outgoing rows. Fail closed if the artifact is unavailable or any check fails; no approval/upload until corrected and revalidated. Artifact changes invalidate this result",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.PACKAGE_GATE",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "create_only_ready": "CSP.DONE_CREATE",
+            "update_only_ready": "CSP.DONE_UPDATE",
+            "mixed_ready": "CSP.DONE_MIXED",
+            "blocked": "CSP.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "CSP.VALIDATE_OUTGOING_IDS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return packages only after capacity enforcement and outgoing-ID validation passed for the exact artifact, for eligible creates or existing-profile flag updates and criterion additions. Retain update_only_ready for updates, including flag-only changes. Normal preview and explicit import approval remain mandatory; this resource executes no import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.HANDLE_ISSUES",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "classified": "CSP.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any declared failure or blocker other than deletion",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.HANDLE_DELETION",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "refused": "CSP.DELETION_REFUSED"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Profile deletion or criterion removal is requested",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.DONE_CREATE",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.PACKAGE_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All changed profiles are creates; the package is valid and no import is executed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.DONE_UPDATE",
+          "node_type": "terminal",
+          "sequence": 120,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.PACKAGE_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Existing-profile allowed flag updates and criterion additions; omitted settings and existing criterion values preserved. Package valid; no import executed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.DONE_MIXED",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.PACKAGE_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The valid package contains both create and update profiles; no import is executed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.NO_CHANGE",
+          "node_type": "terminal",
+          "sequence": 140,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.CLASSIFY_DELTA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supplied profile already contains all requested header and detail values; no rows are generated",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.DELETION_REFUSED",
+          "node_type": "terminal",
+          "sequence": 150,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.HANDLE_DELETION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return exactly: Deletion of Candidate Security Profile rows is not supported.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.ISSUES",
+          "node_type": "terminal",
+          "sequence": 160,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.HANDLE_ISSUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A declared issue or unresolved TBD is present",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.PROTECTED_ONLY",
+          "node_type": "terminal",
+          "sequence": 165,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.PROTECT_SEEDED_PROFILE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All supplied requests target the protected profile; explain protection and return without a package, missing configuration questions, approval prompt, or import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.READ_VALIDATE_NAME",
+          "node_type": "decision",
+          "sequence": 170,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CSP.READ_FIND_PROFILE",
+            "missing_or_invalid": "CSP.READ_INVALID_NAME"
+          },
+          "prerequisites": [
+            "CSP.CHECK_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For read_details require one nonblank supplied Name; preserve its exact case and characters. Ask for missing or invalid identity without applying create/update defaults",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.READ_FIND_PROFILE",
+          "node_type": "decision",
+          "sequence": 180,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "found": "CSP.READ_RESOLVE_LABELS",
+            "not_found": "CSP.READ_NOT_FOUND",
+            "ambiguous": "CSP.READ_AMBIGUOUS"
+          },
+          "prerequisites": [
+            "CSP.READ_VALIDATE_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use find_candidate_security_profile_details on the authoritative local verified export; preserve all header and detail values. A missing profile is not a create candidate",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.READ_RESOLVE_LABELS",
+          "node_type": "step",
+          "sequence": 190,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSP.READ_RESULT",
+            "partial": "CSP.READ_RESULT",
+            "execution_gap": "CSP.READ_RESULT"
+          },
+          "prerequisites": [
+            "CSP.READ_FIND_PROFILE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Execute resolve_stored_country_label, resolve_stored_recruiting_type_label, resolve_stored_person_type_label, resolve_stored_grade_label, and resolve_stored_business_unit_label for every expected identity under Read-details evidence coverage. Preserve original criteria, duplicates, inactive values, and criteria whose flag is N. Use the existing lookup contracts and current-request authenticated Fusion evidence; continue independently permitted lookups after failures. Before leaving, finish permitted outstanding lookups. All labels verified or an empty expected set yields resolved; actual unresolved outcomes with full evidence coverage yield partial; skipped calls or missing evidence yield execution_gap. Never fabricate no-match evidence; authoring readiness and existing retry rules still apply",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.READ_RESULT",
+          "node_type": "decision",
+          "sequence": 200,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "CSP.DONE_READ",
+            "partial": "CSP.DONE_READ_PARTIAL",
+            "execution_gap": "CSP.READ_EXECUTION_GAP"
+          },
+          "prerequisites": [
+            "CSP.READ_RESOLVE_LABELS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Independently evaluate Read-details completion evaluation against the expected identity set and actual current-request evidence, not the preceding node's claimed outcome. Missing execution or evidence takes precedence as execution_gap. Complete requires a verified label for every populated supported criterion; partial requires full coverage with actual unresolved lookup outcomes. Export-only results cannot be complete. Preserve every stored field and criterion",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.READ_INVALID_NAME",
+          "node_type": "terminal",
+          "sequence": 210,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.READ_VALIDATE_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Ask for one nonblank exact profile Name; no defaults, package, approval, or profile mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.READ_NOT_FOUND",
+          "node_type": "terminal",
+          "sequence": 220,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.READ_FIND_PROFILE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return profile not found in the fresh current-environment export; never reinterpret as create",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.READ_AMBIGUOUS",
+          "node_type": "terminal",
+          "sequence": 230,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.READ_FIND_PROFILE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Report multiple exact header matches and stop without choosing or changing a profile",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.DONE_READ",
+          "node_type": "terminal",
+          "sequence": 240,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.READ_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return complete read-details output only after the evidence gate verifies a current-request label for every populated supported criterion, or verifies no supported criteria exist. Show display name (original code/ID), exact Name, stored Description, EnabledFlag, ViewAllFlag, every dimension flag, and all source criteria. No create/update defaults, design rejection, capacity check, package, import approval, or profile write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.DONE_READ_PARTIAL",
+          "node_type": "terminal",
+          "sequence": 250,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.READ_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return verified stored profile details and every original criterion with available labels and explicit unresolved reasons; no configuration or profile write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSP.READ_EXECUTION_GAP",
+          "node_type": "terminal",
+          "sequence": 260,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSP.READ_RESULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Return incomplete read-details output under Read-details execution gap disclosure, preserving verified facts and all raw criteria. Identify outstanding resolver evidence and the safe resume step; never mark the request completed. No configuration, package, import, or profile write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

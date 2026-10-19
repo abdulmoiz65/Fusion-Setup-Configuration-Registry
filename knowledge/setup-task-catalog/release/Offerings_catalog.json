@@ -1,0 +1,424 @@
+{
+    "items": [
+        {
+            "FeatureCode": "ZFSM_CUSTOM_OFFERING",
+            "FeatureName": "zFSM Custom Offering",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "N",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"NO_300100068106172\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_PSC_OFR_PERMITS",
+            "FeatureName": "Public Sector Permits",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_YES_300100021865782\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_SVC_HELP_DESK",
+            "FeatureName": "Help Desk",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_SVC_HELP_DESK_YES\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_SVC",
+            "FeatureName": "Service",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_YES_300000000511006\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "DOO_ORCHESTRATION",
+            "FeatureName": "Order Management",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"YES_DOO_ORCHESTRATION\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "CT_COEXISTANCE_HCM",
+            "FeatureName": "Obsolete: Coexistence for HCM",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "N",
+            "ObsoleteFlag": "Y",
+            "SelectedChoices": null,
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "CST_SCM_MANAGERIAL_ACCTG",
+            "FeatureName": "Obsolete: Supply Chain Managerial Accounting",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "N",
+            "ObsoleteFlag": "Y",
+            "SelectedChoices": null,
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_STUDENT_MANAGEMENT",
+            "FeatureName": "Student Management",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_YES_300000000511044\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_MANUFACTURING_AND_SUPPLY_C",
+            "FeatureName": "Manufacturing and Supply Chain Materials Management",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_YES_300000000491014\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "PJF_PROJ_MNG",
+            "FeatureName": "Project Financial Management",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"YES_PJF_PROJ_MNG\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_FMK_MARKETING",
+            "FeatureName": "Marketing",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_FMK_MARKETING_YES\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "PJT_PROJECT_EXECUTION_MGMT",
+            "FeatureName": "Project Execution Management",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"YES_PJT_PROJECT_EXECUTION_MGMT\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_GMS_GRANTS_MANAGEMENT",
+            "FeatureName": "Grants Management",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_YES_300000000483638\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_DIGITAL_GOVERNMENT",
+            "FeatureName": "Digital Government",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "N",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_DIGITAL_GOVERNMENT_NO\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "MKT_MARKETING",
+            "FeatureName": "Sales Marketing",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"YES_MKT_MARKETING\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "PER_CORE",
+            "FeatureName": "Compensation Management",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"YES_PER_CORE\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_QP_PRICE_MANAGEMENT",
+            "FeatureName": "Obsolete: Price Management",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "N",
+            "ObsoleteFlag": "Y",
+            "SelectedChoices": null,
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_FIELD_SERVICE",
+            "FeatureName": "Field Service",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_FIELD_SERVICE_YES\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "PER_WKF_DEPL",
+            "FeatureName": "Workforce Deployment",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"YES_PER_WKF_DEPL\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "XLE_FINANCIALS_JUR",
+            "FeatureName": "Financials",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"YES_XLE_FINANCIALS_JUR\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "PIM_PROD_MNG",
+            "FeatureName": "Product Management",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"YES_PIM_PROD_MNG\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_MSC_VALUE_CHAIN_PLANNING",
+            "FeatureName": "Supply Chain Planning",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_YES_MSC_VALUE_CHAIN_PLANNING\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "PO_PROCUREMENT",
+            "FeatureName": "Procurement",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"YES_PO_PROCUREMENT\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_UER",
+            "FeatureName": "Customer Experience for Utilities",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "N",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_UER_NO\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "OKC_CONTRACTS",
+            "FeatureName": "Enterprise Contracts",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"YES_OKC_CONTRACTS\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_CSO_KNOWLEDGE",
+            "FeatureName": "Knowledge",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "N",
+            "ObsoleteFlag": "Y",
+            "SelectedChoices": null,
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ZCH_CDM",
+            "FeatureName": "Customer Data Management",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"YES_ZCQ_CDM\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ZBS_SALES",
+            "FeatureName": "Obsolete: Sales",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "N",
+            "ObsoleteFlag": "Y",
+            "SelectedChoices": null,
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "CMP_OIC_BU",
+            "FeatureName": "Obsolete: Incentive Compensation",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "N",
+            "ObsoleteFlag": "Y",
+            "SelectedChoices": null,
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_CUSTOMER_LOYALTY",
+            "FeatureName": "Customer Loyalty",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_YES_300000000524003\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "PER_WKF_DEV",
+            "FeatureName": "Workforce Development",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"YES_PER_WKF_DEV\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_PSCR_OFR_BUSINESS_LICENSES",
+            "FeatureName": "Public Sector Business Licenses",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_PSCR_OFR_BUSINESS_LICENSES_YES\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "INV_LOGISTICS",
+            "FeatureName": "Obsolete: Materials Management and Logistics",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "N",
+            "ObsoleteFlag": "Y",
+            "SelectedChoices": null,
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_MIDSIZE_SALES",
+            "FeatureName": "Sales",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_YES_300000000526002\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_PSCR_OFR_PLANNING_ZONING",
+            "FeatureName": "Public Sector Planning and Zoning",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_PSCR_OFR_PLANNING_ZONING_YES\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_IRC_HCM_COMMUNICATE",
+            "FeatureName": "HCM Communicate",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_IRC_HCM_COMMUNICATE_YES\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_PSCR_OFR_CODE_ENFORCEMENT",
+            "FeatureName": "Public Sector Code Enforcement",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_PSCR_OFR_CODE_ENFORCEMENT_YES\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_RISK_AND_CONTROLS",
+            "FeatureName": "Risk Management",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"YES_300000000489229\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_IRC_RCE",
+            "FeatureName": "Recruiting and Candidate Experience",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_YES_300000000509002\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "XLE_FIN_CONTROL_JUR",
+            "FeatureName": "Fusion Accounting Hub",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"YES_XLE_FIN_CONTROL_JUR\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_FOS_SCM_FIN_ORCHESTRATION",
+            "FeatureName": "Obsolete: Supply Chain Financial Orchestration",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "N",
+            "ObsoleteFlag": "Y",
+            "SelectedChoices": null,
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        },
+        {
+            "FeatureCode": "ORA_CONFIGURE_PRICE_QUOTE",
+            "FeatureName": "Configure Price Quote",
+            "Classification": "ROOT_NODE",
+            "EnabledFlag": "Y",
+            "ObsoleteFlag": "N",
+            "SelectedChoices": "[\"ORA_CONFIGURE_PRICE_QUOTE_YES\"]",
+            "FrozenFlag": "N",
+            "FeatureType": "OFFERING"
+        }
+    ]
+}

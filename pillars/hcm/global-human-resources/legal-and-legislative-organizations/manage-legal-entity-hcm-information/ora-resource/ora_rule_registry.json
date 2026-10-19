@@ -1,0 +1,466 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_LEGAL_ENTITY_HCM_INFORMATION",
+      "task_name": "Manage Legal Entity HCM Information",
+      "start_node": "LE.VALIDATE",
+      "nodes": [
+        {
+          "id": "LE.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LE.SEARCH",
+            "csv_export": "LE.EXPORT_DONE",
+            "missing": "LE.ERROR",
+            "invalid": "LE.ERROR",
+            "unsupported": "LE.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Manage Legal Entity HCM Information request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.SEARCH",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "unique": "LE.SYNC_GATE",
+            "none": "LE.ERROR",
+            "many": "LE.ERROR",
+            "failed": "LE.ERROR"
+          },
+          "prerequisites": [
+            "LE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A read or mutation precheck requires one exact Legal Entity",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.SYNC_GATE",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "required": "LE.SYNC_LOADER_READY",
+            "completed": "LE.ROOTS",
+            "failed": "LE.ERROR",
+            "uncertain": "LE.ERROR"
+          },
+          "prerequisites": [
+            "LE.SEARCH"
+          ],
+          "on_failure": "stop",
+          "applies_when": "One exact Legal Entity is selected and current synchronization readiness must be resolved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.SYNC_LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LE.SYNC_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A synchronization-only ManageLegalEntity archive is ready for Core Data Loader; after successful completion, refresh search and resume the original request",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.ROOTS",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "view": "LE.METADATA",
+            "mutation": "LE.METADATA",
+            "delete": "LE.HISTORY",
+            "failed": "LE.ERROR"
+          },
+          "prerequisites": [
+            "LE.SYNC_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Synchronization is recorded complete and effective-date-aware applicable HCM roots must be resolved",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.METADATA",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LE.CONTEXT",
+            "failed": "LE.ERROR"
+          },
+          "prerequisites": [
+            "LE.ROOTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every read or mutation context requires exact EFF metadata",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.CONTEXT",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LE.VALUESET",
+            "empty_view": "LE.DEPENDENCIES",
+            "no_value_set": "LE.DEPENDENCIES",
+            "shown": "LE.DEPENDENCIES",
+            "failed": "LE.ERROR"
+          },
+          "prerequisites": [
+            "LE.METADATA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A requested/default context, mutation precheck, or verification read is required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.HISTORY",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "selected": "LE.DEPENDENCIES",
+            "unsupported": "LE.BLOCKED",
+            "failed": "LE.ERROR"
+          },
+          "prerequisites": [
+            "LE.ROOTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Date-effective deletion or verification is requested",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.VALUESET",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LE.DEPENDENCIES",
+            "failed": "LE.ERROR"
+          },
+          "prerequisites": [
+            "LE.CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A proposed EFF value has a describe-declared value set",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LE.DEFAULTS",
+            "missing": "LE.ERROR",
+            "blocked": "LE.BLOCKED"
+          },
+          "prerequisites": [
+            "LE.ROOTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Applicable lookup evidence has been collected and readiness must be resolved",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "LE.DESIGN",
+            "preserved": "LE.DESIGN",
+            "not_required": "LE.DESIGN",
+            "blocked": "LE.ERROR"
+          },
+          "prerequisites": [
+            "LE.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Readiness is satisfied and safe defaults or preservation rules must be applied",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.DESIGN",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "LE.ROUTE",
+            "blocked": "LE.BLOCKED",
+            "failed": "LE.ERROR"
+          },
+          "prerequisites": [
+            "LE.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Defaults and preservation rules are applied and execution design must be enforced",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.ROUTE",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "read": "LE.DONE",
+            "mutation": "LE.LOADER_READY",
+            "import": "LE.LOADER_READY",
+            "unsupported": "LE.BLOCKED",
+            "failed": "LE.ERROR"
+          },
+          "prerequisites": [
+            "LE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Select a terminal read result or Core Data Loader handoff without executing a business-data mutation here",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.ERROR",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "reconciled": "LE.BLOCKED",
+            "failed": "LE.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, lookup, synchronization, metadata, loader-readiness, process, persistence, approval, or verification gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.DONE",
+          "node_type": "terminal",
+          "sequence": 15,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LE.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The requested read completed and verification passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.EXPORT_DONE",
+          "node_type": "terminal",
+          "sequence": 16,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LE.VALIDATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Explicit task-level export routing is selected",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.LOADER_READY",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LE.ROUTE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A supported mutation or import is fully mapped to legalEmployersEFF, payrollStatutoryUnitsEFF, both EFF objects, or DeleteOrganizationUnitForDTDelete as appropriate and is ready for Core Data Loader",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LE.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request is blocked with sanitized diagnostics and one resume action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

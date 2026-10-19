@@ -1,0 +1,24 @@
+{
+  "sourceTypes": {
+    "OCI": {
+      "sourceTypeName": "OCI",
+      "sourceTypeCode": 2
+    },
+    "EPM-ARCS": {
+      "sourceTypeName": "EPM-ARCS",
+      "sourceTypeCode": 4
+    },
+    "EPM-FCCS": {
+      "sourceTypeName": "EPM-FCCS",
+      "sourceTypeCode": 7
+    },
+    "SAS": {
+      "sourceTypeName": "SAS",
+      "sourceTypeCode": 9
+    },
+    "USER-DEFINED": {
+      "sourceTypeName": "User-Defined",
+      "sourceTypeCode": 10
+    }
+  }
+}

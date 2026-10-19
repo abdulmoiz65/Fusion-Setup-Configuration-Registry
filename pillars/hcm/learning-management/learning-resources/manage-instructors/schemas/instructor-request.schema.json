@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Standalone instructor intake (local convention, not Fusion payload)",
+  "type": "object", "additionalProperties": false,
+  "required": ["operation", "rows"],
+  "properties": {
+    "operation": {"const": "create"},
+    "rows": {
+      "type": "array", "minItems": 1, "maxItems": 20,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["row_id", "person", "provenance"],
+        "properties": {
+          "row_id": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,40}$"},
+          "provenance": {"const": "user_supplied"},
+          "person": {
+            "type": "object", "additionalProperties": false,
+            "required": ["kind", "value"],
+            "properties": {
+              "kind": {"enum": ["person_number", "person_id", "full_name", "partial_name", "email"]},
+              "value": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    }
+  }
+}

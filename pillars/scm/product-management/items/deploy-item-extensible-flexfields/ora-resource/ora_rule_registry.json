@@ -1,0 +1,132 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "EGO_DEPLOY_EFFS",
+      "task_name": "Deploy Item Extensible Flexfields",
+      "start_node": "IEFF.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "IEFF.VALIDATE_REQUEST",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "IEFF.CONFIRM_DEPLOYMENT_PREREQUISITES",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Deploy Item Extensible Flexfields request is supplied",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IEFF.CONFIRM_DEPLOYMENT_PREREQUISITES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "IEFF.APPROVAL_GATE",
+            "missing": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IEFF.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The deployment request passed input validation",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IEFF.APPROVAL_GATE",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "IEFF.READY_TO_DELEGATE",
+            "missing": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "IEFF.CONFIRM_DEPLOYMENT_PREREQUISITES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The selected EFF is ready for deployment and the delegated deployment request is about to be made",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input, prerequisite, approval, or deployment-outcome checks identify an issue",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "IEFF.READY_TO_DELEGATE",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "IEFF.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Explicit approval is current for the exact selected flexfield and environment",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,309 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_GTG_ASSIGN_DEFAULT_PROCESS_OWNERS",
+      "task_name": "Assign Default Process Owners",
+      "start_node": "DPO.VERIFY_SEARCH_SETTING",
+      "nodes": [
+        {
+          "id": "DPO.VERIFY_SEARCH_SETTING",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "enabled": "DPO.LOOKUP_PROCESSES",
+            "disabled": "DPO.ENABLE_SEARCH_SETTING",
+            "blocked": "DPO.HANDLE_ERROR",
+            "failure": "DPO.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Parent runner-access evidence is current and before the initial owner-coverage inventory.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DPO.ENABLE_SEARCH_SETTING",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "changed": "DPO.REVERIFY_SEARCH_SETTING",
+            "not_approved": "DPO.RETURN_ISSUES",
+            "blocked": "DPO.HANDLE_ERROR",
+            "failure": "DPO.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DPO.VERIFY_SEARCH_SETTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A disabled Site search setting requires a fresh approval, current Core preflight, one Core-managed create or update, and final verification.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DPO.REVERIFY_SEARCH_SETTING",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "enabled": "DPO.LOOKUP_PROCESSES",
+            "blocked": "DPO.HANDLE_ERROR",
+            "failure": "DPO.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DPO.ENABLE_SEARCH_SETTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A fresh approved Core-managed search-setting change must be verified before the initial owner-coverage inventory.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DPO.LOOKUP_BUSINESS_UNITS",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "DPO.LOOKUP_PROCESSES",
+            "blocked": "DPO.HANDLE_ERROR",
+            "failure": "DPO.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Optional customer-supplied Business Unit context may be matched after functional discovery begins.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DPO.LOOKUP_PROCESSES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "DPO.LOOKUP_OWNER_PROPERTIES",
+            "blocked": "DPO.HANDLE_ERROR",
+            "failure": "DPO.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Initial owner coverage or selected Level 2 process names must be matched or validated.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DPO.LOOKUP_OWNER_PROPERTIES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "DPO.PREVIEW_READY",
+            "blocked": "DPO.HANDLE_ERROR",
+            "failure": "DPO.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DPO.LOOKUP_PROCESSES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Candidate review, scope preflight, immediate member pre-write, or post-mutation verification needs current owner state; changed existing UPDATE or RESET members require one `$id` equal to their valueCode for the documented bulk contract.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DPO.LOOKUP_FUNCTIONAL_DEPARTMENTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "DPO.LOOKUP_DEPARTMENT_WORKERS",
+            "no_candidate": "DPO.RETURN_ISSUES",
+            "blocked": "DPO.HANDLE_ERROR",
+            "failure": "DPO.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DPO.LOOKUP_OWNER_PROPERTIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A consultant selected a Level 2 scope with unassigned CREATE members or explicitly requested UPDATE and its required current state remains verified.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DPO.LOOKUP_DEPARTMENT_WORKERS",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "DPO.CANDIDATE_REVIEW_READY",
+            "no_candidate": "DPO.RETURN_ISSUES",
+            "blocked": "DPO.HANDLE_ERROR",
+            "failure": "DPO.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "DPO.LOOKUP_FUNCTIONAL_DEPARTMENTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Direct functional departments were retained for the selected Level 2 CREATE or explicit UPDATE scope.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DPO.PREVIEW_READY",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DPO.LOOKUP_OWNER_PROPERTIES"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The complete current owner coverage review is ready to show or refresh for process selection.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DPO.CANDIDATE_REVIEW_READY",
+          "node_type": "terminal",
+          "sequence": 75,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DPO.LOOKUP_DEPARTMENT_WORKERS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Required process, department-bounded worker, and current-owner reads are complete and the workflow may continue to candidate review.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DPO.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "DPO.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any required lookup, approval, create, update, reset, verification, or artifact gate is blocked.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DPO.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "A blocking issue was disclosed with one safe next action.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,221 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_MANAGE_JOB_REQUISITION_DESCRIPTIVE_FLEXFIELDS",
+      "task_name": "Job Requisition Descriptive Flexfields",
+      "start_node": "JOB_REQ_DFF.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "JOB_REQ_DFF.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "JOB_REQ_DFF.RESOLVE_REFERENCES",
+            "missing": "JOB_REQ_DFF.RETURN_ISSUES",
+            "invalid": "JOB_REQ_DFF.RETURN_ISSUES",
+            "ambiguous": "JOB_REQ_DFF.RETURN_ISSUES",
+            "unsupported": "JOB_REQ_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every supported Job Requisition Descriptive Flexfields request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JOB_REQ_DFF.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "JOB_REQ_DFF.CHECK_READINESS",
+            "missing": "JOB_REQ_DFF.RETURN_ISSUES",
+            "ambiguous": "JOB_REQ_DFF.RETURN_ISSUES",
+            "unsupported": "JOB_REQ_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "JOB_REQ_DFF.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supported request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JOB_REQ_DFF.CHECK_READINESS",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "JOB_REQ_DFF.ENFORCE_DESIGN",
+            "missing": "JOB_REQ_DFF.RETURN_ISSUES",
+            "blocked": "JOB_REQ_DFF.RETURN_ISSUES",
+            "authorization": "JOB_REQ_DFF.RETURN_ISSUES",
+            "unsupported": "JOB_REQ_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "JOB_REQ_DFF.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supported request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JOB_REQ_DFF.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "JOB_REQ_DFF.APPROVAL_GATE",
+            "blocked": "JOB_REQ_DFF.RETURN_ISSUES",
+            "conflict": "JOB_REQ_DFF.RETURN_ISSUES",
+            "unsupported": "JOB_REQ_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "JOB_REQ_DFF.CHECK_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every supported request",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JOB_REQ_DFF.APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "JOB_REQ_DFF.EXECUTE",
+            "not_required": "JOB_REQ_DFF.EXECUTE",
+            "missing": "JOB_REQ_DFF.RETURN_ISSUES",
+            "stale": "JOB_REQ_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "JOB_REQ_DFF.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require approval bound to the current immutable preview immediately before a state-changing handoff; read-only inspection, planning, export, and validation use not_required",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JOB_REQ_DFF.EXECUTE",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "completed": "JOB_REQ_DFF.RETURN_SUCCESS",
+            "failed": "JOB_REQ_DFF.RETURN_ISSUES",
+            "uncertain": "JOB_REQ_DFF.RETURN_ISSUES",
+            "unsupported": "JOB_REQ_DFF.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "JOB_REQ_DFF.APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Complete a supported read-only action from validated evidence, or hand an approved immutable FSM archive to Core Data Loader; never bypass the selected route or retry an uncertain mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JOB_REQ_DFF.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "JOB_REQ_DFF.EXECUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supported non-mutating action completed with verified evidence",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "JOB_REQ_DFF.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any failure, refusal, missing input, ambiguity, authorization failure, blocked dependency, stale approval, or uncertain result",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

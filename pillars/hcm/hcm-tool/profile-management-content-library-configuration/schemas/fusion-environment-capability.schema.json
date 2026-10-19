@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fusion-environment-capability.schema.json",
+  "title": "Fusion Environment Capability Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "operation",
+    "provider",
+    "target_environment",
+    "environment_fingerprint",
+    "authenticated_context_source",
+    "selected_api_version",
+    "selected_resource",
+    "release_status",
+    "checked_at",
+    "capability_fingerprint"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "status": {"const": "verified"},
+    "operation": {"const": "read-only-capability-check"},
+    "provider": {"const": "CATALOG_REST"},
+    "target_environment": {"type": "string", "minLength": 1, "maxLength": 64},
+    "environment_fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "authenticated_context_source": {"const": "repository-fusion-authentication"},
+    "selected_api_version": {"type": "string", "minLength": 1},
+    "selected_resource": {"type": "string", "pattern": "^/hcmRestApi/resources/"},
+    "release_status": {"enum": ["verified", "unknown"]},
+    "fusion_release": {"type": "string", "pattern": "^[0-9]{2}[A-Z]$"},
+    "checked_at": {"type": "string", "format": "date-time"},
+    "capability_fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"release_status": {"const": "verified"}}},
+      "then": {"required": ["fusion_release"]},
+      "else": {"not": {"required": ["fusion_release"]}}
+    }
+  ]
+}

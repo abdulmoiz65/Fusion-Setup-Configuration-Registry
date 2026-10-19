@@ -1,0 +1,188 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PER_MANAGE_ORGANIZATION_TREE",
+      "task_name": "Manage Organization Trees",
+      "start_node": "ORGTREE.VALIDATE",
+      "nodes": [
+        {
+          "id": "ORGTREE.VALIDATE",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ORGTREE.CORE_READY",
+            "missing": "ORGTREE.ERROR",
+            "invalid": "ORGTREE.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORGTREE.CORE_READY",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ORGTREE.RESOLVE_MEMBERS",
+            "missing": "ORGTREE.ERROR",
+            "blocked": "ORGTREE.ERROR"
+          },
+          "prerequisites": [
+            "ORGTREE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every request",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORGTREE.RESOLVE_MEMBERS",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORGTREE.DEFAULTS",
+            "not_required": "ORGTREE.DEFAULTS",
+            "missing": "ORGTREE.ERROR",
+            "ambiguous": "ORGTREE.ERROR"
+          },
+          "prerequisites": [
+            "ORGTREE.CORE_READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every request; resolve named members when supplied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORGTREE.DEFAULTS",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "ORGTREE.DESIGN",
+            "preserved": "ORGTREE.DESIGN",
+            "not_required": "ORGTREE.DESIGN",
+            "blocked": "ORGTREE.ERROR"
+          },
+          "prerequisites": [
+            "ORGTREE.RESOLVE_MEMBERS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After member resolution and before design enforcement",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORGTREE.DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "ORGTREE.CORE_HANDOFF",
+            "blocked": "ORGTREE.ERROR"
+          },
+          "prerequisites": [
+            "ORGTREE.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every request",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORGTREE.ERROR",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation, dependency, lookup, defaulting, or design failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORGTREE.CORE_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ORGTREE.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved ID-based request is ready for core.fusion-api.apps-common.trees",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "profile-content-library-delivery-route.schema.json",
+  "title": "Profile Content Library Delivery Route",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "collision_detected",
+    "generated_prefixes",
+    "collisions",
+    "selected_route",
+    "explicit_dat_request",
+    "workbook_created"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "status": {"enum": ["eligible", "selected", "blocked"]},
+    "collision_detected": {"type": "boolean"},
+    "generated_prefixes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["discriminator", "prefix"],
+        "properties": {
+          "discriminator": {"type": "string", "minLength": 1},
+          "prefix": {"type": "string", "minLength": 1, "maxLength": 30}
+        }
+      }
+    },
+    "collisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "prefix", "candidates"],
+        "properties": {
+          "kind": {"enum": ["worksheet-prefix", "root-prefix"]},
+          "prefix": {"type": "string", "minLength": 1},
+          "candidates": {"type": "array", "minItems": 2, "items": {"type": "string", "minLength": 1}}
+        }
+      }
+    },
+    "selected_route": {"enum": ["technical-xlsx", "fsm", "dat-preparation", "none"]},
+    "explicit_dat_request": {"type": "boolean"},
+    "workbook_created": {"const": false},
+    "fsm_task_code": {"type": ["string", "null"]},
+    "next_action": {"type": "string", "minLength": 1}
+  }
+}

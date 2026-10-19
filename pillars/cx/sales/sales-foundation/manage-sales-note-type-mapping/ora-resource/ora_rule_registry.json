@@ -1,0 +1,307 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ZBS_MANAGE_SALES_NOTE_TYPE_MAPPING",
+      "task_name": "Manage Sales Note Type Mapping",
+      "start_node": "NOTE_MAPPING.VALIDATE",
+      "nodes": [
+        {
+          "id": "NOTE_MAPPING.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "NOTE_MAPPING.DEPENDENCIES",
+            "missing_or_invalid": "NOTE_MAPPING.FAILED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTE_MAPPING.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "NOTE_MAPPING.BASE_LOOKUP",
+            "blocked": "NOTE_MAPPING.BLOCKED"
+          },
+          "prerequisites": [
+            "NOTE_MAPPING.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTE_MAPPING.BASE_LOOKUP",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "NOTE_MAPPING.RUNTIME_LOOKUP",
+            "not_requested": "NOTE_MAPPING.RUNTIME_LOOKUP",
+            "not_found_or_inactive": "NOTE_MAPPING.FAILED",
+            "ambiguous": "NOTE_MAPPING.FAILED",
+            "failure": "NOTE_MAPPING.FAILED"
+          },
+          "prerequisites": [
+            "NOTE_MAPPING.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTE_MAPPING.RUNTIME_LOOKUP",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "matched": "NOTE_MAPPING.DEFAULTS",
+            "not_found": "NOTE_MAPPING.DEFAULTS",
+            "not_requested": "NOTE_MAPPING.DEFAULTS",
+            "ambiguous": "NOTE_MAPPING.FAILED",
+            "failure": "NOTE_MAPPING.FAILED"
+          },
+          "prerequisites": [
+            "NOTE_MAPPING.BASE_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTE_MAPPING.DEFAULTS",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaults_applied": "NOTE_MAPPING.DESIGN",
+            "no_default_needed": "NOTE_MAPPING.DESIGN",
+            "invalid_default_context": "NOTE_MAPPING.FAILED"
+          },
+          "prerequisites": [
+            "NOTE_MAPPING.RUNTIME_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTE_MAPPING.DESIGN",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "allowed": "NOTE_MAPPING.EXECUTION_GATE",
+            "policy_block": "NOTE_MAPPING.BLOCKED"
+          },
+          "prerequisites": [
+            "NOTE_MAPPING.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTE_MAPPING.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ui_guidance_ready": "NOTE_MAPPING.UI_READY",
+            "import_handoff_ready": "NOTE_MAPPING.IMPORT_READY",
+            "review_or_validation_complete": "NOTE_MAPPING.REVIEW_COMPLETE",
+            "default_data_loader": "NOTE_MAPPING.IMPORT_READY",
+            "missing_gate": "NOTE_MAPPING.BLOCKED",
+            "unsupported_direct_write": "NOTE_MAPPING.BLOCKED"
+          },
+          "prerequisites": [
+            "NOTE_MAPPING.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After validation: default supported mutations to Data Loader/FSM import; use manual UI only when explicitly requested.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTE_MAPPING.UI_READY",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "NOTE_MAPPING.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The requester explicitly selected manual UI and the reviewed plan is ready for an authorized setup user",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTE_MAPPING.IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "NOTE_MAPPING.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A validated package is ready for the default core.data-loader handoff, or Data Loader/FSM import was explicitly requested",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTE_MAPPING.REVIEW_COMPLETE",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "NOTE_MAPPING.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Review, export planning, or runtime availability validation completed without mutation",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTE_MAPPING.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A required access, code, scope, impact, package, preview, approval, or supported-write gate is missing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "NOTE_MAPPING.FAILED",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input, dependency, lookup, design, or process evidence is invalid or ambiguous",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

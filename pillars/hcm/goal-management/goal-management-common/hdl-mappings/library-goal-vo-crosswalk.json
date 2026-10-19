@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "source": "User-supplied LibraryGoalCommonPVO, version 14.1.2.15.16",
+  "component": "ContentItem",
+  "context": "GOAL",
+  "fields": {
+    "GoalExternalId": {"field": "ItemText12", "type": "string"},
+    "SuccessCriteria": {"field": "ItemTextTl11", "type": "string"},
+    "LevelCode": {"field": "ItemText3", "type": "string"},
+    "DateTo": {"field": "DateTo", "type": "date"},
+    "GoalCreationDate": {"field": "ItemDate3", "type": "date"},
+    "GoalUrl": {"field": "ItemTextTl13", "type": "string"},
+    "Comments": {"field": "ItemTextTl14", "type": "string"},
+    "JobId": {"field": "ItemNumber4", "type": "integer", "requiresValueEvidence": true},
+    "JobFamilyId": {"field": "ItemNumber5", "type": "integer", "requiresValueEvidence": true},
+    "PositionId": {"field": "ItemNumber6", "type": "integer", "requiresValueEvidence": true},
+    "DepartmentId": {"field": "ItemNumber2", "type": "integer", "requiresValueEvidence": true},
+    "LegalEmployerId": {"field": "ItemNumber3", "type": "integer", "requiresValueEvidence": true},
+    "ContentSupplierCode": {"field": "ContentSupplierCode", "type": "string"},
+    "ContentTypeId": {"field": "ContentTypeId", "type": "integer", "requiresValueEvidence": true}
+  },
+  "serverManaged": {
+    "GoalId": "ContentItemId",
+    "BusinessGroupId": "BusinessGroupId",
+    "ObjectVersionNumber": "ObjectVersionNumber",
+    "LastUpdateDate": "LastUpdateDate"
+  },
+  "joinedDisplayFields": [
+    "StatusMeaning", "LevelLookupCode", "LevelLookupType",
+    "StatusLookupCode", "PriorityMeaning", "LevelMeaning",
+    "PriorityLookupCode", "StatusLookupType", "PriorityLookupType",
+    "BusinessUnitIdBusinessUnitPEO", "BusinessUnitName",
+    "JobFamilyIdJobFamilyDPEO", "EffectiveStartDateJobFamilyDPEO",
+    "EffectiveEndDateJobFamilyDPEO", "ObjectVersionNumberJobFamilyDPEO",
+    "JobFamilyName", "DepartmentIdDepartmentDPEO",
+    "EffectiveStartDateDepartmentDPEO", "EffectiveEndDateDepartmentDPEO",
+    "ObjectVersionNumberDepartmentDPEO", "DepartmentName",
+    "AvailableTo", "AvailableToLookupType", "AvailableToLookupCode",
+    "LegalEmployerName"
+  ]
+}

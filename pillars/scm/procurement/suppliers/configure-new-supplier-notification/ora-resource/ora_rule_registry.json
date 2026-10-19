@@ -1,0 +1,135 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_POZ_CONFIGURE_NEW_SUPPLIER_NOTIFICATION",
+      "task_name": "Configure New Supplier Notification",
+      "start_node": "POZ.NSN.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "POZ.NSN.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "POZ.NSN.LOOKUP_CURRENT_STATE",
+            "invalid": "POZ.NSN.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before configuration or attachment preparation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POZ.NSN.LOOKUP_CURRENT_STATE",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "POZ.NSN.DATALOADER_GATE",
+            "not_found": "POZ.NSN.RETURN_ISSUES",
+            "ambiguous": "POZ.NSN.RETURN_ISSUES",
+            "failure": "POZ.NSN.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "POZ.NSN.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A notification enablement, global content, or document update is requested.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POZ.NSN.DATALOADER_GATE",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "POZ.NSN.RETURN_READY",
+            "blocked": "POZ.NSN.RETURN_ISSUES",
+            "failure": "POZ.NSN.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "POZ.NSN.LOOKUP_CURRENT_STATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before configuration or attachment preview",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POZ.NSN.RETURN_READY",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "POZ.NSN.DATALOADER_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The configuration artifact or attachment preview is ready for its approval gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POZ.NSN.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Functional validation or selected-route readiness fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

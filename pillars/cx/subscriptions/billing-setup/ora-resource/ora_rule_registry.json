@@ -1,0 +1,562 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_MILESTONE_TEMPLATES_FOR_BILLING_AND_REVENUE_RECOGNITION",
+      "task_name": "Manage Milestone Templates for Billing and Revenue Recognition",
+      "start_node": "MT.VALIDATE",
+      "nodes": [
+        {
+          "id": "MT.VALIDATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "list": "MT.LIST_TEMPLATES",
+            "lookup": "MT.DESCRIBE_LOOKUPS",
+            "valid": "MT.LOOKUPS",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every milestone template request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MT.LIST_TEMPLATES",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "listed": "MT.LIST_DONE",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A user requests milestone templates defined in the environment",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MT.DESCRIBE_LOOKUPS",
+          "node_type": "decision",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MT.DESCRIBE_DONE",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A user requests the display meaning of milestone Name, Source, or Event Type",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MT.LOOKUPS",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MT.DEPENDENCIES",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A milestone template request supplies both lookup prerequisites",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MT.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "MT.ENFORCE",
+            "blocked": "RETURN_ISSUES",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MT.LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Both milestone lookup prerequisites are resolved",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MT.ENFORCE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "MT.DONE",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "MT.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Milestone lookup prerequisites and template input are valid",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MT.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MT.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All milestone template validation and design checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MT.LIST_DONE",
+          "node_type": "terminal",
+          "sequence": 91,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MT.LIST_TEMPLATES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The read-only milestone template list is returned",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MT.DESCRIBE_DONE",
+          "node_type": "terminal",
+          "sequence": 92,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MT.DESCRIBE_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The milestone Name, Source, and Event Type lookup meanings are resolved",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any milestone template validation, lookup, dependency, or design check produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "CUSTOM_MANAGE_PRICE_ADJUSTMENTS",
+      "task_name": "Manage Price Adjustments",
+      "start_node": "PA.VALIDATE",
+      "nodes": [
+        {
+          "id": "PA.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PA.DEFAULT",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every price adjustment category request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PA.DEFAULT",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "PA.LOOKUP",
+            "confirmed_values": "PA.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PA.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Preparing a new price adjustment category and its lookup code",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PA.LOOKUP",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "PA.DEPENDENCIES",
+            "missing": "PA.DEPENDENCIES",
+            "ambiguous": "RETURN_ISSUES",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PA.DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Category identity, inventory, and lookup-code state must be resolved",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PA.DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PA.ENFORCE",
+            "blocked": "RETURN_ISSUES",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PA.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before previewing the lookup-code and category operations",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PA.ENFORCE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "PA.DONE",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PA.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After dependency verification and before preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PA.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PA.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All validation and design checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, or design check produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "CUSTOM_MANAGE_PRICE_ADJUSTMENT_VARIABLES",
+      "task_name": "Manage Price Adjustment Variables",
+      "start_node": "PAV.VALIDATE",
+      "nodes": [
+        {
+          "id": "PAV.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PAV.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every price adjustment variable request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PAV.LOOKUP",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "PAV.ENFORCE",
+            "missing": "PAV.ENFORCE",
+            "ambiguous": "RETURN_ISSUES",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PAV.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Variable identity and existing values must be resolved",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PAV.ENFORCE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "PAV.DONE",
+            "fail": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PAV.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After variable lookup and before preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PAV.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PAV.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All validation and design checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, or design check produces issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

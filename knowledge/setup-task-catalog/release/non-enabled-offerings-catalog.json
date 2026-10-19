@@ -1,0 +1,81 @@
+{
+  "catalogName": "non-enabled-offerings-catalog",
+  "sourceCatalog": "knowledge/setup-task-catalog/release/Offerings_catalog.json",
+  "selection": {
+    "featureType": "OFFERING",
+    "enabledFlag": "not Y or obsolete Y"
+  },
+  "counts": {
+    "offerings": 11,
+    "obsoleteOfferings": 8,
+    "nonObsoleteOfferings": 3
+  },
+  "items": [
+    {
+      "offeringShortName": "ZFSM_CUSTOM_OFFERING",
+      "offeringName": "zFSM Custom Offering",
+      "enabledFlag": "N",
+      "obsoleteFlag": "N"
+    },
+    {
+      "offeringShortName": "CT_COEXISTANCE_HCM",
+      "offeringName": "Obsolete: Coexistence for HCM",
+      "enabledFlag": "N",
+      "obsoleteFlag": "Y"
+    },
+    {
+      "offeringShortName": "CST_SCM_MANAGERIAL_ACCTG",
+      "offeringName": "Obsolete: Supply Chain Managerial Accounting",
+      "enabledFlag": "N",
+      "obsoleteFlag": "Y"
+    },
+    {
+      "offeringShortName": "ORA_DIGITAL_GOVERNMENT",
+      "offeringName": "Digital Government",
+      "enabledFlag": "N",
+      "obsoleteFlag": "N"
+    },
+    {
+      "offeringShortName": "ORA_QP_PRICE_MANAGEMENT",
+      "offeringName": "Obsolete: Price Management",
+      "enabledFlag": "N",
+      "obsoleteFlag": "Y"
+    },
+    {
+      "offeringShortName": "ORA_UER",
+      "offeringName": "Customer Experience for Utilities",
+      "enabledFlag": "N",
+      "obsoleteFlag": "N"
+    },
+    {
+      "offeringShortName": "ORA_CSO_KNOWLEDGE",
+      "offeringName": "Knowledge",
+      "enabledFlag": "N",
+      "obsoleteFlag": "Y"
+    },
+    {
+      "offeringShortName": "ZBS_SALES",
+      "offeringName": "Obsolete: Sales",
+      "enabledFlag": "N",
+      "obsoleteFlag": "Y"
+    },
+    {
+      "offeringShortName": "CMP_OIC_BU",
+      "offeringName": "Obsolete: Incentive Compensation",
+      "enabledFlag": "N",
+      "obsoleteFlag": "Y"
+    },
+    {
+      "offeringShortName": "INV_LOGISTICS",
+      "offeringName": "Obsolete: Materials Management and Logistics",
+      "enabledFlag": "N",
+      "obsoleteFlag": "Y"
+    },
+    {
+      "offeringShortName": "ORA_FOS_SCM_FIN_ORCHESTRATION",
+      "offeringName": "Obsolete: Supply Chain Financial Orchestration",
+      "enabledFlag": "N",
+      "obsoleteFlag": "Y"
+    }
+  ]
+}

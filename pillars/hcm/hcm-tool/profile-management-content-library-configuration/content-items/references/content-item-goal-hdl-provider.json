@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "provider": "CONTENT_ITEM_V2_HDL",
+  "business_object": "ContentItem",
+  "task_code": "HRT_MANAGE_PROFILE_CONTENT_ITEMS",
+  "context_name": "GOAL",
+  "content_type_id": 124,
+  "profile_mode": "enhanced",
+  "source_fusion_releases": [
+    "26C"
+  ],
+  "lifecycle": {
+    "status": "verified",
+    "reason": "Verified for enhanced-profile 26C by a controlled non-production single-row load, complete unfiltered FSM readback with full equality, and a duplicate lock that blocked a second package; exact run identifiers and fingerprints remain in project evidence."
+  },
+  "evidence_provider": "FSM_EXPORT",
+  "readback_provider": "FSM_EXPORT",
+  "user_key": [
+    "ContextName",
+    "Name"
+  ],
+  "code_identity": [
+    "ContextName",
+    "ContentItemCode"
+  ],
+  "max_rows_per_package": 1,
+  "row_fields": [
+    "ContentItemCode",
+    "ContextName",
+    "Name",
+    "DateFrom"
+  ],
+  "forbidden_fields": [
+    "ContentItemValueSetName",
+    "ContentItemValueSetId",
+    "ContentSupplierCode",
+    "RatingModelCode",
+    "SourceSystemOwner",
+    "SourceSystemId",
+    "ContentItemId",
+    "ContentTypeId",
+    "RatingModelId",
+    "ContentItemRlat"
+  ],
+  "date_format": "YYYY/MM/DD",
+  "execution_route": "core.data-loader",
+  "mutation_boundary": "create-only-single-row"
+}

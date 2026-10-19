@@ -1,0 +1,310 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_INVENTORY_TASK_CONFIGURATIONS",
+      "task_name": "Inventory Task Configurations",
+      "start_node": "INV_TASK_CONFIG.CLASSIFY_IMPORT_ROUTE",
+      "nodes": [
+        {
+          "id": "INV_TASK_CONFIG.CLASSIFY_IMPORT_ROUTE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "rest": "INV_TASK_CONFIG.VALIDATE_CONDITIONAL_ATTRIBUTES",
+            "fsm": "INV_TASK_CONFIG.VALIDATE_FSM_ARCHIVE",
+            "blocked": "INV_TASK_CONFIG.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request. Use core.data-loader source classification; REST is the task manifest default and FSM applies only to an explicitly selected FSM archive containing `ASM_SETUP_CSV_METADATA.xml`.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV_TASK_CONFIG.VALIDATE_CONDITIONAL_ATTRIBUTES",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "INV_TASK_CONFIG.RESOLVE_INVENTORY_ORGANIZATION",
+            "blocked": "INV_TASK_CONFIG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "INV_TASK_CONFIG.CLASSIFY_IMPORT_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classified REST Data Loader request containing activityUsages.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV_TASK_CONFIG.VALIDATE_FSM_ARCHIVE",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "validated": "INV_TASK_CONFIG.CHECK_FSM_READINESS",
+            "blocked": "INV_TASK_CONFIG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "INV_TASK_CONFIG.CLASSIFY_IMPORT_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classified FSM archive. Validate the native six-column task contract and exact Yes/No values; do not apply REST rules.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV_TASK_CONFIG.RESOLVE_INVENTORY_ORGANIZATION",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "INV_TASK_CONFIG.RESOLVE_DEFAULT_ZONE",
+            "blocked": "INV_TASK_CONFIG.RETURN_ISSUES",
+            "failure": "INV_TASK_CONFIG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "INV_TASK_CONFIG.VALIDATE_CONDITIONAL_ATTRIBUTES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "OrganizationName is supplied for the task configuration.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV_TASK_CONFIG.RESOLVE_DEFAULT_ZONE",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "INV_TASK_CONFIG.RESOLVE_TASK_GROUPING",
+            "missing": "INV_TASK_CONFIG.RESOLVE_TASK_GROUPING",
+            "blocked": "INV_TASK_CONFIG.RETURN_ISSUES",
+            "failure": "INV_TASK_CONFIG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "INV_TASK_CONFIG.RESOLVE_INVENTORY_ORGANIZATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "OrganizationId is resolved and the default-zone create-or-update route must be selected.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV_TASK_CONFIG.RESOLVE_TASK_GROUPING",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "INV_TASK_CONFIG.APPLY_ACTIVITY_DEFAULTS",
+            "not-applicable": "INV_TASK_CONFIG.APPLY_ACTIVITY_DEFAULTS",
+            "blocked": "INV_TASK_CONFIG.RETURN_ISSUES",
+            "failure": "INV_TASK_CONFIG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "INV_TASK_CONFIG.RESOLVE_DEFAULT_ZONE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supplied TaskGroupingLevel meaning requires resolution; code-only input continues without lookup.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV_TASK_CONFIG.APPLY_ACTIVITY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "INV_TASK_CONFIG.CHECK_PARENT_CHILD_READINESS",
+            "not-applicable": "INV_TASK_CONFIG.CHECK_PARENT_CHILD_READINESS"
+          },
+          "prerequisites": [
+            "INV_TASK_CONFIG.RESOLVE_TASK_GROUPING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Redwood-equivalent initial configuration only.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV_TASK_CONFIG.CHECK_PARENT_CHILD_READINESS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "INV_TASK_CONFIG.DATALOADER_HANDOFF",
+            "blocked": "INV_TASK_CONFIG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "INV_TASK_CONFIG.APPLY_ACTIVITY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "REST Data Loader request containing activityUsages.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV_TASK_CONFIG.CHECK_FSM_READINESS",
+          "node_type": "step",
+          "sequence": 41,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "INV_TASK_CONFIG.FSM_DATALOADER_HANDOFF",
+            "blocked": "INV_TASK_CONFIG.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "INV_TASK_CONFIG.VALIDATE_FSM_ARCHIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classified FSM archive passed native-contract validation and core package validation.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV_TASK_CONFIG.DATALOADER_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "INV_TASK_CONFIG.CHECK_PARENT_CHILD_READINESS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Local validation, lookup, defaulting, and dependency checks have passed; hand off the prepared XLSX to `core.data-loader` for its normal approval and import workflow. No task-local approval or import call.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV_TASK_CONFIG.FSM_DATALOADER_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 51,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "INV_TASK_CONFIG.CHECK_FSM_READINESS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "FSM validation and readiness passed; hand off the unchanged FSM ZIP to `core.data-loader` for its normal approval and import workflow. No task-local approval or import call.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "INV_TASK_CONFIG.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any task-local validation, lookup, defaulting, or dependency prerequisite is blocked or fails.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

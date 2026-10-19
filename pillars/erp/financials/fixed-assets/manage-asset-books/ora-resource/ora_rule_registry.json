@@ -1,0 +1,353 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "FA_MANAGE_ASSET_BOOK",
+      "task_name": "Manage Asset Books",
+      "start_node": "FA_BOOK.INPUT_RECOVERED",
+      "nodes": [
+        {
+          "id": "FA_BOOK.INPUT_RECOVERED",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "FA_BOOK.EXISTENCE_CHECKED",
+            "invalid": "FA_BOOK.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every create or update request; reprocess current inputs, screenshots, and current-project candidates before declaring a value missing.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 138
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FA_BOOK.EXISTENCE_CHECKED",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "absent": "FA_BOOK.TARGET_DEPENDENCIES_RESOLVED",
+            "identical": "FA_BOOK.EXISTS_IDENTICAL",
+            "different": "FA_BOOK.EXISTS_DIFFERENT",
+            "blocked": "FA_BOOK.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FA_BOOK.INPUT_RECOVERED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a create or update decision.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FA_BOOK.TARGET_DEPENDENCIES_RESOLVED",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "ready": "FA_BOOK.DEPENDENCIES_READY",
+            "blocked": "FA_BOOK.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FA_BOOK.EXISTENCE_CHECKED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An absent requested book requires exact target calendar-period, assignment, ledger, and account evidence.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FA_BOOK.DEPENDENCIES_READY",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "FA_BOOK.DEFAULTS_RESOLVED",
+            "blocked": "FA_BOOK.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FA_BOOK.TARGET_DEPENDENCIES_RESOLVED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Required technical evidence has been resolved and must be assessed as a complete book definition.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FA_BOOK.DEFAULTS_RESOLVED",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "FA_BOOK.DESIGN_ENFORCED",
+            "blocked": "FA_BOOK.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FA_BOOK.DEPENDENCIES_READY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Required dependencies are complete and documented defaults are applicable.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 214
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FA_BOOK.DESIGN_ENFORCED",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "FA_BOOK.DESIGN_APPROVAL_GATE",
+            "blocked": "FA_BOOK.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FA_BOOK.DEFAULTS_RESOLVED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The complete proposed definition passes design rules and is ready for Design Preview approval before ZIP creation.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 137
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FA_BOOK.DESIGN_APPROVAL_GATE",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "FA_BOOK.PACKAGE_PREPARED",
+            "approval_missing": "FA_BOOK.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FA_BOOK.DESIGN_ENFORCED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The complete business Design Preview requires approval before ZIP creation.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FA_BOOK.PACKAGE_PREPARED",
+          "node_type": "step",
+          "sequence": 8,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "FA_BOOK.FINAL_ZIP_VALIDATED",
+            "blocked": "FA_BOOK.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FA_BOOK.DESIGN_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Design Preview is approved and the task may create the immutable ZIP.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 138
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FA_BOOK.FINAL_ZIP_VALIDATED",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "FA_BOOK.IMPORT_GATE",
+            "blocked": "FA_BOOK.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FA_BOOK.PACKAGE_PREPARED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The immutable ZIP matches the approved design, target contract, required members, row counts, encoding, and hash shown in the Final ZIP Preview.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 139
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FA_BOOK.IMPORT_GATE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "FA_BOOK.HANDED_OFF_TO_PARENT",
+            "approval_missing": "FA_BOOK.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "FA_BOOK.FINAL_ZIP_VALIDATED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Final ZIP Preview identifies one validated immutable package for live import.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FA_BOOK.HANDED_OFF_TO_PARENT",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FA_BOOK.IMPORT_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Asset Books import is accepted \u2014 pending parent verification.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FA_BOOK.EXISTS_IDENTICAL",
+          "node_type": "terminal",
+          "sequence": 120,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FA_BOOK.EXISTENCE_CHECKED"
+          ],
+          "on_failure": "continue",
+          "applies_when": "An existing book exactly matches the requested definition.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FA_BOOK.EXISTS_DIFFERENT",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FA_BOOK.EXISTENCE_CHECKED"
+          ],
+          "on_failure": "continue",
+          "applies_when": "An existing book differs from the requested definition.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 23
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FA_BOOK.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 140,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Input, dependency, contract, design, artifact, approval, or verification readiness is blocked.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

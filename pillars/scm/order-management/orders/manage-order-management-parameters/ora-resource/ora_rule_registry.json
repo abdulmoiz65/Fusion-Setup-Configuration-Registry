@@ -1,0 +1,830 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_FOM_MANAGE_ORDER_MANAGEMENT_SYSTEM_PARAMETERS",
+      "task_name": "Manage Order Management Parameters",
+      "start_node": "ORDER_MANAGEMENT_PARAMETERS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER",
+            "invalid-or-incomplete": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before preparing a parameter change.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A parameter name is supplied for a requested change.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "source-system-specific": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_SOURCE_SYSTEM",
+            "business-unit-specific": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_BUSINESS_UNIT",
+            "item-validation-organization": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_INVENTORY_ORGANIZATION",
+            "coverage-start-date": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_COVERAGE_START_DATE",
+            "selling-profit-center-business-unit": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_SELLING_PROFIT_CENTER_BUSINESS_UNIT",
+            "yes-no-parameter": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_YES_NO_LOOKUP_CODE",
+            "qty-invoice-overship": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_QTY_INVOICE_OVERSHIP",
+            "ship-tolerance-source": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_SHIP_TOLERANCE_SOURCE",
+            "inventory-transaction-date": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_INVENTORY_TRANSACTION_DATE",
+            "customer-relationship-type": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_CUSTOMER_RELATIONSHIP_TYPE",
+            "preparer-worker": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PREPARER_WORKER",
+            "authorize-credit-card-amount": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_AUTHORIZE_CREDIT_CARD_AMOUNT",
+            "config-effective-date": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_CONFIG_EFFECTIVE_DATE",
+            "relationship-ship-to-customer": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_RELATIONSHIP_SHIP_TO_CUSTOMER",
+            "item-details-in-offers": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_ITEM_DETAILS_IN_OFFERS",
+            "config-effective-cascade": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_CONFIG_EFFECTIVE_CASCADE",
+            "validate-transaction-sign-amount": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_VALIDATE_TRANSACTION_SIGN_AMOUNT",
+            "process-drop-ship-tolerance": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PROCESS_DROP_SHIP_TOLERANCE",
+            "duom-return-quantity-type": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_DUOM_RETURN_QUANTITY_TYPE",
+            "default-tax-determinants": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_DEFAULT_TAX_DETERMINANTS",
+            "cascade-header-attributes-to-line": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_CASCADE_HEADER_ATTRIBUTES_TO_LINE",
+            "pricing-in-configurator": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PRICING_IN_CONFIGURATOR",
+            "include-item-explosion-date": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_INCLUDE_ITEM_EXPLOSION_DATE",
+            "credit-check-failure-at-submit": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_CREDIT_CHECK_FAILURE_AT_SUBMIT",
+            "scope-ready": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "missing-id-or-lookup-failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Current values and ParameterLevelCode for the resolved parameter are needed.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_SOURCE_SYSTEM",
+          "node_type": "step",
+          "sequence": 35,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "ParameterLevelCode is source order system and a specific source system is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_BUSINESS_UNIT",
+          "node_type": "step",
+          "sequence": 36,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "ParameterLevelCode is BUSINESS_UNIT and a specific business-unit id is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_INVENTORY_ORGANIZATION",
+          "node_type": "step",
+          "sequence": 37,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter is Item Validation Organization and an organization is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_COVERAGE_START_DATE",
+          "node_type": "step",
+          "sequence": 38,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_COVERAGE_START_DATE and a coverage-item start-date value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_SELLING_PROFIT_CENTER_BUSINESS_UNIT",
+          "node_type": "step",
+          "sequence": 39,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_SELLING_PROFIT_CENTER_BU and a selling-profit-center business-unit value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_YES_NO_LOOKUP_CODE",
+          "node_type": "step",
+          "sequence": 45,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is one of the listed YES_NO parameter codes and a value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_QTY_INVOICE_OVERSHIP",
+          "node_type": "step",
+          "sequence": 46,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_QTY_INVOICE_OVERSHIP and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 83
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_SHIP_TOLERANCE_SOURCE",
+          "node_type": "step",
+          "sequence": 47,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_SHIP_TOLERANCE_SOURCE and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 84
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_INVENTORY_TRANSACTION_DATE",
+          "node_type": "step",
+          "sequence": 48,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_INVENTORY_TRX_DATE and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 85
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_CUSTOMER_RELATIONSHIP_TYPE",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_CUSTOMER_REL_TYPE and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 86
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PREPARER_WORKER",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_PREPARER_FOR_PROC and a preparer name is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 87
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_AUTHORIZE_CREDIT_CARD_AMOUNT",
+          "node_type": "step",
+          "sequence": 51,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_AUTH_CC_AMT and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_CONFIG_EFFECTIVE_DATE",
+          "node_type": "step",
+          "sequence": 52,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_CONFIG_EFFECTIVE_DATE and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_RELATIONSHIP_SHIP_TO_CUSTOMER",
+          "node_type": "step",
+          "sequence": 53,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_RELATIONSHIP_SHIP_TO_CUST and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_DUOM_RETURN_QUANTITY_TYPE",
+          "node_type": "step",
+          "sequence": 54,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_DUOM_RETURN_QTY_TYPE and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_DEFAULT_TAX_DETERMINANTS",
+          "node_type": "step",
+          "sequence": 55,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_DEFAULT_TAX_DETERMINANTS and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_CASCADE_HEADER_ATTRIBUTES_TO_LINE",
+          "node_type": "step",
+          "sequence": 56,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_CASCAD_HDR_ATTR_TO_LNE and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PRICING_IN_CONFIGURATOR",
+          "node_type": "step",
+          "sequence": 57,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_PRICING_IN_CONFIGURATOR and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_INCLUDE_ITEM_EXPLOSION_DATE",
+          "node_type": "step",
+          "sequence": 58,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_INCL_ITEM_EXPLOSION_DATE and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_CREDIT_CHECK_FAILURE_AT_SUBMIT",
+          "node_type": "step",
+          "sequence": 59,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_CREDIT_CK_FAILURE_AT_SUBMIT and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_ITEM_DETAILS_IN_OFFERS",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_ITEM_DETAILS_IN_OFFERS and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_CONFIG_EFFECTIVE_CASCADE",
+          "node_type": "step",
+          "sequence": 61,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_CONFIG_EFF_CASCADE and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_VALIDATE_TRANSACTION_SIGN_AMOUNT",
+          "node_type": "step",
+          "sequence": 62,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_VALIDATE_TRX_SIGN_AMT and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PROCESS_DROP_SHIP_TOLERANCE",
+          "node_type": "step",
+          "sequence": 63,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+            "no-match-or-ambiguous": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The resolved parameter code is QP_PROCESS_DS_TOLERANCE and a parameter value is supplied.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaults-reviewed": "ORDER_MANAGEMENT_PARAMETERS.ENFORCE_DOCUMENTED_CONSTRAINTS"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.RESOLVE_PARAMETER_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A documented default is retained or an approved replacement is proposed.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.ENFORCE_DOCUMENTED_CONSTRAINTS",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "constraints-satisfied": "ORDER_MANAGEMENT_PARAMETERS.APPROVAL_GATE",
+            "constraint-failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.APPLY_DOCUMENTED_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before saving a parameter change.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ORDER_MANAGEMENT_PARAMETERS.APPROVAL_GATE",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved-for-separate-execution": "RETURN_SUCCESS",
+            "approval-missing-or-changed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.ENFORCE_DOCUMENTED_CONSTRAINTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The proposed parameter set passed validation and design enforcement.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 100,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ORDER_MANAGEMENT_PARAMETERS.APPROVAL_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The parameter set is ready for its separate explicit save approval.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 110,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Input validation, a parameter lookup, a design constraint, or approval gate failed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

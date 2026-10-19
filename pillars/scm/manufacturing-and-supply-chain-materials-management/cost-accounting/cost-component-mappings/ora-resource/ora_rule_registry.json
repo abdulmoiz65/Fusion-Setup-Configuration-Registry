@@ -1,0 +1,1139 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_CST_COST_COMPONENT_MAPPINGS",
+      "task_name": "Cost Component Mappings",
+      "start_node": "CCM.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "CCM.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "create": "CCM.LOOKUP_ACCESSIBLE_SET",
+            "find_by_code": "CCM.FIND_BY_CODE",
+            "find_by_name": "CCM.FIND_BY_NAME",
+            "find_by_set": "CCM.FIND_BY_SET",
+            "find_by_description": "CCM.FIND_BY_DESCRIPTION",
+            "list": "CCM.LIST_MAPPING_GROUPS",
+            "read_group": "CCM.READ_MAPPING_GROUP",
+            "read_predefined": "CCM.READ_PREDEFINED_MAPPINGS",
+            "read_landed": "CCM.READ_LANDED_MAPPINGS",
+            "preflight_landed": "CCM.CHECK_LANDED_DUPLICATE",
+            "preflight_predefined": "CCM.CHECK_PREDEFINED_DUPLICATE",
+            "check_capitalization": "CCM.CHECK_CAPITALIZATION_CONTROL",
+            "read_elements": "CCM.READ_COST_ELEMENT_MAPPINGS",
+            "resolve_cost_set": "CCM.RESOLVE_COST_SET",
+            "validate_destination_set_scope": "CCM.VALIDATE_DESTINATION_SET_SCOPE",
+            "resolve_predefined_component": "CCM.RESOLVE_PREDEFINED_SOURCE_COMPONENT",
+            "resolve_landed_component": "CCM.RESOLVE_LANDED_SOURCE_COMPONENT",
+            "resolve_source_cost_element": "CCM.RESOLVE_SOURCE_COST_ELEMENT_FOR_SET",
+            "resolve_cost_element": "CCM.RESOLVE_COST_ELEMENT_FOR_SET",
+            "resolve_profit_in_inventory_element": "CCM.RESOLVE_PROFIT_SOURCE_ELEMENT",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A cost component mapping group or child mapping request is prepared",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.LOOKUP_ACCESSIBLE_SET",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CCM.DEPENDENCY_READINESS",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mapping group SetName is supplied for a create request",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.FIND_BY_CODE",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CCM.DONE_FIND_BY_CODE",
+            "not_found": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "User requests a mapping group by ComponentGroupCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.FIND_BY_NAME",
+          "node_type": "step",
+          "sequence": 22,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CCM.DONE_FIND_BY_NAME",
+            "not_found": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "User requests a mapping group by Name",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.FIND_BY_SET",
+          "node_type": "step",
+          "sequence": 23,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CCM.DONE_FIND_BY_SET",
+            "not_found": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "User requests mapping groups by SetName",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.FIND_BY_DESCRIPTION",
+          "node_type": "step",
+          "sequence": 24,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CCM.DONE_FIND_BY_DESCRIPTION",
+            "not_found": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "User requests mapping groups by Description",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.LIST_MAPPING_GROUPS",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "listed": "CCM.DONE_LIST",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "User requests a paginated mapping-group list",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.READ_MAPPING_GROUP",
+          "node_type": "step",
+          "sequence": 26,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "CCM.DONE_READ_GROUP",
+            "not_found": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "User requests one mapping group by ComponentGroupId",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.READ_PREDEFINED_MAPPINGS",
+          "node_type": "step",
+          "sequence": 27,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "listed": "CCM.DONE_READ_PREDEFINED",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "User requests predefined component mappings",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.READ_LANDED_MAPPINGS",
+          "node_type": "step",
+          "sequence": 28,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "listed": "CCM.DONE_READ_LANDED",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "User requests landed-cost-management mappings",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.CHECK_LANDED_DUPLICATE",
+          "node_type": "step",
+          "sequence": 29,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "clear": "CCM.DONE_LANDED_PREFLIGHT",
+            "duplicate": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a landed-cost-management Data Loader import",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.CHECK_PREDEFINED_DUPLICATE",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "clear": "CCM.DONE_PREDEFINED_PREFLIGHT",
+            "duplicate": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a predefined component Data Loader import",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.CHECK_CAPITALIZATION_CONTROL",
+          "node_type": "step",
+          "sequence": 31,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "editable": "CCM.DONE_CAPITALIZATION_CHECK",
+            "read_only": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before changing CapitalizationFlag on a landed-cost-management row",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.READ_COST_ELEMENT_MAPPINGS",
+          "node_type": "step",
+          "sequence": 32,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "listed": "CCM.DONE_READ_ELEMENTS",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "User requests cost-element mappings",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.RESOLVE_COST_SET",
+          "node_type": "step",
+          "sequence": 33,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CCM.DONE_RESOLVE_COST_SET",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A set ID or display value is required before a create or update",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.VALIDATE_DESTINATION_SET_SCOPE",
+          "node_type": "step",
+          "sequence": 34,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CCM.DONE_VALIDATE_DESTINATION_SET_SCOPE",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a child mapping create or update with DestSetName",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.RESOLVE_PREDEFINED_SOURCE_COMPONENT",
+          "node_type": "step",
+          "sequence": 35,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CCM.DONE_RESOLVE_PREDEFINED_COMPONENT",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A predefined source component is required before create",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.RESOLVE_LANDED_SOURCE_COMPONENT",
+          "node_type": "step",
+          "sequence": 36,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CCM.DONE_RESOLVE_LANDED_COMPONENT",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A landed-cost-management source component is required before create or update",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.RESOLVE_COST_ELEMENT_FOR_SET",
+          "node_type": "step",
+          "sequence": 37,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CCM.DONE_RESOLVE_COST_ELEMENT",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A destination cost element is required before create or update",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.RESOLVE_PROFIT_SOURCE_ELEMENT",
+          "node_type": "step",
+          "sequence": 38,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CCM.DONE_RESOLVE_PROFIT_SOURCE_ELEMENT",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A selected source or destination element is type PROFIT_IN_INVENTORY",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.RESOLVE_SOURCE_COST_ELEMENT_FOR_SET",
+          "node_type": "step",
+          "sequence": 39,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CCM.DONE_RESOLVE_SOURCE_COST_ELEMENT",
+            "unresolved": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A source cost element is required before a cost-element mapping create or update",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DEPENDENCY_READINESS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CCM.DESIGN_ENFORCEMENT",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.LOOKUP_ACCESSIBLE_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A create request has completed the required set-access check",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DESIGN_ENFORCEMENT",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "CCM.EXECUTION_GATE",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.DEPENDENCY_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mapping-group create request has passed input and dependency checks",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.EXECUTION_GATE",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved_preview": "CCM.READY_FOR_RUNBOOK",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "CCM.DESIGN_ENFORCEMENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The task is otherwise ready for an external preview-and-approval workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.RECONCILE_COMPONENT_SOURCE_FAILURE",
+          "node_type": "step",
+          "sequence": 61,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "reconciled": "CCM.DONE_RECONCILED_COMPONENT_SOURCE_FAILURE",
+            "not_reconciled": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A completed Data Loader dataset reports the ComponentSource-missing message after a combined child package",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.READY_FOR_RUNBOOK",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.EXECUTION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A documented execution contract, current preview, and explicit approval are available",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_FIND_BY_CODE",
+          "node_type": "terminal",
+          "sequence": 71,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.FIND_BY_CODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mapping group finder by code completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_FIND_BY_NAME",
+          "node_type": "terminal",
+          "sequence": 72,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.FIND_BY_NAME"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mapping group finder by name completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_FIND_BY_SET",
+          "node_type": "terminal",
+          "sequence": 73,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.FIND_BY_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mapping group finder by set completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_FIND_BY_DESCRIPTION",
+          "node_type": "terminal",
+          "sequence": 74,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.FIND_BY_DESCRIPTION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mapping group finder by description completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_LIST",
+          "node_type": "terminal",
+          "sequence": 75,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.LIST_MAPPING_GROUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mapping-group list completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_READ_GROUP",
+          "node_type": "terminal",
+          "sequence": 76,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.READ_MAPPING_GROUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A mapping-group read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_READ_PREDEFINED",
+          "node_type": "terminal",
+          "sequence": 77,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.READ_PREDEFINED_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A predefined mapping read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_READ_LANDED",
+          "node_type": "terminal",
+          "sequence": 78,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.READ_LANDED_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A landed-cost-management mapping read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_LANDED_PREFLIGHT",
+          "node_type": "terminal",
+          "sequence": 79,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.CHECK_LANDED_DUPLICATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A landed-cost duplicate preflight found no existing mapping",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_PREDEFINED_PREFLIGHT",
+          "node_type": "terminal",
+          "sequence": 80,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.CHECK_PREDEFINED_DUPLICATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A predefined component duplicate preflight contract is complete and clear",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_CAPITALIZATION_CHECK",
+          "node_type": "terminal",
+          "sequence": 81,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.CHECK_CAPITALIZATION_CONTROL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The capitalization control check permits the requested change",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_READ_ELEMENTS",
+          "node_type": "terminal",
+          "sequence": 82,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.READ_COST_ELEMENT_MAPPINGS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A cost-element mapping read completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_RESOLVE_COST_SET",
+          "node_type": "terminal",
+          "sequence": 83,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.RESOLVE_COST_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A cost set lookup resolved exactly one value",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 71
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_RESOLVE_PREDEFINED_COMPONENT",
+          "node_type": "terminal",
+          "sequence": 84,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.RESOLVE_PREDEFINED_SOURCE_COMPONENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A predefined source component lookup resolved exactly one value",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_RESOLVE_LANDED_COMPONENT",
+          "node_type": "terminal",
+          "sequence": 85,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.RESOLVE_LANDED_SOURCE_COMPONENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A landed-cost-management source component lookup resolved exactly one value",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_RESOLVE_COST_ELEMENT",
+          "node_type": "terminal",
+          "sequence": 86,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.RESOLVE_COST_ELEMENT_FOR_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A destination cost element lookup resolved exactly one value",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_RESOLVE_PROFIT_SOURCE_ELEMENT",
+          "node_type": "terminal",
+          "sequence": 87,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.RESOLVE_PROFIT_SOURCE_ELEMENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A PROFIT_IN_INVENTORY source or destination element lookup resolved exactly one value",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_VALIDATE_DESTINATION_SET_SCOPE",
+          "node_type": "terminal",
+          "sequence": 88,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.VALIDATE_DESTINATION_SET_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Destination set scope validation resolved exactly one permitted set",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_RESOLVE_SOURCE_COST_ELEMENT",
+          "node_type": "terminal",
+          "sequence": 89,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.RESOLVE_SOURCE_COST_ELEMENT_FOR_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A source cost element lookup resolved exactly one value",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, lookup, dependency, design, or approval gate fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CCM.DONE_RECONCILED_COMPONENT_SOURCE_FAILURE",
+          "node_type": "terminal",
+          "sequence": 91,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CCM.RECONCILE_COMPONENT_SOURCE_FAILURE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Exact readback reconciled every requested mapping after the ComponentSource-missing dataset error",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

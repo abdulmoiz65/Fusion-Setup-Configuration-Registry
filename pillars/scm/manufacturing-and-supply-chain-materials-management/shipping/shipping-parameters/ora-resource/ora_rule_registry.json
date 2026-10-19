@@ -1,0 +1,352 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_SHIPPING_PARAMETERS",
+      "task_name": "Shipping Parameters",
+      "start_node": "SP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "SP.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "SP.RESOLVE_APPENDING_LIMIT",
+            "failed": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Shipping Parameters input is prepared for Data Loader handoff",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 19
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SP.RESOLVE_APPENDING_LIMIT",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SP.RESOLVE_PACKING_UNIT_CAPACITY",
+            "not-applicable": "SP.RESOLVE_PACKING_UNIT_CAPACITY",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied Appending Limit input to AppendingLimitCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SP.RESOLVE_PACKING_UNIT_CAPACITY",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SP.RESOLVE_PRINT_PICK_SLIP",
+            "not-applicable": "SP.RESOLVE_PRINT_PICK_SLIP",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SP.RESOLVE_APPENDING_LIMIT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied Packing Unit Capacity Method input to PackingUnitCapacityMethodCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SP.RESOLVE_PRINT_PICK_SLIP",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SP.RESOLVE_PACKING_ATTRIBUTES",
+            "not-applicable": "SP.RESOLVE_PACKING_ATTRIBUTES",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SP.RESOLVE_PACKING_UNIT_CAPACITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied Print Pick Slip input to PrintPickSlipModeCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SP.RESOLVE_PACKING_ATTRIBUTES",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SP.RESOLVE_WMS_RESERVATION",
+            "not-applicable": "SP.RESOLVE_WMS_RESERVATION",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SP.RESOLVE_PRINT_PICK_SLIP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied Required on Packing Slip selections",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SP.RESOLVE_WMS_RESERVATION",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SP.RESOLVE_COA_PROCESSING_MODE",
+            "not-applicable": "SP.RESOLVE_COA_PROCESSING_MODE",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SP.RESOLVE_PACKING_ATTRIBUTES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied WMS Reservation Behavior input to WmsReservationBehaviourCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SP.RESOLVE_COA_PROCESSING_MODE",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SP.RESOLVE_SHIPMENT_CREATION_CRITERIA",
+            "not-applicable": "SP.RESOLVE_SHIPMENT_CREATION_CRITERIA",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SP.RESOLVE_WMS_RESERVATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied COA Processing Mode input to COAProcessingModeCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SP.RESOLVE_SHIPMENT_CREATION_CRITERIA",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SP.RESOLVE_SHIP_SET_BEHAVIOR",
+            "not-applicable": "SP.RESOLVE_SHIP_SET_BEHAVIOR",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SP.RESOLVE_COA_PROCESSING_MODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied Shipment Creation Criteria input to ShipmentCreationCriteriaCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SP.RESOLVE_SHIP_SET_BEHAVIOR",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SP.RESOLVE_SHIPPING_TOLERANCE",
+            "not-applicable": "SP.RESOLVE_SHIPPING_TOLERANCE",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SP.RESOLVE_SHIPMENT_CREATION_CRITERIA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied Ship Set Behavior input to ShipSetBehaviorCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SP.RESOLVE_SHIPPING_TOLERANCE",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SP.RESOLVE_TRADE_COMPLIANCE_METHOD",
+            "not-applicable": "SP.RESOLVE_TRADE_COMPLIANCE_METHOD",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SP.RESOLVE_SHIP_SET_BEHAVIOR"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied Shipping Tolerance Behavior input to ShippingToleranceBehaviorCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SP.RESOLVE_TRADE_COMPLIANCE_METHOD",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "SP.DONE",
+            "not-applicable": "SP.DONE",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SP.RESOLVE_SHIPPING_TOLERANCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve supplied Trade Compliance Method input to TradeComplianceMethodCode",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SP.DONE",
+          "node_type": "terminal",
+          "sequence": 120,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SP.RESOLVE_TRADE_COMPLIANCE_METHOD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input and approved standard lookup validation passed; Data Loader owns the subsequent handoff",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 130,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input or lookup validation failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

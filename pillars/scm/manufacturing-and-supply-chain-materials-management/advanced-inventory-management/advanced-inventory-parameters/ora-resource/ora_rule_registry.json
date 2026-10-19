@@ -1,0 +1,283 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_ADVANCED_INVENTORY_PARAMETERS",
+      "task_name": "Advanced Inventory Parameters",
+      "start_node": "ADV_INV_PARAMS.CLASSIFY_IMPORT_ROUTE",
+      "nodes": [
+        {
+          "id": "ADV_INV_PARAMS.CLASSIFY_IMPORT_ROUTE",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "rest": "ADV_INV_PARAMS.VALIDATE_PARENT_IDENTITY",
+            "fsm": "ADV_INV_PARAMS.VALIDATE_FSM_ARCHIVE",
+            "blocked": "ADV_INV_PARAMS.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request; use core.data-loader source classification and reject explicit delete intent before selecting the route.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ADV_INV_PARAMS.VALIDATE_PARENT_IDENTITY",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "normalized": "ADV_INV_PARAMS.CHECK_READINESS",
+            "blocked": "ADV_INV_PARAMS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ADV_INV_PARAMS.CLASSIFY_IMPORT_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "REST-backed requests only; establish operation and organization identity and reject delete operations.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ADV_INV_PARAMS.VALIDATE_FSM_ARCHIVE",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "validated": "ADV_INV_PARAMS.CHECK_FSM_READINESS",
+            "blocked": "ADV_INV_PARAMS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ADV_INV_PARAMS.CLASSIFY_IMPORT_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Classified FSM archive; verify task identity, reject explicit or known delete operations, and apply shared package validation.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ADV_INV_PARAMS.CHECK_READINESS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ADV_INV_PARAMS.RESOLVE_REFERENCE_LOOKUPS",
+            "blocked": "ADV_INV_PARAMS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ADV_INV_PARAMS.VALIDATE_PARENT_IDENTITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Parent identity passed local validation.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ADV_INV_PARAMS.CHECK_FSM_READINESS",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "ADV_INV_PARAMS.FSM_DATALOADER_HANDOFF",
+            "blocked": "ADV_INV_PARAMS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ADV_INV_PARAMS.VALIDATE_FSM_ARCHIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "FSM package validation passed; honor shared readiness results and reject explicit or known delete operations before handoff.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ADV_INV_PARAMS.RESOLVE_REFERENCE_LOOKUPS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "ADV_INV_PARAMS.VALIDATE_EFFECTIVE_VALUES",
+            "not-applicable": "ADV_INV_PARAMS.VALIDATE_EFFECTIVE_VALUES",
+            "blocked": "ADV_INV_PARAMS.RETURN_ISSUES",
+            "failure": "ADV_INV_PARAMS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ADV_INV_PARAMS.CHECK_READINESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate supplied meanings for every request; resolve supported meanings, block unverified Cycle Count meanings, or take not-applicable for code-only inputs.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ADV_INV_PARAMS.VALIDATE_EFFECTIVE_VALUES",
+          "node_type": "step",
+          "sequence": 32,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "validated": "ADV_INV_PARAMS.APPLY_CROSSDOCK_DUE_DATE_SORT_DEFAULT",
+            "blocked": "ADV_INV_PARAMS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ADV_INV_PARAMS.RESOLVE_REFERENCE_LOOKUPS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every request after applicable lookup resolution, including code-only requests; evaluate effective values and conditional requirements.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ADV_INV_PARAMS.APPLY_CROSSDOCK_DUE_DATE_SORT_DEFAULT",
+          "node_type": "step",
+          "sequence": 35,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "ADV_INV_PARAMS.DATALOADER_HANDOFF",
+            "not-applicable": "ADV_INV_PARAMS.DATALOADER_HANDOFF",
+            "blocked": "ADV_INV_PARAMS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "ADV_INV_PARAMS.VALIDATE_EFFECTIVE_VALUES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate the create-only default after effective-value validation.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ADV_INV_PARAMS.DATALOADER_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ADV_INV_PARAMS.APPLY_CROSSDOCK_DUE_DATE_SORT_DEFAULT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Local identity, readiness, applicable reference-lookup checks, and approved default evaluation have passed; hand off to `core.data-loader`.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ADV_INV_PARAMS.FSM_DATALOADER_HANDOFF",
+          "node_type": "terminal",
+          "sequence": 41,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "ADV_INV_PARAMS.CHECK_FSM_READINESS"
+          ],
+          "on_failure": "continue",
+          "applies_when": "FSM validation and readiness passed; hand off to core.data-loader for its normal approval and import workflow. No task-local import call.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "ADV_INV_PARAMS.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Local validation or readiness is blocked or fails.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

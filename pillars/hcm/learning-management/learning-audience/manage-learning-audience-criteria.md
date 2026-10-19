@@ -1,0 +1,61 @@
+---
+task_code: "CUSTOM_MANAGE_LEARNING_AUDIENCE_CRITERIA"
+task_name: "Manage Learning Audience Criteria"
+parent_skill_id: "hcm.learning-management.learning-audience"
+pillar: "HCM"
+offering: "Learning Management"
+functional_area: "Learning Audience"
+functional_area_code: "ORA_LEARNING_AUDIENCE"
+available_flag: "Y"
+export_import_supported_flag: "N"
+csv_export_import_supported_flag: "N"
+dataloader_import_mode: "REST"
+businessObject: "hcmLists"
+source_catalog: "knowledge/setup-task-catalog/effective/setupTasksAll.json"
+---
+
+# Manage Learning Audience Criteria
+
+## Setup Task Metadata
+
+- Task name: `Manage Learning Audience Criteria`
+- Task code: `CUSTOM_MANAGE_LEARNING_AUDIENCE_CRITERIA`
+- Available: `Y`
+- Export/import supported: `N`
+- CSV export/import supported: `N`
+- CSV export/import routing: `not supported`
+- Data Loader import mode: `REST`
+- Business Object: `hcmLists`
+
+## CSV Export, Import, and Validation Workflow
+
+`CSVExportImportSupportedFlag` is `N`, so this task is not marked as CSV export/import supported in the effective setup-task catalog.
+
+Do not route CSV export work to `shared.setup-export.task-level-export` or CSV import work to `core.data-loader` unless live Fusion metadata or Oracle guidance confirms support. Use `shared.validation.setup-data-validator` only when a setup data artifact is available for review.
+
+
+## Download Fusion Data Loader Sample
+
+Use this workflow when `dataloader_import_mode: "REST"` and a Fusion Data Loader sample is needed for the task’s business object.
+
+1. Confirm that `hcmLists` is the exact registered Data Loader business object.
+2. Generate the default editable XLSX sample through `core.data-loader`:
+
+   ```bash
+   python3 core/data-loader/scripts/generate_sample_dat.py \
+     "hcmLists" \
+     --output-dir "<project-artifact-directory>"
+   ```
+
+3. Keep the generated workbooks together:
+   - editable sample
+   - attribute-details workbook
+   - key-fields workbook
+4. Review the generated headers and key fields before preparing source data. The operation uses read-only Fusion metadata and does not upload or import data.
+5. Use the generated editable workbook as the starting point for the later Data Loader preparation and approval workflow.
+
+
+
+## Usage
+
+Use this metadata file when planning, sequencing, exporting, importing, or validating setup data for `Manage Learning Audience Criteria` under `Learning Audience`.

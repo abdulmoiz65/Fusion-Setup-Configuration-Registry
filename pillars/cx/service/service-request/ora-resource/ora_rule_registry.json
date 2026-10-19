@@ -1,0 +1,1831 @@
+{
+  "schema_version": "3.0",
+  "representation": "flat",
+  "tasks": [
+    {
+      "task_code": "ORA_MANAGE_CHANNEL_TYPE_PROPERTIES",
+      "task_name": "Manage Service Request Channel Type Visibility",
+      "start_node": "SRCHANVIS.VALIDATE",
+      "nodes": [
+        {
+          "id": "SRCHANVIS.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SRCHANVIS.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every channel visibility setup request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRCHANVIS.LOOKUP",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "SRCHANVIS.PROPERTY_LOOKUP",
+            "missing": "RETURN_ISSUES",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRCHANVIS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Channel visibility validation is required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRCHANVIS.PROPERTY_LOOKUP",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "SRCHANVIS.ENFORCE",
+            "missing": "RETURN_ISSUES",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRCHANVIS.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Channel visibility property lookup validation is required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRCHANVIS.ENFORCE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SRCHANVIS.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRCHANVIS.PROPERTY_LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Channel visibility design checks are required after channel and property lookup validation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRCHANVIS.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SRCHANVIS.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Channel visibility checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Channel visibility checks produce issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 32
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_MANAGE_OBJECT_LINK_TYPES",
+      "task_name": "Manage Object Link Types",
+      "start_node": "OBJLINK.VALIDATE",
+      "nodes": [
+        {
+          "id": "OBJLINK.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "OBJLINK.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every object link type setup request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OBJLINK.LOOKUP",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "OBJLINK.ENFORCE",
+            "missing": "OBJLINK.ENFORCE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "OBJLINK.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Object link type lookup is required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OBJLINK.ENFORCE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "OBJLINK.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "OBJLINK.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Object link type design checks are required",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "OBJLINK.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "OBJLINK.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Object link type checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Object link type checks produce issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_MANAGE_SERVICE_REQUEST_OUTCOMES_AND_RESOLUTIONS",
+      "task_name": "Manage Service Request Outcomes and Resolutions",
+      "start_node": "SROUTCOME.VALIDATE",
+      "nodes": [
+        {
+          "id": "SROUTCOME.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SROUTCOME.DEFAULTS",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every outcome or resolution setup request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SROUTCOME.DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "SROUTCOME.ENFORCE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SROUTCOME.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An outcome, resolution, or mapping request needs documented lookup, root, audit, and relationship defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SROUTCOME.ENFORCE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SROUTCOME.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SROUTCOME.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Outcome and resolution design checks are required after defaulting",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SROUTCOME.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SROUTCOME.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Outcome and resolution checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Outcome and resolution checks produce issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_SERVICE_REQUEST_CHANNEL_TYPES",
+      "task_name": "Manage Service Request Channel Types",
+      "start_node": "SRCHAN.VALIDATE",
+      "nodes": [
+        {
+          "id": "SRCHAN.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SRCHAN.DEFAULTS",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every channel type setup request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRCHAN.DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "SRCHAN.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRCHAN.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A channel-type request needs documented FSM root and audit-field defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRCHAN.LOOKUP",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "SRCHAN.ENFORCE",
+            "missing": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRCHAN.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Channel type standard lookup-code validation is required after documented defaults are applied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRCHAN.ENFORCE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SRCHAN.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRCHAN.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Channel type design checks are required",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRCHAN.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SRCHAN.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Channel type checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Channel type checks produce issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_SERVICE_REQUEST_CONTACT_RELATIONSHIP_TYPES",
+      "task_name": "Manage Service Request Contact Relationship Types",
+      "start_node": "SRCONTACT.VALIDATE",
+      "nodes": [
+        {
+          "id": "SRCONTACT.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SRCONTACT.DEFAULTS",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every contact relationship type setup request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 52
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRCONTACT.DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "SRCONTACT.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRCONTACT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A contact-relationship-type request needs documented FSM root, code, flag, date, tag, and audit-field defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRCONTACT.LOOKUP",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "SRCONTACT.ENFORCE",
+            "missing": "SRCONTACT.ENFORCE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRCONTACT.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Contact relationship type lookup is required after documented defaults",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRCONTACT.ENFORCE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SRCONTACT.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRCONTACT.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Contact relationship type design checks are required after defaulting and lookup validation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRCONTACT.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SRCONTACT.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Contact relationship type checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Contact relationship type checks produce issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_SERVICE_REQUEST_INTERNAL_PRIORITIES",
+      "task_name": "Manage Service Request Internal Priorities",
+      "start_node": "SRPRIO.VALIDATE",
+      "nodes": [
+        {
+          "id": "SRPRIO.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SRPRIO.DEFAULTS",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every internal priority setup request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRPRIO.DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "SRPRIO.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRPRIO.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An internal-priority request needs documented defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRPRIO.LOOKUP",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found_create": "RETURN_ISSUES",
+            "missing_create": "SRPRIO.ENFORCE",
+            "found_update": "SRPRIO.ENFORCE",
+            "missing_update": "RETURN_ISSUES",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRPRIO.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Internal-priority lookup validation is required after documented defaults are applied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRPRIO.ENFORCE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SRPRIO.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRPRIO.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Internal-priority design checks are required after defaulting and lookup validation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRPRIO.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SRPRIO.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Internal priority checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Internal priority checks produce issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_SERVICE_REQUEST_PROBLEM_TYPES",
+      "task_name": "Manage Service Request Problem Types",
+      "start_node": "SRPROB.VALIDATE",
+      "nodes": [
+        {
+          "id": "SRPROB.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SRPROB.DEFAULTS",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every problem type setup request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 51
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRPROB.DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "SRPROB.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRPROB.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A problem-type request needs documented FSM root, code, flag, date, tag, and audit-field defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRPROB.LOOKUP",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "SRPROB.ENFORCE",
+            "missing": "SRPROB.ENFORCE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRPROB.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Problem type lookup is required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRPROB.ENFORCE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SRPROB.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRPROB.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Problem type design checks are required",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 99
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRPROB.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SRPROB.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Problem type checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Problem type checks produce issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_SERVICE_REQUEST_PROFILE_OPTIONS",
+      "task_name": "Manage Service Request Profile Options",
+      "start_node": "SRPROFILE.VALIDATE",
+      "nodes": [
+        {
+          "id": "SRPROFILE.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SRPROFILE.DEFAULTS",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every SR profile option setup request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRPROFILE.DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "SRPROFILE.ENFORCE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRPROFILE.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An existing profile value needs documented definition, level, and value defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRPROFILE.ENFORCE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SRPROFILE.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRPROFILE.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "SR profile option design checks are required after profile contract defaults",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRPROFILE.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SRPROFILE.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Profile option checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Profile option checks produce issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_SR_KNOWLEDGE_PROFILE_OPTIONS",
+      "task_name": "Manage Service Request Knowledge Profile Options",
+      "start_node": "SRKNOW.VALIDATE",
+      "nodes": [
+        {
+          "id": "SRKNOW.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SRKNOW.DEFAULTS",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Knowledge in SR setup request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRKNOW.DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "SRKNOW.ENFORCE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRKNOW.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Knowledge profile value needs documented definition, SITE-level, and value defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRKNOW.ENFORCE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SRKNOW.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRKNOW.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Knowledge profile option design checks are required after profile contract defaults",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 105
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRKNOW.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SRKNOW.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Knowledge profile checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Knowledge profile checks produce issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_MANAGE_SR_SEVERITIES_R13",
+      "task_name": "Manage Service Request Severities",
+      "start_node": "SRSEV.VALIDATE",
+      "nodes": [
+        {
+          "id": "SRSEV.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SRSEV.DEFAULTS",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every severity setup request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRSEV.DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "SRSEV.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRSEV.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A severity request needs documented defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRSEV.LOOKUP",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found_create": "RETURN_ISSUES",
+            "missing_create": "SRSEV.ENFORCE",
+            "found_update": "SRSEV.ENFORCE",
+            "missing_update": "RETURN_ISSUES",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRSEV.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Severity lookup validation is required after documented defaults are applied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRSEV.ENFORCE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SRSEV.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRSEV.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Severity design checks are required after defaulting and lookup validation",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRSEV.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SRSEV.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Severity checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Severity checks produce issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_SERVICE_REQUEST_CATEGORIES",
+      "task_name": "Manage Service Request Categories",
+      "start_node": "SRCAT.VALIDATE",
+      "nodes": [
+        {
+          "id": "SRCAT.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SRCAT.ENFORCE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every category setup request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRCAT.ENFORCE",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SRCAT.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRCAT.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Category hierarchy design checks are required",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 104
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRCAT.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SRCAT.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Category checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Category checks produce issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_SERVICE_REQUEST_SOURCES",
+      "task_name": "Manage Service Request Sources",
+      "start_node": "SRSRC.VALIDATE",
+      "nodes": [
+        {
+          "id": "SRSRC.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SRSRC.DEFAULTS",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every service request source setup request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRSRC.DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "SRSRC.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRSRC.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A service request source needs documented FSM root, code, flag, and audit-field defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRSRC.LOOKUP",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "SRSRC.ENFORCE",
+            "missing": "SRSRC.ENFORCE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRSRC.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Service request source lookup is required",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRSRC.ENFORCE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SRSRC.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRSRC.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Service request source design checks are required",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRSRC.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SRSRC.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Service request source checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Service request source checks produce issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 34
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    },
+    {
+      "task_code": "ORA_SVC_SERVICE_REQUEST_STATUS",
+      "task_name": "Manage Service Request Status Values",
+      "start_node": "SRSTATUS.VALIDATE",
+      "nodes": [
+        {
+          "id": "SRSTATUS.VALIDATE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SRSTATUS.DEFAULTS",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every status value setup request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 53
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRSTATUS.DEFAULTS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "SRSTATUS.LOOKUP",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRSTATUS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A status request needs documented lookup root, lookup-code, audit, and parent-relationship defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRSTATUS.LOOKUP",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "SRSTATUS.ENFORCE",
+            "missing": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRSTATUS.DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Status lookup validation is required after parent-relationship defaults are applied",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRSTATUS.ENFORCE",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SRSTATUS.DONE",
+            "issues": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SRSTATUS.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Status lookup and parent-relationship design checks are required",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SRSTATUS.DONE",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SRSTATUS.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Status checks pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 99,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Status checks produce issues",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

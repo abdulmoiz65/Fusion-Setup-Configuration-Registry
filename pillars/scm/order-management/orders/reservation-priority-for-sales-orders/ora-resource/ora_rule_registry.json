@@ -1,0 +1,321 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_RESERVATION_PRIORITY_FOR_SALES_ORDERS",
+      "task_name": "Reservation Priority for Sales Orders",
+      "start_node": "RESERVATION_PRIORITY.VALIDATE_FSM_PACKAGE",
+      "nodes": [
+        {
+          "id": "RESERVATION_PRIORITY.VALIDATE_FSM_PACKAGE",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid_fsm_package": "RESERVATION_PRIORITY.RESOLVE_ATTRIBUTE",
+            "invalid_fsm_package": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before any FSM import preview for Reservation Priority setup.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RESERVATION_PRIORITY.RESOLVE_ATTRIBUTE",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RESERVATION_PRIORITY.RESOLVE_ORDER_TYPE",
+            "not-applicable": "RESERVATION_PRIORITY.RESOLVE_ORDER_TYPE",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RESERVATION_PRIORITY.VALIDATE_FSM_PACKAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve a supplied Reservation Priority attribute through `ORA_FOM_RESERVE_PRIORITY_ATTR` and persist only its `LookupCode`.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RESERVATION_PRIORITY.RESOLVE_ORDER_TYPE",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RESERVATION_PRIORITY.RESOLVE_DEMAND_CLASS",
+            "not-applicable": "RESERVATION_PRIORITY.RESOLVE_DEMAND_CLASS",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RESERVATION_PRIORITY.RESOLVE_ATTRIBUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Order Type only when it is supplied as a Reservation Priority attribute.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RESERVATION_PRIORITY.RESOLVE_DEMAND_CLASS",
+          "node_type": "step",
+          "sequence": 18,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RESERVATION_PRIORITY.RESOLVE_SALES_CHANNEL",
+            "not-applicable": "RESERVATION_PRIORITY.RESOLVE_SALES_CHANNEL",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RESERVATION_PRIORITY.RESOLVE_ORDER_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Demand Class only when it is supplied as a Reservation Priority attribute.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RESERVATION_PRIORITY.RESOLVE_SALES_CHANNEL",
+          "node_type": "step",
+          "sequence": 19,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RESERVATION_PRIORITY.RESOLVE_CUSTOMER_CLASS",
+            "not-applicable": "RESERVATION_PRIORITY.RESOLVE_CUSTOMER_CLASS",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RESERVATION_PRIORITY.RESOLVE_DEMAND_CLASS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Sales Channel only when it is supplied as a Reservation Priority attribute.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RESERVATION_PRIORITY.RESOLVE_CUSTOMER_CLASS",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RESERVATION_PRIORITY.RESOLVE_SHIPMENT_PRIORITY",
+            "not-applicable": "RESERVATION_PRIORITY.RESOLVE_SHIPMENT_PRIORITY",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RESERVATION_PRIORITY.RESOLVE_SALES_CHANNEL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Customer Class only when it is supplied as a Reservation Priority attribute.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RESERVATION_PRIORITY.RESOLVE_SHIPMENT_PRIORITY",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RESERVATION_PRIORITY.RESOLVE_CUSTOMER",
+            "not-applicable": "RESERVATION_PRIORITY.RESOLVE_CUSTOMER",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RESERVATION_PRIORITY.RESOLVE_CUSTOMER_CLASS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Shipment Priority only when it is supplied as a Reservation Priority attribute.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RESERVATION_PRIORITY.RESOLVE_CUSTOMER",
+          "node_type": "step",
+          "sequence": 22,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "RESERVATION_PRIORITY.FSM_IMPORT_PREVIEW",
+            "not-applicable": "RESERVATION_PRIORITY.FSM_IMPORT_PREVIEW",
+            "blocked": "RETURN_ISSUES",
+            "failure": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RESERVATION_PRIORITY.RESOLVE_SHIPMENT_PRIORITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve Customer only when it is supplied as a Reservation Priority attribute and persist only its PartyId.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RESERVATION_PRIORITY.FSM_IMPORT_PREVIEW",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "preview_ready": "RESERVATION_PRIORITY.VALIDATE_FSM_MIGRATION",
+            "preview_or_approval_missing": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RESERVATION_PRIORITY.RESOLVE_CUSTOMER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After the immutable FSM package passes field validation and attribute lookup resolution, and before a Fusion import.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RESERVATION_PRIORITY.VALIDATE_FSM_MIGRATION",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compatible_migration": "RETURN_SUCCESS",
+            "incompatible_migration": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RESERVATION_PRIORITY.FSM_IMPORT_PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An FSM import is requested for Reservation Priority page setup.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 20
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RESERVATION_PRIORITY.VALIDATE_FSM_MIGRATION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The FSM package and migration compatibility checks passed.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "The FSM package field contract, preview, approval, or migration compatibility check fails.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 49
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "BEN_MANAGE_BENEFIT_PROGRAMS_DETAILS",
+      "task_name": "Benefit Programs",
+      "start_node": "BEN_PLAN_CONFIG.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "BEN_PLAN_CONFIG.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {"valid": "BEN_PLAN_CONFIG.CONFIRM_DEPENDENCIES", "invalid": "BEN_PLAN_CONFIG.FAILED"},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before preview or execution.",
+          "source": {"file": "ora_input_validation.md", "anchor": "task-nodes", "line": 7},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "BEN_PLAN_CONFIG.CONFIRM_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {"ready": "BEN_PLAN_CONFIG.VERIFY_MAPPINGS", "blocked": "BEN_PLAN_CONFIG.FAILED"},
+          "prerequisites": ["BEN_PLAN_CONFIG.VALIDATE_INPUT"],
+          "on_failure": "stop",
+          "applies_when": "After input validation.",
+          "source": {"file": "ora_dependency_readiness.md", "anchor": "task-nodes", "line": 7},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "BEN_PLAN_CONFIG.VERIFY_MAPPINGS",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {"resolved": "BEN_PLAN_CONFIG.ENFORCE_DESIGN", "blocked": "BEN_PLAN_CONFIG.FAILED"},
+          "prerequisites": ["BEN_PLAN_CONFIG.CONFIRM_DEPENDENCIES"],
+          "on_failure": "stop",
+          "applies_when": "During post-action REST verification.",
+          "source": {"file": "ora_reference_lookups.md", "anchor": "task-nodes", "line": 8},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "BEN_PLAN_CONFIG.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {"passed": "BEN_PLAN_CONFIG.EXECUTION_GATE", "blocked": "BEN_PLAN_CONFIG.FAILED"},
+          "prerequisites": ["BEN_PLAN_CONFIG.VERIFY_MAPPINGS"],
+          "on_failure": "stop",
+          "applies_when": "Before approval.",
+          "source": {"file": "ora_design_enforcement.md", "anchor": "task-nodes", "line": 7},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "BEN_PLAN_CONFIG.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {"approved": "BEN_PLAN_CONFIG.READY_FOR_RUNBOOK", "approval_missing": "BEN_PLAN_CONFIG.AWAITING_APPROVAL"},
+          "prerequisites": ["BEN_PLAN_CONFIG.ENFORCE_DESIGN"],
+          "on_failure": "stop",
+          "applies_when": "Immediately before the first Fusion mutation.",
+          "source": {"file": "ora_error_handling.md", "anchor": "task-nodes", "line": 8},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "BEN_PLAN_CONFIG.READY_FOR_RUNBOOK",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": ["BEN_PLAN_CONFIG.EXECUTION_GATE"],
+          "on_failure": "stop",
+          "applies_when": "Preview approval is valid.",
+          "source": {"file": "ora_error_handling.md", "anchor": "task-nodes", "line": 9},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "BEN_PLAN_CONFIG.AWAITING_APPROVAL",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": ["BEN_PLAN_CONFIG.EXECUTION_GATE"],
+          "on_failure": "stop",
+          "applies_when": "Approval has not been supplied.",
+          "source": {"file": "ora_error_handling.md", "anchor": "task-nodes", "line": 10},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        },
+        {
+          "id": "BEN_PLAN_CONFIG.FAILED",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation, approval, REST, ESS, mapping, or final-status gate fails.",
+          "source": {"file": "ora_error_handling.md", "anchor": "task-nodes", "line": 11},
+          "readiness": {"status": "ready", "blocking_reasons": []}
+        }
+      ],
+      "readiness": {"status": "ready", "blocking_reasons": []}
+    }
+  ]
+}

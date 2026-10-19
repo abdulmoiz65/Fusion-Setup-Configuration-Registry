@@ -1,0 +1,56 @@
+{
+  "description": "Portable Business Rules page and runtime exceptions. Apply only when the target page and release evidence match.",
+  "exceptions": [
+    {
+      "id": "position-valid-grades-child-collection",
+      "pages": ["RequestNewPosition"],
+      "operations": ["create"],
+      "confidence": "Observed",
+      "releaseObserved": "26B",
+      "from": "$fields['positionsV2-validGrades']",
+      "to": "$fields.positionsV2.validGrades",
+      "containerType": "array",
+      "reason": "The generated section root is not the Business Rules expression root; validGrades is a true child collection of positionsV2."
+    },
+    {
+      "id": "change-salary-position-dff",
+      "pages": ["ChangeSalary"],
+      "operations": ["update"],
+      "confidence": "Observed",
+      "releaseObserved": "26B",
+      "avoid": "$fields.positionsV2.positionsDFF",
+      "candidate": "$fields.assignment.PositionsFlex.positionsDFF",
+      "reason": "Change Salary can expose Position DFF through the assignment Position Flexfield branch. Verify the exact segment path before use."
+    },
+    {
+      "id": "single-cardinality-array-normalization",
+      "pages": ["Multiple"],
+      "operations": ["varies"],
+      "applicability": "Discovery hint only until an exact-page report or focused observation matches.",
+      "confidence": "Observed",
+      "releaseObserved": "26B",
+      "pattern": "Normalize a runtime one-row array to its first record when the page model describes an object.",
+      "reason": "Some object-shaped children render as one-row arrays. Do not loop unless the child is a true collection."
+    },
+    {
+      "id": "grades-lov-flow-shape",
+      "pages": ["AddPerson-style flows", "Employment-change flows"],
+      "operations": ["create", "update"],
+      "applicability": "Family-level discovery hint; never direct authoring proof for an exact page.",
+      "confidence": "Observed",
+      "releaseObserved": "26B",
+      "pattern": "GradesLov can be an array in Add Person-style flows and an object in employment-change flows.",
+      "reason": "Normalize the materialized value before reading the grade record."
+    },
+    {
+      "id": "promote-action-date",
+      "pages": ["Promote"],
+      "operations": ["update"],
+      "confidence": "Observed",
+      "releaseObserved": "26B",
+      "field": "$fields.employmentWhenAndWhy.ActionDate",
+      "avoid": "$fields.employmentWhenAndWhy.ProposedStartDate",
+      "reason": "Promote date rules use Action Date in the observed page model. Revalidate on the target release."
+    }
+  ]
+}

@@ -1,0 +1,230 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "POZ_SPECIFY_SUPPLIER_NEWS_CONTENT",
+      "task_name": "Specify Supplier News Content",
+      "start_node": "POZ.SNC.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "POZ.SNC.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "POZ.SNC.APPLY_NO_CHANGE_DEFAULT",
+            "invalid": "POZ.SNC.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before Data Loader REST preparation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 22
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POZ.SNC.APPLY_NO_CHANGE_DEFAULT",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "POZ.SNC.LOOKUP_CURRENT_NEWS"
+          },
+          "prerequisites": [
+            "POZ.SNC.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After input validation",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 13
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POZ.SNC.LOOKUP_CURRENT_NEWS",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "POZ.SNC.ENFORCE_DATALOADER_ROUTE",
+            "not_found": "POZ.SNC.INITIALIZE_GATE",
+            "ambiguous": "POZ.SNC.RETURN_ISSUES",
+            "failure": "POZ.SNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "POZ.SNC.APPLY_NO_CHANGE_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before initialization or a supplier news content update.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POZ.SNC.ENFORCE_DATALOADER_ROUTE",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "POZ.SNC.DATALOADER_GATE",
+            "blocked": "POZ.SNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "POZ.SNC.LOOKUP_CURRENT_NEWS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before the task is handed off for import",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POZ.SNC.INITIALIZE_GATE",
+          "node_type": "step",
+          "sequence": 45,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "POZ.SNC.INITIALIZATION_READY",
+            "blocked": "POZ.SNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "POZ.SNC.LOOKUP_CURRENT_NEWS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before the supplierNewsContentInitializeSetup Data Loader REST POST handoff for a missing row",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POZ.SNC.DATALOADER_GATE",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "POZ.SNC.DATALOADER_READY",
+            "blocked": "POZ.SNC.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "POZ.SNC.ENFORCE_DATALOADER_ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before routing the task for import",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POZ.SNC.INITIALIZATION_READY",
+          "node_type": "terminal",
+          "sequence": 55,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "POZ.SNC.INITIALIZE_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The approved missing-row initialization handoff is ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POZ.SNC.DATALOADER_READY",
+          "node_type": "terminal",
+          "sequence": 60,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "POZ.SNC.DATALOADER_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Data Loader REST handoff is ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "POZ.SNC.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Validation, route enforcement, or handoff readiness fails",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

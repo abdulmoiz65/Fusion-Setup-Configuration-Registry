@@ -1,0 +1,274 @@
+{
+  "schemaVersion": "ap-financials-option-validation-v1",
+  "entities": {
+    "AP_FINANCIAL_SYS_PARAM": {
+      "additionalRestResolvers": [
+        "resolve_reference_set",
+        "resolve_bill_to_location",
+        "resolve_conversion_rate_type",
+        "resolve_vat_country"
+      ],
+      "receiptRequiredValues": {
+        "resolve_reference_set": ["SetId"]
+      },
+      "receiptBindings": {
+        "validate_account_segments_read_only": {
+          "ledgerName": {
+            "field": "SOBName"
+          },
+          "dynamicInsertion": {
+            "constant": "No"
+          }
+        },
+        "resolve_reference_set": {
+          "returnedSetCode": {
+            "field": "$blocked"
+          }
+        },
+        "resolve_bill_to_location": {
+          "returnedLocationCode": {
+            "field": "$blocked"
+          },
+          "setCode": {
+            "field": "SetCode"
+          },
+          "effectiveStartDate": {
+            "field": "EffectiveStartDate"
+          },
+          "effectiveEndDate": {
+            "field": "EffectiveEndDate"
+          },
+          "activeLocation": {
+            "constant": "True"
+          },
+          "billToSite": {
+            "constant": "True"
+          }
+        },
+        "resolve_conversion_rate_type": {
+          "userConversionType": {
+            "field": "$blocked"
+          }
+        },
+        "resolve_vat_country": {
+          "territoryCode": {
+            "field": "$blocked"
+          },
+          "enabledFlag": {
+            "constant": "Y"
+          },
+          "obsoleteFlag": {
+            "constant": "N"
+          }
+        }
+      },
+      "buContext": {
+        "resolver": "resolve_bu_context_from_name",
+        "businessUnitField": "BuName",
+        "enterpriseIdField": "EnterpriseId",
+        "ledgerNameField": "SOBName"
+      },
+      "fieldValidation": {
+        "exactCodeFields": ["ExpenseAccrualCode", "LiabilityPostLookupCode"],
+        "maxLengths": {
+          "BuyingCompanyIdentifier": 10,
+          "VatRegistrationNum": 20,
+          "VatCountryCode": 15,
+          "ExpenseAccrualCode": 25,
+          "LiabilityPostLookupCode": 25,
+          "PaymentMethodLookupCode": 25,
+          "UserDefinedVendorNumCode": 25,
+          "AlwaysTakeDiscFlag": 1,
+          "PayDateBasisLookupCode": 25,
+          "InvoiceCurrencyCode": 15,
+          "PaymentCurrencyCode": 15,
+          "ReqEncumbranceFlag": 1,
+          "PurchEncumbranceFlag": 1,
+          "ManualVendorNumType": 25,
+          "TermsDateBasis": 25,
+          "HoldUnmatchedInvoicesFlag": 1,
+          "ExclusivePaymentFlag": 1,
+          "BankChargeBearer": 1,
+          "MatchOption": 25,
+          "NrTaxRounding": 30,
+          "MakeRateMandatoryPmtFlag": 1,
+          "UserConversionRateType": 30,
+          "UserDefaultPmtExchangeRateType": 30
+        },
+        "integerMaxDigits": {
+          "FuturePeriodLimit": 3,
+          "ReceiptAcceptanceDays": 18
+        },
+        "omitBlankOnCreate": {
+          "PaymentMethodLookupCode": "Create_Financial_Option initializes this optional field to NULL; omit a blank create input rather than treat it as a requested raw code.",
+          "UserDefinedVendorNumCode": "Create_Financial_Option initializes this optional field to NULL; omit a blank create input rather than treat it as a requested raw code.",
+          "VendorNumStartNum": "Create_Financial_Option initializes this optional field to NULL; omit a blank create input rather than treat it as a requested raw number.",
+          "FuturePeriodLimit": "Create_Financial_Option initializes this optional field to NULL; omit a blank create input rather than infer a numeric range.",
+          "ManualVendorNumType": "Create_Financial_Option initializes this optional field to NULL; omit a blank create input rather than infer a supplier-numbering code.",
+          "ReceiptAcceptanceDays": "Create_Financial_Option initializes this optional field to NULL; omit a blank create input rather than infer a business range.",
+          "TermsDateBasis": "Create_Financial_Option initializes this optional field to NULL; omit a blank create input rather than infer a lookup code."
+        },
+        "maxLengthPrefixes": {
+          "GlobalAttribute": 150
+        },
+        "derivedFields": {
+          "AutomaticOffsetsFlag": "Derived from LiabilityPostLookupCode by the entity; do not supply it directly.",
+          "AutomaticOffsetsChangeFlag": "Derived from LiabilityPostLookupCode by the entity; do not supply it directly."
+        },
+        "conditionalBlankRules": [
+          {
+            "conditionField": "GaplessInvNumFlag",
+            "conditionValue": "N",
+            "dependentField": "BuyingCompanyIdentifier",
+            "requiredConditionValueForNonblank": "Y",
+            "defaultConditionValueForCreate": "N",
+            "requireExplicitClearOnUpdate": true
+          }
+        ],
+        "minimalSanityOnly": {
+          "reason": "The product import source exposes no field-specific resolver, list, fixed-enumeration, range, or cross-field validator for these fields. Apply only the declared CSV type, maximum length, numeric precision, and date parsing rules.",
+          "fields": [
+            "PaymentMethodLookupCode",
+            "UserDefinedVendorNumCode",
+            "VendorNumStartNum",
+            "AlwaysTakeDiscFlag",
+            "PayDateBasisLookupCode",
+            "InvoiceCurrencyCode",
+            "PaymentCurrencyCode",
+            "FuturePeriodLimit",
+            "ReqEncumbranceFlag",
+            "PurchEncumbranceFlag",
+            "ManualVendorNumType",
+            "ReceiptAcceptanceDays",
+            "TermsDateBasis",
+            "HoldUnmatchedInvoicesFlag",
+            "ExclusivePaymentFlag",
+            "VatRegistrationNum",
+            "BankChargeBearer",
+            "MatchOption",
+            "NrTaxRounding",
+            "MakeRateMandatoryPmtFlag",
+            "TransEffectiveStartDate",
+            "TransEffectiveEndDate"
+          ],
+          "fieldPrefixes": [
+            "GlobalAttribute"
+          ]
+        }
+      },
+      "firstTimeUiDefaultPlan": {
+        "mode": "report_only",
+        "candidatePolicy": "never_auto_populate_reference_integration_accounts",
+        "preconditions": [
+          "OrgId is non-null.",
+          "The user has MOAC access to the BU.",
+          "Payables Invoicing is enabled for the BU.",
+          "No existing Financials Options row exists for the OrgId."
+        ],
+        "fixedEntityDefaults": [
+          {
+            "entityAttribute": "GaplessInvNumFlag",
+            "defaultValue": "N",
+            "csvField": "GaplessInvNumFlag",
+            "csvBehavior": "report_only_user_value_or_entity_default"
+          },
+          {
+            "entityAttribute": "ExpenseAccrualCode",
+            "defaultValue": "RECEIPT",
+            "csvField": "ExpenseAccrualCode",
+            "csvBehavior": "report_only_user_value_or_entity_default"
+          },
+          {
+            "entityAttribute": "DefaultExchangeRateType",
+            "defaultValue": "Corporate",
+            "csvField": null,
+            "csvBehavior": "internal_only_do_not_infer_UserConversionRateType"
+          },
+          {
+            "entityAttribute": "LiabilityPostLookupCode",
+            "defaultValue": "NONE",
+            "csvField": "LiabilityPostLookupCode",
+            "csvBehavior": "report_only_user_value_or_entity_default"
+          },
+          {
+            "entityAttribute": "MakeRateMandatoryFlag",
+            "defaultValue": "Y",
+            "csvField": "MakeRateMandatoryFlag",
+            "csvBehavior": "report_only_user_value_or_entity_default"
+          },
+          {
+            "entityAttribute": "DefaultPmtExchangeRateType",
+            "defaultValue": "Corporate",
+            "csvField": null,
+            "csvBehavior": "internal_only_do_not_infer_UserDefaultPmtExchangeRateType"
+          },
+          {
+            "entityAttribute": "MakeRateMandatoryPmtFlag",
+            "defaultValue": "Y",
+            "csvField": "MakeRateMandatoryPmtFlag",
+            "csvBehavior": "report_only_user_value_or_entity_default"
+          }
+        ],
+        "referenceIntegrationAccounts": [
+          {
+            "defaultAccountName": "Liability - Accounts Payable",
+            "entityAttribute": "AcctsPayCodeCombinationId",
+            "csvField": "AcctsPaySegments",
+            "fsmCreateRequirement": "required",
+            "candidatePolicy": "never_auto_populate"
+          },
+          {
+            "defaultAccountName": "Asset - Prepayments",
+            "entityAttribute": "PrepayCodeCombinationId",
+            "csvField": "PrepaySegments",
+            "fsmCreateRequirement": "required",
+            "candidatePolicy": "never_auto_populate"
+          },
+          {
+            "defaultAccountName": "Expense - Conversion Rate Variance Gain/Loss",
+            "entityAttribute": "RateVarGainCcid",
+            "csvField": "RateVarGainSegments",
+            "fsmCreateRequirement": "required",
+            "candidatePolicy": "never_auto_populate"
+          },
+          {
+            "defaultAccountName": "Expense - Conversion Rate Variance Gain/Loss",
+            "entityAttribute": "RateVarLossCcid",
+            "csvField": "RateVarLossSegments",
+            "fsmCreateRequirement": "required",
+            "candidatePolicy": "never_auto_populate"
+          },
+          {
+            "defaultAccountName": "Expense - Discount Taken",
+            "entityAttribute": "DiscTakenCodeCombinationId",
+            "csvField": "DiscTakenSegments",
+            "fsmCreateRequirement": "required",
+            "candidatePolicy": "never_auto_populate"
+          },
+          {
+            "defaultAccountName": "Expense - Miscellaneous Expenses",
+            "entityAttribute": "MiscChargeCcid",
+            "csvField": "MiscChargeSegments",
+            "fsmCreateRequirement": "optional",
+            "candidatePolicy": "never_auto_populate"
+          },
+          {
+            "defaultAccountName": "Expense - Realized Gain/Loss on Foreign Currency Conversions",
+            "entityAttribute": "GainCodeCombinationId",
+            "csvField": "GainSegments",
+            "fsmCreateRequirement": "required",
+            "candidatePolicy": "never_auto_populate"
+          },
+          {
+            "defaultAccountName": "Expense - Realized Gain/Loss on Foreign Currency Conversions",
+            "entityAttribute": "LossCodeCombinationId",
+            "csvField": "LossSegments",
+            "fsmCreateRequirement": "required",
+            "candidatePolicy": "never_auto_populate"
+          }
+        ],
+        "lookupOutcome": "The UI uses the first DefaultAccountPVO CodeCombinationId for the default-account name and BU ID, or assigns null when no matching row exists."
+      }
+    }
+  }
+}

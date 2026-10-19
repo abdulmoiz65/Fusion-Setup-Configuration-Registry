@@ -1,0 +1,425 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "FA_MANAGE_FISCAL_YEAR",
+      "task_name": "Manage Fiscal Years",
+      "start_node": "FY.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "FY.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "FY.RESOLVE_DEPENDENCIES",
+            "invalid": "FY.HANDLE_INPUT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every request.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 100
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.RESOLVE_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 20,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "FY.LOOKUP_EXISTING",
+            "blocked": "FY.HANDLE_DEPENDENCY"
+          },
+          "prerequisites": [
+            "FY.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Valid input; resolve ledger evidence or validate the user-defined cycle, and obtain Oldest DPIS before applying defaults.",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.LOOKUP_EXISTING",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "checked_or_not_applicable": "FY.LOOKUP_EQUIVALENT",
+            "unresolved": "FY.HANDLE_LOOKUP"
+          },
+          "prerequisites": [
+            "FY.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "When a Fiscal Year Name was supplied, check its exact existing state after cycle and coverage resolution; otherwise record not applicable.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 173
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.LOOKUP_EQUIVALENT",
+          "node_type": "decision",
+          "sequence": 35,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FY.DECIDE_EQUIVALENT",
+            "blocked": "FY.HANDLE_LOOKUP"
+          },
+          "prerequisites": [
+            "FY.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Identify equivalent existing Fixed Assets fiscal years after exact-name status is available and before the reuse-or-create decision, preview, or package preparation.",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 174
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.DECIDE_EQUIVALENT",
+          "node_type": "decision",
+          "sequence": 40,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "reuse": "FY.DONE_EXISTS",
+            "create_new": "FY.VALIDATE_DPIS_CONTAINMENT",
+            "unresolved": "FY.HANDLE_DEPENDENCY"
+          },
+          "prerequisites": [
+            "FY.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Equivalent fiscal-year results and the supplied candidate name's exact status, when a name was supplied, are available; user must choose reuse or create-new.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 101
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.VALIDATE_DPIS_CONTAINMENT",
+          "node_type": "decision",
+          "sequence": 45,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "FY.APPLY_DEFAULTS",
+            "invalid": "FY.HANDLE_INPUT"
+          },
+          "prerequisites": [
+            "FY.DECIDE_EQUIVALENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "User selected create-new; require the first Fiscal Year Date interval to contain Oldest DPIS.",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "FY.ENFORCE_DESIGN",
+            "blocked": "FY.HANDLE_DEPENDENCY"
+          },
+          "prerequisites": [
+            "FY.VALIDATE_DPIS_CONTAINMENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "User selected create-new and the pre-decision exact-name check found no existing fiscal year.",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 70,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "FY.IMPORT_GATE",
+            "blocked": "FY.HANDLE_DESIGN"
+          },
+          "prerequisites": [
+            "FY.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Defaults and lookup results are available; validate the design and render the required Design Preview.",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.IMPORT_GATE",
+          "node_type": "decision",
+          "sequence": 80,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "FY.HANDED_OFF_TO_PARENT",
+            "approval_missing": "FY.HANDLE_APPROVAL"
+          },
+          "prerequisites": [
+            "FY.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The Final ZIP Preview identifies one validated immutable package for live import.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.HANDLE_INPUT",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "FY.ISSUES"
+          },
+          "prerequisites": [
+            "FY.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input is invalid.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.HANDLE_DEPENDENCY",
+          "node_type": "step",
+          "sequence": 100,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "FY.ISSUES"
+          },
+          "prerequisites": [
+            "FY.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A prerequisite or required decision is unresolved.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 76
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.HANDLE_LOOKUP",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "FY.ISSUES"
+          },
+          "prerequisites": [
+            "FY.LOOKUP_EXISTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Lookup evidence is missing, different, or ambiguous.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.HANDLE_DESIGN",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "FY.ISSUES"
+          },
+          "prerequisites": [
+            "FY.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A design rule blocks the request.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.HANDLE_APPROVAL",
+          "node_type": "step",
+          "sequence": 130,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "FY.ISSUES"
+          },
+          "prerequisites": [
+            "FY.IMPORT_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Import approval is missing.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.HANDED_OFF_TO_PARENT",
+          "node_type": "terminal",
+          "sequence": 170,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FY.IMPORT_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Fiscal Years import is accepted \u2014 pending parent verification.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.DONE_EXISTS",
+          "node_type": "terminal",
+          "sequence": 180,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FY.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Matching fiscal year already exists or user selected verified reuse.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FY.ISSUES",
+          "node_type": "terminal",
+          "sequence": 190,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any validation, lookup, dependency, design, or approval issue.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 82
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

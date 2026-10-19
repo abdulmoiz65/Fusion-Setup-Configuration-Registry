@@ -1,0 +1,39 @@
+{
+  "ade_label": "FUSIONAPPS_PT.V2MIBHCMBRONZE_LINUX.X64_260902.1104.S",
+  "catalog_kind": "oracle-seeded-profile-content-items",
+  "files": {
+    "content-items.csv": {
+      "columns": [
+        "ContextName",
+        "ContentItemCode",
+        "Name",
+        "ContentSupplierCode",
+        "DateFrom",
+        "DateTo"
+      ],
+      "row_count": 579,
+      "sha256": "928743e6fb5fc6010044c440cdea5ecf6ff490e17c4dfcaf2f8f00702c68cbbe"
+    }
+  },
+  "fusion_release": "26C",
+  "generated_on": "2026-09-03",
+  "key_fields": {
+    "content-items.csv": [
+      "ContextName",
+      "ContentItemCode"
+    ]
+  },
+  "sanitization": "Retains only provider keys and business fields required for seeded evidence resolution; excludes database identifiers, who columns, customer data, and credentials.",
+  "schema_version": "1.0",
+  "source_files": [
+    {
+      "path": "fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileContentLibrary/ContentItemSD.xml",
+      "sha256": "03587f7ec213651c80dcf7885576b6423e3a6823a0138ba0a61ef31ade9753cc"
+    },
+    {
+      "path": "fusionapps/hcm/hrt/db/data/HcmProfileTop/HcmProfileContentLibrary/ContentTypeSD.xml",
+      "sha256": "9203aa7a6fe59f0f06c7a883f83ba2b9ca9552a5a5ae29b34254eb644a09315b"
+    }
+  ],
+  "usage_boundary": "This identity catalog may prove seeded key presence or absence. It is not a provider-row template and must never be imported."
+}

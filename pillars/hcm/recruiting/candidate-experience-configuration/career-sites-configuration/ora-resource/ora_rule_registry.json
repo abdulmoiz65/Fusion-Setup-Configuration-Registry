@@ -1,0 +1,952 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_IRC_CONFIGURE_CAREER_SITE",
+      "task_name": "Career Sites Configuration",
+      "start_node": "CSC.SELECT_CREATE_MODE",
+      "nodes": [
+        {
+          "id": "CSC.SELECT_CREATE_MODE",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "mode_selection",
+          "execution_route": "local",
+          "transitions": {
+            "combined": "CSC.CHECK_SITE_CODE_AVAILABILITY",
+            "default": "CSC.CHECK_SITE_CODE_AVAILABILITY",
+            "cookie_consent_patch": "CSC.RESOLVE_MAIN_COOKIE_PATCH_TARGET",
+            "list_languages": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+            "add_language": "CSC.RESOLVE_MAIN_LANGUAGE_PARENT",
+            "change_default_language": "CSC.RESOLVE_MAIN_PARENT_PATCH_TARGET",
+            "activate": "CSC.RESOLVE_MAIN_PARENT_PATCH_TARGET",
+            "inactivate": "CSC.RESOLVE_MAIN_PARENT_PATCH_TARGET",
+            "go_to_site": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+            "show_site_summary": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+            "show_effective_filters": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+            "show_cookie_consent": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+            "show_talent_community": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+            "show_events": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+            "add_filter": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+            "add_job_location": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+            "add_organization_filter": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+            "add_job_category_filter": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+            "add_job_function_filter": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+            "add_recruiting_type_filter": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+            "show_available_settings": "CSC.RESOLVE_SETTINGS_GLOBAL_CAPABILITIES",
+            "list_settings": "CSC.RESOLVE_SETTINGS_GLOBAL_CAPABILITIES",
+            "update_settings": "CSC.RESOLVE_SETTINGS_GLOBAL_CAPABILITIES",
+            "configure_settings": "CSC.RESOLVE_SETTINGS_GLOBAL_CAPABILITIES",
+            "update_talent_community": "CSC.RESOLVE_SETTINGS_GLOBAL_CAPABILITIES",
+            "configure_talent_community": "CSC.RESOLVE_SETTINGS_GLOBAL_CAPABILITIES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Use the combined create workflow for a new site; use the named existing-site modes only for Cookie Consent, Languages, default-language, status, Events state, Site Editor Copy Link, Filters, Settings, or Talent Community Sign-Up",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "combined-create"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.RESOLVE_SETTINGS_GLOBAL_CAPABILITIES",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+            "unavailable": "CSC.RESOLVE_EXISTING_PARENT_OPERATION"
+          },
+          "prerequisites": [
+            "CSC.SELECT_CREATE_MODE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Before Settings discovery/update or Talent Community Sign-Up update, read global capabilities only through the declared read-only route; continue ordinary Settings with globally gated controls marked unavailable when the read cannot complete, but block Talent Community unless ORA_IRC_TC_OPTIN_ENABLED is enabled",
+          "source": {
+            "file": "ora_settings.md",
+            "anchor": "global-capability-read"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.RESOLVE_EXISTING_PARENT_OPERATION",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "read_only_ready": "CSC.PARENT_OPERATION_COMPLETE",
+            "write_ready": "CSC.VALIDATE_PARENT_OPERATION_CONTRACT",
+            "filter_ready": "CSC.RESOLVE_EXISTING_FILTER_LOVS",
+            "unresolved": "CSC.HANDLE_ISSUE",
+            "ambiguous": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.SELECT_CREATE_MODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before an existing-site summary, Languages, effective Filters, Cookie Consent state, Talent Community state, Events state, default-language, status, Site Editor Copy Link, standard Filter addition, persisted-parent Settings discovery/update, or Talent Community Sign-Up update",
+          "source": {
+            "file": "ora_parent_operations.md",
+            "anchor": "preconditions"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.RESOLVE_EXISTING_FILTER_LOVS",
+          "node_type": "step",
+          "sequence": 12,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSC.VALIDATE_PARENT_OPERATION_CONTRACT",
+            "unresolved": "CSC.HANDLE_ISSUE",
+            "ambiguous": "CSC.HANDLE_ISSUE",
+            "request_defect": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.RESOLVE_EXISTING_PARENT_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before an existing-site standard Filter POST: resolve each requested Filter through its live type-specific LOV and retain the redacted request receipt before contract validation",
+          "source": {
+            "file": "ora_filters.md",
+            "anchor": "lov-resolution-and-input-validation"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.VALIDATE_PARENT_OPERATION_CONTRACT",
+          "node_type": "step",
+          "sequence": 13,
+          "action_type": "validate_registration",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "CSC.PREPARE_PARENT_OPERATION_ARCHIVE",
+            "invalid": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.RESOLVE_EXISTING_PARENT_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a language, standard Filters, Settings, or Talent Community child POST/PATCH, or parent default-language/status PATCH",
+          "source": {
+            "file": "ora_parent_operations.md",
+            "anchor": "archive-rules"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.PREPARE_PARENT_OPERATION_ARCHIVE",
+          "node_type": "step",
+          "sequence": 14,
+          "action_type": "prepare_data_loader_archive",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "CSC.PARENT_OPERATION_APPROVAL_GATE",
+            "invalid": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.VALIDATE_PARENT_OPERATION_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Preparing one operation-specific immutable archive, including a standard Filters, Settings, or Talent Community child POST/PATCH",
+          "source": {
+            "file": "ora_parent_operations.md",
+            "anchor": "archive-rules"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.PARENT_OPERATION_APPROVAL_GATE",
+          "node_type": "approval_gate",
+          "sequence": 15,
+          "action_type": "data_loader_approval",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "CSC.CONFIRM_PARENT_OPERATION_LOAD",
+            "declined": "CSC.BLOCKED"
+          },
+          "prerequisites": [
+            "CSC.PREPARE_PARENT_OPERATION_ARCHIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Immediately before language/default-language/status/Filters/Settings/Talent Community Data Loader submission",
+          "source": {
+            "file": "ora_parent_operations.md",
+            "anchor": "archive-rules"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.CONFIRM_PARENT_OPERATION_LOAD",
+          "node_type": "step",
+          "sequence": 18,
+          "action_type": "verify_data_loader_result",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "succeeded": "CSC.VERIFY_PARENT_OPERATION",
+            "failed": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.PARENT_OPERATION_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After the approved existing-site Data Loader operation",
+          "source": {
+            "file": "ora_parent_operations.md",
+            "anchor": "archive-rules"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.VERIFY_PARENT_OPERATION",
+          "node_type": "step",
+          "sequence": 19,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "CSC.PARENT_OPERATION_COMPLETE",
+            "verification_failed": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.CONFIRM_PARENT_OPERATION_LOAD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After a language add, standard Filter add, Settings update, Talent Community update, default-language change, activation, or inactivation",
+          "source": {
+            "file": "ora_parent_operations.md",
+            "anchor": "archive-rules"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.CHECK_SITE_CODE_AVAILABILITY",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "available": "CSC.RESOLVE_DEFAULT_LANGUAGE",
+            "exists": "CSC.HANDLE_ISSUE",
+            "ambiguous": "CSC.HANDLE_ISSUE",
+            "unresolved": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before create archive generation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "live-lookups"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.RESOLVE_DEFAULT_LANGUAGE",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSC.RESOLVE_NEXT_SEQUENCE",
+            "unresolved": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.CHECK_SITE_CODE_AVAILABILITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before create archive generation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "live-lookups"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.RESOLVE_NEXT_SEQUENCE",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSC.RESOLVE_CREATE_FILTER_LOVS",
+            "unresolved": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.RESOLVE_DEFAULT_LANGUAGE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before create archive generation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "live-lookups"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.RESOLVE_CREATE_FILTER_LOVS",
+          "node_type": "step",
+          "sequence": 42,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSC.SELECT_ARCHIVE_MODE",
+            "not_requested": "CSC.SELECT_ARCHIVE_MODE",
+            "unresolved": "CSC.HANDLE_ISSUE",
+            "ambiguous": "CSC.HANDLE_ISSUE",
+            "request_defect": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.RESOLVE_NEXT_SEQUENCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before any create archive that requests standard Filters: resolve each requested Filter through its live type-specific LOV and retain the redacted request receipt; use not_requested only when no Filters were requested",
+          "source": {
+            "file": "ora_filters.md",
+            "anchor": "lov-resolution-and-input-validation"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.SELECT_ARCHIVE_MODE",
+          "node_type": "decision",
+          "sequence": 45,
+          "action_type": "mode_selection",
+          "execution_route": "local",
+          "transitions": {
+            "combined": "CSC.PREPARE_MAIN_LANGUAGES_COOKIE_ARCHIVE",
+            "default": "CSC.PREPARE_MAIN_LANGUAGES_COOKIE_ARCHIVE"
+          },
+          "prerequisites": [
+            "CSC.RESOLVE_CREATE_FILTER_LOVS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Prepare the supported combined create archive",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "combined-create"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.RESOLVE_MAIN_PARENT_PATCH_TARGET",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSC.PREPARE_MAIN_PARENT_PATCH_ARCHIVE",
+            "idempotent_noop": "CSC.PARENT_OPERATION_COMPLETE",
+            "unresolved": "CSC.HANDLE_ISSUE",
+            "ambiguous": "CSC.HANDLE_ISSUE",
+            "invalid": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.SELECT_CREATE_MODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a default-language or status parent PATCH",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "parent-patch"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.PREPARE_MAIN_PARENT_PATCH_ARCHIVE",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "prepare_data_loader_archive",
+          "execution_route": "core-data-loader",
+          "transitions": {
+            "prepared": "CSC.MAIN_PARENT_PATCH_APPROVAL_GATE",
+            "invalid": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.RESOLVE_MAIN_PARENT_PATCH_TARGET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Prepare one parent-only PATCH archive",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "parent-patch"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.MAIN_PARENT_PATCH_APPROVAL_GATE",
+          "node_type": "approval_gate",
+          "sequence": 49,
+          "action_type": "data_loader_approval",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "CSC.CONFIRM_MAIN_PARENT_PATCH_LOAD",
+            "declined": "CSC.BLOCKED"
+          },
+          "prerequisites": [
+            "CSC.PREPARE_MAIN_PARENT_PATCH_ARCHIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Immediately before a parent PATCH archive is submitted",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "parent-patch"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.CONFIRM_MAIN_PARENT_PATCH_LOAD",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "verify_data_loader_result",
+          "execution_route": "core-data-loader",
+          "transitions": {
+            "succeeded": "CSC.VERIFY_MAIN_PARENT_PATCH",
+            "failed": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.MAIN_PARENT_PATCH_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After an approved parent PATCH archive reaches a final state",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "parent-patch"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.VERIFY_MAIN_PARENT_PATCH",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "CSC.PARENT_OPERATION_COMPLETE",
+            "verification_failed": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.CONFIRM_MAIN_PARENT_PATCH_LOAD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify only the approved parent Default Language or status field",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "parent-patch"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.RESOLVE_MAIN_COOKIE_PATCH_TARGET",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSC.PREPARE_MAIN_COOKIE_PATCH_ARCHIVE",
+            "unresolved": "CSC.HANDLE_ISSUE",
+            "ambiguous": "CSC.HANDLE_ISSUE",
+            "invalid": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.SELECT_CREATE_MODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a Cookie Consent PATCH",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "cookie-consent-patch"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.PREPARE_MAIN_COOKIE_PATCH_ARCHIVE",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "prepare_data_loader_archive",
+          "execution_route": "core-data-loader",
+          "transitions": {
+            "prepared": "CSC.MAIN_COOKIE_PATCH_APPROVAL_GATE",
+            "invalid": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.RESOLVE_MAIN_COOKIE_PATCH_TARGET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Prepare one Cookie Consent PATCH archive",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "cookie-consent-patch"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.MAIN_COOKIE_PATCH_APPROVAL_GATE",
+          "node_type": "approval_gate",
+          "sequence": 49,
+          "action_type": "data_loader_approval",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "CSC.CONFIRM_MAIN_COOKIE_PATCH_LOAD",
+            "declined": "CSC.BLOCKED"
+          },
+          "prerequisites": [
+            "CSC.PREPARE_MAIN_COOKIE_PATCH_ARCHIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Immediately before a Cookie Consent PATCH archive is submitted",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "cookie-consent-patch"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.CONFIRM_MAIN_COOKIE_PATCH_LOAD",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "verify_data_loader_result",
+          "execution_route": "core-data-loader",
+          "transitions": {
+            "succeeded": "CSC.VERIFY_MAIN_COOKIE_PATCH",
+            "failed": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.MAIN_COOKIE_PATCH_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After an approved Cookie Consent PATCH archive reaches a final state",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "cookie-consent-patch"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.VERIFY_MAIN_COOKIE_PATCH",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "CSC.COOKIE_PATCH_COMPLETE",
+            "verification_failed": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.CONFIRM_MAIN_COOKIE_PATCH_LOAD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify only the approved Cookie Consent fields on the persisted site",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "cookie-consent-patch"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.PREPARE_MAIN_LANGUAGES_COOKIE_ARCHIVE",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "prepare_data_loader_archive",
+          "execution_route": "core-data-loader",
+          "transitions": {
+            "prepared": "CSC.MAIN_LANGUAGES_COOKIE_APPROVAL_GATE",
+            "invalid": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.SELECT_ARCHIVE_MODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The default combined create with Languages, default Cookie Consent, and default Talent Community children",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "cookie-consent-child-contract"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.MAIN_LANGUAGES_COOKIE_APPROVAL_GATE",
+          "node_type": "approval_gate",
+          "sequence": 49,
+          "action_type": "data_loader_approval",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "CSC.CONFIRM_MAIN_LANGUAGES_COOKIE_LOAD",
+            "declined": "CSC.BLOCKED"
+          },
+          "prerequisites": [
+            "CSC.PREPARE_MAIN_LANGUAGES_COOKIE_ARCHIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Immediately before the default combined archive is submitted",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "source-and-approval-rules"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.CONFIRM_MAIN_LANGUAGES_COOKIE_LOAD",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "verify_data_loader_result",
+          "execution_route": "core-data-loader",
+          "transitions": {
+            "succeeded": "CSC.VERIFY_MAIN_LANGUAGES_COOKIE",
+            "failed": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.MAIN_LANGUAGES_COOKIE_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After an approved combined Career Site archive reaches a final state",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "verification-and-stop-condition"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.VERIFY_MAIN_LANGUAGES_COOKIE",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "CSC.CREATE_COMPLETE",
+            "verification_failed": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.CONFIRM_MAIN_LANGUAGES_COOKIE_LOAD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify the approved parent, Language set, default Cookie Consent, default Talent Community, and approved Filters",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "verification-and-stop-condition"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.RESOLVE_MAIN_LANGUAGE_PARENT",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CSC.PREPARE_MAIN_ADD_LANGUAGE_ARCHIVE",
+            "unresolved": "CSC.HANDLE_ISSUE",
+            "ambiguous": "CSC.HANDLE_ISSUE",
+            "invalid": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.SELECT_CREATE_MODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before a persisted-parent Language POST",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "source-and-approval-rules"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.PREPARE_MAIN_ADD_LANGUAGE_ARCHIVE",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "prepare_data_loader_archive",
+          "execution_route": "core-data-loader",
+          "transitions": {
+            "prepared": "CSC.MAIN_ADD_LANGUAGE_APPROVAL_GATE",
+            "invalid": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.RESOLVE_MAIN_LANGUAGE_PARENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Prepare one persisted-parent Language POST archive",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "source-and-approval-rules"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.MAIN_ADD_LANGUAGE_APPROVAL_GATE",
+          "node_type": "approval_gate",
+          "sequence": 49,
+          "action_type": "data_loader_approval",
+          "execution_route": "local",
+          "transitions": {
+            "approved": "CSC.CONFIRM_MAIN_ADD_LANGUAGE_LOAD",
+            "declined": "CSC.BLOCKED"
+          },
+          "prerequisites": [
+            "CSC.PREPARE_MAIN_ADD_LANGUAGE_ARCHIVE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Immediately before a persisted-parent Language archive is submitted",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "source-and-approval-rules"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.CONFIRM_MAIN_ADD_LANGUAGE_LOAD",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "verify_data_loader_result",
+          "execution_route": "core-data-loader",
+          "transitions": {
+            "succeeded": "CSC.VERIFY_MAIN_ADD_LANGUAGE",
+            "failed": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.MAIN_ADD_LANGUAGE_APPROVAL_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After an approved persisted-parent Language archive reaches a final state",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "verification-and-stop-condition"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.VERIFY_MAIN_ADD_LANGUAGE",
+          "node_type": "step",
+          "sequence": 49,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "CSC.CREATE_COMPLETE",
+            "verification_failed": "CSC.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "CSC.CONFIRM_MAIN_ADD_LANGUAGE_LOAD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify the persisted site and the one approved additional Language",
+          "source": {
+            "file": "ora_main_registration_contract.md",
+            "anchor": "verification-and-stop-condition"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 130,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "issue_recorded": "CSC.BLOCKED"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation or execution issue occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "combined-create"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.CREATE_COMPLETE",
+          "node_type": "terminal",
+          "sequence": 140,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSC.VERIFY_MAIN_LANGUAGES_COOKIE",
+            "CSC.VERIFY_MAIN_ADD_LANGUAGE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The supported create or add-language archive was verified",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "combined-create"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.COOKIE_PATCH_COMPLETE",
+          "node_type": "terminal",
+          "sequence": 142,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSC.VERIFY_MAIN_COOKIE_PATCH"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The explicit Cookie Consent PATCH was verified without changing the parent",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "cookie-consent-patch"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.PARENT_OPERATION_COMPLETE",
+          "node_type": "terminal",
+          "sequence": 143,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSC.RESOLVE_EXISTING_PARENT_OPERATION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A read-only site summary/list/effective-state/Site Editor Copy Link/Settings-discovery result was produced, or an approved existing-site language/Filters/Settings/Talent Community/default-language/status operation was verified",
+          "source": {
+            "file": "ora_parent_operations.md",
+            "anchor": "supported-operations"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CSC.BLOCKED",
+          "node_type": "terminal",
+          "sequence": 150,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CSC.HANDLE_ISSUE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "A prerequisite is missing, invalid, declined, or failed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "combined-create"
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

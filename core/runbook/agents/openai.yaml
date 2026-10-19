@@ -1,0 +1,4 @@
+interface:
+  display_name: "Run Book"
+  short_description: "List, search, open, create, and update Run Books"
+  default_prompt: "Use $runbook to list, search, page through, select, create, inspect, or update a Run Book."

@@ -1,0 +1,47 @@
+# Input Validation
+
+## Required Groups
+
+| Task Code | Task Name | Requirement Group | Accepted Fields | If Missing | How to Resolve | Applies When | Resolver |
+|---|---|---|---|---|---|---|---|
+| ORA_SVC_MANAGE_SEARCH_OPTIONS | Manage Global Search Profile Options | Global Search profile option change contract | FUSION_APPS_SEARCH_ENABLED; Site profile level; requested value Y or N | Block preview | Confirm the approved Site-level value is Y or N and resolve the current value before preview | Any Global Search enablement or disablement request | resolve_global_search_profile_value |
+| ORA_SVC_MANAGE_STANDARD_TEXT_PROFILE_OPTS | Manage Standard Text Profile Options | Standard Text profile option change contract | Profile option code SVC_ENABLE_STD_TEXT_IN_SR; requested value; target profile scope | Block preview | Supply the requested value and target scope, then require the approved write contract before preview | Any Standard Text profile option request |  |
+| ORA_SVC_MANAGE_SERVICE_REQUEST_DYNAMIC_LINKS | Manage Service Request Dynamic Links | List Dynamic Link records | No request body; optional fields, expand, finder, limit, offset, orderBy, q, onlyData, links, and totalResults query parameters | Continue with the default collection GET | Omit optional query parameters to retrieve the default collection response | A read-only request to list Dynamic Link records | list_dynamic_link_values |
+| ORA_SVC_MANAGE_SERVICE_REQUEST_DYNAMIC_LINKS | Manage Service Request Dynamic Links | Dynamic Link write contract | A separately approved operation-specific write contract | Block preview | Use the dedicated create, update, or delete workflow; this read-only list contract does not authorize a write | Any Dynamic Link create, update, or delete request |  |
+| ORA_SVC_MANAGE_TAGS | Manage Tags | List Tags | No request body; optional fields, expand, finder, limit, offset, orderBy, q, onlyData, links, and totalResults query parameters | Continue with the documented collection GET | Omit optional query parameters to retrieve the default collection response | A read-only request to list Tags | list_tags |
+| ORA_SVC_MANAGE_TAGS | Manage Tags | Create Tag | Tag: nonempty string of at most 64 characters; AdministratorCreatedFlag: optional boolean, default false | Block preview | Validate the requested name, perform the exact-name duplicate preflight, and obtain explicit approval of the exact POST payload | A request to create a Tag | find_tag_by_exact_name |
+| ORA_SVC_MANAGE_TAGS | Manage Tags | Other Tag write contract | A separately approved operation-specific update or delete contract | Block preview | Use the dedicated update or delete workflow; this create contract does not authorize another Tag write | Any Tag update or delete request |  |
+| ORA_CONFIGURE_ACTION_BAR_PARAMETERS | Configure Action Bar Parameters | List Action Bar configurations | No request body; optional fields, expand, finder, limit, offset, orderBy, q, onlyData, links, and totalResults query parameters | Continue with the documented collection GET | Omit optional query parameters to retrieve the default collection response | A read-only request to list Action Bar configurations | list_action_bar_configurations |
+| ORA_CONFIGURE_ACTION_BAR_PARAMETERS | Configure Action Bar Parameters | Action Bar update contract | ConfigurationCode and supported update fields | Block preview | Use a separately approved, source-backed update workflow; this collection-read contract does not authorize PATCH | Any Action Bar parameter update request |  |
+| ORA_SVC_MANAGE_NOTE_TYPES | Manage Note Types | List Note Types | LookupType ZMM_NOTE_TYPE; no request body; optional fields, expand, finder, limit, offset, onlyData, links, q, and totalResults query parameters | Continue with the documented lookup-code collection GET | Use the exact Note Types lookup type | A read-only request to list Note Types | list_note_type_lookup_codes |
+| ORA_SVC_MANAGE_NOTE_TYPES | Manage Note Types | Update Note Type Meaning | LookupType ZMM_NOTE_TYPE; LookupCode: nonempty string up to 30 characters; Meaning: nonempty string up to 80 characters | Block preview | Validate the target and requested meaning, perform an exact-match preflight, and obtain explicit approval of the exact PATCH payload | A request to update a Note Type meaning | get_note_type_by_lookup_code |
+| ORA_SVC_MANAGE_NOTE_TYPES | Manage Note Types | Other Note Type change contract | A separately approved operation-specific create or delete contract | Block preview | Use the dedicated source-backed workflow; the Meaning update contract does not authorize another write | Any Note Type create or delete request |  |
+| ORA_MANAGE_SERVICE_REQUEST_MESSAGE_TYPES_AND_SUBTYPES | Manage Service Request Message Types and Subtypes | List Message Types | LookupType ORA_SVC_MESSAGE_TYPE_CD; no request body; optional fields, expand, finder, limit, offset, onlyData, links, q, and totalResults query parameters | Continue with the documented lookup-code collection GET | Use the exact Message Types lookup type | A read-only request to list Service Request Message Types | list_message_type_lookup_codes |
+| ORA_MANAGE_SERVICE_REQUEST_MESSAGE_TYPES_AND_SUBTYPES | Manage Service Request Message Types and Subtypes | List Message Subtypes | LookupType ORA_SVC_MESSAGE_SUB_TYPE_CD; no request body; optional fields, expand, finder, limit, offset, onlyData, links, q, and totalResults query parameters | Continue with the documented lookup-code collection GET | Use the exact Message Subtypes lookup type | A read-only request to list Service Request Message Subtypes | list_message_subtype_lookup_codes |
+| ORA_SVC_MANAGE_PASSIVE_BEACON_CONFIGURATION | Manage Passive Beacon Configuration | List passive Beacon provider statuses | No request body; optional fields, expand, finder, limit, offset, orderBy, q, onlyData, links, and totalResults query parameters | Continue with the documented collection GET | Omit optional query parameters to retrieve the default provider-status collection response | A read-only request to list passive Beacon provider statuses | get_passive_beacon_provider_statuses |
+| ORA_SVC_MANAGE_PASSIVE_BEACON_CONFIGURATION | Manage Passive Beacon Configuration | Passive Beacon configuration change contract | A separately approved operation-specific write contract | Block preview | Use a dedicated source-backed workflow; this read-only status contract does not authorize a write | Any Passive Beacon configuration change request |  |
+
+## Dependency-Aware Validation
+
+| Task Code | Task Name | Applies When | Result | Next Action | Resolver |
+|---|---|---|---|---|---|
+| ORA_SVC_MANAGE_SEARCH_OPTIONS | Manage Global Search Profile Options | A Site-level Global Search profile option change is requested | Lookup | Resolve the current FUSION_APPS_SEARCH_ENABLED value before preview | resolve_global_search_profile_value |
+
+## Field Validation
+
+| Task Code | Task Name | Check | What Happens | Applies When | Resolver |
+|---|---|---|---|---|---|
+| ORA_SVC_MANAGE_SEARCH_OPTIONS | Manage Global Search Profile Options | Requested Global Search value must be Y or N | Reject values other than Y or N before preview | Every Global Search profile option request | resolve_global_search_profile_value |
+
+## Task Nodes
+
+| Task Code | Task Name | Rule ID | Node Type | Sequence | Action Type | Transitions | Prerequisites | On Failure | Applies When |
+|---|---|---|---|---|---|---|---|---|---|
+| ORA_SVC_MANAGE_SEARCH_OPTIONS | Manage Global Search Profile Options | GSEARCH.VALIDATE | step | 10 | validate_input | valid->GSEARCH.LOOKUP;issues->RETURN_ISSUES | none | stop | Every Global Search profile option request |
+| ORA_SVC_MANAGE_STANDARD_TEXT_PROFILE_OPTS | Manage Standard Text Profile Options | STDTEXT.VALIDATE | step | 10 | validate_input | valid->STDTEXT.DONE;issues->RETURN_ISSUES | none | stop | Every Standard Text profile option request |
+| ORA_SVC_MANAGE_SERVICE_REQUEST_DYNAMIC_LINKS | Manage Service Request Dynamic Links | DYNLINK.VALIDATE | step | 10 | validate_input | valid->DYNLINK.LOOKUP;issues->RETURN_ISSUES | none | stop | A read-only request to list Dynamic Link records |
+| ORA_SVC_MANAGE_TAGS | Manage Tags | TAG.VALIDATE | step | 10 | validate_input | list_valid->TAG.LOOKUP;create_valid->TAG.CREATE_PREFLIGHT;issues->RETURN_ISSUES | none | stop | A Tags collection read or create request |
+| ORA_CONFIGURE_ACTION_BAR_PARAMETERS | Configure Action Bar Parameters | ACTIONBAR.VALIDATE | step | 10 | validate_input | valid->ACTIONBAR.LOOKUP;issues->RETURN_ISSUES | none | stop | A read-only request to list Action Bar configurations |
+| ORA_SVC_MANAGE_NOTE_TYPES | Manage Note Types | NOTETYPE.VALIDATE | step | 10 | validate_input | list_valid->NOTETYPE.LOOKUP;update_valid->NOTETYPE.UPDATE_PREFLIGHT;issues->RETURN_ISSUES | none | stop | A Note Types collection read or Meaning update request |
+| ORA_MANAGE_SERVICE_REQUEST_MESSAGE_TYPES_AND_SUBTYPES | Manage Service Request Message Types and Subtypes | MSGTYPE.VALIDATE | step | 10 | validate_input | valid->MSGTYPE.LOOKUP;issues->RETURN_ISSUES | none | stop | A read-only request to list Service Request Message Types or Subtypes |
+| ORA_SVC_MANAGE_PASSIVE_BEACON_CONFIGURATION | Manage Passive Beacon Configuration | BEACON.VALIDATE | step | 10 | validate_input | valid->BEACON.LOOKUP;issues->RETURN_ISSUES | none | stop | A read-only request to list passive Beacon provider statuses |

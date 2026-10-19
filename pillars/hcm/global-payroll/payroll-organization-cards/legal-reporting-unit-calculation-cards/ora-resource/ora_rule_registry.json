@@ -1,0 +1,183 @@
+{
+  "schema_version": "2.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_LEGAL_REPORTING_UNIT_DEDUCTION_RECORDS",
+      "task_name": "Legal Reporting Unit Calculation Cards",
+      "start_node": "LRUC.COLLECT",
+      "nodes": [
+        {
+          "id": "LRUC.COLLECT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "collect_input",
+          "execution_route": "local",
+          "transitions": {
+            "complete": "LRUC.VALIDATE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every Legal Reporting Unit Calculation Cards request",
+          "source": {
+            "file": "ora_input_intake.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRUC.VALIDATE",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LRUC.DEPENDENCY",
+            "invalid": "LRUC.DONE_BLOCKED"
+          },
+          "prerequisites": [
+            "LRUC.COLLECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After request collection",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 129
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRUC.DEPENDENCY",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LRUC.LOOKUP",
+            "blocked": "LRUC.DONE_BLOCKED"
+          },
+          "prerequisites": [
+            "LRUC.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Required dependency facts are being evaluated",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRUC.LOOKUP",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LRUC.ENFORCE",
+            "ambiguous": "LRUC.DONE_BLOCKED"
+          },
+          "prerequisites": [
+            "LRUC.DEPENDENCY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A target tax reporting unit, card, component, or flexfield value needs resolution",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRUC.ENFORCE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "LRUC.PREVIEW_BLOCK",
+            "blocked": "LRUC.DONE_BLOCKED"
+          },
+          "prerequisites": [
+            "LRUC.LOOKUP"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preview or execution",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRUC.PREVIEW_BLOCK",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "preview_gate",
+          "execution_route": "local",
+          "transitions": {
+            "blocked": "LRUC.DONE_BLOCKED"
+          },
+          "prerequisites": [
+            "LRUC.ENFORCE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "HDL preview or loader handoff is requested while a read-only lookup, HDL schema, user key, action, artifact, or approval field remains unresolved",
+          "source": {
+            "file": "ora_rest_execution.md",
+            "anchor": "task-nodes",
+            "line": 473
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LRUC.DONE_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Input, lookup, source-contract, or approval blocker",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 113
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

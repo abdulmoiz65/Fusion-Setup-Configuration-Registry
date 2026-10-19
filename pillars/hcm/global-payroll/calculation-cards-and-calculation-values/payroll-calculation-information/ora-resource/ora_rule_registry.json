@@ -1,0 +1,307 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PAY_MANAGE_PAYROLL_DEDUCTIONS",
+      "task_name": "Payroll Calculation Information",
+      "start_node": "WBR.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "WBR.VALIDATE_INPUT",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "WBR.RESOLVE_DEPENDENCIES",
+            "discover": "WBR.RESOLVE_DEPENDENCIES",
+            "needs_input": "WBR.HANDLE_ERROR",
+            "unsupported": "WBR.HANDLE_ERROR",
+            "invalid": "WBR.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Apply Conversational Intake, Dependency-Aware Validation and the applicable Existing-Rule Maintenance Intake or Create Component Rows; valid means complete supplied input, not resolved eligibility; discover permits only declared prerequisite/choice reads while collecting; needs_input asks a missing prerequisite; unsupported stops further mutation intake",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 252
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WBR.RESOLVE_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "WBR.RESOLVE_REFERENCES",
+            "needs_input": "WBR.HANDLE_ERROR",
+            "blocked": "WBR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "WBR.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate core preflight and the next applicable resolver prerequisites; ready includes LOOKUP_READY during discovery, not write readiness; missing user prerequisites return needs_input; the reference node alone performs reads",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 103
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WBR.RESOLVE_REFERENCES",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "WBR.CHECK_PREPARATION",
+            "needs_input": "WBR.HANDLE_ERROR",
+            "blocked": "WBR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "WBR.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply Lookup Execution Rules, including existing-rule history discovery, through declared resolvers; missing selections return needs_input without advancing beyond discovery; resolved requires complete applicable inputs and reads; reconciliation uses original request identity plus fresh reads",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 166
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WBR.CHECK_PREPARATION",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "WBR.APPLY_DEFAULTS",
+            "read_only": "WBR.APPLY_DEFAULTS",
+            "blocked": "WBR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "WBR.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate only pre-preparation business readiness as scoped in Design Rules; block conflicts, unresolved native keys, pending effects and NO_CHANGE before native-archive validation; no prepared artifact or approval is required for this check; read/reconciliation returns read_only",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 168
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WBR.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "WBR.VALIDATE_NATIVE_CONTRACT",
+            "blocked": "WBR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "WBR.CHECK_PREPARATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply only documented conditional values after business-readiness checks; read/reconciliation changes no values",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WBR.VALIDATE_NATIVE_CONTRACT",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "validated": "WBR.ENFORCE_DESIGN",
+            "read_only": "WBR.EXECUTION_GATE",
+            "blocked": "WBR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "WBR.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Supported mutation validates the core-supplied archive; read/reconciliation skips archive validation without creating or submitting one",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 167
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WBR.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "compliant": "WBR.EXECUTION_GATE",
+            "noncompliant": "WBR.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "WBR.VALIDATE_NATIVE_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Supported mutation passed exact Task Hook archive validation and the applicable Create readiness/summary or Existing-Rule Maintenance Gates; incomplete input, ambiguous intent or a mismatched timeline is never compliant",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 169
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WBR.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "controlled_plan_ready": "WBR.READY_FOR_CONFIRMATION",
+            "read_only_ready": "WBR.DONE_READ_ONLY",
+            "blocked": "WBR.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Mutation must have completed input/dependency/reference/preparation/default/contract/design nodes; read must have completed its applicable lookup path; reconciliation must meet the exact outcome rules",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 179
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WBR.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "disclosed": "WBR.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Disclose NEEDS_INPUT without marking a failed operation, or handle a failed, blocked or unsupported request; follow Intake Return and Resume",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 180
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WBR.READY_FOR_CONFIRMATION",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WBR.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Exact artifact passed Task Hook; return to core approval lifecycle, not mutation success",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 181
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WBR.DONE_READ_ONLY",
+          "node_type": "terminal",
+          "sequence": 11,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "WBR.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Requested read or exact business reconciliation completed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 182
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "WBR.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Return sanitized blockers or unresolved input and one safe next action; NEEDS_INPUT preserves collecting and resumes through WBR.VALIDATE_INPUT after the answer",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 183
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

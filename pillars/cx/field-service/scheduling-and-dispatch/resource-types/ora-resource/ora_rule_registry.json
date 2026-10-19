@@ -1,0 +1,332 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_FFS_TS_RESOURCE_TYPES",
+      "task_name": "Resource Types",
+      "start_node": "RT.VALIDATE_WORKBOOK",
+      "nodes": [
+        {
+          "id": "RT.VALIDATE_WORKBOOK",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "RT.CHECK_OPERATING_MODEL",
+            "invalid": "RT.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Resource Types workbook is supplied for preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.CHECK_OPERATING_MODEL",
+          "node_type": "decision",
+          "sequence": 2,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RT.CHECK_ORGANIZATION_AND_BUCKET_BOUNDARY",
+            "blocked": "RT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RT.VALIDATE_WORKBOOK"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A Resource Type is created or changed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.CHECK_ORGANIZATION_AND_BUCKET_BOUNDARY",
+          "node_type": "decision",
+          "sequence": 3,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RT.CHECK_ROUTING_AND_QUOTA_ENABLEMENT",
+            "blocked": "RT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RT.CHECK_OPERATING_MODEL"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Organization Units, groups, or buckets are selected for the Resource Type model",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.CHECK_ROUTING_AND_QUOTA_ENABLEMENT",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RT.CHECK_BUCKET_CAPACITY_SCOPE",
+            "blocked": "RT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RT.CHECK_ORGANIZATION_AND_BUCKET_BOUNDARY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A work-performing field Resource Type is prepared for rollout",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.CHECK_BUCKET_CAPACITY_SCOPE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RT.CHECK_COST_POLICY",
+            "blocked": "RT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RT.CHECK_ROUTING_AND_QUOTA_ENABLEMENT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Bucket quota management or routing into sub-buckets is proposed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.CHECK_COST_POLICY",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RT.CHECK_TEAM_AND_SHARING",
+            "blocked": "RT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RT.CHECK_BUCKET_CAPACITY_SCOPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Relative working-time costs, travel costs, or start/end travel allowances are configured",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.CHECK_TEAM_AND_SHARING",
+          "node_type": "decision",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RT.CHECK_LOAD_THRESHOLDS",
+            "blocked": "RT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RT.CHECK_COST_POLICY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Team participation, team-holder capability, or shared inventory, skills, or location is proposed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 44
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.CHECK_LOAD_THRESHOLDS",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RT.CHECK_DURATION_LEARNING",
+            "blocked": "RT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RT.CHECK_TEAM_AND_SHARING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Load thresholds are configured",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 45
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.CHECK_DURATION_LEARNING",
+          "node_type": "decision",
+          "sequence": 9,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RT.CHECK_CHANGE_IMPACT",
+            "blocked": "RT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RT.CHECK_LOAD_THRESHOLDS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resource-level duration learning, initial duration ratios, contribution rules, or learning exclusion periods are proposed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 46
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.CHECK_CHANGE_IMPACT",
+          "node_type": "decision",
+          "sequence": 10,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RT.CHECK_CONTRACTOR_SEPARATION",
+            "blocked": "RT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RT.CHECK_DURATION_LEARNING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "An existing Resource Type is changed",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 47
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.CHECK_CONTRACTOR_SEPARATION",
+          "node_type": "decision",
+          "sequence": 11,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "RT.RETURN_SUCCESS",
+            "blocked": "RT.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "RT.CHECK_CHANGE_IMPACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Contractors and internal employees are modeled in the same Resource Type",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 48
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.RETURN_SUCCESS",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "RT.CHECK_CONTRACTOR_SEPARATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The applicable Resource Type design rules pass",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 36
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RT.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 13,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Workbook validation or design enforcement returns a blocker",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 37
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "MKL_MANAGE_SALES_LEAD_PROFILE_OPTIONS",
+      "task_name": "Manage Sales Lead Profile Options",
+      "start_node": "SPO.VALIDATE",
+      "nodes": [
+        {
+          "id": "SPO.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SPO.DEPENDENCIES",
+            "invalid": "SPO.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Normalize intent, validate canonical environment, conditional export-attempt evidence, exact identity, supported scope, expected/proposed values, bulk uniqueness, and immutable preview/approval inputs when execution is requested",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPO.DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "satisfied": "SPO.LOOKUP_PROFILE",
+            "missing": "SPO.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SPO.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require canonical environment, Apps Common read readiness, exact identity, conditional dependencies, scope key and capability, current-state evidence, mutation privilege, and approval readiness when execution is requested",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPO.LOOKUP_PROFILE",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "found": "SPO.ROUTE",
+            "not_found": "SPO.ROUTE",
+            "many": "SPO.RETURN_ISSUES",
+            "failure": "SPO.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SPO.DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve documented and exported candidates against exact live profile, level, configured-value, user, template, lookup, and other conditional dependency evidence",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 126
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPO.ROUTE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "proceed": "SPO.DESIGN",
+            "blocked": "SPO.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SPO.LOOKUP_PROFILE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Proceed for Inventory only with a result/status and complete configured-value evidence for every candidate, Review only with exact definition and complete child reads, or Set/Remove/BulkSet with deterministic method, exact scope key, current-state lock, and dependency closure; block documentation-only current-value results, ambiguous rows, unsupported scope, or unresolved stored-value dependencies",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 127
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPO.DESIGN",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SPO.EXECUTION_GATE",
+            "fail": "SPO.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SPO.ROUTE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After complete Inventory/Review reconciliation or after an exact mutation target, method, endpoint, body/delete effect, dependencies, current-state lock, verification plan, and approval boundary are established",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPO.EXECUTION_GATE",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "review_ready": "SPO.READY_REVIEW",
+            "apps_common_ready": "SPO.READY_APPS_COMMON",
+            "blocked": "SPO.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "SPO.DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Route Inventory/Review to read-only output after completeness gates, or Set/Remove/BulkSet to an exact immutable Apps Common CRUD preview; block missing approval, stale state, ambiguous identity, unsupported field changes, or any FSM/Data Loader route",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPO.READY_REVIEW",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SPO.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Environment-backed reconciled Inventory or exact Review is ready with no mutation authorized",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 73
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPO.READY_APPS_COMMON",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SPO.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Exact Apps Common child-value CRUD preview is ready for standalone digest-bound approval and one non-retried execution followed by exact verification",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 74
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SPO.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any validation, dependency, lookup, design, approval, execution-route, write, or verification gate fails safely",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 75
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

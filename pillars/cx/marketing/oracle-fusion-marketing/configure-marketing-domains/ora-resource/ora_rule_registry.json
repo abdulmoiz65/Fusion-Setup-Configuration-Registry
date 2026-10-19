@@ -1,0 +1,255 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_FMK_CONFIGURE_EMAIL_DOMAINS",
+      "task_name": "Configure Marketing Domains",
+      "start_node": "DOMAINS.VALIDATE",
+      "nodes": [
+        {
+          "id": "DOMAINS.VALIDATE",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "DOMAINS.ACCESS",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A Marketing domain list, inspection, or update is requested",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 24
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOMAINS.ACCESS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "DOMAINS.LIST_SELECT",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "DOMAINS.VALIDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation passed",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOMAINS.LIST_SELECT",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "listed": "DOMAINS.AWAITING_SELECTION",
+            "selected": "DOMAINS.SHOW_SELECTED",
+            "no_match": "RETURN_ISSUES",
+            "many_match": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "DOMAINS.ACCESS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A completed Marketing domain list is requested, with or without domainToUpdate",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOMAINS.AWAITING_SELECTION",
+          "node_type": "terminal",
+          "sequence": 4,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DOMAINS.LIST_SELECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The complete domain list is displayed and the required exact primaryDomain selection prompt has been asked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 54
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOMAINS.SHOW_SELECTED",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "shown": "DOMAINS.COLLECT_CHANGES",
+            "no_match": "RETURN_ISSUES",
+            "many_match": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "DOMAINS.LIST_SELECT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "domainToUpdate exactly matches one primaryDomain from the completed domain list",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOMAINS.COLLECT_CHANGES",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "changes_valid": "DOMAINS.PREVIEW",
+            "awaiting_changes": "DOMAINS.AWAITING_CHANGES",
+            "invalid": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "DOMAINS.SHOW_SELECTED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The complete selected-domain record has been displayed",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOMAINS.PREVIEW",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "validated": "DOMAINS.VALIDATION_READY",
+            "blocked": "RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "DOMAINS.COLLECT_CHANGES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Data Loader preflight has prepared the immutable artifact for the displayed selected domain; user approval has not yet been requested",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 21
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOMAINS.VALIDATION_READY",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DOMAINS.PREVIEW"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All task checks passed for the immutable artifact; return validation evidence to Data Loader for its preview and approval workflow. No upload or initiation is authorized by this terminal.",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "DOMAINS.AWAITING_CHANGES",
+          "node_type": "terminal",
+          "sequence": 10,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "DOMAINS.COLLECT_CHANGES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The complete selected-domain record is displayed and the user has supplied no changes yet",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 56
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 12,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A validation, lookup, preview, approval, Data Loader, or read-back issue occurs",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

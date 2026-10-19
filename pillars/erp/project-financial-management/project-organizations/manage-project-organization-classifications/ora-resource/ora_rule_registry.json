@@ -1,0 +1,578 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "PJF_MANAGE_PROJECT_ORGANIZATION_CLASSIFICATIONS",
+      "task_name": "Manage Project Organization Classifications",
+      "start_node": "PORGCLASS.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "PORGCLASS.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "PORGCLASS.APPLY_DEFAULTS",
+            "status_requested": "PORGCLASS.STATUS_REQUEST_GATE",
+            "invalid": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "For preparation validate single or bulk inputs before reads; for a later explicit status/results/verification request validate the saved project, target, task and per-archive receipt context without requiring a new mutation request",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "PORGCLASS.FIND_ORGANIZATION",
+            "failure": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Normalize supplied values/owner; defer new PTO N defaults until REST state resolves",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 30
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.FIND_ORGANIZATION",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "PORGCLASS.CHECK_PERMISSION_UPDATE",
+            "failure": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Collect fresh fully paginated exact effective identity and independent PTO/PEO REST state per organization, bound to configured target and current run; no EFF or permission export",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.CHECK_PERMISSION_UPDATE",
+          "node_type": "decision",
+          "sequence": 4,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "update_required": "PORGCLASS.RESOLVE_UPDATE_IDENTITY",
+            "not_required": "PORGCLASS.ROUTE_OPERATION",
+            "failure": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.FIND_ORGANIZATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Bulk: only existing PTO entries with update_existing_pto_permissions=true and supplied permissions require identity; legacy single requests use requires_existing_pto_update_identity; additions/no-op bypass identity entirely",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.RESOLVE_UPDATE_IDENTITY",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "PORGCLASS.ROUTE_OPERATION",
+            "failure": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.CHECK_PERMISSION_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "resolve_existing_pto_update_identity validates already available authoritative original keys only; no external export and no existing permission read",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.ROUTE_OPERATION",
+          "node_type": "decision",
+          "sequence": 6,
+          "action_type": "evaluate_result",
+          "execution_route": "local",
+          "transitions": {
+            "add_missing": "PORGCLASS.VERIFY_SOURCE_OWNER",
+            "update_permissions": "PORGCLASS.VERIFY_SOURCE_OWNER",
+            "already_configured": "PORGCLASS.RETURN_ALREADY_CONFIGURED",
+            "failure": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.CHECK_PERMISSION_UPDATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "plan_request dispatches bulk to plan_bulk_request; independently add only requested missing roles, preserve others, aggregate ADD_MISSING/UPDATE_PERMISSIONS/ALREADY_CONFIGURED; skip no-op entries and require verified original identity for explicit updates",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.VERIFY_SOURCE_OWNER",
+          "node_type": "step",
+          "sequence": 7,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "PORGCLASS.VERIFY_SCHEMA",
+            "absent": "PORGCLASS.OWNER_CREATION_GATE",
+            "invalid": "PORGCLASS.RETURN_ISSUES",
+            "failure": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Every explicit mutation including pure permission update; missing original owner never enters creation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.OWNER_CREATION_GATE",
+          "node_type": "decision",
+          "sequence": 8,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "submitted": "PORGCLASS.RECHECK_SOURCE_OWNER",
+            "uncertain": "PORGCLASS.RECHECK_SOURCE_OWNER",
+            "declined": "PORGCLASS.RETURN_REFUSAL",
+            "failure": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.VERIFY_SOURCE_OWNER"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Outer workflow only: runbook validates and authorizes exact missing-code POST; gate does not itself write. During read-only pre-upload Task Hook, an absent owner returns failure without mutation or approval prompt",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 88
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.RECHECK_SOURCE_OWNER",
+          "node_type": "step",
+          "sequence": 9,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "PORGCLASS.VERIFY_SCHEMA",
+            "failure": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.OWNER_CREATION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify exact owner after approved or uncertain creation; no replay",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.VERIFY_SCHEMA",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "valid": "PORGCLASS.RESOLVE_DEPENDENCIES",
+            "failure": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.ROUTE_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Owner valid from initial check or recheck",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 11,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "PORGCLASS.ENFORCE_DESIGN",
+            "failure": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.VERIFY_SCHEMA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolve original update identity and per-organization parent/schema/owner; complete shared ledger with fresh current-run bindings only for additions; skip no-op entries; never allocate keys for a pure update",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 33
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 12,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "PORGCLASS.EXECUTION_GATE",
+            "blocked": "PORGCLASS.RETURN_REFUSAL",
+            "failure": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate every organization then generate at most two role-separated ZIPs; allow multiple parent IDs, unique keys and matching new PTO information pairs; no-op entries emit nothing; enforce one compatible PTO layout",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 50
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.EXECUTION_GATE",
+          "node_type": "decision",
+          "sequence": 13,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "prepared": "PORGCLASS.RETURN_PREPARED",
+            "initiated": "PORGCLASS.RETURN_IN_PROGRESS",
+            "persistence_failed": "PORGCLASS.RETURN_ISSUES",
+            "declined": "PORGCLASS.RETURN_REFUSAL",
+            "failure": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Independently per nonempty PEO/PTO ZIP: read-only Task Hook returns prepared after complete preparation and verified preflight, before approval or submission. Outer workflow retains core immutable approval, submit once and registered role/checksum/request ID; persistence failure preserves known ID without replay; no status reads; no-op has no gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.STATUS_REQUEST_GATE",
+          "node_type": "decision",
+          "sequence": 14,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "status_requested": "PORGCLASS.LOAD_COMPLETION_GATE",
+            "invalid": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Require a later explicit status/results/verification request and registered acceptance binding matching project, target, task, role, request ID and approved archive checksum; do not prepare, approve or submit again",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.LOAD_COMPLETION_GATE",
+          "node_type": "decision",
+          "sequence": 15,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "terminal_success": "PORGCLASS.VERIFY_POST_LOAD",
+            "terminal_status": "PORGCLASS.RETURN_STATUS",
+            "in_progress": "PORGCLASS.RETURN_IN_PROGRESS",
+            "polling_timeout": "PORGCLASS.RETURN_IN_PROGRESS",
+            "failure": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.STATUS_REQUEST_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Only on the explicit resume request use core status/count/error checks for each saved ID; terminal_status is successful status-only completion without target reads; terminal_success requires requested verification; retain partial success and never replay",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 91
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.VERIFY_POST_LOAD",
+          "node_type": "step",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "verified": "PORGCLASS.RETURN_CLASSIFIED",
+            "failure": "PORGCLASS.RETURN_ISSUES"
+          },
+          "prerequisites": [
+            "PORGCLASS.LOAD_COMPLETION_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "On requested verification after each ZIP's terminal success verify every included organization by fresh governed REST and requested permissions/preservation; post-load export is readback only; all requested ZIPs must verify before completion",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.RETURN_CLASSIFIED",
+          "node_type": "terminal",
+          "sequence": 17,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PORGCLASS.VERIFY_POST_LOAD"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Requested post-load verification proves state and preservation; all requested ZIPs verified before task completion; disclose separate maintenance follow-up",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 92
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.RETURN_ALREADY_CONFIGURED",
+          "node_type": "terminal",
+          "sequence": 18,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PORGCLASS.ROUTE_OPERATION"
+          ],
+          "on_failure": "continue",
+          "applies_when": "No explicit permission update and no requested missing classification; preserve omitted state without mutation artifact or writes; never compare existing flags to claim a matching-value no-op",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 93
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.RETURN_IN_PROGRESS",
+          "node_type": "terminal",
+          "sequence": 19,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Accepted initiation or requested active/timed-out status; retain receipt and last state; wait for another explicit request without automatic calls",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 94
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.RETURN_STATUS",
+          "node_type": "terminal",
+          "sequence": 20,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PORGCLASS.LOAD_COMPLETION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return the explicitly requested successful load status/counts/errors; no setup-verification or task-completion claim",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 95
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 21,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Correctable failure, incomplete evidence or uncertain outcome",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 96
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.RETURN_REFUSAL",
+          "node_type": "terminal",
+          "sequence": 22,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Unsupported or declined action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 97
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "PORGCLASS.RETURN_PREPARED",
+          "node_type": "terminal",
+          "sequence": 23,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "PORGCLASS.EXECUTION_GATE"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Read-only final-ZIP preparation complete before loader approval; no submission, acceptance, readback or task-completion claim",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 98
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,502 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_CST_COST_PROFILES",
+      "task_name": "Cost Profiles",
+      "start_node": "CP.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "CP.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "CP.RESOLVE_COSTING_SET",
+            "invalid": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before preview",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 38
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.RESOLVE_COSTING_SET",
+          "node_type": "step",
+          "sequence": 15,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CP.RESOLVE_COMPONENT_GROUP_ID",
+            "unresolved": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CP.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A specified Set Name requires a Cost Profile Set Id",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 58
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.RESOLVE_COMPONENT_GROUP_ID",
+          "node_type": "step",
+          "sequence": 16,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CP.RESOLVE_VALUATION_STRUCTURE_TYPE",
+            "unresolved": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CP.RESOLVE_COSTING_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supplied component mapping group requires a Component Group Id",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.RESOLVE_VALUATION_STRUCTURE_TYPE",
+          "node_type": "step",
+          "sequence": 17,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CP.RESOLVE_COST_METHOD",
+            "unresolved": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CP.RESOLVE_COSTING_SET"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A specified valuation structure type requires a Valuation Structure Type Code",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.RESOLVE_COST_METHOD",
+          "node_type": "step",
+          "sequence": 18,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CP.RESOLVE_COST_BY_UOM",
+            "unresolved": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CP.RESOLVE_VALUATION_STRUCTURE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A specified cost method requires a Cost Method Code",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 61
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.RESOLVE_COST_BY_UOM",
+          "node_type": "step",
+          "sequence": 19,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CP.RESOLVE_PROCESS_NEGATIVE_QUANTITY",
+            "unresolved": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CP.RESOLVE_COST_METHOD"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A specified Cost By UOM requires a Cost by UOM Code",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 62
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.RESOLVE_PROCESS_NEGATIVE_QUANTITY",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CP.RESOLVE_CONSIGNED_ACCOUNTING_DISTRIBUTION_BASIS",
+            "unresolved": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CP.RESOLVE_COST_BY_UOM"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A specified Process Negative Quantity requires a Process Negative Quantity Code",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 63
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.RESOLVE_CONSIGNED_ACCOUNTING_DISTRIBUTION_BASIS",
+          "node_type": "step",
+          "sequence": 21,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CP.RESOLVE_OPERATION_SCRAP_ACCOUNTING",
+            "unresolved": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CP.RESOLVE_PROCESS_NEGATIVE_QUANTITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supplied consigned accounting distribution basis requires resolution",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 64
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.RESOLVE_OPERATION_SCRAP_ACCOUNTING",
+          "node_type": "step",
+          "sequence": 22,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CP.RESOLVE_OPERATION_SCRAP_VALUATION",
+            "unresolved": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CP.RESOLVE_PROCESS_NEGATIVE_QUANTITY"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A specified Operation Scrap Accounting requires an Operation Scrap Accounting Code",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 65
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.RESOLVE_OPERATION_SCRAP_VALUATION",
+          "node_type": "step",
+          "sequence": 23,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CP.RESOLVE_RECEIPT_WITHOUT_COST",
+            "unresolved": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CP.RESOLVE_OPERATION_SCRAP_ACCOUNTING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A specified Operation Scrap Valuation requires an Operation Scrap Valuation Code",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 66
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.RESOLVE_RECEIPT_WITHOUT_COST",
+          "node_type": "step",
+          "sequence": 24,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CP.RESOLVE_UNREFERENCED_RMA_RECEIPT_COST",
+            "unresolved": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CP.RESOLVE_OPERATION_SCRAP_VALUATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A specified Receipt Without Cost requires a Receipt Without Cost Code",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 67
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.RESOLVE_UNREFERENCED_RMA_RECEIPT_COST",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CP.RESOLVE_REFERENCED_RMA_COST",
+            "unresolved": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CP.RESOLVE_RECEIPT_WITHOUT_COST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A specified Unreferenced RMA Receipt Cost requires an Unreferenced RMA Receipt Cost Code",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 68
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.RESOLVE_REFERENCED_RMA_COST",
+          "node_type": "step",
+          "sequence": 26,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CP.APPLY_REFERENCED_RMA_COST_DEFAULT",
+            "unresolved": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CP.RESOLVE_UNREFERENCED_RMA_RECEIPT_COST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The exact referenced-RMA lookup must resolve before design enforcement",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 69
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.APPLY_REFERENCED_RMA_COST_DEFAULT",
+          "node_type": "step",
+          "sequence": 27,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "CP.APPLY_QUANTITY_DEPLETION_METHOD_DEFAULT"
+          },
+          "prerequisites": [
+            "CP.RESOLVE_REFERENCED_RMA_COST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After the referenced-RMA Meaning is resolved",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 15
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.APPLY_QUANTITY_DEPLETION_METHOD_DEFAULT",
+          "node_type": "step",
+          "sequence": 28,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "defaulted": "CP.RESOLVE_VALUATION_STRUCTURE_ID"
+          },
+          "prerequisites": [
+            "CP.APPLY_REFERENCED_RMA_COST_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After Cost Method Code is resolved",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 16
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.RESOLVE_VALUATION_STRUCTURE_ID",
+          "node_type": "step",
+          "sequence": 29,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "CP.ENFORCE_DESIGN",
+            "unresolved": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CP.APPLY_QUANTITY_DEPLETION_METHOD_DEFAULT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Resolved Set Id and specified Valuation Structure Code require a Valuation Structure Id",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 70
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 30,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "passed": "CP.DONE",
+            "blocked": "CP.HANDLE_ERROR"
+          },
+          "prerequisites": [
+            "CP.RESOLVE_VALUATION_STRUCTURE_ID"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preview",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 31
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.HANDLE_ERROR",
+          "node_type": "step",
+          "sequence": 31,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "CP.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any validation or design failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 40,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A blocking issue was classified",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 26
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "CP.DONE",
+          "node_type": "terminal",
+          "sequence": 50,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "CP.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "All documented checks passed",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 27
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

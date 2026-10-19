@@ -1,0 +1,493 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_PAY_MANAGE_PAYROLL_PRODUCT_USAGES",
+      "task_name": "Features by Country or Territory",
+      "start_node": "FBCT.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "FBCT.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "FBCT.RESOLVE_REFERENCES",
+            "invalid": "FBCT.HANDLE_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Every invocation by the routed runbook; check supplied shape and resolver-input availability for preparation, final pre-approval validation, or verification; returned-data requirements apply after the declared read",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 77
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FBCT.RESOLVE_REFERENCES",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "FBCT.RESOLVE_DEPENDENCIES",
+            "unresolved": "FBCT.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "FBCT.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Authorized runbook selects Search, named-target/value preparation, available-for-Create enumeration, final pre-approval read-only validation, or post-verification; execute only that phase's applicable resolver subset and retain unresolved contracts as readiness blockers",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 102
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 14,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 17,
+                "column": "Match Rule",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_reference_lookups.md",
+                "line": 17,
+                "column": "Values to Fill",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "FBCT.RESOLVE_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "FBCT.APPLY_DEFAULTS",
+            "blocked": "FBCT.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "FBCT.RESOLVE_REFERENCES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate only the dependencies required for the selected phase from declared resolver and workflow evidence",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 89
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FBCT.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied": "FBCT.ENFORCE_DESIGN",
+            "blocked": "FBCT.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "FBCT.RESOLVE_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Preparation applies only eligible Create defaults; preserve explicit requested and existing values; other phases pass through without defaulting",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_defaulting_rules.md",
+                "line": 33,
+                "column": "Default Value",
+                "message": "Value is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "FBCT.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 50,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "FBCT.CHECK_EXECUTION_BOUNDARY",
+            "blocked": "FBCT.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "FBCT.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Preparation, final pre-approval validation, or separate verification invoked by the runbook; apply phase-relevant policy without writes or automatic polling",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "incomplete",
+            "blocking_reasons": [
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 51,
+                "column": "Required Lookup",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 52,
+                "column": "Required Lookup",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 53,
+                "column": "Required Lookup",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 54,
+                "column": "Required Lookup",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 56,
+                "column": "Required Lookup",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 61,
+                "column": "Required Lookup",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 64,
+                "column": "Required Lookup",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 65,
+                "column": "Required Lookup",
+                "message": "Value is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 51,
+                "column": "Required Lookup",
+                "message": "Required Lookup is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 52,
+                "column": "Required Lookup",
+                "message": "Required Lookup is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 53,
+                "column": "Required Lookup",
+                "message": "Required Lookup is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 54,
+                "column": "Required Lookup",
+                "message": "Required Lookup is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 56,
+                "column": "Required Lookup",
+                "message": "Required Lookup is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 61,
+                "column": "Required Lookup",
+                "message": "Required Lookup is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 64,
+                "column": "Required Lookup",
+                "message": "Required Lookup is TBD"
+              },
+              {
+                "file": "ora_design_enforcement.md",
+                "line": 65,
+                "column": "Required Lookup",
+                "message": "Required Lookup is TBD"
+              }
+            ]
+          }
+        },
+        {
+          "id": "FBCT.CHECK_EXECUTION_BOUNDARY",
+          "node_type": "decision",
+          "sequence": 60,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "FBCT.COMPLETE",
+            "blocked": "FBCT.HANDLE_ISSUES"
+          },
+          "prerequisites": [
+            "FBCT.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Evaluate only the selected phase and its applicable readiness, handoff, or verification gate; never perform a write",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 141
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FBCT.COMPLETE",
+          "node_type": "terminal",
+          "sequence": 70,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "FBCT.CHECK_EXECUTION_BOUNDARY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Return accumulated task-rule results for the selected phase; a preparation pass is not load success",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 142
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "FBCT.HANDLE_ISSUES",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "reported": "RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Any failed input, lookup, dependency, default, design, readiness, processing, or verification gate",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 143
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 90,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Return classified issues and safe resume information without an undeclared action",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 144
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "incomplete",
+        "blocking_reasons": [
+          {
+            "node_id": "FBCT.RESOLVE_REFERENCES",
+            "file": "ora_reference_lookups.md",
+            "line": 14,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "FBCT.RESOLVE_REFERENCES",
+            "file": "ora_reference_lookups.md",
+            "line": 17,
+            "column": "Match Rule",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "FBCT.RESOLVE_REFERENCES",
+            "file": "ora_reference_lookups.md",
+            "line": 17,
+            "column": "Values to Fill",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "FBCT.APPLY_DEFAULTS",
+            "file": "ora_defaulting_rules.md",
+            "line": 33,
+            "column": "Default Value",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 51,
+            "column": "Required Lookup",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 52,
+            "column": "Required Lookup",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 53,
+            "column": "Required Lookup",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 54,
+            "column": "Required Lookup",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 56,
+            "column": "Required Lookup",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 61,
+            "column": "Required Lookup",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 64,
+            "column": "Required Lookup",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 65,
+            "column": "Required Lookup",
+            "message": "Value is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 51,
+            "column": "Required Lookup",
+            "message": "Required Lookup is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 52,
+            "column": "Required Lookup",
+            "message": "Required Lookup is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 53,
+            "column": "Required Lookup",
+            "message": "Required Lookup is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 54,
+            "column": "Required Lookup",
+            "message": "Required Lookup is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 56,
+            "column": "Required Lookup",
+            "message": "Required Lookup is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 61,
+            "column": "Required Lookup",
+            "message": "Required Lookup is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 64,
+            "column": "Required Lookup",
+            "message": "Required Lookup is TBD"
+          },
+          {
+            "node_id": "FBCT.ENFORCE_DESIGN",
+            "file": "ora_design_enforcement.md",
+            "line": 65,
+            "column": "Required Lookup",
+            "message": "Required Lookup is TBD"
+          }
+        ]
+      }
+    }
+  ]
+}

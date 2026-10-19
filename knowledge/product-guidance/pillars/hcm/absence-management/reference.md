@@ -1,0 +1,19 @@
+# HCM Absence Management References
+
+Use this file for references when implementing Oracle Fusion Cloud HCM Absence Management.
+
+## Use first
+
+### Oracle Fusion Cloud HCM Absence Management Implementation Guide
+
+- URL: [https://docs.oracle.com/en/cloud/saas/human-resources/faiam/index.html](https://docs.oracle.com/en/cloud/saas/human-resources/faiam/index.html)
+- Type: oracle documentation
+- Category: HCM Absence Management
+- Relevance: high
+- Authority: product documentation
+- Freshness: version-sensitive
+- Use when: FSCR implementation project's offering scope contains HCM Absence Management or contains functional areas belonging to this offering.
+- Do not use for: FSCR implementation projects which do not contain the hcm absence management offering.
+
+## Additional references
+

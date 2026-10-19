@@ -1,0 +1,229 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "HZ_MANAGE_HIERARCHIES",
+      "task_name": "Manage Hierarchies",
+      "start_node": "MH.VALIDATE_REQUEST",
+      "nodes": [
+        {
+          "id": "MH.VALIDATE_REQUEST",
+          "node_type": "decision",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "read": "MH.DEFAULT_READ_OPERATION",
+            "import": "MH.DEFAULT_IMPORT_MODE",
+            "invalid": "MH.ERROR"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Before every Manage Hierarchies operation",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MH.DEFAULT_READ_OPERATION",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "MH.READ_HIERARCHY",
+            "unresolved": "MH.ERROR"
+          },
+          "prerequisites": [
+            "MH.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Preserve a supported explicit read operation or default an unqualified list or show request to list with a disclosed as-of date",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 28
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MH.DEFAULT_IMPORT_MODE",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "MH.ROUTE_CX_IMPORT",
+            "unresolved": "MH.ERROR"
+          },
+          "prerequisites": [
+            "MH.VALIDATE_REQUEST"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A supplied hierarchy import is requested",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 29
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MH.READ_HIERARCHY",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "MH.DONE_READ",
+            "unresolved": "MH.ERROR"
+          },
+          "prerequisites": [
+            "MH.DEFAULT_READ_OPERATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Execute only lookup branches applicable to a validated and defaulted read operation",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 55
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MH.ROUTE_CX_IMPORT",
+          "node_type": "step",
+          "sequence": 5,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "resolved": "MH.IMPORT_READY",
+            "unresolved": "MH.ERROR"
+          },
+          "prerequisites": [
+            "MH.DEFAULT_IMPORT_MODE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Bind fixed hierarchy object, mode, volume, and order, then delegate source preflight and CSV processing to the shared/Core workflow",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 60
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MH.ERROR",
+          "node_type": "step",
+          "sequence": 6,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "MH.ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "continue",
+          "applies_when": "Any validation, lookup, routing, privilege, transport, metadata, approval, import, or process failure",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 78
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MH.DONE_READ",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MH.READ_HIERARCHY"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The requested read operation completed with sanitized evidence",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 79
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MH.IMPORT_READY",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MH.ROUTE_CX_IMPORT"
+          ],
+          "on_failure": "continue",
+          "applies_when": "Exact supplied-file object and mode routing is ready for the shared Data Loader governed CX Import workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 80
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "MH.ISSUES",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "MH.ERROR"
+          ],
+          "on_failure": "continue",
+          "applies_when": "The request has unresolved issues and no further mutation was attempted",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 81
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

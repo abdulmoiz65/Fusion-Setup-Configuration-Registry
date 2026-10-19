@@ -1,0 +1,251 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "CUSTOM_MANAGE_SERVICE_MAPPINGS_FOR_SUBSCRIPTIONS_TO_ACCOUNTS_RECEIVABLES",
+      "task_name": "Manage Service Mappings for Subscriptions to Accounts Receivables",
+      "ownership": "companion_service_mapping_workflow",
+      "return_skill": "cx.subscriptions.integration-setup.manage-algorithms-for-subscriptions-to-accounts-receivables",
+      "resources": {
+        "preflight_validation": "Algorithm_BO.xml identity, absolute highest ActiveFlag Y, and ARInterface Service Mapping source XML are mandatory",
+        "source_validation": "contextName must equal ARInterface",
+        "describe_registry": "ora_reference_lookups.md"
+      },
+      "mandates": [
+        "Run mandatory preflight before every advisory, mapping, validation, source-resolution, or use-case request: require the business requirement, current Algorithm_BO.xml, and current Service Mapping source XML as attachments or explicit file inputs in the same request; do not proceed from chat cache, prior project artifacts, remembered paths, or default assumptions.",
+        "Validate Algorithm_BO.xml name is Subscription Management and Account Receivables Integration, read all versions, and reject unless the absolute highest VersionNum has ActiveFlag Y.",
+        "Validate contextName is ARInterface before assessing an attached source export; the Service Mapping filename may vary.",
+        "Use the primary Manage Algorithms Input Type 1-5 classification, or classify directly with its Use-Case Resolution reference when this companion is invoked directly.",
+        "Use describe coverage for subscriptions, subscription products, bill lines, charges, and product associations (covered levels).",
+        "Compare existing custom attributes to the requested business meaning and seek implementer confirmation; otherwise provide likely describe candidates.",
+        "When a source attribute or business term is stated without an object, scan current exposed attributes across all ARInterface context entities, then run permitted describe checks across relevant Subscriptions AR source objects before recommending an object; public Subscription documentation is supporting context only.",
+        "For Type 5 use cases with no source object, use the Subscription general reference first; if it cannot identify a likely object and attribute, use current official Oracle documentation or web sources for discovery only, then run environment describe for each relevant source family: subscriptions, SubscriptionProducts, billLines, charges, and coveredLevels/ProductAssociations.",
+        "When the XML lacks the requested attribute but the requirement identifies its object, use that object's describe and ask the implementer to confirm the candidate.",
+        "When same-name or semantically similar source candidates appear across source families, apply a functional-owner tie-breaker before recommending a default: prefer the explicitly stated object, otherwise the business-owning source family; list copied, denormalized, or convenience fields as alternatives and pass optional-cardinality implications to the algorithm workflow. If the selected source alias is ZeroOrOne, state that generated Groovy must use null-safe navigation on every direct dereference; a non-null guard is not enough unless subsequent logic uses a local variable assigned from a null-safe expression.",
+        "If a required describe cannot run because the runtime environment connection, OAuth/authentication, privileges, transport, or describe endpoint is unavailable, stop and tell the implementer describe is not working; ask whether to resolve the runtime environment connection and rerun describe or proceed only with named unconfirmed assumptions for review.",
+        "For every requested source, return a source-resolution record using an accepted export attribute, an implementer-provided exact source, or an explicitly accepted named describe candidate; include the XML or describe source type so the primary algorithm workflow can choose a source-type-compatible DFF family when the AR target is omitted. Generic assumptions are not defaults.",
+        "When the AR target is omitted, pass target-family guidance from the source type: character DFF for string/varchar/character/display identifiers/codes/Boolean-as-code, date DFF for date/datetime, and number DFF for number/integer/long/decimal/numeric identifiers. Do not treat an Id suffix as numeric without XML or describe type evidence.",
+        "Treat go-with-assumptions approval as permission to present named evidence-backed recommendations only; it never bypasses XML preflight, source-resolution records, service access, publication prerequisites, deployed DFF/context confirmation, Groovy approval, or XML approval.",
+        "Allow only the listed describe URIs for probable-match and type suggestions; do not use general GET, create, POST, action, PUT, PATCH, or DELETE operations.",
+        "Provide a sample custom-object recommendation and offer UI setup steps on request.",
+        "Present the complete proposed configuration and requested UI steps directly in chat, while persisting the same content as project artifacts for traceability.",
+        "Return to the Manage Algorithms workflow after the mapping result; do not create or modify algorithm XML.",
+        "After approved local Algorithm_BO.xml creation, provide and persist a Service Mapping configuration handoff with selected sources, aliases, types, access, publication prerequisites, remaining UI configuration, and a table showing source object, source attribute, Service Mapping alias, target RA_INTERFACE_LINES_ALL column, ARInterface AttributeName, AttributeContext, FlexContext, transaction scope, and confirmed-or-assumed status."
+      ],
+      "start_node": "SVC_AR_VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "SVC_AR_VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 1,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "SVC_AR_DESCRIBE_ATTRIBUTES",
+            "missing": "SVC_AR_MISSING_INPUT"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Always",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 57
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SVC_AR_DESCRIBE_ATTRIBUTES",
+          "node_type": "step",
+          "sequence": 2,
+          "action_type": "reference_lookup",
+          "execution_route": "local",
+          "transitions": {
+            "confirmed": "SVC_AR_CHECK_DEPENDENCIES",
+            "not_required": "SVC_AR_CHECK_DEPENDENCIES",
+            "unavailable": "SVC_AR_BLOCKED"
+          },
+          "prerequisites": [
+            "SVC_AR_VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The supplied Service Mapping XML does not identify the requested attribute, or a source attribute is stated without an object",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-node",
+            "line": 25
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SVC_AR_CHECK_DEPENDENCIES",
+          "node_type": "step",
+          "sequence": 3,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "SVC_AR_ENFORCE_DESIGN",
+            "blocked": "SVC_AR_BLOCKED"
+          },
+          "prerequisites": [
+            "SVC_AR_DESCRIBE_ATTRIBUTES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Input validation and required describe confirmation are complete",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SVC_AR_ENFORCE_DESIGN",
+          "node_type": "step",
+          "sequence": 4,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "pass": "SVC_AR_ADVISORY_GATE",
+            "block": "SVC_AR_BLOCKED"
+          },
+          "prerequisites": [
+            "SVC_AR_CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "A service-mapping advisory is requested",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 35
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SVC_AR_ADVISORY_GATE",
+          "node_type": "decision",
+          "sequence": 5,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "advisory_ready": "SVC_AR_RETURN_ADVISORY",
+            "out_of_scope": "SVC_AR_OUT_OF_SCOPE"
+          },
+          "prerequisites": [
+            "SVC_AR_ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Design enforcement passes",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 39
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SVC_AR_MISSING_INPUT",
+          "node_type": "terminal",
+          "sequence": 6,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Required advisory input is missing",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 40
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SVC_AR_BLOCKED",
+          "node_type": "terminal",
+          "sequence": 7,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A dependency or design rule blocks the advisory",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 41
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SVC_AR_OUT_OF_SCOPE",
+          "node_type": "terminal",
+          "sequence": 8,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "The request requires Fusion execution or undocumented platform behavior",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 42
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "SVC_AR_RETURN_ADVISORY",
+          "node_type": "terminal",
+          "sequence": 9,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "SVC_AR_ADVISORY_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Advisory review is ready",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 43
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}

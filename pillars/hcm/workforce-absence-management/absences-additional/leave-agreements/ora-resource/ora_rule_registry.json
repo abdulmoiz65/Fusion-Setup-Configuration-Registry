@@ -1,0 +1,842 @@
+{
+  "schema_version": "3.0",
+  "representation": "nested",
+  "tasks": [
+    {
+      "task_code": "ORA_ANC_MANAGE_LEAVE_AGREEMENTS",
+      "task_name": "Leave Agreements",
+      "start_node": "LA.VALIDATE_INPUT",
+      "nodes": [
+        {
+          "id": "LA.VALIDATE_INPUT",
+          "node_type": "step",
+          "sequence": 10,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LA.NORMALIZE_EFFECTIVE_OF",
+            "invalid": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "A supported Create, Edit or Delete request is supplied; absent Redwood actions return unavailable with supported choices before this execution graph",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 109
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.NORMALIZE_EFFECTIVE_OF",
+          "node_type": "step",
+          "sequence": 20,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "create_normalized": "LA.RESOLVE_EXISTING_TEMPLATE",
+            "non_create_normalized": "LA.RESOLVE_EXISTING_TEMPLATE",
+            "invalid": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.VALIDATE_INPUT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Normalize Create Start Date; Edit uses internal CORRECTION with verified stored Start Date, whole-object Delete uses date-free ZAP; neither accepts a new date",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 110
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_EXISTING_TEMPLATE",
+          "node_type": "step",
+          "sequence": 25,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_PATTERN",
+            "not_applicable": "LA.RESOLVE_PATTERN",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.NORMALIZE_EFFECTIVE_OF"
+          ],
+          "on_failure": "stop",
+          "applies_when": "For Edit/Delete resolve exact current parent and full before state through find_leave_agreement_template, refresh_leave_agreement_describe and read_leave_agreement_configuration before dependent lookups; retain stored context and affected child identities. Create returns not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 146
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_PATTERN",
+          "node_type": "step",
+          "sequence": 30,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_LEGISLATION",
+            "not_applicable": "LA.RESOLVE_LEGISLATION",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_EXISTING_TEMPLATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_agreement_pattern_code for Create; Edit/Delete retain the observed read-only stored pattern",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 127
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_LEGISLATION",
+          "node_type": "step",
+          "sequence": 40,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_LEGISLATIVE_GROUPING",
+            "not_applicable": "LA.RESOLVE_LEGISLATIVE_GROUPING",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_PATTERN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_agreement_legislation for Create; Edit/Delete retain the resolved agreement legislation required by legislation-scoped lookups",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 128
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_LEGISLATIVE_GROUPING",
+          "node_type": "step",
+          "sequence": 41,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_TARGET_PLAN",
+            "not_applicable": "LA.RESOLVE_TARGET_PLAN",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_LEGISLATION"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_agreement_legislative_grouping when Legislative Grouping is supplied; clear any prior value after Legislation changes; otherwise return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 129
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_TARGET_PLAN",
+          "node_type": "step",
+          "sequence": 45,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_MANAGEMENT_TYPE",
+            "not_applicable": "LA.RESOLVE_MANAGEMENT_TYPE",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_LEGISLATIVE_GROUPING"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_target_absence_plan for every absenceAgreementPlans item containing TargetPlanName; when all items contain only TargetPlanId, return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 130
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_MANAGEMENT_TYPE",
+          "node_type": "step",
+          "sequence": 50,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_STATUS",
+            "not_applicable": "LA.RESOLVE_STATUS",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_TARGET_PLAN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate a supplied value or, for Create in Agreement and Conversion, the UD candidate before defaulting; otherwise return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 131
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_STATUS",
+          "node_type": "step",
+          "sequence": 60,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_VALIDATION_FORMULA",
+            "not_applicable": "LA.RESOLVE_VALIDATION_FORMULA",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_MANAGEMENT_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate a supplied value or, for Create in Agreement and Conversion, the P candidate before defaulting; otherwise return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 132
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_VALIDATION_FORMULA",
+          "node_type": "step",
+          "sequence": 61,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_PARTNER_RULE",
+            "not_applicable": "LA.RESOLVE_PARTNER_RULE",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_STATUS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_agreement_validation_formula when Validation Formula is supplied; otherwise return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 133
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_PARTNER_RULE",
+          "node_type": "step",
+          "sequence": 70,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_DENIAL_REASONS",
+            "not_applicable": "LA.RESOLVE_DENIAL_REASONS",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_VALIDATION_FORMULA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate a supplied value or, for Create in Agreement and Conversion, the ORA_ANC_NOT_APPL candidate before defaulting; otherwise return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 134
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_DENIAL_REASONS",
+          "node_type": "step",
+          "sequence": 71,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_WITHDRAWAL_REASONS",
+            "not_applicable": "LA.RESOLVE_WITHDRAWAL_REASONS",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_PARTNER_RULE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_agreement_denial_reasons when one or more Denial Reasons are supplied; otherwise return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 135
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_WITHDRAWAL_REASONS",
+          "node_type": "step",
+          "sequence": 72,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_EVENT_TYPE",
+            "not_applicable": "LA.RESOLVE_EVENT_TYPE",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_DENIAL_REASONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_agreement_withdrawal_reasons when one or more Withdrawal Reasons are supplied; otherwise return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 136
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_EVENT_TYPE",
+          "node_type": "step",
+          "sequence": 73,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_ELIGIBILITY_RULE",
+            "not_applicable": "LA.RESOLVE_ELIGIBILITY_RULE",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_WITHDRAWAL_REASONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_agreement_event_type only when Event Type is supplied for Agreement; reject it for Conversion; otherwise return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 137
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_ELIGIBILITY_RULE",
+          "node_type": "step",
+          "sequence": 80,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_ELIGIBILITY_FORMULA",
+            "not_applicable": "LA.RESOLVE_ELIGIBILITY_FORMULA",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_EVENT_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate a supplied value or, for Create in Agreement and Conversion, the ORA_ANC_NOT_APPL candidate; clear prior conditional eligibility selections when the rule changes",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 138
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_ELIGIBILITY_FORMULA",
+          "node_type": "step",
+          "sequence": 81,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_ELIGIBILITY_PROFILE",
+            "not_applicable": "LA.RESOLVE_ELIGIBILITY_PROFILE",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_ELIGIBILITY_RULE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_agreement_eligibility_formula only on Create or an affected eligibility change with the Formula rule and supplied Formula; retained valid dependencies come from before state; reject it for every other rule; otherwise return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 139
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_ELIGIBILITY_PROFILE",
+          "node_type": "step",
+          "sequence": 82,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_SOURCE_TYPE",
+            "not_applicable": "LA.RESOLVE_SOURCE_TYPE",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_ELIGIBILITY_FORMULA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_agreement_eligibility_profile only on Create or an affected eligibility change with the Profile rule and supplied Profile; retained valid dependencies come from before state; reject it for every other rule and reject simultaneous formula/profile values; otherwise return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 140
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_SOURCE_TYPE",
+          "node_type": "step",
+          "sequence": 90,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_SOURCE_PLAN",
+            "not_applicable": "LA.RESOLVE_SOURCE_PLAN",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_ELIGIBILITY_PROFILE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_source_absence_type for Conversion Create, or a new/changed child needing the stored source context, and retain the returned plans child link when SourcePlanName is supplied; otherwise return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 141
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_SOURCE_PLAN",
+          "node_type": "step",
+          "sequence": 95,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_PAYMENT_FORMULA",
+            "not_applicable": "LA.RESOLVE_PAYMENT_FORMULA",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_SOURCE_TYPE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_source_absence_plan for every Conversion absenceAgreementPlans item containing SourcePlanName; when all items contain only SourcePlanId or the pattern is not Conversion, return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 142
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_PAYMENT_FORMULA",
+          "node_type": "step",
+          "sequence": 96,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_OVERRIDE_ALLOWED",
+            "not_applicable": "LA.RESOLVE_OVERRIDE_ALLOWED",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_SOURCE_PLAN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_agreement_payment_percentage_formula independently for every plan item containing Payment Percentage Display Formula; otherwise return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 143
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_OVERRIDE_ALLOWED",
+          "node_type": "step",
+          "sequence": 97,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.RESOLVE_CERTIFICATIONS",
+            "not_applicable": "LA.RESOLVE_CERTIFICATIONS",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_PAYMENT_FORMULA"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_agreement_override_allowed for every plan item containing Override Allowed; require a payment formula in that item; otherwise return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 144
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RESOLVE_CERTIFICATIONS",
+          "node_type": "step",
+          "sequence": 98,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "resolved": "LA.REFRESH_DATALOADER_CONTRACT",
+            "not_applicable": "LA.REFRESH_DATALOADER_CONTRACT",
+            "not_found": "LA.HANDLE_ISSUE",
+            "ambiguous": "LA.HANDLE_ISSUE",
+            "lookup_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_OVERRIDE_ALLOWED"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Use resolve_agreement_certification for every new/changed certification child containing Certification Name or an identifier; require every selected certification to be effective on the leave agreement Effective Start Date, and clear prior certifications after that date or Legislation changes; otherwise return not_applicable",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 145
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.REFRESH_DATALOADER_CONTRACT",
+          "node_type": "step",
+          "sequence": 110,
+          "action_type": "reference_lookup",
+          "execution_route": "fusion-rest",
+          "transitions": {
+            "contract_ready": "LA.APPLY_DEFAULTS",
+            "contract_failed": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.RESOLVE_CERTIFICATIONS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Verify registered Create/Edit/Delete controls and fields/keys. For Create, after final Name/Legislation resolve, require collision_clear. Existing Edit derives internal CORRECTION and RangeStartDate from verified stored Start Date; whole-object Delete derives date-free ZAP; neither accepts a new date and both retain exactly-one target selection",
+          "source": {
+            "file": "ora_reference_lookups.md",
+            "anchor": "task-nodes",
+            "line": 147
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.APPLY_DEFAULTS",
+          "node_type": "step",
+          "sequence": 120,
+          "action_type": "apply_default",
+          "execution_route": "local",
+          "transitions": {
+            "applied_or_not_needed": "LA.VALIDATE_EFFECTIVE_CONTEXT",
+            "unresolved": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.REFRESH_DATALOADER_CONTRACT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Apply only eligible omitted create defaults and create-only pattern-confirmed, lookup-verified coded defaults; Edit/Delete retain before state and receive no create defaults",
+          "source": {
+            "file": "ora_defaulting_rules.md",
+            "anchor": "task-nodes",
+            "line": 72
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.VALIDATE_EFFECTIVE_CONTEXT",
+          "node_type": "step",
+          "sequence": 130,
+          "action_type": "validate_input",
+          "execution_route": "local",
+          "transitions": {
+            "valid": "LA.CHECK_DEPENDENCIES",
+            "invalid": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.APPLY_DEFAULTS"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Validate native controls: Create uses its new Start Date; Edit uses CORRECTION and RangeStartDate equal to verified stored Start Date; whole-object Delete uses date-free ZAP; no stored date changes",
+          "source": {
+            "file": "ora_input_validation.md",
+            "anchor": "task-nodes",
+            "line": 111
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.CHECK_DEPENDENCIES",
+          "node_type": "decision",
+          "sequence": 140,
+          "action_type": "resolve_dependency",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LA.ENFORCE_DESIGN",
+            "blocked": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.VALIDATE_EFFECTIVE_CONTEXT"
+          ],
+          "on_failure": "stop",
+          "applies_when": "After supported-operation validation, full existing before state, applicable changed-field lookups, current metadata, create-only defaults, and operation-specific control validation; require impact evidence only where applicable",
+          "source": {
+            "file": "ora_dependency_readiness.md",
+            "anchor": "task-nodes",
+            "line": 59
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.ENFORCE_DESIGN",
+          "node_type": "decision",
+          "sequence": 150,
+          "action_type": "design_enforcement",
+          "execution_route": "local",
+          "transitions": {
+            "eligible": "LA.READINESS_GATE",
+            "blocked": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.CHECK_DEPENDENCIES"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before preview require supported UI scope, current adapter contract, full maintenance context, applicable protection/impact, operation-specific controls and changed-field dependencies. No blanket dated gate applies to Edit/Delete",
+          "source": {
+            "file": "ora_design_enforcement.md",
+            "anchor": "task-nodes",
+            "line": 90
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.READINESS_GATE",
+          "node_type": "decision",
+          "sequence": 160,
+          "action_type": "execution_gate",
+          "execution_route": "local",
+          "transitions": {
+            "ready": "LA.DONE_VALIDATED",
+            "blocked": "LA.HANDLE_ISSUE"
+          },
+          "prerequisites": [
+            "LA.ENFORCE_DESIGN"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Before handing a supported-operation, current-contract-valid source to core.data-loader; Create has new-date context, Edit uses internal CORRECTION with verified stored Start Date, whole-object Delete uses date-free ZAP, and applicable dependencies/impact are met",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 130
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.HANDLE_ISSUE",
+          "node_type": "step",
+          "sequence": 170,
+          "action_type": "error_handler",
+          "execution_route": "local",
+          "transitions": {
+            "handled": "LA.RETURN_ISSUES"
+          },
+          "prerequisites": [],
+          "on_failure": "stop",
+          "applies_when": "Classify an applicable input, lookup, dependency, metadata, approval, transport, Fusion, process or persistence failure, or disclose a retired intent as unsupported with available choices",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 131
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.RETURN_ISSUES",
+          "node_type": "terminal",
+          "sequence": 180,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LA.HANDLE_ISSUE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "The specific execution issue or unavailable intent was disclosed without marking unrelated supported operations blocked",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 132
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        },
+        {
+          "id": "LA.DONE_VALIDATED",
+          "node_type": "terminal",
+          "sequence": 190,
+          "action_type": "terminal",
+          "execution_route": "local",
+          "transitions": {},
+          "prerequisites": [
+            "LA.READINESS_GATE"
+          ],
+          "on_failure": "stop",
+          "applies_when": "Leave Agreements source is validated for the separate core.data-loader workflow",
+          "source": {
+            "file": "ora_error_handling.md",
+            "anchor": "task-nodes",
+            "line": 133
+          },
+          "readiness": {
+            "status": "ready",
+            "blocking_reasons": []
+          }
+        }
+      ],
+      "readiness": {
+        "status": "ready",
+        "blocking_reasons": []
+      }
+    }
+  ]
+}
