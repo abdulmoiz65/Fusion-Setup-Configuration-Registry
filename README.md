@@ -82,11 +82,29 @@ Python 3.11 or 3.12
 Several scripts use modern Python type syntax such as `str | None` and
 `list[dict[str, Any]]`, so Python 3.9 or older is not supported.
 
+Repository scripts use the Python standard library, except on Windows, where
+the OAuth token and trust storage requires `pywin32` for private file ACLs and
+Windows Credential Manager access. Install the platform dependencies with:
+
+```text
+python -m pip install -r requirements.txt
+```
+
+### Windows
+
+Command examples in skill manifests use `python3`. On Windows, `python3` may be
+absent or may open the Microsoft Store installer instead of Python; run the
+same commands with `python` or the `py -3` launcher. Without `pywin32`, login
+stops with `Windows Fusion OAuth storage requires pywin32`.
+
 ## AI Model Considerations
 
 FSCR has been tested with the GPT 5.6 Terra Medium model. Performance varies
 by model; select a model whose reasoning capability is appropriate for the
 activity being pursued in FSCR.
+
+Agent directives live in [AGENTS.md](AGENTS.md). [CLAUDE.md](CLAUDE.md) imports
+the same file so that Claude Code applies identical directives.
 
 ## Repository Layers
 

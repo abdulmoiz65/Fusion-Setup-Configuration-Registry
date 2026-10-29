@@ -1,0 +1,5 @@
+# FSCR scripts use the Python standard library (Python 3.10+; 3.11 or 3.12
+# recommended). Platform-specific dependencies are listed below.
+
+# Windows private token/trust storage (file ACLs and Credential Manager).
+pywin32>=306; sys_platform == "win32"
