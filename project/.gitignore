@@ -1,0 +1,7 @@
+# Local implementation workspaces stay untracked. Project folders can hold
+# customer setup data and FSM export ZIPs; see AGENTS.md "Project and Change
+# Discipline". Only the shared template and this folder's docs are tracked.
+/*
+!/.gitignore
+!/README.md
+!/_template/
