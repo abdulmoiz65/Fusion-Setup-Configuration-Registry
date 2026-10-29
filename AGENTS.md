@@ -23,7 +23,7 @@
 
 ## Project and Change Discipline
 - Treat `project/{project_id}` as the durable workspace; persist outputs under `artifacts`, `exports`, `baselines`, `decisions`, or `blueprints`, and record durable runs under `project/{project_id}/state/runs`.
-- For project workspace impacting work, if no implementation project exists, create one from `project/_template` named `draft_impl_project_<date>`, inform the user, and offer to rename it based on the implementation objective.
+- For project workspace impacting work, if no implementation project exists, create one from `project/_template` named `draft-impl-project-<YYYY-MM-DD>`, inform the user, and offer to rename it based on the implementation objective.
 - For any project workspace impacting activity, track and report token usage in the prescribed token-usage log inside that project workspace.
 - Never store credentials, secrets, tokens, or private keys in repository files or in a project workspace, even if gitignored. Never store customer data or production-only sensitive values in tracked repository files.
 - Exports produced using FSCR skills, including FSM export ZIPs, must be stored under the current project's `project/{project_id}/exports/` directory. These exports may contain customer setup data or production-only configuration values required by the authorized workflow. Do not use `/tmp` or another location outside the current project as their durable destination. `project/.gitignore` excludes all project folders except `_template` from version control; keep project exports untracked and never force-add them or place them in `_template`.

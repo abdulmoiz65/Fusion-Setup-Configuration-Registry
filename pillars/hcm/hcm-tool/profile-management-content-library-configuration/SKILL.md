@@ -192,7 +192,7 @@ Route these requests elsewhere:
 
 Enter implementation requests through `router.implementation-router`. Use the
 selected `project/{project_id}` workspace for durable artifacts and run records;
-if no project exists, initialize `draft_impl_project_<date>` from
+if no project exists, initialize `draft-impl-project-<YYYY-MM-DD>` from
 `project/_template` before project-impacting work. Record token usage in that
 project's prescribed token-usage log. A REST path, OAuth session, export helper,
 or loader is never an alternate entry route.

@@ -150,7 +150,7 @@ Runtime locations:
   total tokens, estimation method and notes. Label chars/4 estimates explicitly.
 
 If no implementation project exists, use project/_template and the repository's
-draft_impl_project_<date> convention, inform the user and offer renaming. No
+draft-impl-project-<YYYY-MM-DD> convention, inform the user and offer renaming. No
 project or token log is created merely for authoring this reusable package.
 
 Never store credentials, token caches, real customer data or production-sensitive

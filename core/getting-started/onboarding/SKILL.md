@@ -133,7 +133,7 @@ Ordinary Q&A produces a conversational answer and changes no project state or
 configuration. If the user requests a durable checklist or troubleshooting report,
 route that artifact work through the implementation workflow and its project
 workspace services. Use the selected project, or initialize
-`draft_impl_project_<date>` from `project/_template` when required and offer to
+`draft-impl-project-<YYYY-MM-DD>` from `project/_template` when required and offer to
 rename it. Record the run and token usage in the prescribed project log:
 `project/{project_id}/artifacts/shared/token-usage/current/token-usage-log.md`.
 Persist only redacted findings, artifact references, and next actions.
